@@ -313,7 +313,9 @@ export default function LnfTestPage() {
             <div>
                 <h1 style={titleStyle}>시험 종료!</h1>
                 <p style={paragraphStyle}>1교시 '고대 룬 문자 해독 시험'이 끝났습니다. 수고 많으셨습니다!<br/>모든 시험 결과는 마지막에 함께 공개됩니다.</p>
-                <button style={buttonStyle} onClick={() => router.push('/lobby')}>시험 안내로 돌아가기</button>
+                <button style={buttonStyle} onClick={() => router.push('/test/psf')}>
+  다음 시험으로 이동
+</button>
             </div>
         )}
       </div>
