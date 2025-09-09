@@ -5,8 +5,10 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import React from 'react' // React를 import 합니다.
+import { useRouter } from 'next/navigation' // useRouter import
 
 export default function Home() {
+  const router = useRouter() // useRouter 훅 사용 준비
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -23,9 +25,8 @@ export default function Home() {
 
       if (error) throw error;
 
-      alert('입학을 환영합니다, 예비 마법사님!');
-      // TODO: 로그인 성공 후 평가 대기실 페이지로 이동
-
+      router.push('/lobby');
+      
     } catch (error) {
       if (error instanceof Error) {
         alert('입학 암호가 올바르지 않아요: ' + error.message);
