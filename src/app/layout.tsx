@@ -1,26 +1,28 @@
-// app/layout.js
+// src/app/layout.tsx
 
-import { Inter, Nanum_Pen_Script } from 'next/font/google' // Nanum_Pen_Script 추가
-import './globals.css'
+import type { Metadata } from "next";
+import { Inter, Nanum_Pen_Script } from "next/font/google";
+import "./globals.css";
 
-const inter = Inter({ subsets: ['latin'] })
-// Nanum Pen Script 폰트 설정 추가
+const inter = Inter({ subsets: ["latin"] });
 const nanumPenScript = Nanum_Pen_Script({
   weight: '400',
   subsets: ['latin'],
-  variable: '--font-nanum-pen', // CSS 변수로 사용하기 위함
-})
+  variable: '--font-nanum-pen',
+});
 
-export const metadata = {
-  title: '달빛 마법학교 입학처', // 타이틀도 컨셉에 맞게 변경
-  description: 'DIBELS 기반 영어 학력 진단',
-}
 
-export default function RootLayout({ children }) {
+export const metadata: Metadata = {
+  title: "달빛 마법학교 입학처",
+  description: "DIBELS 기반 영어 학력 진단",
+};
+
+// 👇 여기가 수정 포인트입니다!
+// { children } 뒤에 타입을 명시해줍니다.
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    // className에 폰트 변수 추가
     <html lang="en">
       <body className={`${inter.className} ${nanumPenScript.variable}`}>{children}</body>
     </html>
-  )
+  );
 }

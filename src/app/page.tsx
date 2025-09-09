@@ -9,12 +9,12 @@ export default function Home() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false) // 로딩 상태 추가
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true) // 로그인 시도 시 로딩 시작
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
       })
@@ -24,7 +24,7 @@ export default function Home() {
       alert('입학을 환영합니다, 예비 마법사님!')
       // TODO: 로그인 성공 후 평가 대기실 페이지로 이동
 
-    } catch (error) {
+    } catch (error: any) {
       alert('입학 암호가 올바르지 않아요: ' + error.message)
     } finally {
       setLoading(false) // 성공/실패와 관계없이 로딩 종료
