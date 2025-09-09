@@ -10,26 +10,35 @@ export default function Home() {
   const [loading, setLoading] = useState(false) // 로딩 상태 추가
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true) // 로그인 시도 시 로딩 시작
+    e.preventDefault();
+    setLoading(true);
 
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email,
         password: password,
-      })
+      });
 
-      if (error) throw error
+      if (error) throw error;
 
-      alert('입학을 환영합니다, 예비 마법사님!')
+      alert('입학을 환영합니다, 예비 마법사님!');
       // TODO: 로그인 성공 후 평가 대기실 페이지로 이동
 
-    } catch (error: any) {
-      alert('입학 암호가 올바르지 않아요: ' + error.message)
+    } catch (error) { // 'error: any' 에서 ': any'를 제거합니다.
+      
+      // 👇 여기가 수정 포인트입니다!
+      // error가 실제로 Error 객체인지 확인합니다.
+      if (error instanceof Error) {
+        alert('입학 암호가 올바르지 않아요: ' + error.message);
+      } else {
+        // 일반적인 Error 객체가 아닐 경우를 대비한 처리
+        alert('알 수 없는 에러가 발생했습니다.');
+      }
+
     } finally {
-      setLoading(false) // 성공/실패와 관계없이 로딩 종료
+      setLoading(false);
     }
-  }
+  };
 
   // --- 스타일 정의 ---
   const pageStyle = {
