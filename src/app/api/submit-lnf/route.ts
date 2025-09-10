@@ -38,7 +38,7 @@ export async function POST(request: Request) {
     
     const audioUrl = storageData.path;
 
-    // 2. OpenAI를 사용한 음성 인식 (STT) - 영어로만 인식하도록 프롬프트 추가
+    // 2. OpenAI를 사용한 음성 인식 (STT)
     const transcriptionPrompt = "This is an English letter naming fluency test. The student will say the names of English letters, such as A, Bee, Cee, Dee, Ee, Eff, Gee, Aitche, I, Jay, Kay, Ell, Em, En, O, Pee, Queue, Ar, Ess, Tee, You, Vee, Double-U, Ex, Why, Zee.";
 
     const transcription = await openai.audio.transcriptions.create({
@@ -47,39 +47,55 @@ export async function POST(request: Request) {
       language: 'en',
       prompt: transcriptionPrompt,
     });
-    const studentAnswer = transcription.text;
+    // [개선] 인식된 텍스트에서 구두점 및 공백을 제거하여 정확도 향상
+    const studentAnswer = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
-    // 3. LLM을 사용한 채점
+    // --- 여기가 핵심 수정 포인트 ---
+    // 3. LLM을 사용한 DIBELS 규칙 기반 상세 채점
     const scoringResponse = await openai.chat.completions.create({
       model: 'gpt-5-mini', // 요청하신 모델명
       messages: [
         {
           role: 'system',
-          content: `You are an English phonics assessment AI. A student was shown the letter "${questionLetter}" and said "${studentAnswer}". Determine if the student's answer is correct. The student must say the letter name, not the letter sound. Respond ONLY with a JSON object in the format: {"is_correct": boolean}. For example, if the letter is 'A' and the student says 'ay', it's correct. If they say 'apple' or 'ah', it's incorrect.`,
+          content: `You are a DIBELS 8 LNF test evaluator.
+          - The target letter is: "${questionLetter}"
+          - The student's response is: "${studentAnswer}"
+
+          Analyze the student's response based on DIBELS rules and classify it into ONE of the following categories:
+          1. "correct": The student correctly said the letter's name (e.g., for 'A', they said 'ay' or 'A').
+          2. "letter_sound": The student said the letter's sound instead of its name (e.g., for 'B', they said 'buh'; for 'C' they said 'kuh').
+          3. "incorrect_name": The student said a different letter's name (e.g., for 'C', they said 'dee').
+          4. "unintelligible": The response is unclear, not a recognizable letter name/sound, or empty.
+
+          Respond ONLY with a JSON object in the format: {"evaluation": "category_name"}. For example: {"evaluation": "correct"}.`,
         },
       ],
       response_format: { type: 'json_object' },
     });
     
-    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{}');
-    const isCorrect = scoringResult.is_correct || false;
+    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"evaluation": "unintelligible"}');
+    const evaluation = scoringResult.evaluation;
+    const isCorrect = evaluation === 'correct';
+    // [추가] 정답이 아닐 경우, 그 이유(오류 유형)를 errorType에 저장
+    const errorType = isCorrect ? null : evaluation;
 
-    // 4. 채점 결과를 데이터베이스에 저장
+    // 4. 채점 결과를 데이터베이스에 저장 (error_type 컬럼 추가)
     const { error: dbError } = await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'LNF',
       question: questionLetter,
       student_answer: studentAnswer,
       is_correct: isCorrect,
+      error_type: errorType, // 오류 유형 저장
       audio_url: audioUrl,
     });
 
     if (dbError) throw new Error(`DB 저장 실패: ${dbError.message}`);
 
-    // 프론트엔드에 결과 반환
+    // [수정] 프론트엔드에 isCorrect 대신 상세 평가 결과(evaluation)를 반환
     return NextResponse.json({
       studentAnswer,
-      isCorrect,
+      evaluation, // 'correct', 'letter_sound', 'incorrect_name' 등
       audioUrl,
     });
 

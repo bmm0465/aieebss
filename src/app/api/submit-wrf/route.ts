@@ -1,5 +1,3 @@
-// src/app/api/submit-wrf/route.ts
-
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import OpenAI from 'openai';
@@ -24,10 +22,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
+    if (audioBlob.size === 0) {
+      await supabase.from('test_results').insert({
+        user_id: userId, test_type: 'WRF', question: questionWord, is_correct: false, error_type: 'hesitation'
+      });
+      return NextResponse.json({ evaluation: 'hesitation' });
+    }
+
     const audioBuffer = Buffer.from(await audioBlob.arrayBuffer());
 
-    // 1. 음성 파일 업로드
-    const audioFileName = `wrf/${userId}/${Date.now()}.webm`; // 저장 경로를 'wrf'로 변경
+    const audioFileName = `wrf/${userId}/${Date.now()}.webm`;
     const { data: storageData, error: storageError } = await supabase.storage
       .from('student-recordings')
       .upload(audioFileName, audioBuffer, { contentType: 'audio/webm' });
@@ -35,44 +39,53 @@ export async function POST(request: Request) {
     if (storageError) throw new Error(`Storage 업로드 실패: ${storageError.message}`);
     const audioUrl = storageData.path;
 
-    // 2. 음성 인식 (STT) - 일반 단어 읽기에 대한 프롬프트
     const transcriptionPrompt = "The student is reading English sight words, such as 'the', 'is', 'can', 'little', 'play'.";
     const transcription = await openai.audio.transcriptions.create({
-      model: 'gpt-4o-mini-transcribe', // 요청하신 모델명
+      model: 'gpt-4o-mini-transcribe',
       file: new File([audioBuffer], "audio.webm", { type: "audio/webm" }),
       language: 'en',
       prompt: transcriptionPrompt,
     });
-    const studentAnswer = transcription.text;
+    const studentAnswer = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
 
-    // 3. LLM을 사용한 채점 (WRF에 특화된 프롬프트)
+    // --- [핵심 수정] DIBELS WRF 규칙 기반의 상세 채점 프롬프트 ---
     const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-5-mini', // 요청하신 모델명
+      model: 'gpt-5-mini',
       messages: [
         {
           role: 'system',
-          content: `You are an English phonics assessment AI for Word Reading Fluency. The target word was "${questionWord}". The student's transcribed response was "${studentAnswer}". Determine if the student's response correctly matches the target word. Minor pronunciation differences are acceptable as long as the word is clearly identifiable. Respond ONLY with a JSON object in the format: {"is_correct": boolean}.`,
+          content: `You are a DIBELS 8 WRF test evaluator.
+          - The target word is: "${questionWord}"
+          - The student's response is: "${studentAnswer}"
+
+          Analyze the response and classify it into ONE of the following categories:
+          1. "correct": The student read the whole word correctly.
+          2. "sounded_out": The student said the individual sounds but did not blend them into the whole word (e.g., for 'cat', they said 'c-a-t'). This is considered incorrect.
+          3. "incorrect_word": The student said a different word.
+          4. "unintelligible": The response is unclear or not a word.
+
+          Respond ONLY with a JSON object in the format: {"evaluation": "category_name"}.`,
         },
       ],
       response_format: { type: 'json_object' },
     });
     
-    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{}');
-    const isCorrect = scoringResult.is_correct || false;
+    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"evaluation": "unintelligible"}');
+    const evaluation = scoringResult.evaluation;
+    const isCorrect = evaluation === 'correct';
+    const errorType = isCorrect ? null : evaluation;
 
-    // 4. 데이터베이스에 저장
-    const { error: dbError } = await supabase.from('test_results').insert({
+    await supabase.from('test_results').insert({
       user_id: userId,
-      test_type: 'WRF', // 시험 종류를 WRF로 명시
+      test_type: 'WRF',
       question: questionWord,
       student_answer: studentAnswer,
-      is_correct: isCorrect, // is_correct 컬럼 사용
+      is_correct: isCorrect,
+      error_type: errorType,
       audio_url: audioUrl,
     });
 
-    if (dbError) throw new Error(`DB 저장 실패: ${dbError.message}`);
-
-    return NextResponse.json({ studentAnswer, isCorrect, audioUrl });
+    return NextResponse.json({ evaluation });
 
   } catch (error) {
     console.error('WRF API 에러:', error);

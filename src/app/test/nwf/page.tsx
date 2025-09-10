@@ -1,4 +1,3 @@
-// src/app/test/nwf/page.tsx
 'use client'
 
 import React, { useState, useEffect, useRef } from 'react';
@@ -6,9 +5,9 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabaseClient';
 import type { User } from '@supabase/supabase-js';
 
-// NWF 시험에 사용될 무의미 단어 목록 (간단한 CVC 위주)
 const nwfWords = ["nuf", "tib", "vog", "jez", "zop", "quim", "yeb", "wix", "fip", "roz", "kud"];
 const getShuffledWords = () => nwfWords.sort(() => 0.5 - Math.random());
+const practiceWord = "lum";
 
 export default function NwfTestPage() {
   const router = useRouter();
@@ -20,7 +19,11 @@ export default function NwfTestPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(90);
+  const [timeLeft, setTimeLeft] = useState(60); // NWF는 1분
+
+  // [핵심] DIBELS 규칙 관리를 위한 상태
+  const [firstFiveCLS, setFirstFiveCLS] = useState(0);
+  const [isHesitation, setIsHesitation] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -53,57 +56,45 @@ export default function NwfTestPage() {
   }, [timeLeft, phase, isRecording]);
 
   const goToNextWord = () => {
+    if (phase === 'testing' && wordIndex === 4 && firstFiveCLS === 0) {
+      setFeedback("첫 5개의 단어 중 정답 음소가 없어 시험을 중단합니다.");
+      setPhase('finished');
+      return;
+    }
     const nextIndex = wordIndex + 1;
-    if (nextIndex >= shuffledWords.length) {
+    if (phase === 'testing' && nextIndex >= shuffledWords.length) {
       setPhase('finished');
     } else {
       setWordIndex(nextIndex);
       setCurrentWord(shuffledWords[nextIndex]);
+      setFeedback("다음 주문을 시전해 보세요!");
     }
   };
 
   const startRecording = async () => {
     setFeedback('');
+    setIsHesitation(false);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         streamRef.current = stream;
-        
         const options = { mimeType: 'audio/webm;codecs=opus' };
         const mediaRecorder = new MediaRecorder(stream, options);
         mediaRecorderRef.current = mediaRecorder;
-        
         audioChunksRef.current = [];
-
         mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
+          if (event.data.size > 0) audioChunksRef.current.push(event.data);
         };
-
         mediaRecorder.onstop = () => {
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          if (audioBlob.size > 0) {
-            if (phase === 'testing') {
-              goToNextWord();
-              setFeedback("좋아요! 다음 주문이에요!");
-            }
-            submitRecordingInBackground(audioBlob);
-          } else {
-            console.warn("녹음된 데이터가 없어 제출하지 않습니다.");
-            setIsSubmitting(false);
-          }
+          submitRecordingInBackground(audioBlob);
         };
-        
         mediaRecorder.start();
         setIsRecording(true);
-
-        if (phase === 'testing') {
-          silenceTimeoutRef.current = setTimeout(() => {
-            setFeedback("3초 동안 주문이 없어 다음 문제로 넘어갑니다.");
-            stopRecording();
-          }, 3000);
-        }
+        silenceTimeoutRef.current = setTimeout(() => {
+          setIsHesitation(true);
+          stopRecording();
+        }, 3000);
       } catch (err) {
         console.error("마이크 접근 에러:", err);
         setFeedback("마법 지팡이(마이크)를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
@@ -113,15 +104,12 @@ export default function NwfTestPage() {
 
   const stopRecording = () => {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-    
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
-      
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
-      
       setIsRecording(false);
       setIsSubmitting(true);
     }
@@ -132,46 +120,62 @@ export default function NwfTestPage() {
       setIsSubmitting(false);
       return;
     }
-    
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
-    // [핵심] 음소 개수를 백엔드로 전달
-    formData.append('targetPhonemeCount', String(currentWord.length)); // CVC 단어는 글자 수가 음소 수와 같다고 가정
-
     try {
       const response = await fetch('/api/submit-nwf', { method: 'POST', body: formData });
       if (!response.ok) throw new Error((await response.json()).error);
       const result = await response.json();
       console.log('NWF 백그라운드 처리 성공:', result);
-      if (phase === 'practice') {
-        setFeedback(`음성인식 결과: "${result.studentAnswer}"`);
-      }
+      processEvaluation(result.correctLetterSounds, result.isWholeWordCorrect);
     } catch (error) {
       console.error('NWF 백그라운드 처리 에러:', error);
+      setFeedback("채점 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  const processEvaluation = (cls: number, wwr: boolean) => {
+    if (phase === 'practice') {
+      if (cls > 0 || wwr) {
+        setFeedback("That's right! 이제 진짜 시험을 시작해볼까요?");
+        setTimeout(() => handleStartTest(), 3000);
+      } else {
+        setFeedback("Remember, you can say the sounds, or you can say the whole word. Let's try again.");
+        setIsRecording(false); // 다시 시도할 수 있도록 녹음 버튼 활성화
+      }
+    } else if (phase === 'testing') {
+      if (wordIndex < 5) {
+        setFirstFiveCLS(prev => prev + cls);
+      }
+      if (isHesitation) {
+        setFeedback("Keep going.");
+      } else {
+        setFeedback("좋아요!");
+      }
+      setTimeout(() => goToNextWord(), 1500);
+    }
+  };
+
   const handleStartPractice = () => {
     setPhase('practice');
-    setCurrentWord('hap'); // 연습용 단어
-    setFeedback('연습 문제입니다. "h-a-p" 또는 "hap"처럼 말해보세요.');
+    setCurrentWord(practiceWord);
+    setFeedback("Look at this word. It's a make-believe word. Read this word the best you can.");
   };
-  
+
   const handleStartTest = () => {
     setPhase('testing');
     setWordIndex(0);
     setCurrentWord(shuffledWords[0]);
-    setTimeLeft(90);
-    setFeedback("마법 책에 나타난 주문을 읽고 녹음을 끝내세요.");
+    setTimeLeft(60);
+    setFeedback("Here are some more make-believe words. When I say 'Begin', start here and read the words.");
+    setFirstFiveCLS(0);
   };
 
-  const handleReturnToReady = () => setPhase('ready');
-
-  // --- 스타일 정의 (LNF, PSF와 동일한 테마) ---
+  // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: 'white', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
   const containerStyle: React.CSSProperties = { maxWidth: '800px', width: '100%', margin: '0 auto', backgroundColor: 'rgba(0, 0, 0, 0.7)', padding: '3rem', borderRadius: '15px', border: '1px solid rgba(255, 255, 255, 0.2)', boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)', textAlign: 'center' };
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', color: '#FFD700', textShadow: '0 0 10px #FFD700' };
@@ -188,21 +192,12 @@ export default function NwfTestPage() {
       <div style={containerStyle}>
         {phase !== 'finished' && <h1 style={titleStyle}>3교시: 초급 주문 시전 시험</h1>}
         
-        {phase === 'testing' && (
-          <div style={timerStyle}>
-            남은 시간: {Math.floor(timeLeft / 60)}분 {timeLeft % 60}초
-            {isSubmitting && <span style={{ marginLeft: '1rem', color: '#ccc' }}>(일시정지)</span>}
-          </div>
-        )}
+        {phase === 'testing' && (<div style={timerStyle}>남은 시간: {timeLeft}초</div>)}
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>
-              마법 책에 나타나는 낯선 주문(무의미 단어)을 파닉스 규칙에 따라 정확하고 빠르게 읽어내야 합니다.<br/>
-              개별 소리로 분리해서 말하거나, 전체 단어를 한 번에 말할 수 있습니다.
-            </p>
+            <p style={paragraphStyle}>마법 책에 나타나는 낯선 주문(무의미 단어)을 파닉스 규칙에 따라 정확하고 빠르게 읽어내야 합니다.<br/>먼저 연습을 통해 시험 방식을 익혀봅시다.</p>
             <button onClick={handleStartPractice} style={buttonStyle}>연습 시작하기</button>
-            <button onClick={handleStartTest} style={{...buttonStyle, marginTop: '1rem', backgroundColor: 'transparent', border: '2px solid #FFD700', color: '#FFD700'}}>시험 시작하기</button>
           </div>
         )}
 
@@ -210,28 +205,15 @@ export default function NwfTestPage() {
           <div>
             <div style={wordBoxStyle}>{currentWord}</div>
             <p style={feedbackStyle}>{feedback}</p>
-            
-            {!isRecording ? (
-              <button onClick={startRecording} style={buttonStyle} disabled={isSubmitting}>
-                {isSubmitting ? '처리 중...' : '주문 시전하기'}
-              </button>
-            ) : (
-              <button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>주문 끝내기</button>
-            )}
-
-            {phase === 'practice' && !isRecording && (
-                <button onClick={handleReturnToReady} style={{...buttonStyle, marginTop: '1rem', backgroundColor: 'transparent', border: '2px solid #FFD700', color: '#FFD700'}}>안내로 돌아가기</button>
-            )}
+            {!isRecording ? (<button onClick={startRecording} style={buttonStyle} disabled={isSubmitting}>{isSubmitting ? '처리 중...' : '주문 시전하기'}</button>) : (<button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>주문 끝내기</button>)}
           </div>
         )}
 
         {phase === 'finished' && (
             <div>
                 <h1 style={titleStyle}>시험 종료!</h1>
-                <p style={paragraphStyle}>3교시 '초급 주문 시전 시험'이 끝났습니다. 수고 많으셨습니다!<br/>모든 시험 결과는 마지막에 함께 공개됩니다.</p>
-                <button style={buttonStyle} onClick={() => router.push('/test/wrf')}>
-  다음 시험으로 이동
-</button>
+                <p style={paragraphStyle}>{feedback || "3교시 '초급 주문 시전 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
+                <button style={buttonStyle} onClick={() => router.push('/test/wrf')}>다음 시험으로 이동</button>
             </div>
         )}
       </div>
