@@ -147,7 +147,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
   }
 
   // 세션별로 필터링
-  const sessionResults = filterResultsBySession(allResults, params.sessionId);
+  const sessionResults = filterResultsBySession(allResults, sessionId);
 
   if (sessionResults.length === 0) {
     notFound();
