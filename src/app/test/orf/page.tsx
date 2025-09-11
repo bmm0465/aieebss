@@ -9,6 +9,7 @@ const passage = "A little cat saw a big dog. The dog had a red ball. The cat wan
 
 export default function OrfTestPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [isRecording, setIsRecording] = useState(false);
@@ -95,6 +96,14 @@ export default function OrfTestPage() {
   // [핵심 수정] timeTaken 값을 함께 전송
   const submitRecording = async (audioBlob: Blob, timeTaken: number) => {
     if (!user) return;
+    
+    // 사용자 세션에서 access token 가져오기
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setFeedback("인증 토큰을 가져올 수 없습니다.");
+      return;
+    }
+    
     setPhase('submitting');
     setFeedback("이야기를 분석하고 있습니다...");
     
@@ -103,6 +112,7 @@ export default function OrfTestPage() {
     formData.append('question', passage);
     formData.append('userId', user.id);
     formData.append('timeTaken', String(timeTaken)); // 소요 시간 추가
+    formData.append('authToken', session.access_token);
 
     try {
       const response = await fetch('/api/submit-orf', { method: 'POST', body: formData });

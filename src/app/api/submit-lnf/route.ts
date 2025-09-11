@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
-import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { createServiceClient } from '@/lib/supabase/server';
+import { createClient as createClientSide } from '@/lib/supabase/client';
 import OpenAI from 'openai';
-import type { SupabaseClient } from '@supabase/supabase-js'; // SupabaseClient 타입을 import
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 // OpenAI 클라이언트 초기화 (파일 최상단)
 const openai = new OpenAI({
@@ -38,9 +37,12 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`lnf/${userId}/${Date.now()}.webm`, arrayBuffer, { contentType: 'audio/webm' }),
+        .upload(`lnf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+          contentType: 'audio/webm',
+          upsert: false
+        }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-mini-transcribe',
+        model: 'whisper-1',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         prompt: "This is an English letter naming fluency test...",
@@ -63,8 +65,11 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
       evaluation = 'letter_sound';
     } else {
       const scoringResponse = await openai.chat.completions.create({
-        model: 'gpt-5-mini',
-        messages: [ { role: 'system', content: `You are a DIBELS 8 LNF test evaluator...` } ],
+        model: 'gpt-4o-mini',
+        messages: [ 
+          { role: 'system', content: `You are a DIBELS 8 LNF test evaluator. Please respond with a JSON object containing the evaluation result.` },
+          { role: 'user', content: `Evaluate this student's pronunciation of letter "${questionLetter}": "${studentAnswer}". Return JSON with "evaluation" field.` }
+        ],
         response_format: { type: 'json_object' },
       });
       const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"evaluation": "unintelligible"}');
@@ -92,28 +97,38 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
 }
 
 export async function POST(request: Request) {
-  // [핵심 3] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
-  const supabase = createClient();
-  
   try {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
     const questionLetter = formData.get('question') as string;
     const userId = formData.get('userId') as string;
+    const authToken = formData.get('authToken') as string;
 
-    if (!audioBlob || !questionLetter || !userId) {
+    if (!audioBlob || !questionLetter || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
+
+    // 클라이언트 사이드 클라이언트로 사용자 인증 확인
+    const supabaseClient = createClientSide();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    
+    if (userError || !user || user.id !== userId) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
+    const supabase = createServiceClient();
     
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달합니다.
-    processLnfInBackground(supabase, userId, questionLetter, arrayBuffer);
+    // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달하고, 작업이 끝날 때까지 기다립니다.
+    await processLnfInBackground(supabase, userId, questionLetter, arrayBuffer);
 
-    return NextResponse.json({ message: '요청이 성공적으로 접수되었습니다.' }, { status: 202 });
+    // 백그라운드 작업이 성공적으로 완료된 후 응답을 반환합니다.
+    return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
 
   } catch (error) {
-    console.error('LNF API 요청 접수 에러:', error);
+    console.error('LNF API 요청 처리 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

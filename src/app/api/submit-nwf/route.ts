@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
-import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { createServiceClient } from '@/lib/supabase/server';
+import { createClient as createClientSide } from '@/lib/supabase/client';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -26,12 +25,22 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`nwf/${userId}/${Date.now()}.webm`, arrayBuffer, { contentType: 'audio/webm' }),
+        .upload(`nwf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+          contentType: 'audio/webm',
+          upsert: false
+        }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-mini-transcribe',
+        model: 'whisper-1',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
-        language: 'en',
-        prompt: `The student is reading a nonsense word or segmenting its sounds. For example, for 'hap', they might say 'h-a-p' or 'hap'.`,
+        // 자동 언어 감지
+        response_format: 'json',
+        prompt: `This is a DIBELS NWF test for an EFL student. The student will read a nonsense word or segment its sounds. Please transcribe exactly what they say, including:
+        - Complete nonsense words: "hap", "bim", "tog"
+        - Segmented sounds: "h-a-p", "b-i-m", "t-o-g"
+        - Korean pronunciation: "합", "빔", "톡"
+        - Mixed responses: "합-에이-피"
+        - Letter names: "aitch-ay-pee"
+        Transcribe literally what you hear, preserving the reading attempt.`,
       })
     ]);
     
@@ -39,20 +48,43 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    const studentAnswer = transcription.text.trim();
+    let studentAnswer = "";
+    const detectedLanguage = transcription.language || 'unknown';
+    
+    if (transcription.text && transcription.text.trim()) {
+        studentAnswer = transcription.text.trim();
+        console.log(`[NWF 음성 인식] 언어: ${detectedLanguage}, 내용: "${studentAnswer}"`);
+    } else {
+        console.warn(`[NWF 경고] 음성 인식 실패 - 언어: ${detectedLanguage}, 내용: "${transcription.text}"`);
+        studentAnswer = "no_response";
+    }
 
     const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: `You are a DIBELS 8 NWF test evaluator.
-          - The target nonsense word is: "${questionWord}"
-          - The student's response is: "${studentAnswer}"
-          Analyze for two separate scores:
-          1. Correct Letter Sounds (CLS): Count how many individual letter sounds the student produced correctly.
-          2. Whole Word Read (WWR): Determine if the student read the entire word as a single, blended unit correctly.
-          Respond ONLY with a JSON object in the format: {"correct_letter_sounds": number, "is_whole_word_correct": boolean}.`,
+          content: `You are a DIBELS 8 NWF test evaluator for EFL students. Analyze the student's nonsense word reading with cultural flexibility.
+
+          TARGET WORD: "${questionWord}"
+          STUDENT RESPONSE: "${studentAnswer}"
+          DETECTED LANGUAGE: "${detectedLanguage}"
+
+          EVALUATION GUIDELINES:
+          1. Accept various response formats:
+             - Complete word: "hap", "bim", "tog"
+             - Segmented sounds: "h-a-p", "b-i-m", "t-o-g"
+             - Korean pronunciation: "합", "빔", "톡"
+             - Mixed responses: "합-에이-피"
+             - Letter names: "aitch-ay-pee"
+          2. Be flexible with pronunciation variations in EFL contexts
+          3. Credit partial attempts and close approximations
+
+          SCORING:
+          1. Correct Letter Sounds (CLS): Count individual letter sounds produced correctly
+          2. Whole Word Read (WWR): Determine if student read entire word as blended unit correctly
+
+          Respond with JSON: {"correct_letter_sounds": number, "is_whole_word_correct": boolean, "notes": "brief explanation"}`,
         },
       ],
       response_format: { type: 'json_object' },
@@ -73,7 +105,10 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
       audio_url: audioUrl,
     });
 
-    console.log(`[NWF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}`);
+    const resultMessage = isWholeWordCorrect ? '전체 단어 정답' : 
+                         correctLetterSounds > 0 ? `부분 점수 (${correctLetterSounds}개 음소)` : 
+                         '오답';
+    console.log(`[NWF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}`);
 
   } catch (error) {
     console.error(`[NWF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionWord}`, error);
@@ -81,18 +116,27 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
 }
 
 export async function POST(request: Request) {
-  // [핵심 3] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
-  const supabase = createClient();
-
   try {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
     const questionWord = formData.get('question') as string;
     const userId = formData.get('userId') as string;
+    const authToken = formData.get('authToken') as string;
 
-    if (!audioBlob || !questionWord || !userId) {
+    if (!audioBlob || !questionWord || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
+
+    // 클라이언트 사이드 클라이언트로 사용자 인증 확인
+    const supabaseClient = createClientSide();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    
+    if (userError || !user || user.id !== userId) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
+    const supabase = createServiceClient();
 
     const arrayBuffer = await audioBlob.arrayBuffer();
 

@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
-import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { createServiceClient } from '@/lib/supabase/server';
+import { createClient as createClientSide } from '@/lib/supabase/client';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -26,13 +25,21 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`psf/${userId}/${Date.now()}.webm`, arrayBuffer, { contentType: 'audio/webm' }),
+        .upload(`psf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+          contentType: 'audio/webm',
+          upsert: false
+        }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-mini-transcribe',
+        model: 'whisper-1',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
-        language: 'en',
-        response_format: 'verbose_json', 
-        prompt: `This is a Phonemic Segmentation Fluency test for a child learning English. The student will try to say the individual sounds of an English word. For example, for the word 'map', they might say 'm-a-p' or 'm / a / p'. The output MUST be in English letters only. Do not translate or transcribe into any other language like Japanese or Korean.`,
+        // language 필드 제거 - 자동 감지가 기본값
+        response_format: 'json', 
+        prompt: `This is a Phonemic Segmentation Fluency test for an EFL student learning English. The student might respond in Korean, English, or mixed language. Please transcribe exactly what they say, including:
+        - English phonemes like "m-a-p" or "b-e-e"
+        - Korean sounds like "엠-에이-피" or "비-이"
+        - Mixed responses like "엠-에이-피"
+        - Silence or unclear sounds
+        Transcribe literally what you hear, preserving the segmentation attempt.`,
       })
     ]);
 
@@ -41,32 +48,61 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
     const audioUrl = storageData.path;
 
     let studentAnswer = "";
-    if (transcription.language === 'en' && transcription.text) {
+    const detectedLanguage = transcription.language || 'unknown';
+    
+    if (transcription.text && transcription.text.trim()) {
         studentAnswer = transcription.text.trim();
+        console.log(`[PSF 음성 인식] 언어: ${detectedLanguage}, 내용: "${studentAnswer}"`);
     } else {
-        console.warn(`[PSF 경고] 영어가 아닌 언어 감지됨: ${transcription.language}, 내용: ${transcription.text}`);
+        console.warn(`[PSF 경고] 음성 인식 실패 - 언어: ${detectedLanguage}, 내용: "${transcription.text}"`);
+        studentAnswer = "no_response";
     }
 
     const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: `You are a DIBELS 8 PSF test evaluator. Analyze the student's attempt to segment a word into phonemes.
-          - Target Word: "${questionWord}"
-          - Student's Response: "${studentAnswer}"
-          First, identify and count the total number of phonemes in the target word.
-          Next, count how many of those phonemes the student produced correctly.
-          Finally, determine if the student just repeated the whole word.
-          Respond ONLY with a JSON object in the format: {"evaluation": "category", "target_segments": number, "correct_segments": number}.`,
+          content: `You are a DIBELS 8 PSF test evaluator for EFL (English as a Foreign Language) students. Analyze the student's phonemic segmentation attempt with cultural and linguistic flexibility.
+
+          TARGET WORD: "${questionWord}"
+          STUDENT RESPONSE: "${studentAnswer}"
+          DETECTED LANGUAGE: "${detectedLanguage}"
+
+          EVALUATION GUIDELINES:
+          1. Count total phonemes in the target word
+          2. Accept various response formats:
+             - English phonemes: "m-a-p", "b-e-e", "m a p", "b e e"
+             - Korean pronunciation: "엠-에이-피", "비-이"
+             - Mixed responses: "엠-에이-피"
+             - Letter names: "em-ay-pee", "bee-ee-ee"
+             - Partial attempts: "m...p" or "엠...피"
+             - Space-separated: "s e p", "d o g"
+             - Hyphen-separated: "m-a-p", "d-o-g"
+          3. Be flexible with pronunciation variations common in EFL contexts
+          4. Credit partial attempts and close approximations
+          5. Consider cultural differences in sound production
+          6. IMPORTANT: If student provides correct phoneme segmentation (even in different format), count as correct
+
+          CATEGORIES:
+          - "correct": All phonemes correctly identified in any valid format
+          - "partial": Some phonemes correctly identified (1+ correct)
+          - "whole_word": Student said the complete word instead of segments
+          - "no_response": No clear segmentation attempt or empty response
+          - "unclear": Response too unclear to evaluate
+
+          Respond with JSON: {"evaluation": "category", "target_segments": number, "correct_segments": number, "notes": "brief explanation"}`
         },
       ],
       response_format: { type: 'json_object' },
     });
     
     const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{}');
-    const { evaluation, target_segments, correct_segments } = scoringResult;
-    const isCorrect = correct_segments > 0;
+    const { evaluation, target_segments, correct_segments, notes } = scoringResult;
+    
+    // EFL 환경에 맞는 채점 기준
+    const isCorrect = correct_segments > 0; // 1개 이상의 음소를 맞추면 부분 점수
+    const isFullyCorrect = correct_segments === target_segments; // 모든 음소를 맞추면 완전 정답
     const errorType = !isCorrect ? evaluation : null;
 
     await supabase.from('test_results').insert({
@@ -81,7 +117,15 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
       audio_url: audioUrl,
     });
 
-    console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${evaluation}`);
+    // 더 상세한 로깅
+    const resultMessage = isFullyCorrect ? '완전 정답' : 
+                         isCorrect ? `부분 정답 (${correct_segments}/${target_segments})` : 
+                         `오답 (${evaluation})`;
+    
+    console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}`);
+    if (notes) {
+      console.log(`[PSF 채점 노트] ${notes}`);
+    }
 
   } catch (error) {
     console.error(`[PSF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionWord}`, error);
@@ -89,18 +133,27 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
 }
 
 export async function POST(request: Request) {
-  // [핵심 3] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
-  const supabase = createClient();
-
   try {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
     const questionWord = formData.get('question') as string;
     const userId = formData.get('userId') as string;
+    const authToken = formData.get('authToken') as string;
 
-    if (!audioBlob || !questionWord || !userId) {
+    if (!audioBlob || !questionWord || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
+
+    // 클라이언트 사이드 클라이언트로 사용자 인증 확인
+    const supabaseClient = createClientSide();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    
+    if (userError || !user || user.id !== userId) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
+    const supabase = createServiceClient();
     
     const arrayBuffer = await audioBlob.arrayBuffer();
 

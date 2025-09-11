@@ -1,38 +1,49 @@
 import { NextResponse } from 'next/server';
-// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
-import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { createServiceClient } from '@/lib/supabase/server';
+import { createClient as createClientSide } from '@/lib/supabase/client';
 
 export async function POST(request: Request) {
-  // [핵심 2] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
-  const supabase = createClient();
-
   try {
-    const { question, studentAnswer, correctAnswer, userId } = await request.json();
+    const { submissions, userId, authToken } = await request.json();
 
-    if (!question || !studentAnswer || !correctAnswer || !userId) {
+    if (!submissions || !Array.isArray(submissions) || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
-    const isCorrect = studentAnswer === correctAnswer;
+    // 클라이언트 사이드 클라이언트로 사용자 인증 확인 (한 번만)
+    const supabaseClient = createClientSide();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    
+    if (userError || !user || user.id !== userId) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
 
-    // 데이터베이스에 저장
-    const { error: dbError } = await supabase.from('test_results').insert({
+    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
+    const supabase = createServiceClient();
+
+    // 배치로 데이터베이스에 저장
+    const insertData = submissions.map(({ question, studentAnswer, correctAnswer }) => ({
       user_id: userId,
       test_type: 'MAZE',
       question: question,
       student_answer: studentAnswer,
-      is_correct: isCorrect,
-    });
+      is_correct: studentAnswer === correctAnswer,
+    }));
+
+    const { error: dbError } = await supabase.from('test_results').insert(insertData);
 
     if (dbError) {
-      // 에러를 더 자세히 로그로 남깁니다.
-      console.error('Supabase DB 저장 실패:', dbError.message);
+      console.error('Supabase DB 배치 저장 실패:', dbError.message);
       throw new Error(`DB 저장 실패: ${dbError.message}`);
     }
 
-    // 프론트엔드에는 간단한 성공 여부만 반환합니다.
-    return NextResponse.json({ isCorrect });
+    console.log(`[MAZE 배치 처리 완료] 사용자: ${userId}, 문제 수: ${submissions.length}`);
+
+    // 프론트엔드에는 성공 응답 반환
+    return NextResponse.json({ 
+      success: true, 
+      processedCount: submissions.length 
+    });
 
   } catch (error) {
     console.error('MAZE API 에러:', error);

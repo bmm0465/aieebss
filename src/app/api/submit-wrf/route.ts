@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
-import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { createServiceClient } from '@/lib/supabase/server';
+import { createClient as createClientSide } from '@/lib/supabase/client';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -25,12 +24,22 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`wrf/${userId}/${Date.now()}.webm`, arrayBuffer, { contentType: 'audio/webm' }),
+        .upload(`wrf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+          contentType: 'audio/webm',
+          upsert: false
+        }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-mini-transcribe',
+        model: 'whisper-1',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
-        language: 'en',
-        prompt: "The student is reading English sight words, such as 'the', 'is', 'can', 'little', 'play'.",
+        // 자동 언어 감지
+        response_format: 'json',
+        prompt: `This is a DIBELS WRF test for an EFL student. The student will read English sight words. Please transcribe exactly what they say, including:
+        - Correct English words: "the", "is", "can", "little", "play"
+        - Korean pronunciation: "더", "이즈", "캔", "리틀", "플레이"
+        - Mixed responses: "더-이즈-캔"
+        - Partial attempts: "th...", "c...an"
+        - Mispronunciations: "teh" (for "the"), "cun" (for "can")
+        Transcribe literally what you hear, preserving the reading attempt.`,
       })
     ]);
     
@@ -38,18 +47,45 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    const studentAnswer = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    let studentAnswer = "";
+    const detectedLanguage = transcription.language || 'unknown';
+    
+    if (transcription.text && transcription.text.trim()) {
+        studentAnswer = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+        console.log(`[WRF 음성 인식] 언어: ${detectedLanguage}, 내용: "${studentAnswer}"`);
+    } else {
+        console.warn(`[WRF 경고] 음성 인식 실패 - 언어: ${detectedLanguage}, 내용: "${transcription.text}"`);
+        studentAnswer = "no_response";
+    }
 
     const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: `You are a DIBELS 8 WRF test evaluator.
-          - The target word is: "${questionWord}"
-          - The student's response is: "${studentAnswer}"
-          Analyze the response and classify it into ONE of the following categories: "correct", "sounded_out", "incorrect_word", or "unintelligible".
-          Respond ONLY with a JSON object in the format: {"evaluation": "category_name"}.`,
+          content: `You are a DIBELS 8 WRF test evaluator for EFL students. Analyze sight word reading with cultural flexibility.
+
+          TARGET WORD: "${questionWord}"
+          STUDENT RESPONSE: "${studentAnswer}"
+          DETECTED LANGUAGE: "${detectedLanguage}"
+
+          EVALUATION GUIDELINES:
+          1. Accept various response formats:
+             - Correct English: "the", "is", "can", "little", "play"
+             - Korean pronunciation: "더", "이즈", "캔", "리틀", "플레이"
+             - Mixed responses: "더-이즈-캔"
+             - Partial attempts: "th...", "c...an"
+             - Common mispronunciations: "teh" (for "the"), "cun" (for "can")
+          2. Be flexible with pronunciation variations in EFL contexts
+          3. Credit close approximations and partial attempts
+
+          CATEGORIES:
+          - "correct": Word read correctly or close approximation
+          - "sounded_out": Student sounded out the word
+          - "incorrect_word": Clearly wrong pronunciation
+          - "unintelligible": Response too unclear to evaluate
+
+          Respond with JSON: {"evaluation": "category_name", "notes": "brief explanation"}`,
         },
       ],
       response_format: { type: 'json_object' },
@@ -70,7 +106,8 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
       audio_url: audioUrl,
     });
 
-    console.log(`[WRF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${evaluation}`);
+    const resultMessage = isCorrect ? '정답' : `오답 (${evaluation})`;
+    console.log(`[WRF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}`);
 
   } catch (error) {
     console.error(`[WRF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionWord}`, error);
@@ -78,18 +115,27 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
 }
 
 export async function POST(request: Request) {
-  // [핵심 3] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
-  const supabase = createClient();
-
   try {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
     const questionWord = formData.get('question') as string;
     const userId = formData.get('userId') as string;
+    const authToken = formData.get('authToken') as string;
 
-    if (!audioBlob || !questionWord || !userId) {
+    if (!audioBlob || !questionWord || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
+
+    // 클라이언트 사이드 클라이언트로 사용자 인증 확인
+    const supabaseClient = createClientSide();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    
+    if (userError || !user || user.id !== userId) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
+    const supabase = createServiceClient();
 
     const arrayBuffer = await audioBlob.arrayBuffer();
 

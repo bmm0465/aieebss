@@ -48,6 +48,7 @@ const tests = [
 export default function LobbyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [hasTestResults, setHasTestResults] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -57,6 +58,15 @@ export default function LobbyPage() {
         router.push('/');
       } else {
         setLoading(false);
+        
+        // 사용자의 테스트 결과가 있는지 확인
+        const { data: results } = await supabase
+          .from('test_results')
+          .select('id')
+          .eq('user_id', user.id)
+          .limit(1);
+        
+        setHasTestResults(results && results.length > 0);
       }
     };
     checkUser();
@@ -157,13 +167,43 @@ export default function LobbyPage() {
           ))}
         </div>
 
-        {/* 첫 번째 시험 시작 버튼 (별도 강조) */}
-        <button
-          style={buttonStyle}
-          onClick={() => router.push(tests[0].path)} // 1교시 시험으로 연결
-        >
-          첫 번째 시험 시작하기
-        </button>
+        {/* 결과 확인 및 시험 시작 버튼들 */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          gap: '1rem',
+          marginTop: '2rem'
+        }}>
+          {/* 결과 확인 버튼 (테스트 결과가 있을 때만 표시) */}
+          {hasTestResults && (
+            <button
+              style={{
+                ...buttonStyle,
+                backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                border: '2px solid rgba(76, 175, 80, 0.5)',
+                color: '#4CAF50',
+                fontSize: '1.1rem',
+                fontWeight: 'bold'
+              }}
+            onClick={() => router.push('/results')}
+            className="results-button"
+            >
+              📊 이전 평가 결과 보기
+            </button>
+          )}
+
+          {/* 첫 번째 시험 시작 버튼 (별도 강조) */}
+          <button
+            style={{
+              ...buttonStyle,
+              fontSize: '1.2rem',
+              fontWeight: 'bold'
+            }}
+            onClick={() => router.push(tests[0].path)} // 1교시 시험으로 연결
+          >
+            {hasTestResults ? '🚀 새로운 시험 시작하기' : '🎯 첫 번째 시험 시작하기'}
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -181,23 +221,20 @@ interface TestItemProps {
 }
 
 const TestItem: React.FC<TestItemProps> = ({ test, onClick }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
   const testItemStyle: React.CSSProperties = {
     marginBottom: '1.5rem',
     borderLeft: '3px solid #FFD700',
     paddingLeft: '1rem',
     cursor: 'pointer',
     transition: 'background-color 0.2s',
-    backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.05)' : 'transparent', // 호버 상태에 따라 배경색 변경
+    backgroundColor: 'transparent',
   };
 
   return (
     <div
       style={testItemStyle}
       onClick={onClick}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      className="test-item"
     >
       <h3 style={{ margin: 0, color: '#FFD700' }}>{test.period}교시: {test.title}</h3>
       <p style={{ marginTop: '0.5rem', lineHeight: 1.6, color: 'rgba(255, 255, 255, 0.9)' }}>

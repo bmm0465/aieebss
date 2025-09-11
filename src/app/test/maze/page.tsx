@@ -95,27 +95,51 @@ export default function MazeTestPage() {
     if (!user || phase === 'submitting') return;
     setPhase('submitting');
 
+    // 사용자 세션에서 access token 가져오기
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setFeedback("인증 토큰을 가져올 수 없습니다.");
+      setPhase('testing');
+      return;
+    }
+
     const choices = mazePassage.content.filter(item => typeof item === 'object') as { choices: string[], correctAnswer: string }[];
-    const resultsToSave = [];
     
+    // 모든 답변을 배치로 한 번에 전송
+    const submissions = [];
     for (let i = 0; i < choices.length; i++) {
         const studentAnswer = answers[i];
         if (studentAnswer) {
-            const isCorrect = studentAnswer === choices[i].correctAnswer;
-            resultsToSave.push({
-                user_id: user.id,
-                test_type: 'MAZE',
-                question: `${mazePassage.title}_${i+1}`,
-                student_answer: studentAnswer,
-                is_correct: isCorrect,
+            const correctAnswer = choices[i].correctAnswer;
+            const question = `${mazePassage.title}_${i+1}`;
+            
+            submissions.push({
+                question,
+                studentAnswer,
+                correctAnswer
             });
         }
     }
     
-    if(resultsToSave.length > 0) {
-        const { error } = await supabase.from('test_results').insert(resultsToSave);
-        if (error) {
-            console.error("MAZE 결과 저장 실패:", error);
+    if (submissions.length > 0) {
+        try {
+            const response = await fetch('/api/submit-maze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    submissions,
+                    userId: user.id,
+                    authToken: session.access_token
+                })
+            });
+            
+            if (!response.ok) {
+                console.error('MAZE 배치 저장 실패:', await response.text());
+            }
+        } catch (error) {
+            console.error('MAZE 배치 전송 실패:', error);
         }
     }
     

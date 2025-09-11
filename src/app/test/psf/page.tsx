@@ -10,6 +10,7 @@ const getShuffledWords = () => psfWords.sort(() => 0.5 - Math.random());
 
 export default function PsfTestPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
@@ -19,6 +20,7 @@ export default function PsfTestPage() {
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [isMediaReady, setIsMediaReady] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
@@ -37,17 +39,33 @@ export default function PsfTestPage() {
       else {
         setUser(user);
         setShuffledWords(getShuffledWords());
+        // 미리 마이크 권한 요청 및 MediaRecorder 준비
+        prepareMediaRecorder();
       }
     };
     setup();
   }, [router]);
+
+  const prepareMediaRecorder = async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+        setIsMediaReady(true);
+        setFeedback('마이크가 준비되었습니다!');
+      } catch (err) {
+        console.error("마이크 준비 에러:", err);
+        setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
+      }
+    }
+  };
 
   useEffect(() => {
     if (isInitialMount.current) {
       isInitialMount.current = false;
       return;
     }
-    if ((phase === 'testing' || phase === 'practice') && currentWord) {
+    if (phase === 'testing' && currentWord) {
       playWordAudio(currentWord);
     }
   }, [currentWord]);
@@ -106,30 +124,57 @@ export default function PsfTestPage() {
   
   const startRecording = async () => {
     setFeedback('');
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    try {
+      let stream = streamRef.current;
+      
+      // 미리 준비된 스트림이 없으면 새로 생성
+      if (!stream && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         streamRef.current = stream;
-        const options = { mimeType: 'audio/webm;codecs=opus' };
-        const mediaRecorder = new MediaRecorder(stream, options);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) audioChunksRef.current.push(event.data);
-        };
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          submitRecordingInBackground(audioBlob);
-        };
-        mediaRecorder.start();
-        setIsRecording(true);
-        silenceTimeoutRef.current = setTimeout(() => {
-          stopRecording();
-        }, 3000);
-      } catch (err) {
-        console.error("마이크 접근 에러:", err);
-        setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
       }
+      
+      if (!stream) {
+        throw new Error('마이크 스트림을 가져올 수 없습니다.');
+      }
+      
+      // 매번 새로운 MediaRecorder 생성 (재사용 불가)
+      const options = { mimeType: 'audio/webm;codecs=opus' };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+          console.log('🎤 오디오 데이터 수신:', event.data.size, 'bytes');
+        }
+      };
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log('🎵 녹음 완료:', audioBlob.size, 'bytes');
+        if (audioBlob.size === 0) {
+          console.warn('⚠️ 빈 오디오 파일이 생성되었습니다!');
+          setFeedback('녹음이 제대로 되지 않았습니다. 다시 시도해주세요.');
+          setIsSubmitting(false);
+          return;
+        }
+        submitRecordingInBackground(audioBlob);
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      setFeedback('🎤 녹음 중... 말씀해주세요!');
+      
+      // 5초로 늘리고, 더 명확한 피드백 제공
+      silenceTimeoutRef.current = setTimeout(() => {
+        setFeedback('시간이 다 되어서 녹음을 종료합니다.');
+        stopRecording();
+      }, 5000);
+      
+    } catch (err) {
+      console.error("마이크 접근 에러:", err);
+      setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
   };
 
@@ -137,12 +182,10 @@ export default function PsfTestPage() {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
+      // 스트림을 정리하지 않음 - 재사용을 위해 유지
       setIsRecording(false);
       setIsSubmitting(true);
+      setFeedback('🎵 녹음 완료! 처리 중...');
     }
   };
 
@@ -151,10 +194,21 @@ export default function PsfTestPage() {
       setIsSubmitting(false);
       return;
     }
+
+    // 사용자 세션에서 access token 가져오기
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setFeedback("인증 토큰을 가져올 수 없습니다.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
+    formData.append('authToken', session.access_token);
+    
     try {
       // [핵심 수정] API 호출 후 결과를 기다리지 않음
       fetch('/api/submit-psf', { method: 'POST', body: formData });
@@ -171,12 +225,6 @@ export default function PsfTestPage() {
     }
   };
 
-  const handleStartPractice = () => {
-    setPhase('practice');
-    isInitialMount.current = false;
-    setCurrentWord('cat');
-  };
-
   const handleStartTest = () => {
     setPhase('testing');
     setWordIndex(0);
@@ -184,8 +232,6 @@ export default function PsfTestPage() {
     isInitialMount.current = false;
     setCurrentWord(shuffledWords[0]);
   };
-
-  const handleReturnToReady = () => setPhase('ready');
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: 'white', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
@@ -209,17 +255,20 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>마법 구슬이 속삭이는 재료의 이름을 듣고, 그 이름을 구성하는 소리의 원소로 분리하여 말해야 합니다. <br/>(예: "cat" {"->"} "/k/ /æ/ /t/")</p>
-            <button onClick={handleStartPractice} style={buttonStyle}>연습 시작하기</button>
-            <button onClick={handleStartTest} style={{...buttonStyle, marginTop: '1rem', backgroundColor: 'transparent', border: '2px solid #FFD700', color: '#FFD700'}}>시험 시작하기</button>
+            <p style={{...feedbackStyle, color: isMediaReady ? '#90EE90' : '#FFB6C1'}}>
+              {isMediaReady ? '🎤 마이크가 준비되었습니다!' : '🎤 마이크를 준비하고 있습니다...'}
+            </p>
+            <button onClick={handleStartTest} style={{...buttonStyle, opacity: isMediaReady ? 1 : 0.7}} disabled={!isMediaReady}>
+              {isMediaReady ? '시험 시작하기' : '마이크 준비 중...'}
+            </button>
           </div>
         )}
 
-        {(phase === 'practice' || phase === 'testing') && (
+        {phase === 'testing' && (
           <div>
             <button onClick={() => playWordAudio(currentWord)} style={soundButtonStyle} disabled={isAudioLoading || isRecording || isSubmitting}>🔊</button>
             <p style={feedbackStyle}>{feedback}</p>
             {!isRecording ? (<button onClick={startRecording} style={buttonStyle} disabled={isSubmitting || isAudioLoading}>{isSubmitting ? '처리 중...' : '녹음하기'}</button>) : (<button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>녹음 끝내기</button>)}
-            {phase === 'practice' && !isRecording && (<button onClick={handleReturnToReady} style={{...buttonStyle, marginTop: '1rem', backgroundColor: 'transparent', border: '2px solid #FFD700', color: '#FFD700'}}>안내로 돌아가기</button>)}
           </div>
         )}
 

@@ -7,7 +7,6 @@ import type { User } from '@supabase/supabase-js';
 
 const nwfWords = ["nuf", "tib", "vog", "jez", "zop", "quim", "yeb", "wix", "fip", "roz", "kud"];
 const getShuffledWords = () => nwfWords.sort(() => 0.5 - Math.random());
-const practiceWord = "lum";
 
 export default function NwfTestPage() {
   const supabase = createClient();
@@ -115,22 +114,27 @@ export default function NwfTestPage() {
       setIsSubmitting(false);
       return;
     }
+
+    // 사용자 세션에서 access token 가져오기
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setFeedback("인증 토큰을 가져올 수 없습니다.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
+    formData.append('authToken', session.access_token);
+    
     try {
       // [핵심 수정] API 호출 후 결과를 기다리지 않음
       fetch('/api/submit-nwf', { method: 'POST', body: formData });
 
-      if (phase === 'practice') {
-        // 연습 단계에서는 성공/실패 여부를 알 수 없으므로, 일단 긍정 피드백 후 시험 시작
-        setFeedback("좋았어요! 이제 진짜 시험을 시작해볼까요?");
-        setTimeout(() => handleStartTest(), 2000);
-      } else {
-        setFeedback("좋아요!");
-        goToNextWord();
-      }
+      setFeedback("좋아요!");
+      goToNextWord();
 
     } catch (error) {
       console.error('NWF 요청 전송 실패:', error);
@@ -140,11 +144,6 @@ export default function NwfTestPage() {
     }
   };
 
-  const handleStartPractice = () => {
-    setPhase('practice');
-    setCurrentWord(practiceWord);
-    setFeedback("Look at this word. It's a make-believe word. Read this word the best you can.");
-  };
 
   const handleStartTest = () => {
     setPhase('testing');
@@ -175,12 +174,12 @@ export default function NwfTestPage() {
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>마법 책에 나타나는 낯선 주문(무의미 단어)을 파닉스 규칙에 따라 정확하고 빠르게 읽어내야 합니다.<br/>먼저 연습을 통해 시험 방식을 익혀봅시다.</p>
-            <button onClick={handleStartPractice} style={buttonStyle}>연습 시작하기</button>
+            <p style={paragraphStyle}>마법 책에 나타나는 낯선 주문(무의미 단어)을 파닉스 규칙에 따라 정확하고 빠르게 읽어내야 합니다.</p>
+            <button onClick={handleStartTest} style={buttonStyle}>시험 시작하기</button>
           </div>
         )}
 
-        {(phase === 'practice' || phase === 'testing') && (
+        {phase === 'testing' && (
           <div>
             <div style={wordBoxStyle}>{currentWord}</div>
             <p style={feedbackStyle}>{feedback}</p>

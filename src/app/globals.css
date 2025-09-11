@@ -24,3 +24,28 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* 세션 카드 호버 효과 */
+.session-card:hover {
+  border-color: #FFD700 !important;
+  background-color: rgba(0,0,0,0.8) !important;
+}
+
+/* 로비 버튼 호버 효과 */
+.lobby-button:hover {
+  background-color: rgba(255,215,0,0.3) !important;
+  border-color: #FFD700 !important;
+}
+
+/* 결과 확인 버튼 호버 효과 */
+.results-button:hover {
+  background-color: rgba(76, 175, 80, 0.3) !important;
+  border-color: #4CAF50 !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3) !important;
+}
+
+/* 테스트 아이템 호버 효과 */
+.test-item:hover {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+}

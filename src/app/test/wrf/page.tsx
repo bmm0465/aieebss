@@ -10,6 +10,7 @@ const getShuffledWords = () => wrfWords.sort(() => 0.5 - Math.random());
 
 export default function WrfTestPage() {
   const supabase = createClient();
+  const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
@@ -19,6 +20,7 @@ export default function WrfTestPage() {
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [isMediaReady, setIsMediaReady] = useState(false);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstRowCorrectCount, setFirstRowCorrectCount] = useState(0);
@@ -37,10 +39,26 @@ export default function WrfTestPage() {
       else {
         setUser(user);
         setShuffledWords(getShuffledWords());
+        // 미리 마이크 권한 요청 및 MediaRecorder 준비
+        prepareMediaRecorder();
       }
     };
     setup();
   }, [router]);
+
+  const prepareMediaRecorder = async () => {
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+        setIsMediaReady(true);
+        setFeedback('마이크가 준비되었습니다!');
+      } catch (err) {
+        console.error("마이크 준비 에러:", err);
+        setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
+      }
+    }
+  };
   
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -69,30 +87,57 @@ export default function WrfTestPage() {
 
   const startRecording = async () => {
     setFeedback('');
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    
+    try {
+      let stream = streamRef.current;
+      
+      // 미리 준비된 스트림이 없으면 새로 생성
+      if (!stream && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         streamRef.current = stream;
-        const options = { mimeType: 'audio/webm;codecs=opus' };
-        const mediaRecorder = new MediaRecorder(stream, options);
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) audioChunksRef.current.push(event.data);
-        };
-        mediaRecorder.onstop = () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          submitRecordingInBackground(audioBlob);
-        };
-        mediaRecorder.start();
-        setIsRecording(true);
-        silenceTimeoutRef.current = setTimeout(() => {
-          stopRecording();
-        }, 3000);
-      } catch (err) {
-        console.error("마이크 접근 에러:", err);
-        setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
       }
+      
+      if (!stream) {
+        throw new Error('마이크 스트림을 가져올 수 없습니다.');
+      }
+      
+      // 매번 새로운 MediaRecorder 생성 (재사용 불가)
+      const options = { mimeType: 'audio/webm;codecs=opus' };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+          console.log('🎤 오디오 데이터 수신:', event.data.size, 'bytes');
+        }
+      };
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log('🎵 녹음 완료:', audioBlob.size, 'bytes');
+        if (audioBlob.size === 0) {
+          console.warn('⚠️ 빈 오디오 파일이 생성되었습니다!');
+          setFeedback('녹음이 제대로 되지 않았습니다. 다시 시도해주세요.');
+          setIsSubmitting(false);
+          return;
+        }
+        submitRecordingInBackground(audioBlob);
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      setFeedback('🎤 녹음 중... 단어를 읽어주세요!');
+      
+      // 5초로 늘리고, 더 명확한 피드백 제공
+      silenceTimeoutRef.current = setTimeout(() => {
+        setFeedback('시간이 다 되어서 녹음을 종료합니다.');
+        stopRecording();
+      }, 5000);
+      
+    } catch (err) {
+      console.error("마이크 접근 에러:", err);
+      setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
   };
 
@@ -100,12 +145,10 @@ export default function WrfTestPage() {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
+      // 스트림을 정리하지 않음 - 재사용을 위해 유지
       setIsRecording(false);
       setIsSubmitting(true);
+      setFeedback('🎵 녹음 완료! 처리 중...');
     }
   };
 
@@ -114,10 +157,21 @@ export default function WrfTestPage() {
       setIsSubmitting(false);
       return;
     }
+
+    // 사용자 세션에서 access token 가져오기
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setFeedback("인증 토큰을 가져올 수 없습니다.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
+    formData.append('authToken', session.access_token);
+    
     try {
       // [핵심 수정] API 호출 후 결과를 기다리지 않음
       fetch('/api/submit-wrf', { method: 'POST', body: formData });
@@ -169,7 +223,12 @@ export default function WrfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>지식의 두루마리에 나타나는 마법 단어들을 정확하고 빠르게 읽어내야 합니다.<br/>단어를 성공적으로 읽으면 두루마리에 마력이 충전됩니다.</p>
-            <button onClick={handleStartTest} style={buttonStyle}>시험 시작하기</button>
+            <p style={{...feedbackStyle, color: isMediaReady ? '#90EE90' : '#FFB6C1'}}>
+              {isMediaReady ? '🎤 마이크가 준비되었습니다!' : '🎤 마이크를 준비하고 있습니다...'}
+            </p>
+            <button onClick={handleStartTest} style={{...buttonStyle, opacity: isMediaReady ? 1 : 0.7}} disabled={!isMediaReady}>
+              {isMediaReady ? '시험 시작하기' : '마이크 준비 중...'}
+            </button>
           </div>
         )}
 

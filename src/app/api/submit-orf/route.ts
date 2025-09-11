@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
-// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
-import { createClient } from '@/lib/supabase/server';
-import { cookies } from 'next/headers';
+import { createServiceClient } from '@/lib/supabase/server';
+import { createClient as createClientSide } from '@/lib/supabase/client';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -16,12 +15,23 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`orf/${userId}/${Date.now()}.webm`, arrayBuffer, { contentType: 'audio/webm' }),
+        .upload(`orf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+          contentType: 'audio/webm',
+          upsert: false
+        }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-mini-transcribe',
+        model: 'whisper-1',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
-        language: 'en',
-        prompt: "The student is reading a short story passage aloud for an oral reading fluency test.",
+        // 자동 언어 감지
+        response_format: 'json',
+        prompt: `This is a DIBELS ORF test for an EFL student. The student will read a short story passage aloud. Please transcribe exactly what they say, including:
+        - Correct English reading: "The cat sat on the mat."
+        - Korean pronunciation: "더 캣 샛 온 더 맷"
+        - Mixed responses: "더 cat sat on 더 mat"
+        - Mispronunciations: "The cat sit on the mat"
+        - Partial attempts: "The cat... sat... on..."
+        - Hesitations and corrections: "The cat, um, sat on the mat"
+        Transcribe literally what you hear, preserving all reading attempts and hesitations.`,
       })
     ]);
 
@@ -29,23 +39,53 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    const studentAnswer = transcription.text;
+    let studentAnswer = "";
+    const detectedLanguage = transcription.language || 'unknown';
+    
+    if (transcription.text && transcription.text.trim()) {
+        studentAnswer = transcription.text;
+        console.log(`[ORF 음성 인식] 언어: ${detectedLanguage}, 내용: "${studentAnswer}"`);
+    } else {
+        console.warn(`[ORF 경고] 음성 인식 실패 - 언어: ${detectedLanguage}, 내용: "${transcription.text}"`);
+        studentAnswer = "no_response";
+    }
+    
     const passageWords = questionPassage.split(/\s+/);
 
     const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-5-mini',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'system',
-          content: `You are an expert DIBELS 8 ORF test evaluator.
-          - The original passage is: "${questionPassage}"
-          - The student's transcribed reading is: "${studentAnswer}"
-          Analyze the student's reading based on DIBELS ORF rules...
-          Respond ONLY with a JSON object in the format:
+          content: `You are an expert DIBELS 8 ORF test evaluator for EFL students. Analyze oral reading fluency with cultural flexibility.
+
+          ORIGINAL PASSAGE: "${questionPassage}"
+          STUDENT READING: "${studentAnswer}"
+          TIME TAKEN: ${timeTaken} seconds
+          DETECTED LANGUAGE: "${detectedLanguage}"
+
+          EVALUATION GUIDELINES:
+          1. Accept various response formats:
+             - Correct English reading: "The cat sat on the mat."
+             - Korean pronunciation: "더 캣 샛 온 더 맷"
+             - Mixed responses: "더 cat sat on 더 mat"
+             - Mispronunciations: "The cat sit on the mat"
+             - Hesitations: "The cat, um, sat on the mat"
+          2. Be flexible with pronunciation variations in EFL contexts
+          3. Credit partial attempts and close approximations
+          4. Consider cultural differences in reading fluency
+
+          DIBELS ORF RULES:
+          - Count words read correctly
+          - Apply discontinue rule if needed
+          - Analyze error patterns
+
+          Respond with JSON:
           {
             "words_correct": integer,
             "discontinue_rule_met": boolean,
-            "error_details": { ... }
+            "error_details": { ... },
+            "notes": "brief explanation"
           }`,
         },
       ],
@@ -71,7 +111,8 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
       audio_url: audioUrl,
     });
 
-    console.log(`[ORF 비동기 처리 완료] 사용자: ${userId}`);
+    const accuracyPercent = Math.round((wordsCorrect / passageWords.length) * 100);
+    console.log(`[ORF 비동기 처리 완료] 사용자: ${userId}, 결과: ${wordsCorrect}개 단어 정확 (WCPM: ${wcpm}, 정확도: ${accuracyPercent}%)`);
 
   } catch (error) {
     console.error(`[ORF 비동기 처리 에러] 사용자: ${userId}`, error);
@@ -79,19 +120,28 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
 }
 
 export async function POST(request: Request) {
-  // [핵심 3] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
-  const supabase = createClient();
-  
   try {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
     const questionPassage = formData.get('question') as string;
     const userId = formData.get('userId') as string;
     const timeTaken = parseInt(formData.get('timeTaken') as string, 10);
+    const authToken = formData.get('authToken') as string;
 
-    if (!audioBlob || !questionPassage || !userId || isNaN(timeTaken)) {
+    if (!audioBlob || !questionPassage || !userId || isNaN(timeTaken) || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
+
+    // 클라이언트 사이드 클라이언트로 사용자 인증 확인
+    const supabaseClient = createClientSide();
+    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    
+    if (userError || !user || user.id !== userId) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
+    const supabase = createServiceClient();
 
     const arrayBuffer = await audioBlob.arrayBuffer();
 
