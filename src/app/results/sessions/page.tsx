@@ -63,7 +63,6 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
 
     // 각 세션 그룹을 고유한 키로 저장
     sessionGroups.forEach((group, index) => {
-      const firstResult = group[0];
       const sessionId = `${dateKey}_${index}`;
       refinedSessions[sessionId] = group;
     });

@@ -145,7 +145,7 @@ export default function OrfTestPage() {
         <h1 style={titleStyle}>5교시: 고대 이야기 소생술 시험</h1>
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>낡은 이야기책에 적힌 짧은 이야기를 자연스러운 억양과 속도로 읽어 생명력을 불어넣어야 합니다.<br/>'이야기 시작하기' 버튼을 누르면 1분간 녹음이 시작됩니다.</p>
+            <p style={paragraphStyle}>낡은 이야기책에 적힌 짧은 이야기를 자연스러운 억양과 속도로 읽어 생명력을 불어넣어야 합니다.<br/>&apos;이야기 시작하기&apos; 버튼을 누르면 1분간 녹음이 시작됩니다.</p>
             <button onClick={startRecording} style={buttonStyle}>이야기 시작하기</button>
           </div>
         )}
@@ -160,7 +160,7 @@ export default function OrfTestPage() {
         {phase === 'finished' && (
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
-            <p style={paragraphStyle}>5교시 '고대 이야기 소생술 시험'이 끝났습니다. 수고 많으셨습니다!</p>
+            <p style={paragraphStyle}>5교시 &apos;고대 이야기 소생술 시험&apos;이 끝났습니다. 수고 많으셨습니다!</p>
             <button style={buttonStyle} onClick={() => router.push('/test/maze')}>
   마지막 시험으로 이동
 </button>

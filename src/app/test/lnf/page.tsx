@@ -24,7 +24,6 @@ export default function LnfTestPage() {
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
-  const [isHesitation, setIsHesitation] = useState(false);
   const [isMediaReady, setIsMediaReady] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);

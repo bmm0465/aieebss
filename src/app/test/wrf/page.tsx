@@ -25,7 +25,6 @@ export default function WrfTestPage() {
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstRowCorrectCount, setFirstRowCorrectCount] = useState(0);
   // const [isHesitation, setIsHesitation] = useState(false);
-  const wordsInFirstRow = 10;
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);

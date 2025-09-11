@@ -85,7 +85,3 @@ export default function ResultReport({ results }: ResultProps) {
     </div>
   );
 }
-
-// 서버 컴포넌트의 함수를 클라이언트에서 사용하기 위한 트릭
-type CalculateResultsType = (results: any[]) => any;
-declare const calculateResults: CalculateResultsType;

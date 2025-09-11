@@ -33,10 +33,8 @@ const nextConfig: NextConfig = {
     ];
   },
   
-  // API 라우트 타임아웃 설정
-  experimental: {
-    serverComponentsExternalPackages: ['@supabase/supabase-js'],
-  },
+  // 서버 외부 패키지 설정 (Next.js 15에서 변경됨)
+  serverExternalPackages: ['@supabase/supabase-js'],
 };
 
 export default nextConfig;

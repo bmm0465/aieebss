@@ -106,17 +106,6 @@ export default function LobbyPage() {
     flex: 1,
   };
 
-  const testItemStyle: React.CSSProperties = {
-    marginBottom: '1.5rem',
-    borderLeft: '3px solid #FFD700',
-    paddingLeft: '1rem',
-    cursor: 'pointer', // 클릭 가능함을 시각적으로 알려줌
-    transition: 'background-color 0.2s',
-  };
-  // hover 효과를 위한 인라인 스타일 함수 (Next.js 13+에서는 더 직접적인 방법 필요할 수 있음)
-  const getTestItemHoverStyle = (isHovered: boolean): React.CSSProperties => ({
-    backgroundColor: isHovered ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
-  });
 
   const buttonStyle: React.CSSProperties = {
     width: '100%',

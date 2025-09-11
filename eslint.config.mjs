@@ -20,6 +20,14 @@ const eslintConfig = [
       "next-env.d.ts",
     ],
   },
+  {
+    rules: {
+      // React Hook 의존성 배열 경고 무시 (일부는 의도적으로 제외)
+      "react-hooks/exhaustive-deps": "warn",
+      // 사용하지 않는 변수 경고 무시 (일부는 의도적으로 주석 처리)
+      "@typescript-eslint/no-unused-vars": "warn",
+    },
+  },
 ];
 
 export default eslintConfig;
