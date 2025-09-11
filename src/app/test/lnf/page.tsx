@@ -87,7 +87,6 @@ export default function LnfTestPage() {
 
   const startRecording = async () => {
     setFeedback('');
-    setIsHesitation(false);
     
     try {
       let stream = streamRef.current;
@@ -132,7 +131,6 @@ export default function LnfTestPage() {
       
       // 5초로 늘리고, 더 명확한 피드백 제공
       silenceTimeoutRef.current = setTimeout(() => {
-        setIsHesitation(true);
         setFeedback('시간이 다 되어서 녹음을 종료합니다.');
         stopRecording();
       }, 5000);
