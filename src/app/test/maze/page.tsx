@@ -66,30 +66,6 @@ export default function MazeTestPage() {
     };
     checkUser();
   }, [router, supabase.auth]);
-  
-  useEffect(() => {
-    if (phase !== 'testing' || timeLeft <= 0) return;
-    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timerId);
-  }, [phase, timeLeft]);
-
-  useEffect(() => {
-    if (timeLeft <= 0 && phase === 'testing') {
-      finishTest();
-    }
-  }, [timeLeft, phase, finishTest]);
-
-  const handleStartTest = () => {
-    setPhase('testing');
-    setTimeLeft(180);
-    setAnswers(Array(totalItems).fill(null));
-  };
-  
-  const handleAnswerSelect = (choiceIndex: number, selectedWord: string) => {
-    const newAnswers = [...answers];
-    newAnswers[choiceIndex] = selectedWord;
-    setAnswers(newAnswers);
-  };
 
   const finishTest = useCallback(async () => {
     if (!user || phase === 'submitting') return;
@@ -145,6 +121,30 @@ export default function MazeTestPage() {
     
     setPhase('finished');
   }, [user, phase, answers, supabase.auth]);
+
+  useEffect(() => {
+    if (phase !== 'testing' || timeLeft <= 0) return;
+    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timerId);
+  }, [phase, timeLeft]);
+
+  useEffect(() => {
+    if (timeLeft <= 0 && phase === 'testing') {
+      finishTest();
+    }
+  }, [timeLeft, phase, finishTest]);
+
+  const handleStartTest = () => {
+    setPhase('testing');
+    setTimeLeft(180);
+    setAnswers(Array(totalItems).fill(null));
+  };
+  
+  const handleAnswerSelect = (choiceIndex: number, selectedWord: string) => {
+    const newAnswers = [...answers];
+    newAnswers[choiceIndex] = selectedWord;
+    setAnswers(newAnswers);
+  };
   
   // [핵심 수정] 결과 페이지 이동을 위한 핸들러
   const handleGoToResults = () => {
