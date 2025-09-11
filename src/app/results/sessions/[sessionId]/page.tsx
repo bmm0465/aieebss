@@ -119,12 +119,13 @@ function filterResultsBySession(results: TestResult[], sessionId: string): TestR
 }
 
 interface PageProps {
-  params: {
+  params: Promise<{
     sessionId: string;
-  };
+  }>;
 }
 
 export default async function SessionDetailPage({ params }: PageProps) {
+  const { sessionId } = await params;
   const supabase = await createClient();
 
   const { data: { session } } = await supabase.auth.getSession();
