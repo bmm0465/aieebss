@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -65,7 +65,7 @@ export default function MazeTestPage() {
       else setUser(user);
     };
     checkUser();
-  }, [router]);
+  }, [router, supabase.auth]);
   
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0) return;
@@ -77,7 +77,7 @@ export default function MazeTestPage() {
     if (timeLeft <= 0 && phase === 'testing') {
       finishTest();
     }
-  }, [timeLeft, phase]);
+  }, [timeLeft, phase, finishTest]);
 
   const handleStartTest = () => {
     setPhase('testing');
@@ -91,7 +91,7 @@ export default function MazeTestPage() {
     setAnswers(newAnswers);
   };
 
-  const finishTest = async () => {
+  const finishTest = useCallback(async () => {
     if (!user || phase === 'submitting') return;
     setPhase('submitting');
 
@@ -144,7 +144,7 @@ export default function MazeTestPage() {
     }
     
     setPhase('finished');
-  };
+  }, [user, phase, answers, supabase.auth]);
   
   // [핵심 수정] 결과 페이지 이동을 위한 핸들러
   const handleGoToResults = () => {

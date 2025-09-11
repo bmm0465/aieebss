@@ -43,7 +43,7 @@ export default function WrfTestPage() {
       }
     };
     setup();
-  }, [router]);
+  }, [router, supabase.auth]);
 
   const prepareMediaRecorder = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {

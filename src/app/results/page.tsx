@@ -1,10 +1,5 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import type { Database } from '@/types/supabase';
-
-// Supabase codegen을 사용한다고 가정하고 타입을 정의합니다.
-// 만약 사용하지 않는다면, 이 부분을 삭제하고 results 타입을 any[]로 사용해야 합니다.
-type TestResult = Database['public']['Tables']['test_results']['Row'];
 
 
 

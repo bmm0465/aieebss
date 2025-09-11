@@ -22,10 +22,12 @@ const eslintConfig = [
   },
   {
     rules: {
-      // React Hook 의존성 배열 경고 무시 (일부는 의도적으로 제외)
-      "react-hooks/exhaustive-deps": "warn",
-      // 사용하지 않는 변수 경고 무시 (일부는 의도적으로 주석 처리)
-      "@typescript-eslint/no-unused-vars": "warn",
+      // React Hook 의존성 배열 경고를 오류로 변경 (빌드 실패 방지)
+      "react-hooks/exhaustive-deps": "error",
+      // 사용하지 않는 변수 경고를 오류로 변경 (빌드 실패 방지)
+      "@typescript-eslint/no-unused-vars": "error",
+      // any 타입 사용 금지
+      "@typescript-eslint/no-explicit-any": "error",
     },
   },
 ];

@@ -32,7 +32,14 @@ export async function POST(request: Request) {
     console.error('TTS API 에러 - OpenAI로부터 받은 응답:', error); 
     
     // [핵심] OpenAI 에러의 상세 내용을 뽑아서 JSON으로 응답합니다.
-    const errorMessage = (error as any).response?.data?.error?.message || (error as Error).message || '알 수 없는 에러';
+    // OpenAI API 에러 구조에 맞는 타입 가드
+    const isOpenAIError = (err: unknown): err is { response?: { data?: { error?: { message?: string } } } } => {
+      return typeof err === 'object' && err !== null && 'response' in err;
+    };
+    
+    const errorMessage = isOpenAIError(error) 
+      ? error.response?.data?.error?.message 
+      : (error as Error).message || '알 수 없는 에러';
     
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

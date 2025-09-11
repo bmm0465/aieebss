@@ -28,7 +28,7 @@ export default function OrfTestPage() {
       else setUser(user);
     };
     checkUser();
-  }, [router]);
+  }, [router, supabase.auth]);
   
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0) return;

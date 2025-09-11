@@ -40,7 +40,7 @@ export default function NwfTestPage() {
       }
     };
     setup();
-  }, [router]);
+  }, [router, supabase.auth]);
   
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;

@@ -44,7 +44,7 @@ export default function PsfTestPage() {
       }
     };
     setup();
-  }, [router]);
+  }, [router, supabase.auth]);
 
   const prepareMediaRecorder = async () => {
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -68,7 +68,7 @@ export default function PsfTestPage() {
     if (phase === 'testing' && currentWord) {
       playWordAudio(currentWord);
     }
-  }, [currentWord]);
+  }, [currentWord, phase]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
