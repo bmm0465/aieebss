@@ -48,13 +48,12 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
     const audioUrl = storageData.path;
 
     let studentAnswer = "";
-    const detectedLanguage = transcription.language || 'unknown';
     
     if (transcription.text && transcription.text.trim()) {
         studentAnswer = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-        console.log(`[WRF 음성 인식] 언어: ${detectedLanguage}, 내용: "${studentAnswer}"`);
+        console.log(`[WRF 음성 인식] 내용: "${studentAnswer}"`);
     } else {
-        console.warn(`[WRF 경고] 음성 인식 실패 - 언어: ${detectedLanguage}, 내용: "${transcription.text}"`);
+        console.warn(`[WRF 경고] 음성 인식 실패 - 내용: "${transcription.text}"`);
         studentAnswer = "no_response";
     }
 
