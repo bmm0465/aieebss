@@ -2,9 +2,24 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ResultReport from '@/components/ResultReport';
-import type { Database } from '@/types/supabase';
 
-type TestResult = Database['public']['Tables']['test_results']['Row'];
+// Supabase 테이블 타입 정의
+type TestResult = {
+  id: string;
+  user_id: string;
+  test_type: string;
+  question_word?: string;
+  student_answer?: string;
+  is_correct?: boolean;
+  correct_segments?: number;
+  target_segments?: number;
+  is_phonemes_correct?: boolean;
+  is_whole_word_correct?: boolean;
+  wcpm?: number;
+  accuracy?: number;
+  question_passage?: string;
+  created_at?: string;
+};
 
 // UI 컴포넌트가 받을 데이터의 타입을 명확하게 export합니다.
 export interface ProcessedResults {

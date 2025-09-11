@@ -1,9 +1,24 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import type { Database } from '@/types/supabase';
 
-type TestResult = Database['public']['Tables']['test_results']['Row'];
+// Supabase 테이블 타입 정의
+type TestResult = {
+  id: string;
+  user_id: string;
+  test_type: string;
+  question_word?: string;
+  student_answer?: string;
+  is_correct?: boolean;
+  correct_segments?: number;
+  target_segments?: number;
+  is_phonemes_correct?: boolean;
+  is_whole_word_correct?: boolean;
+  wcpm?: number;
+  accuracy?: number;
+  question_passage?: string;
+  created_at?: string;
+};
 
 // 세션 정보 타입
 interface SessionInfo {
