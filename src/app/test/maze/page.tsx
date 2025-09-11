@@ -56,7 +56,6 @@ export default function MazeTestPage() {
   const [phase, setPhase] = useState('ready');
   const [answers, setAnswers] = useState<(string | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(180);
-  const [feedback, setFeedback] = useState('');
   const totalItems = mazePassage.content.filter(item => typeof item === 'object').length;
 
   useEffect(() => {
@@ -75,7 +74,7 @@ export default function MazeTestPage() {
     // 사용자 세션에서 access token 가져오기
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.access_token) {
-      setFeedback("인증 토큰을 가져올 수 없습니다.");
+      console.error("인증 토큰을 가져올 수 없습니다.");
       setPhase('testing');
       return;
     }
