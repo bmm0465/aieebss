@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
-import ResultReport from '@/components/ResultReport';
+import ResultReport, { type ProcessedResults } from '@/components/ResultReport';
 
 // Supabase 테이블 타입 정의
 type TestResult = {
@@ -20,16 +20,6 @@ type TestResult = {
   question_passage?: string;
   created_at?: string;
 };
-
-// UI 컴포넌트가 받을 데이터의 타입을 명확하게 export합니다.
-export interface ProcessedResults {
-  LNF: { correct: number; total: number; accuracy: number };
-  PSF: { correct_segments: number; target_segments: number; accuracy: number; total: number };
-  NWF: { phonemes_correct: number; whole_word_correct: number; total: number; phoneme_accuracy: number; whole_word_accuracy: number };
-  WRF: { correct: number; total: number; accuracy: number };
-  ORF: { total_wcpm: number; total_accuracy: number; count: number; avg_wcpm: number; avg_accuracy: number };
-  MAZE: { correct: number; total: number; accuracy: number; score: number };
-}
 
 const calculateResults = (results: TestResult[]): ProcessedResults => {
   const summary: ProcessedResults = {

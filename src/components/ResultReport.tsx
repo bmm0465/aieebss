@@ -4,10 +4,19 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-import type { ProcessedResults } from '@/app/results/page';
-// 이 컴포넌트가 받을 데이터의 타입을 정의
+
+// UI 컴포넌트가 받을 데이터의 타입을 명확하게 정의
+export interface ProcessedResults {
+  LNF: { correct: number; total: number; accuracy: number };
+  PSF: { correct_segments: number; target_segments: number; accuracy: number; total: number };
+  NWF: { phonemes_correct: number; whole_word_correct: number; total: number; phoneme_accuracy: number; whole_word_accuracy: number };
+  WRF: { correct: number; total: number; accuracy: number };
+  ORF: { total_wcpm: number; total_accuracy: number; count: number; avg_wcpm: number; avg_accuracy: number };
+  MAZE: { correct: number; total: number; accuracy: number; score: number };
+}
+
 interface ResultProps {
-  results: ProcessedResults; // import한 타입 사용
+  results: ProcessedResults;
 }
 
 // 각 시험별 제목과 설명
