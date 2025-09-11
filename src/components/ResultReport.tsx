@@ -61,7 +61,7 @@ export default function ResultReport({ results }: ResultProps) {
             {/* PSF */}
             <div style={cardStyle}>
                 <h3>{testInfo.PSF.title}</h3>
-                <p>{testInfo.PSF.description}: <strong>{results.PSF.accuracy.toFixed(1)}%</strong> ({results.PSF.correct}/{results.PSF.total})</p>
+                <p>{testInfo.PSF.description}: <strong>{results.PSF.accuracy.toFixed(1)}%</strong> ({results.PSF.correct_segments}/{results.PSF.target_segments})</p>
             </div>
             {/* NWF */}
             <div style={cardStyle}>
