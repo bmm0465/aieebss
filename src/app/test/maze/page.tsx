@@ -56,6 +56,7 @@ export default function MazeTestPage() {
   const [phase, setPhase] = useState('ready');
   const [answers, setAnswers] = useState<(string | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(180);
+  const [feedback, setFeedback] = useState('');
   const totalItems = mazePassage.content.filter(item => typeof item === 'object').length;
 
   useEffect(() => {
