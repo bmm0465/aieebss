@@ -66,7 +66,7 @@ export default function LobbyPage() {
           .eq('user_id', user.id)
           .limit(1);
         
-        setHasTestResults(results && results.length > 0);
+        setHasTestResults(Boolean(results && results.length > 0));
       }
     };
     checkUser();
