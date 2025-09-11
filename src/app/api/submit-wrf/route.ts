@@ -66,7 +66,6 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
 
           TARGET WORD: "${questionWord}"
           STUDENT RESPONSE: "${studentAnswer}"
-          DETECTED LANGUAGE: "${detectedLanguage}"
 
           EVALUATION GUIDELINES:
           1. Accept various response formats:

@@ -66,7 +66,6 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
 
           TARGET WORD: "${questionWord}"
           STUDENT RESPONSE: "${studentAnswer}"
-          DETECTED LANGUAGE: "${detectedLanguage}"
 
           EVALUATION GUIDELINES:
           1. Count total phonemes in the target word

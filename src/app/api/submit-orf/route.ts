@@ -61,7 +61,6 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
           ORIGINAL PASSAGE: "${questionPassage}"
           STUDENT READING: "${studentAnswer}"
           TIME TAKEN: ${timeTaken} seconds
-          DETECTED LANGUAGE: "${detectedLanguage}"
 
           EVALUATION GUIDELINES:
           1. Accept various response formats:
