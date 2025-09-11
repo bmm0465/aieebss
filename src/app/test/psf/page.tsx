@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const psfWords = ["map", "sit", "dog", "run", "cut", "fish", "ship", "that", "them", "sing"];
 const getShuffledWords = () => psfWords.sort(() => 0.5 - Math.random());
 
 export default function PsfTestPage() {
-  const router = useRouter();
+  const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
@@ -18,17 +18,17 @@ export default function PsfTestPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60); // PSF는 1분
+  const [timeLeft, setTimeLeft] = useState(60);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
-
-  // [핵심] DIBELS 규칙 관리를 위한 상태
-  const [firstFiveCorrectSegments, setFirstFiveCorrectSegments] = useState(0);
-  const [isHesitation, setIsHesitation] = useState(false);
+  
+  // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
+  // const [firstFiveCorrectSegments, setFirstFiveCorrectSegments] = useState(0);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     const setup = async () => {
@@ -41,7 +41,17 @@ export default function PsfTestPage() {
     };
     setup();
   }, [router]);
-  
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if ((phase === 'testing' || phase === 'practice') && currentWord) {
+      playWordAudio(currentWord);
+    }
+  }, [currentWord]);
+
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
     const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
@@ -56,18 +66,13 @@ export default function PsfTestPage() {
   }, [timeLeft, phase, isRecording]);
 
   const goToNextWord = () => {
-    if (wordIndex === 4 && firstFiveCorrectSegments === 0) {
-        setFeedback("첫 5개의 단어 중 정답 음소가 없어 시험을 중단합니다.");
-        setPhase('finished');
-        return;
-    }
+    // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
     if (nextIndex >= shuffledWords.length) {
       setPhase('finished');
     } else {
       setWordIndex(nextIndex);
       setCurrentWord(shuffledWords[nextIndex]);
-      setFeedback("다음 단어의 소리를 들어보세요.");
     }
   };
 
@@ -76,8 +81,7 @@ export default function PsfTestPage() {
     setFeedback("마법 물약의 재료 이름을 들어보세요...");
     try {
       const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: word }),
       });
       if (!response.ok) {
@@ -99,10 +103,9 @@ export default function PsfTestPage() {
       setIsAudioLoading(false);
     }
   };
-
+  
   const startRecording = async () => {
     setFeedback('');
-    setIsHesitation(false);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -121,7 +124,6 @@ export default function PsfTestPage() {
         mediaRecorder.start();
         setIsRecording(true);
         silenceTimeoutRef.current = setTimeout(() => {
-          setIsHesitation(true);
           stopRecording();
         }, 3000);
       } catch (err) {
@@ -154,44 +156,35 @@ export default function PsfTestPage() {
     formData.append('question', currentWord);
     formData.append('userId', user.id);
     try {
-      const response = await fetch('/api/submit-psf', { method: 'POST', body: formData });
-      if (!response.ok) throw new Error((await response.json()).error);
-      const result = await response.json();
-      console.log('PSF 백그라운드 처리 성공:', result);
-      processEvaluation(result.evaluation, result.correctSegments);
+      // [핵심 수정] API 호출 후 결과를 기다리지 않음
+      fetch('/api/submit-psf', { method: 'POST', body: formData });
+      
+      // UI를 즉시 업데이트
+      setFeedback("좋아요! 다음 문제예요.");
+      goToNextWord();
+
     } catch (error) {
-      console.error('PSF 백그라운드 처리 에러:', error);
-      setFeedback("채점 중 오류가 발생했습니다.");
+      console.error('PSF 요청 전송 실패:', error);
+      setFeedback("요청 전송 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const processEvaluation = (evaluation: string, correctSegments: number) => {
-    if (wordIndex < 5) {
-        setFirstFiveCorrectSegments(prev => prev + correctSegments);
-    }
-    if (evaluation === 'hesitation') {
-        setFeedback("다음 단어를 들어보세요.");
-    } else if (evaluation === 'repeated_word') {
-        setFeedback("단어 전체가 아닌, 개별 소리로 나누어 말해주세요.");
-    } else {
-        setFeedback("좋아요! 다음 문제예요.");
-    }
-    setTimeout(() => {
-      goToNextWord();
-    }, 1500);
+  const handleStartPractice = () => {
+    setPhase('practice');
+    isInitialMount.current = false;
+    setCurrentWord('cat');
   };
 
   const handleStartTest = () => {
     setPhase('testing');
     setWordIndex(0);
-    setCurrentWord(shuffledWords[0]);
     setTimeLeft(60);
-    setFeedback("아래 버튼을 눌러 첫 번째 문제의 소리를 들어보세요.");
-    setFirstFiveCorrectSegments(0);
+    isInitialMount.current = false;
+    setCurrentWord(shuffledWords[0]);
   };
-  
+
   const handleReturnToReady = () => setPhase('ready');
 
   // --- 스타일 정의 ---
@@ -216,7 +209,8 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>마법 구슬이 속삭이는 재료의 이름을 듣고, 그 이름을 구성하는 소리의 원소로 분리하여 말해야 합니다. <br/>(예: "cat" {"->"} "/k/ /æ/ /t/")</p>
-            <button onClick={handleStartTest} style={buttonStyle}>시험 시작하기</button>
+            <button onClick={handleStartPractice} style={buttonStyle}>연습 시작하기</button>
+            <button onClick={handleStartTest} style={{...buttonStyle, marginTop: '1rem', backgroundColor: 'transparent', border: '2px solid #FFD700', color: '#FFD700'}}>시험 시작하기</button>
           </div>
         )}
 
@@ -225,6 +219,7 @@ export default function PsfTestPage() {
             <button onClick={() => playWordAudio(currentWord)} style={soundButtonStyle} disabled={isAudioLoading || isRecording || isSubmitting}>🔊</button>
             <p style={feedbackStyle}>{feedback}</p>
             {!isRecording ? (<button onClick={startRecording} style={buttonStyle} disabled={isSubmitting || isAudioLoading}>{isSubmitting ? '처리 중...' : '녹음하기'}</button>) : (<button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>녹음 끝내기</button>)}
+            {phase === 'practice' && !isRecording && (<button onClick={handleReturnToReady} style={{...buttonStyle, marginTop: '1rem', backgroundColor: 'transparent', border: '2px solid #FFD700', color: '#FFD700'}}>안내로 돌아가기</button>)}
           </div>
         )}
 

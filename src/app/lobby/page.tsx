@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { supabase } from '@/lib/supabaseClient'
+import { createClient } from '@/lib/supabase/client'
 
 // 시험 정보를 담은 데이터 배열
 const tests = [
@@ -50,6 +50,7 @@ export default function LobbyPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const supabase = createClient();
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {

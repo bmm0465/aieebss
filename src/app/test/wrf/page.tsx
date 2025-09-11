@@ -2,14 +2,14 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const wrfWords = ["the", "a", "see", "in", "it", "is", "and", "go", "can", "me", "like", "my", "little", "play", "with", "for", "you", "big", "red", "one"];
 const getShuffledWords = () => wrfWords.sort(() => 0.5 - Math.random());
 
 export default function WrfTestPage() {
-  const router = useRouter();
+  const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
@@ -20,8 +20,9 @@ export default function WrfTestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
-  const [firstRowCorrectCount, setFirstRowCorrectCount] = useState(0);
-  const [isHesitation, setIsHesitation] = useState(false);
+  // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
+  // const [firstRowCorrectCount, setFirstRowCorrectCount] = useState(0);
+  // const [isHesitation, setIsHesitation] = useState(false);
   const wordsInFirstRow = 10;
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -55,11 +56,7 @@ export default function WrfTestPage() {
   }, [timeLeft, phase, isRecording]);
 
   const goToNextWord = () => {
-    if (wordIndex === (wordsInFirstRow - 1) && firstRowCorrectCount === 0) {
-      setFeedback("첫 줄의 단어 중 정답이 없어 시험을 중단합니다.");
-      setPhase('finished');
-      return;
-    }
+    // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
     if (nextIndex >= shuffledWords.length) {
       setPhase('finished');
@@ -72,7 +69,6 @@ export default function WrfTestPage() {
 
   const startRecording = async () => {
     setFeedback('');
-    setIsHesitation(false);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -91,7 +87,6 @@ export default function WrfTestPage() {
         mediaRecorder.start();
         setIsRecording(true);
         silenceTimeoutRef.current = setTimeout(() => {
-          setIsHesitation(true);
           stopRecording();
         }, 3000);
       } catch (err) {
@@ -119,59 +114,24 @@ export default function WrfTestPage() {
       setIsSubmitting(false);
       return;
     }
-
-    // [핵심 수정] 3초 주저로 인해 녹음 파일이 비어있는 경우, API 호출 없이 바로 오답 처리
-    if (isHesitation && audioBlob.size === 0) {
-      console.log("3초 주저 감지, API 호출 생략.");
-      // 백엔드 API를 모방하여 DB에 직접 저장 (선택적이지만, 데이터 일관성을 위해 추천)
-      try {
-        await supabase.from('test_results').insert({
-            user_id: user.id, test_type: 'WRF', question: currentWord, 
-            is_correct: false, error_type: 'hesitation'
-        });
-      } catch (dbError) {
-         console.error("주저(hesitation) 결과 DB 저장 실패:", dbError);
-      }
-      processEvaluation('hesitation'); // 프론트엔드에서 바로 'hesitation'으로 처리
-      setIsSubmitting(false);
-      return;
-    }
-
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
     try {
-      const response = await fetch('/api/submit-wrf', { method: 'POST', body: formData });
-      if (!response.ok) throw new Error((await response.json()).error);
-      const result = await response.json();
-      console.log('WRF 백그라운드 처리 성공:', result);
-      processEvaluation(result.evaluation);
+      // [핵심 수정] API 호출 후 결과를 기다리지 않음
+      fetch('/api/submit-wrf', { method: 'POST', body: formData });
+      
+      // UI를 즉시 업데이트
+      setFeedback("좋아요!");
+      goToNextWord();
+
     } catch (error) {
-      console.error('WRF 백그라운드 처리 에러:', error);
-      setFeedback("채점 중 오류가 발생했습니다.");
+      console.error('WRF 요청 전송 실패:', error);
+      setFeedback("요청 전송 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const processEvaluation = (evaluation: string) => {
-    let nextStepDelay = 1500;
-    if (evaluation === 'correct') {
-      if (wordIndex < wordsInFirstRow) {
-        setFirstRowCorrectCount(prev => prev + 1);
-      }
-      setFeedback("좋아요!");
-    } else if (evaluation === 'hesitation') { // [핵심 수정] isHesitation 상태 대신, 명시적인 evaluation 값으로 처리
-        setFeedback(`이 단어는 '${currentWord}'(이)라고 읽어요. Keep going.`);
-        nextStepDelay = 3000;
-    }
-    else {
-      setFeedback("아쉬워요, 다음 단어!");
-    }
-    setTimeout(() => {
-      goToNextWord();
-    }, nextStepDelay);
   };
 
   const handleStartTest = () => {
@@ -180,7 +140,6 @@ export default function WrfTestPage() {
     setCurrentWord(shuffledWords[0]);
     setTimeLeft(60);
     setFeedback("두루마리에 나타난 마법 단어를 읽어주세요.");
-    setFirstRowCorrectCount(0);
   };
 
   // --- 스타일 정의 ---

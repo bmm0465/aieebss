@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const nwfWords = ["nuf", "tib", "vog", "jez", "zop", "quim", "yeb", "wix", "fip", "roz", "kud"];
@@ -10,20 +10,21 @@ const getShuffledWords = () => nwfWords.sort(() => 0.5 - Math.random());
 const practiceWord = "lum";
 
 export default function NwfTestPage() {
+  const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [phase, setPhase] = useState('ready'); // ready, practice, testing, finished
+  const [phase, setPhase] = useState('ready');
   const [shuffledWords, setShuffledWords] = useState<string[]>([]);
   const [wordIndex, setWordIndex] = useState(0);
   const [currentWord, setCurrentWord] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60); // NWF는 1분
+  const [timeLeft, setTimeLeft] = useState(60);
 
-  // [핵심] DIBELS 규칙 관리를 위한 상태
-  const [firstFiveCLS, setFirstFiveCLS] = useState(0);
-  const [isHesitation, setIsHesitation] = useState(false);
+  // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
+  // const [firstFiveCLS, setFirstFiveCLS] = useState(0);
+  // const [isHesitation, setIsHesitation] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -56,13 +57,9 @@ export default function NwfTestPage() {
   }, [timeLeft, phase, isRecording]);
 
   const goToNextWord = () => {
-    if (phase === 'testing' && wordIndex === 4 && firstFiveCLS === 0) {
-      setFeedback("첫 5개의 단어 중 정답 음소가 없어 시험을 중단합니다.");
-      setPhase('finished');
-      return;
-    }
+    // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
-    if (phase === 'testing' && nextIndex >= shuffledWords.length) {
+    if (nextIndex >= shuffledWords.length) {
       setPhase('finished');
     } else {
       setWordIndex(nextIndex);
@@ -73,7 +70,6 @@ export default function NwfTestPage() {
 
   const startRecording = async () => {
     setFeedback('');
-    setIsHesitation(false);
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -92,7 +88,6 @@ export default function NwfTestPage() {
         mediaRecorder.start();
         setIsRecording(true);
         silenceTimeoutRef.current = setTimeout(() => {
-          setIsHesitation(true);
           stopRecording();
         }, 3000);
       } catch (err) {
@@ -125,38 +120,23 @@ export default function NwfTestPage() {
     formData.append('question', currentWord);
     formData.append('userId', user.id);
     try {
-      const response = await fetch('/api/submit-nwf', { method: 'POST', body: formData });
-      if (!response.ok) throw new Error((await response.json()).error);
-      const result = await response.json();
-      console.log('NWF 백그라운드 처리 성공:', result);
-      processEvaluation(result.correctLetterSounds, result.isWholeWordCorrect);
-    } catch (error) {
-      console.error('NWF 백그라운드 처리 에러:', error);
-      setFeedback("채점 중 오류가 발생했습니다.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+      // [핵심 수정] API 호출 후 결과를 기다리지 않음
+      fetch('/api/submit-nwf', { method: 'POST', body: formData });
 
-  const processEvaluation = (cls: number, wwr: boolean) => {
-    if (phase === 'practice') {
-      if (cls > 0 || wwr) {
-        setFeedback("That's right! 이제 진짜 시험을 시작해볼까요?");
-        setTimeout(() => handleStartTest(), 3000);
-      } else {
-        setFeedback("Remember, you can say the sounds, or you can say the whole word. Let's try again.");
-        setIsRecording(false); // 다시 시도할 수 있도록 녹음 버튼 활성화
-      }
-    } else if (phase === 'testing') {
-      if (wordIndex < 5) {
-        setFirstFiveCLS(prev => prev + cls);
-      }
-      if (isHesitation) {
-        setFeedback("Keep going.");
+      if (phase === 'practice') {
+        // 연습 단계에서는 성공/실패 여부를 알 수 없으므로, 일단 긍정 피드백 후 시험 시작
+        setFeedback("좋았어요! 이제 진짜 시험을 시작해볼까요?");
+        setTimeout(() => handleStartTest(), 2000);
       } else {
         setFeedback("좋아요!");
+        goToNextWord();
       }
-      setTimeout(() => goToNextWord(), 1500);
+
+    } catch (error) {
+      console.error('NWF 요청 전송 실패:', error);
+      setFeedback("요청 전송 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -172,7 +152,6 @@ export default function NwfTestPage() {
     setCurrentWord(shuffledWords[0]);
     setTimeLeft(60);
     setFeedback("Here are some more make-believe words. When I say 'Begin', start here and read the words.");
-    setFirstFiveCLS(0);
   };
 
   // --- 스타일 정의 ---

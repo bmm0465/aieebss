@@ -1,19 +1,100 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+// [핵심 1] 새로운 서버용 클라이언트와 cookies를 import 합니다.
+import { createClient } from '@/lib/supabase/server';
+import { cookies } from 'next/headers';
 import OpenAI from 'openai';
+import type { SupabaseClient } from '@supabase/supabase-js'; // SupabaseClient 타입을 import
 
-// Supabase 클라이언트 초기화 (서버 환경)
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY! // 보안을 위해 Service Role 키 사용
-);
-
-// OpenAI 클라이언트 초기화
+// OpenAI 클라이언트 초기화 (파일 최상단)
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+// 규칙 셋 정의 (파일 최상단)
+const letterNames: { [key: string]: string[] } = {
+  A: ['a', 'ay'], B: ['b', 'bee'], C: ['c', 'cee', 'see'], D: ['d', 'dee'], E: ['e', 'ee'],
+  F: ['f', 'eff'], G: ['g', 'gee'], H: ['h', 'aitch', 'haitch'], I: ['i'], J: ['j', 'jay'],
+  K: ['k', 'kay'], L: ['l', 'ell'], M: ['m', 'em'], N: ['n', 'en'], O: ['o'],
+  P: ['p', 'pee'], Q: ['q', 'cue', 'que'], R: ['r', 'ar'], S: ['s', 'ess'], T: ['t', 'tee'],
+  U: ['u', 'you'], V: ['v', 'vee'], W: ['w', 'double u', 'doubleu'], X: ['x', 'ex'], Y: ['y', 'why'],
+  Z: ['z', 'zee', 'zed']
+};
+const letterSounds: { [key: string]: string[] } = {
+  A: ['a', 'ah'], B: ['b', 'buh'], C: ['k', 'kuh'], D: ['d', 'duh'], E: ['e', 'eh'], F: ['f', 'fuh'],
+};
+
+// [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
+async function processLnfInBackground(supabase: SupabaseClient, userId: string, questionLetter: string, arrayBuffer: ArrayBuffer) {
+  try {
+    if (arrayBuffer.byteLength === 0) {
+      await supabase.from('test_results').insert({
+          user_id: userId, test_type: 'LNF', question: questionLetter,
+          is_correct: false, error_type: 'hesitation'
+      });
+      console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: hesitation`);
+      return;
+    }
+
+    const [storageResult, transcription] = await Promise.all([
+      supabase.storage
+        .from('student-recordings')
+        .upload(`lnf/${userId}/${Date.now()}.webm`, arrayBuffer, { contentType: 'audio/webm' }),
+      openai.audio.transcriptions.create({
+        model: 'gpt-4o-mini-transcribe',
+        file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
+        language: 'en',
+        prompt: "This is an English letter naming fluency test...",
+      })
+    ]);
+
+    const { data: storageData, error: storageError } = storageResult;
+    if (storageError) throw storageError;
+    const audioUrl = storageData.path;
+
+    const studentAnswerRaw = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
+    const studentAnswer = studentAnswerRaw.toLowerCase();
+
+    let evaluation: string;
+    const upperCaseQuestion = questionLetter.toUpperCase();
+
+    if (letterNames[upperCaseQuestion]?.includes(studentAnswer)) {
+      evaluation = 'correct';
+    } else if (letterSounds[upperCaseQuestion]?.includes(studentAnswer)) {
+      evaluation = 'letter_sound';
+    } else {
+      const scoringResponse = await openai.chat.completions.create({
+        model: 'gpt-5-mini',
+        messages: [ { role: 'system', content: `You are a DIBELS 8 LNF test evaluator...` } ],
+        response_format: { type: 'json_object' },
+      });
+      const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"evaluation": "unintelligible"}');
+      evaluation = scoringResult.evaluation;
+    }
+    
+    const isCorrect = evaluation === 'correct';
+    const errorType = isCorrect ? null : evaluation;
+
+    await supabase.from('test_results').insert({
+      user_id: userId,
+      test_type: 'LNF',
+      question: questionLetter,
+      student_answer: studentAnswerRaw,
+      is_correct: isCorrect,
+      error_type: errorType,
+      audio_url: audioUrl,
+    });
+
+    console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${evaluation}`);
+
+  } catch (error) {
+    console.error(`[LNF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionLetter}`, error);
+  }
+}
+
 export async function POST(request: Request) {
+  // [핵심 3] POST 함수 내부에서만 supabase 클라이언트를 생성합니다.
+  const supabase = createClient();
+  
   try {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
@@ -23,84 +104,16 @@ export async function POST(request: Request) {
     if (!audioBlob || !questionLetter || !userId) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
-
-    const audioBuffer = Buffer.from(await audioBlob.arrayBuffer());
-
-    // 1. 음성 파일을 Supabase Storage에 업로드
-    const audioFileName = `lnf/${userId}/${Date.now()}.webm`;
-    const { data: storageData, error: storageError } = await supabase.storage
-      .from('student-recordings')
-      .upload(audioFileName, audioBuffer, {
-        contentType: 'audio/webm',
-      });
-
-    if (storageError) throw new Error(`Storage 업로드 실패: ${storageError.message}`);
     
-    const audioUrl = storageData.path;
+    const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // 2. OpenAI를 사용한 음성 인식 (STT)
-    const transcriptionPrompt = "This is an English letter naming fluency test. The student will say the names of English letters, such as A, Bee, Cee, Dee, Ee, Eff, Gee, Aitche, I, Jay, Kay, Ell, Em, En, O, Pee, Queue, Ar, Ess, Tee, You, Vee, Double-U, Ex, Why, Zee.";
+    // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달합니다.
+    processLnfInBackground(supabase, userId, questionLetter, arrayBuffer);
 
-    const transcription = await openai.audio.transcriptions.create({
-      model: 'gpt-4o-mini-transcribe', // 요청하신 모델명
-      file: new File([audioBuffer], "audio.webm", { type: "audio/webm" }),
-      language: 'en',
-      prompt: transcriptionPrompt,
-    });
-    // [개선] 인식된 텍스트에서 구두점 및 공백을 제거하여 정확도 향상
-    const studentAnswer = transcription.text.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"");
-
-    // --- 여기가 핵심 수정 포인트 ---
-    // 3. LLM을 사용한 DIBELS 규칙 기반 상세 채점
-    const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-5-mini', // 요청하신 모델명
-      messages: [
-        {
-          role: 'system',
-          content: `You are a DIBELS 8 LNF test evaluator.
-          - The target letter is: "${questionLetter}"
-          - The student's response is: "${studentAnswer}"
-
-          Analyze the student's response based on DIBELS rules and classify it into ONE of the following categories:
-          1. "correct": The student correctly said the letter's name (e.g., for 'A', they said 'ay' or 'A').
-          2. "letter_sound": The student said the letter's sound instead of its name (e.g., for 'B', they said 'buh'; for 'C' they said 'kuh').
-          3. "incorrect_name": The student said a different letter's name (e.g., for 'C', they said 'dee').
-          4. "unintelligible": The response is unclear, not a recognizable letter name/sound, or empty.
-
-          Respond ONLY with a JSON object in the format: {"evaluation": "category_name"}. For example: {"evaluation": "correct"}.`,
-        },
-      ],
-      response_format: { type: 'json_object' },
-    });
-    
-    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"evaluation": "unintelligible"}');
-    const evaluation = scoringResult.evaluation;
-    const isCorrect = evaluation === 'correct';
-    // [추가] 정답이 아닐 경우, 그 이유(오류 유형)를 errorType에 저장
-    const errorType = isCorrect ? null : evaluation;
-
-    // 4. 채점 결과를 데이터베이스에 저장 (error_type 컬럼 추가)
-    const { error: dbError } = await supabase.from('test_results').insert({
-      user_id: userId,
-      test_type: 'LNF',
-      question: questionLetter,
-      student_answer: studentAnswer,
-      is_correct: isCorrect,
-      error_type: errorType, // 오류 유형 저장
-      audio_url: audioUrl,
-    });
-
-    if (dbError) throw new Error(`DB 저장 실패: ${dbError.message}`);
-
-    // [수정] 프론트엔드에 isCorrect 대신 상세 평가 결과(evaluation)를 반환
-    return NextResponse.json({
-      studentAnswer,
-      evaluation, // 'correct', 'letter_sound', 'incorrect_name' 등
-      audioUrl,
-    });
+    return NextResponse.json({ message: '요청이 성공적으로 접수되었습니다.' }, { status: 202 });
 
   } catch (error) {
-    console.error('LNF API 에러:', error);
+    console.error('LNF API 요청 접수 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

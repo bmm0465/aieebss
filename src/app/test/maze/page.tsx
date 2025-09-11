@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const mazePassage = {
@@ -50,11 +50,12 @@ const mazePassage = {
 };
 
 export default function MazeTestPage() {
+  const supabase = createClient(); // useRouter는 여전히 다른 곳에서 필요할 수 있으므로 유지
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [answers, setAnswers] = useState<(string | null)[]>([]);
-  const [timeLeft, setTimeLeft] = useState(180); // MAZE는 3분
+  const [timeLeft, setTimeLeft] = useState(180);
   const totalItems = mazePassage.content.filter(item => typeof item === 'object').length;
 
   useEffect(() => {
@@ -99,13 +100,12 @@ export default function MazeTestPage() {
     
     for (let i = 0; i < choices.length; i++) {
         const studentAnswer = answers[i];
-        // 학생이 답변한 항목만 저장
         if (studentAnswer) {
             const isCorrect = studentAnswer === choices[i].correctAnswer;
             resultsToSave.push({
                 user_id: user.id,
                 test_type: 'MAZE',
-                question: `${mazePassage.title}_${i+1}`, // 각 문항을 식별할 수 있도록 인덱스 추가
+                question: `${mazePassage.title}_${i+1}`,
                 student_answer: studentAnswer,
                 is_correct: isCorrect,
             });
@@ -116,18 +116,15 @@ export default function MazeTestPage() {
         const { error } = await supabase.from('test_results').insert(resultsToSave);
         if (error) {
             console.error("MAZE 결과 저장 실패:", error);
-            // 여기에 사용자에게 보여줄 에러 처리 로직 추가 가능
         }
     }
     
     setPhase('finished');
   };
   
+  // [핵심 수정] 결과 페이지 이동을 위한 핸들러
   const handleGoToResults = () => {
-    router.refresh();
-    setTimeout(() => {
-      router.push('/results');
-    }, 100);
+    window.location.href = '/results';
   };
 
   // --- 스타일 정의 ---

@@ -4,10 +4,10 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
-
+import type { ProcessedResults } from '@/app/results/page';
 // 이 컴포넌트가 받을 데이터의 타입을 정의
 interface ResultProps {
-  results: ReturnType<typeof calculateResults>; // 서버 컴포넌트의 계산 결과 타입을 그대로 사용
+  results: ProcessedResults; // import한 타입 사용
 }
 
 // 각 시험별 제목과 설명
@@ -72,10 +72,12 @@ export default function ResultReport({ results }: ResultProps) {
                 <p>평균 정확도: <strong>{results.ORF.avg_accuracy.toFixed(1)}%</strong></p>
             </div>
             {/* MAZE */}
-            <div style={cardStyle}>
-                <h3>{testInfo.MAZE.title}</h3>
-                <p>{testInfo.MAZE.description}: <strong>{results.MAZE.accuracy.toFixed(1)}%</strong> ({results.MAZE.correct}/{results.MAZE.total})</p>
-            </div>
+<div style={cardStyle}>
+    <h3>{testInfo.MAZE.title}</h3>
+    {/* [핵심 수정] accuracy 대신 score를 표시 */}
+    <p>최종 점수: <strong>{results.MAZE.score.toFixed(1)}점</strong></p>
+    <p>(맞은 개수: {results.MAZE.correct}, 틀린 개수: {results.MAZE.total - results.MAZE.correct})</p>
+</div>
         </div>
 
         <button style={buttonStyle} onClick={() => router.push('/lobby')}>시험 안내로 돌아가기</button>

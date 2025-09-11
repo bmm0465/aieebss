@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 const passage = "A little cat saw a big dog. The dog had a red ball. The cat wanted to play. 'Can I play with you?' said the cat. The dog said, 'Yes, you can!' They played with the red ball all day.";
 
 export default function OrfTestPage() {
-  const router = useRouter();
+  const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [isRecording, setIsRecording] = useState(false);

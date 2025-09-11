@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabaseClient';
+import { createClient } from '@/lib/supabase/client'; // [수정] 새로운 클라이언트 경로
 import type { User } from '@supabase/supabase-js';
 
 const getShuffledAlphabet = () => {
@@ -11,7 +11,7 @@ const getShuffledAlphabet = () => {
 };
 
 export default function LnfTestPage() {
-  const router = useRouter();
+  const supabase = createClient() // [수정] 함수 호출 방식으로 변경
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [shuffledAlphabet, setShuffledAlphabet] = useState<string[]>([]);
@@ -22,14 +22,16 @@ export default function LnfTestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
 
-  const [letterSoundPromptUsed, setLetterSoundPromptUsed] = useState(false);
-  const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
+  // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
+  // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
   const [isHesitation, setIsHesitation] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const setup = async () => {
@@ -57,18 +59,13 @@ export default function LnfTestPage() {
   }, [timeLeft, phase, isRecording]);
 
   const goToNextLetter = () => {
-    if (letterIndex === 9 && firstTenCorrectCount === 0) {
-      setFeedback("첫 10개의 문자 중 정답이 없어 시험을 중단합니다.");
-      setPhase('finished');
-      return;
-    }
+    // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = letterIndex + 1;
     if (nextIndex >= shuffledAlphabet.length) {
       setPhase('finished');
     } else {
       setLetterIndex(nextIndex);
       setCurrentLetter(shuffledAlphabet[nextIndex]);
-      setFeedback("다음 룬 문자를 해독해 보세요!");
     }
   };
 
@@ -88,13 +85,7 @@ export default function LnfTestPage() {
         };
         mediaRecorder.onstop = () => {
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          if (audioBlob.size > 0) {
-            submitRecordingInBackground(audioBlob);
-          } else if (isHesitation) {
-            submitRecordingInBackground(audioBlob, true);
-          } else {
-            setIsSubmitting(false);
-          }
+          submitRecordingInBackground(audioBlob);
         };
         mediaRecorder.start();
         setIsRecording(true);
@@ -122,61 +113,33 @@ export default function LnfTestPage() {
     }
   };
 
-  const submitRecordingInBackground = async (audioBlob: Blob, fromHesitation = false) => {
+  const submitRecordingInBackground = async (audioBlob: Blob) => {
     if (!user || !currentLetter) {
       setIsSubmitting(false);
       return;
     }
-    if (fromHesitation) {
-        processEvaluation('hesitation');
-        setIsSubmitting(false);
-        return;
-    }
+
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentLetter);
     formData.append('userId', user.id);
+    
+    // [핵심 수정] API 호출 후 결과를 기다리지 않고, UI를 즉시 업데이트
     try {
-      const response = await fetch('/api/submit-lnf', { method: 'POST', body: formData });
-      if (!response.ok) throw new Error((await response.json()).error);
-      const result = await response.json();
-      console.log('LNF 백그라운드 처리 성공:', result);
-      processEvaluation(result.evaluation);
+        fetch('/api/submit-lnf', { method: 'POST', body: formData });
+        
+        // 피드백을 일반적인 긍정 메시지로 변경
+        setFeedback("좋아요! 다음 룬 문자를 해독해 보세요!");
+        // 즉시 다음 문제로 이동
+        goToNextLetter();
+
     } catch (error) {
-      console.error('LNF 백그라운드 처리 에러:', error);
-      setFeedback("채점 중 오류가 발생했습니다.");
+      console.error('LNF 요청 전송 실패:', error);
+      setFeedback("요청 전송 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  const processEvaluation = (evaluation: string) => {
-    let nextStepDelay = 1500;
-    if (evaluation === 'correct') {
-      if (letterIndex < 10) setFirstTenCorrectCount(prev => prev + 1);
-      setFeedback("좋아요!");
-    } else if (evaluation === 'letter_sound') {
-      if (!letterSoundPromptUsed) {
-        setFeedback(`이건 '${currentLetter}'(이)라고 읽어요. 소리가 아니라 이름을 말해주세요.`);
-        setLetterSoundPromptUsed(true);
-        nextStepDelay = 3000;
-      } else {
-        setFeedback("아쉬워요.");
-      }
-    } else if (evaluation === 'hesitation') {
-        setFeedback(`이건 '${currentLetter}'(이)라고 읽어요. 계속하세요 (Keep going).`);
-        nextStepDelay = 3000;
-    }
-    else {
-      setFeedback(`이건 '${currentLetter}'(이)라고 읽어요.`);
-      nextStepDelay = 2000;
-    }
-    setTimeout(() => {
-      goToNextLetter();
-    }, nextStepDelay);
-  };
-  
-  const handleStartPractice = () => { /* 연습 모드는 현재 비활성화 */ };
   
   const handleStartTest = () => {
     setPhase('testing');
@@ -184,8 +147,6 @@ export default function LnfTestPage() {
     setCurrentLetter(shuffledAlphabet[0]);
     setTimeLeft(60);
     setFeedback("화면에 나타나는 룬 문자의 이름을 말해주세요.");
-    setLetterSoundPromptUsed(false);
-    setFirstTenCorrectCount(0);
   };
 
   // --- 스타일 정의 ---
@@ -194,21 +155,7 @@ export default function LnfTestPage() {
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', color: '#FFD700', textShadow: '0 0 10px #FFD700' };
   const paragraphStyle: React.CSSProperties = { fontSize: '1.1rem', lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.9)', marginBottom: '2.5rem' };
   const buttonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '15px', backgroundColor: '#FFD700', color: 'black', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center', transition: 'background-color 0.3s, transform 0.2s' };
-  
-  // [핵심 수정] letterBoxStyle에 fontFamily를 추가합니다.
-  const letterBoxStyle: React.CSSProperties = { 
-    fontSize: '12rem', 
-    fontWeight: 'bold', 
-    margin: '2rem 0', 
-    color: '#FFD700', 
-    textShadow: '0 0 20px #FFD700', 
-    minHeight: '250px', 
-    display: 'flex', 
-    justifyContent: 'center', 
-    alignItems: 'center',
-    fontFamily: 'var(--font-lexend)', // layout.tsx에서 설정한 Lexend 폰트 변수 사용
-  };
-
+  const letterBoxStyle: React.CSSProperties = { fontSize: '12rem', fontWeight: 'bold', margin: '2rem 0', color: '#FFD700', textShadow: '0 0 20px #FFD700', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'var(--font-lexend)' };
   const feedbackStyle: React.CSSProperties = { minHeight: '2.5em', fontSize: '1.1rem', color: 'rgba(255, 255, 255, 0.8)', padding: '0 1rem', transition: 'color 0.3s' };
   const timerStyle: React.CSSProperties = { fontSize: '1.5rem', color: '#FFD700', marginBottom: '1rem', fontFamily: 'monospace' };
   
