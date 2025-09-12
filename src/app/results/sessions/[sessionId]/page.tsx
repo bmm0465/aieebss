@@ -145,46 +145,45 @@ export default async function SessionDetailPage({ params }: PageProps) {
     redirect('/');
   }
 
-  try {
-    const { data: allResults, error } = await supabase
-      .from('test_results')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
+  const { data: allResults, error } = await supabase
+    .from('test_results')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error("결과 조회 에러:", error);
-      return (
-        <div style={{ backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
-          <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
-            <h1>데이터베이스 연결 오류</h1>
-            <p>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
-            <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
-          </div>
-        </div>
-      );
-    }
-
-    if (!allResults || allResults.length === 0) {
-      notFound();
-    }
-
-    // 세션별로 필터링
-    const sessionResults = filterResultsBySession(allResults, sessionId);
-
-    if (sessionResults.length === 0) {
-      notFound();
-    }
-
-    const processedResults = calculateResults(sessionResults);
-    
-    // 세션 정보 생성
-    const firstResult = sessionResults[0];
-    const lastResult = sessionResults[sessionResults.length - 1];
-    const sessionDate = new Date(firstResult.created_at || 0);
-    const testTypes = [...new Set(sessionResults.map(r => r.test_type))];
-
+  if (error) {
+    console.error("결과 조회 에러:", error);
     return (
+      <div style={{ backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
+        <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
+          <h1>데이터베이스 연결 오류</h1>
+          <p>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+          <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
+        </div>
+      </div>
+    );
+  }
+
+  if (!allResults || allResults.length === 0) {
+    notFound();
+  }
+
+  // 세션별로 필터링
+  const sessionResults = filterResultsBySession(allResults, sessionId);
+
+  if (sessionResults.length === 0) {
+    notFound();
+  }
+
+  const processedResults = calculateResults(sessionResults);
+  
+  // 세션 정보 생성
+  const firstResult = sessionResults[0];
+  const lastResult = sessionResults[sessionResults.length - 1];
+  const sessionDate = new Date(firstResult.created_at || 0);
+  const testTypes = [...new Set(sessionResults.map(r => r.test_type))];
+
+  return (
     <div style={{ 
       backgroundImage: `url('/background.jpg')`, 
       backgroundSize: 'cover', 
@@ -280,16 +279,4 @@ export default async function SessionDetailPage({ params }: PageProps) {
       </div>
     </div>
   );
-  } catch (error) {
-    console.error("SessionDetailPage 에러:", error);
-    return (
-      <div style={{ backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
-        <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
-          <h1>시스템 오류</h1>
-          <p>예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
-          <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
-        </div>
-      </div>
-    );
-  }
 }
