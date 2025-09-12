@@ -26,10 +26,6 @@
       "source": "/(.*)",
       "headers": [
         {
-          "key": "Permissions-Policy",
-          "value": "compute-pressure=()"
-        },
-        {
           "key": "X-Content-Type-Options",
           "value": "nosniff"
         },

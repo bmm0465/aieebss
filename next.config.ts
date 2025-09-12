@@ -17,10 +17,6 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: [
           {
-            key: 'Permissions-Policy',
-            value: 'compute-pressure=()',
-          },
-          {
             key: 'X-Frame-Options',
             value: 'DENY',
           },

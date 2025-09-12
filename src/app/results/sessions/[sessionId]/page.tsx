@@ -135,16 +135,23 @@ export default async function SessionDetailPage({ params }: PageProps) {
   
   const supabase = await createClient();
 
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // 세션 체크를 더 관대하게 처리
+  let session = null;
+  let sessionError = null;
+  
+  try {
+    const sessionResult = await supabase.auth.getSession();
+    session = sessionResult.data.session;
+    sessionError = sessionResult.error;
+  } catch (error) {
+    console.error("세션 가져오기 실패:", error);
+    sessionError = error;
+  }
   
   console.log("SessionDetailPage - session:", session ? "존재함" : "없음");
   console.log("SessionDetailPage - sessionError:", sessionError);
   
-  if (sessionError) {
-    console.error("세션 에러:", sessionError);
-    redirect('/');
-  }
-  
+  // 세션이 없으면 로그인 페이지로 리다이렉트
   if (!session) {
     console.log("세션이 없습니다. 로그인 페이지로 리다이렉트합니다.");
     redirect('/');
