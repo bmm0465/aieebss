@@ -17,6 +17,10 @@ const nextConfig: NextConfig = {
         source: '/(.*)',
         headers: [
           {
+            key: 'Permissions-Policy',
+            value: 'compute-pressure=(), camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=(), ambient-light-sensor=()',
+          },
+          {
             key: 'X-Frame-Options',
             value: 'DENY',
           },
