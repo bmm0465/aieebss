@@ -15,10 +15,33 @@ export const createClient = async () => {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ 
+              name, 
+              value, 
+              ...options,
+              // 세션 지속성을 위한 추가 설정
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax'
+            });
+          } catch (error) {
+            console.error('Cookie set error:', error);
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options });
+          try {
+            cookieStore.set({ 
+              name, 
+              value: '', 
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax'
+            });
+          } catch (error) {
+            console.error('Cookie remove error:', error);
+          }
         },
       },
     }

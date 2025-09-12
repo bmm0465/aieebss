@@ -130,22 +130,40 @@ interface PageProps {
 }
 
 export default async function SessionDetailPage({ params }: PageProps) {
-  const { sessionId } = await params;
-  const supabase = await createClient();
+  try {
+    const { sessionId } = await params;
+    const supabase = await createClient();
 
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) redirect('/');
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    
+    if (sessionError) {
+      console.error("세션 에러:", sessionError);
+      redirect('/');
+    }
+    
+    if (!session) {
+      console.log("세션이 없습니다. 로그인 페이지로 리다이렉트합니다.");
+      redirect('/');
+    }
 
-  const { data: allResults, error } = await supabase
-    .from('test_results')
-    .select('*')
-    .eq('user_id', session.user.id)
-    .order('created_at', { ascending: false });
+    const { data: allResults, error } = await supabase
+      .from('test_results')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error("결과 조회 에러:", error);
-    return <div>결과를 불러오는 중 에러가 발생했습니다.</div>;
-  }
+    if (error) {
+      console.error("결과 조회 에러:", error);
+      return (
+        <div style={{ backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
+          <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
+            <h1>데이터베이스 연결 오류</h1>
+            <p>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+            <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
+          </div>
+        </div>
+      );
+    }
 
   if (!allResults || allResults.length === 0) {
     notFound();
@@ -262,4 +280,16 @@ export default async function SessionDetailPage({ params }: PageProps) {
       </div>
     </div>
   );
+  } catch (error) {
+    console.error("SessionDetailPage 에러:", error);
+    return (
+      <div style={{ backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
+        <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
+          <h1>시스템 오류</h1>
+          <p>예상치 못한 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+          <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
+        </div>
+      </div>
+    );
+  }
 }

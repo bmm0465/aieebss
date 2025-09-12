@@ -21,6 +21,15 @@
           "value": "Content-Type, Authorization"
         }
       ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Permissions-Policy",
+          "value": "compute-pressure=()"
+        }
+      ]
     }
   ],
   "rewrites": [
