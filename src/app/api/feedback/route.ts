@@ -58,7 +58,12 @@ function analyzeErrorPatterns(incorrectAnswers: Array<{
   studentAnswer: string;
   isCorrect: boolean;
 }>) {
-  const patterns = {
+  const patterns: {
+    similarShapes: Array<{ question: string; studentAnswer: string }>;
+    caseConfusion: Array<{ question: string; studentAnswer: string }>;
+    uncommonLetters: Array<{ question: string; studentAnswer: string }>;
+    other: Array<{ question: string; studentAnswer: string }>;
+  } = {
     similarShapes: [], // 비슷한 모양의 글자 (b/d, p/q 등)
     caseConfusion: [], // 대소문자 혼동
     uncommonLetters: [], // 자주 보지 못하는 글자
