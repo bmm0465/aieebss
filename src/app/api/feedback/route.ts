@@ -53,7 +53,11 @@ function analyzeLNFResults(results: TestResult[]) {
 }
 
 // 오류 패턴 분석 함수
-function analyzeErrorPatterns(incorrectAnswers: any[]) {
+function analyzeErrorPatterns(incorrectAnswers: Array<{
+  question: string;
+  studentAnswer: string;
+  isCorrect: boolean;
+}>) {
   const patterns = {
     similarShapes: [], // 비슷한 모양의 글자 (b/d, p/q 등)
     caseConfusion: [], // 대소문자 혼동
@@ -102,7 +106,22 @@ function analyzeErrorPatterns(incorrectAnswers: any[]) {
 }
 
 // OpenAI API를 통한 피드백 생성
-async function generateFeedback(testType: string, analysis: any) {
+async function generateFeedback(testType: string, analysis: {
+  total: number;
+  correct: number;
+  accuracy: number;
+  incorrectAnswers: Array<{
+    question: string;
+    studentAnswer: string;
+    isCorrect: boolean;
+  }>;
+  errorPatterns: {
+    similarShapes: Array<{ question: string; studentAnswer: string }>;
+    caseConfusion: Array<{ question: string; studentAnswer: string }>;
+    uncommonLetters: Array<{ question: string; studentAnswer: string }>;
+    other: Array<{ question: string; studentAnswer: string }>;
+  };
+}) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
   
   if (!openaiApiKey) {
@@ -188,7 +207,7 @@ Hattie의 피드백 개념에 따라 다음 세 가지 질문에 답하는 피�
     // JSON 파싱 시도
     try {
       return JSON.parse(content);
-    } catch (parseError) {
+    } catch {
       // JSON 파싱 실패 시 기본 구조로 반환
       return {
         feedUp: "LNF 학습 목표를 달성하기 위해 노력하고 있습니다.",
@@ -217,7 +236,7 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
     
     // 세션 확인
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    const { data: { session } } = await supabase.auth.getSession();
     
     if (!session) {
       return NextResponse.json(
