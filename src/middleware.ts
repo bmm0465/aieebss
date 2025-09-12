@@ -58,7 +58,7 @@ export async function middleware(request: NextRequest) {
     // IMPORTANT: Avoid writing any logic between createServerClient and
     // await supabase.auth.getUser(). A simple mistake could make
     // it so that your user session is not refreshed.
-    const { data: { user }, error } = await supabase.auth.getUser()
+    const { error } = await supabase.auth.getUser()
     
     if (error) {
       console.error('Auth error in middleware:', error)
