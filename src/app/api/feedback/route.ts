@@ -33,11 +33,11 @@ function analyzeLNFResults(results: TestResult[]) {
   
   // 틀린 답변 분석
   const incorrectAnswers = lnfResults
-    .filter(r => !r.is_correct)
+    .filter(r => !r.is_correct && r.question_word && r.student_answer)
     .map(r => ({
-      question: r.question_word,
-      studentAnswer: r.student_answer,
-      isCorrect: r.is_correct
+      question: r.question_word!,
+      studentAnswer: r.student_answer!,
+      isCorrect: r.is_correct!
     }));
 
   // 자주 틀리는 글자 패턴 분석
