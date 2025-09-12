@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ResultReport, { type ProcessedResults } from '@/components/ResultReport';
+import FeedbackSection from '@/components/FeedbackSection';
 
 // Supabase 테이블 타입 정의
 type TestResult = {
@@ -232,6 +233,16 @@ export default async function SessionDetailPage({ params }: PageProps) {
 
         {/* 결과 리포트 */}
         <ResultReport results={processedResults} />
+
+        {/* AI 피드백 섹션 */}
+        {testTypes.map(testType => (
+          <FeedbackSection
+            key={testType}
+            testType={testType}
+            sessionId={sessionId}
+            hasResults={sessionResults.some(r => r.test_type === testType)}
+          />
+        ))}
 
         {/* 네비게이션 버튼들 */}
         <div style={{ 
