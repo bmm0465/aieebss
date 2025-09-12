@@ -42,7 +42,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
           upsert: false
         }),
       openai.audio.transcriptions.create({
-        model: 'whisper-1',
+        model: 'gpt-4o-mini-transcribe',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         prompt: "This is a DIBELS 8th Letter Naming Fluency (LNF) test for EFL students. The student will name individual English letters (both uppercase and lowercase). Accept various pronunciations like 'ay' for 'A', 'bee' for 'B', 'cee' for 'C'. The student might respond in Korean pronunciation like '에이' for 'A' or '비' for 'B'. Transcribe exactly what you hear, preserving the student's pronunciation attempt.",

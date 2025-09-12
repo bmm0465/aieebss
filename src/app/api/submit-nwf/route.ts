@@ -30,7 +30,7 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
           upsert: false
         }),
       openai.audio.transcriptions.create({
-        model: 'whisper-1',
+        model: 'gpt-4o-mini-transcribe',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         // 자동 언어 감지
         response_format: 'json',
