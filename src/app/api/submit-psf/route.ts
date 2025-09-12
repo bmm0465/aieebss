@@ -34,12 +34,14 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         // language 필드 제거 - 자동 감지가 기본값
         response_format: 'json', 
-        prompt: `This is a Phonemic Segmentation Fluency test for an EFL student learning English. The student might respond in Korean, English, or mixed language. Please transcribe exactly what they say, including:
-        - English phonemes like "m-a-p" or "b-e-e"
-        - Korean sounds like "엠-에이-피" or "비-이"
-        - Mixed responses like "엠-에이-피"
-        - Silence or unclear sounds
-        Transcribe literally what you hear, preserving the segmentation attempt.`,
+        prompt: `This is a DIBELS 8th Phonemic Segmentation Fluency (PSF) test for EFL students. The student will break words into individual phonemes (sounds). Accept various response formats:
+        - English phonemes: "m-a-p", "b-e-e", "s-u-n"
+        - Korean pronunciation: "엠-에이-피", "비-이-이", "에스-유-엔"
+        - Mixed responses: "엠-에이-피"
+        - Space-separated: "m a p", "b e e"
+        - Hyphen-separated: "m-a-p", "b-e-e"
+        - Partial attempts: "m...p" or "엠...피"
+        Transcribe exactly what you hear, preserving all segmentation attempts and hesitations.`,
       })
     ]);
 

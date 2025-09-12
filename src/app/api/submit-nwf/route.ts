@@ -34,13 +34,14 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         // 자동 언어 감지
         response_format: 'json',
-        prompt: `This is a DIBELS NWF test for an EFL student. The student will read a nonsense word or segment its sounds. Please transcribe exactly what they say, including:
-        - Complete nonsense words: "hap", "bim", "tog"
-        - Segmented sounds: "h-a-p", "b-i-m", "t-o-g"
-        - Korean pronunciation: "합", "빔", "톡"
-        - Mixed responses: "합-에이-피"
-        - Letter names: "aitch-ay-pee"
-        Transcribe literally what you hear, preserving the reading attempt.`,
+        prompt: `This is a DIBELS 8th Nonsense Word Fluency (NWF) test for EFL students. The student will read made-up words or segment their sounds. Accept various response formats:
+        - Complete nonsense words: "hap", "bim", "tog", "fip"
+        - Segmented sounds: "h-a-p", "b-i-m", "t-o-g", "f-i-p"
+        - Korean pronunciation: "합", "빔", "톡", "핍"
+        - Mixed responses: "합-에이-피", "빔-아이-엠"
+        - Letter names: "aitch-ay-pee", "bee-eye-em"
+        - Blended attempts: "hap", "bim" (whole word reading)
+        Transcribe exactly what you hear, preserving all reading attempts and pronunciation variations.`,
       })
     ]);
     

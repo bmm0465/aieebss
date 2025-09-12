@@ -33,13 +33,14 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         // 자동 언어 감지
         response_format: 'json',
-        prompt: `This is a DIBELS WRF test for an EFL student. The student will read English sight words. Please transcribe exactly what they say, including:
-        - Correct English words: "the", "is", "can", "little", "play"
-        - Korean pronunciation: "더", "이즈", "캔", "리틀", "플레이"
+        prompt: `This is a DIBELS 8th Word Reading Fluency (WRF) test for EFL students. The student will read English sight words. Accept various response formats:
+        - Correct English words: "the", "is", "can", "little", "play", "said", "have"
+        - Korean pronunciation: "더", "이즈", "캔", "리틀", "플레이", "세드", "해브"
         - Mixed responses: "더-이즈-캔"
-        - Partial attempts: "th...", "c...an"
-        - Mispronunciations: "teh" (for "the"), "cun" (for "can")
-        Transcribe literally what you hear, preserving the reading attempt.`,
+        - Partial attempts: "th...", "c...an", "l...ittle"
+        - Common mispronunciations: "teh" (for "the"), "cun" (for "can"), "sed" (for "said")
+        - Sounding out: "t-h-e", "i-s", "c-a-n"
+        Transcribe exactly what you hear, preserving all reading attempts and pronunciation variations.`,
       })
     ]);
     

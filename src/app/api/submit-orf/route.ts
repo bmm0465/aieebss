@@ -24,14 +24,18 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         // 자동 언어 감지
         response_format: 'json',
-        prompt: `This is a DIBELS ORF test for an EFL student. The student will read a short story passage aloud. Please transcribe exactly what they say, including:
+        prompt: `This is a DIBELS 8th Oral Reading Fluency (ORF) test for EFL students. The student will read a passage aloud. Accept various response formats:
         - Correct English reading: "The cat sat on the mat."
         - Korean pronunciation: "더 캣 샛 온 더 맷"
         - Mixed responses: "더 cat sat on 더 mat"
         - Mispronunciations: "The cat sit on the mat"
         - Partial attempts: "The cat... sat... on..."
         - Hesitations and corrections: "The cat, um, sat on the mat"
-        Transcribe literally what you hear, preserving all reading attempts and hesitations.`,
+        - Word substitutions: "The dog sat on the mat" (for "cat")
+        - Word omissions: "The cat sat the mat" (missing "on")
+        - Word additions: "The cat sat down on the mat"
+        - Repetitions: "The cat, the cat sat on the mat"
+        Transcribe exactly what you hear, preserving all reading attempts, hesitations, and natural reading patterns.`,
       })
     ]);
 
