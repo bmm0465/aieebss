@@ -145,29 +145,29 @@ export default async function SessionsPage() {
       );
     }
 
-  if (!results || results.length === 0) {
-    return (
-      <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
-        backgroundSize: 'cover', 
-        minHeight: '100vh', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        color: 'white' 
-      }}>
-        <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
-          <h1>아직 치른 시험이 없습니다</h1>
-          <p>시험을 먼저 완료하고 다시 확인해주세요.</p>
-          <Link href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</Link>
+    if (!results || results.length === 0) {
+      return (
+        <div style={{ 
+          backgroundImage: `url('/background.jpg')`, 
+          backgroundSize: 'cover', 
+          minHeight: '100vh', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          color: 'white' 
+        }}>
+          <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
+            <h1>아직 치른 시험이 없습니다</h1>
+            <p>시험을 먼저 완료하고 다시 확인해주세요.</p>
+            <Link href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</Link>
+          </div>
         </div>
-      </div>
-    );
-  }
+      );
+    }
 
-  const sessions = groupResultsBySession(results);
+    const sessions = groupResultsBySession(results);
 
-  return (
+    return (
     <div style={{ 
       backgroundImage: `url('/background.jpg')`, 
       backgroundSize: 'cover', 

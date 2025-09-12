@@ -165,26 +165,26 @@ export default async function SessionDetailPage({ params }: PageProps) {
       );
     }
 
-  if (!allResults || allResults.length === 0) {
-    notFound();
-  }
+    if (!allResults || allResults.length === 0) {
+      notFound();
+    }
 
-  // 세션별로 필터링
-  const sessionResults = filterResultsBySession(allResults, sessionId);
+    // 세션별로 필터링
+    const sessionResults = filterResultsBySession(allResults, sessionId);
 
-  if (sessionResults.length === 0) {
-    notFound();
-  }
+    if (sessionResults.length === 0) {
+      notFound();
+    }
 
-  const processedResults = calculateResults(sessionResults);
-  
-  // 세션 정보 생성
-  const firstResult = sessionResults[0];
-  const lastResult = sessionResults[sessionResults.length - 1];
-  const sessionDate = new Date(firstResult.created_at || 0);
-  const testTypes = [...new Set(sessionResults.map(r => r.test_type))];
+    const processedResults = calculateResults(sessionResults);
+    
+    // 세션 정보 생성
+    const firstResult = sessionResults[0];
+    const lastResult = sessionResults[sessionResults.length - 1];
+    const sessionDate = new Date(firstResult.created_at || 0);
+    const testTypes = [...new Set(sessionResults.map(r => r.test_type))];
 
-  return (
+    return (
     <div style={{ 
       backgroundImage: `url('/background.jpg')`, 
       backgroundSize: 'cover', 
