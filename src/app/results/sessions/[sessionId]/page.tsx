@@ -131,9 +131,14 @@ interface PageProps {
 
 export default async function SessionDetailPage({ params }: PageProps) {
   const { sessionId } = await params;
+  console.log("SessionDetailPage - sessionId:", sessionId);
+  
   const supabase = await createClient();
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  console.log("SessionDetailPage - session:", session ? "존재함" : "없음");
+  console.log("SessionDetailPage - sessionError:", sessionError);
   
   if (sessionError) {
     console.error("세션 에러:", sessionError);

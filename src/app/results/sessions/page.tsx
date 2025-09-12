@@ -111,9 +111,14 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
 }
 
 export default async function SessionsPage() {
+  console.log("SessionsPage - 시작");
+  
   const supabase = await createClient();
 
   const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  console.log("SessionsPage - session:", session ? "존재함" : "없음");
+  console.log("SessionsPage - sessionError:", sessionError);
   
   if (sessionError) {
     console.error("세션 에러:", sessionError);

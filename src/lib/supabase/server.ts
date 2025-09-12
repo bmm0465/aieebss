@@ -21,7 +21,6 @@ export const createClient = async () => {
               value, 
               ...options,
               // 세션 지속성을 위한 추가 설정
-              httpOnly: true,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax'
             });
@@ -35,7 +34,6 @@ export const createClient = async () => {
               name, 
               value: '', 
               ...options,
-              httpOnly: true,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax'
             });
