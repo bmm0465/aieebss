@@ -4,21 +4,21 @@ import { redirect } from 'next/navigation';
 
 
 export default async function ResultsPage() {
+  const supabase = await createClient();
+
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  
+  if (sessionError) {
+    console.error("세션 에러:", sessionError);
+    redirect('/');
+  }
+  
+  if (!session) {
+    console.log("세션이 없습니다. 로그인 페이지로 리다이렉트합니다.");
+    redirect('/');
+  }
+
   try {
-    const supabase = await createClient();
-
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-    
-    if (sessionError) {
-      console.error("세션 에러:", sessionError);
-      redirect('/');
-    }
-    
-    if (!session) {
-      console.log("세션이 없습니다. 로그인 페이지로 리다이렉트합니다.");
-      redirect('/');
-    }
-
     const { data: results, error } = await supabase
       .from('test_results')
       .select('*')
