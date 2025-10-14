@@ -4,15 +4,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 // 타입 정의
-type UserProfile = {
-  id: string;
-  full_name: string | null;
-  role: string;
-  class_name: string | null;
-  student_number: string | null;
-  grade_level: string | null;
-};
-
 type StudentWithStats = {
   id: string;
   email: string;
@@ -117,7 +108,7 @@ export default async function TeacherDashboard() {
       .in('id', studentIds);
 
     // 학생 이메일 가져오기 (auth.users)
-    const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+    const { data: { users } } = await supabase.auth.admin.listUsers();
     
     // 테스트 결과 가져오기
     const { data: testResults } = await supabase
