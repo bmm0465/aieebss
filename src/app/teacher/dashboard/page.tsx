@@ -410,15 +410,6 @@ export default async function TeacherDashboard() {
           ))
         )}
       </div>
-
-      {/* 스타일 추가 */}
-      <style jsx>{`
-        .student-card:hover {
-          background-color: rgba(255, 255, 255, 0.1) !important;
-          border-color: rgba(255, 215, 0, 0.5) !important;
-          transform: translateY(-2px);
-        }
-      `}</style>
     </div>
   );
 }

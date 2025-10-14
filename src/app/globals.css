@@ -49,3 +49,10 @@ body {
 .test-item:hover {
   background-color: rgba(255, 255, 255, 0.05) !important;
 }
+
+/* 교사 대시보드 학생 카드 호버 효과 */
+.student-card:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 215, 0, 0.5) !important;
+  transform: translateY(-2px);
+}
