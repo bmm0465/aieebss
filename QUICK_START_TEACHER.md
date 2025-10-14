@@ -59,9 +59,12 @@ CREATE POLICY "Teachers can view their students' results" ON test_results FOR SE
 2. SQL Editor에서 실행:
 
 ```sql
--- 본인의 UUID를 넣으세요
+-- 교사 3명을 한 번에 등록
 INSERT INTO user_profiles (id, full_name, role)
-VALUES ('YOUR-USER-UUID', '김선생', 'teacher')
+VALUES 
+  ('14ea1f09-1c7f-43eb-95cf-1b491dd876a4', '권해경 선생님', 'teacher'),
+  ('fe2e88ce-bc53-4c37-825b-4bff261ef1a9', '이수민 선생님', 'teacher'),
+  ('3c9db811-8b08-48bc-8f0e-d515fa045d51', '이수지 선생님', 'teacher')
 ON CONFLICT (id) DO UPDATE SET role = 'teacher';
 ```
 
