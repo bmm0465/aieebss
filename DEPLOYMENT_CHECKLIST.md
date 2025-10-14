@@ -28,6 +28,8 @@ OPENAI_API_KEY=your_openai_api_key
 
 ### 2. Supabase 설정 확인
 - [ ] `test_results` 테이블 생성 및 RLS 정책 설정
+- [ ] `user_profiles` 테이블 생성 및 RLS 정책 설정 (🆕 교사 기능)
+- [ ] `teacher_student_assignments` 테이블 생성 및 RLS 정책 설정 (🆕 교사 기능)
 - [ ] `student-recordings` 스토리지 버킷 생성 및 정책 설정
 - [ ] 사용자 인증 설정 확인
 
@@ -51,6 +53,8 @@ npm run start
 - [ ] 음성 녹음 기능
 - [ ] API 호출 (TTS, 음성 인식, 채점)
 - [ ] 결과 페이지 및 세션 관리
+- [ ] 교사 대시보드 접근 (교사 계정) 🆕
+- [ ] 학생 상세 결과 조회 🆕
 
 ### 3. 성능 테스트
 - [ ] 페이지 로딩 속도
@@ -88,6 +92,8 @@ npm run start
 - [ ] 테스트 결과 저장
 - [ ] 세션별 결과 조회
 - [ ] 결과 리포트 표시
+- [ ] 교사 대시보드 통계 표시 🆕
+- [ ] 학생별 차트 및 시각화 🆕
 
 ## 🔄 롤백 계획
 

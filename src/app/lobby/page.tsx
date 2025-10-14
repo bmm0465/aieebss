@@ -49,6 +49,7 @@ export default function LobbyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [hasTestResults, setHasTestResults] = useState(false);
+  const [isTeacher, setIsTeacher] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -67,6 +68,15 @@ export default function LobbyPage() {
           .limit(1);
         
         setHasTestResults(Boolean(results && results.length > 0));
+
+        // 교사 권한 확인
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+        
+        setIsTeacher(profile?.role === 'teacher');
       }
     };
     checkUser();
@@ -163,6 +173,24 @@ export default function LobbyPage() {
           gap: '1rem',
           marginTop: '2rem'
         }}>
+          {/* 교사 대시보드 버튼 (교사일 때만 표시) */}
+          {isTeacher && (
+            <button
+              style={{
+                ...buttonStyle,
+                backgroundColor: 'rgba(156, 39, 176, 0.2)',
+                border: '2px solid rgba(156, 39, 176, 0.5)',
+                color: '#9C27B0',
+                fontSize: '1.1rem',
+                fontWeight: 'bold'
+              }}
+              onClick={() => router.push('/teacher/dashboard')}
+              className="teacher-button"
+            >
+              🎓 교사 관리 대시보드
+            </button>
+          )}
+
           {/* 결과 확인 버튼 (테스트 결과가 있을 때만 표시) */}
           {hasTestResults && (
             <button
