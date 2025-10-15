@@ -218,7 +218,7 @@ export default function LnfTestPage() {
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>비석에 나타나는 고대 룬 문자의 이름을 정확하고 빠르게 읽어내야 합니다.<br/>DIBELS 공식 규칙에 따라 시험이 진행됩니다.</p>
+            <p style={paragraphStyle}>비석에 나타나는 고대 룬 문자의 이름을 정확하고 빠르게 읽어내야 합니다.<br/></p>
             <p style={{...feedbackStyle, color: isMediaReady ? '#90EE90' : '#FFB6C1'}}>
               {isMediaReady ? '🎤 마이크가 준비되었습니다!' : '🎤 마이크를 준비하고 있습니다...'}
             </p>

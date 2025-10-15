@@ -155,7 +155,7 @@ export default function Home() {
             />
           </div>
           <div style={{ marginTop: '1rem' }}>
-            <label htmlFor="password">입학 암호</label>
+            <label htmlFor="password">마법사 등록 암호</label>
             <input
               id="password"
               type="password"

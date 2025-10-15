@@ -1,0 +1,22 @@
+user_id,full_name,email,class_name,student_number,grade_level
+abc12345-1234-1234-1234-123456789001,김민수,minsoo.kim@example.com,1학년 1반,1,1학년
+abc12345-1234-1234-1234-123456789002,이영희,younghee.lee@example.com,1학년 1반,2,1학년
+abc12345-1234-1234-1234-123456789003,박철수,cheolsoo.park@example.com,1학년 1반,3,1학년
+abc12345-1234-1234-1234-123456789004,정지은,jieun.jung@example.com,1학년 1반,4,1학년
+abc12345-1234-1234-1234-123456789005,최수아,sua.choi@example.com,1학년 1반,5,1학년
+abc12345-1234-1234-1234-123456789006,강민준,minjun.kang@example.com,1학년 2반,1,1학년
+abc12345-1234-1234-1234-123456789007,윤서연,seoyeon.yoon@example.com,1학년 2반,2,1학년
+abc12345-1234-1234-1234-123456789008,조현우,hyunwoo.cho@example.com,1학년 2반,3,1학년
+abc12345-1234-1234-1234-123456789009,한지우,jiwoo.han@example.com,1학년 2반,4,1학년
+abc12345-1234-1234-1234-123456789010,송하은,haeun.song@example.com,1학년 2반,5,1학년
+abc12345-1234-1234-1234-123456789011,임도윤,doyoon.lim@example.com,2학년 1반,1,2학년
+abc12345-1234-1234-1234-123456789012,오서준,seojun.oh@example.com,2학년 1반,2,2학년
+abc12345-1234-1234-1234-123456789013,장예린,yerin.jang@example.com,2학년 1반,3,2학년
+abc12345-1234-1234-1234-123456789014,신우진,woojin.shin@example.com,2학년 1반,4,2학년
+abc12345-1234-1234-1234-123456789015,배지훈,jihoon.bae@example.com,2학년 1반,5,2학년
+abc12345-1234-1234-1234-123456789016,홍채원,chaewon.hong@example.com,2학년 2반,1,2학년
+abc12345-1234-1234-1234-123456789017,노시우,siwoo.noh@example.com,2학년 2반,2,2학년
+abc12345-1234-1234-1234-123456789018,서은채,eunchae.seo@example.com,2학년 2반,3,2학년
+abc12345-1234-1234-1234-123456789019,권유나,yuna.kwon@example.com,2학년 2반,4,2학년
+abc12345-1234-1234-1234-123456789020,고준서,junseo.ko@example.com,2학년 2반,5,2학년
+
