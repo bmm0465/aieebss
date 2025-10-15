@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import LogoutButton from '@/components/LogoutButton';
 
 // 타입 정의
 type StudentWithStats = {
@@ -107,8 +108,15 @@ export default async function TeacherDashboard() {
       .select('*')
       .in('id', studentIds);
 
-    // 학생 이메일 가져오기 (auth.users)
-    const { data: { users } } = await supabase.auth.admin.listUsers();
+    // 학생 이메일 가져오기 (auth.users) - 에러 처리 추가
+    let users = [];
+    try {
+      const { data } = await supabase.auth.admin.listUsers();
+      users = data.users || [];
+    } catch (error) {
+      console.error('사용자 목록 조회 에러:', error);
+      // 이메일을 가져오지 못해도 계속 진행
+    }
     
     // 테스트 결과 가져오기
     const { data: testResults } = await supabase
@@ -205,20 +213,23 @@ export default async function TeacherDashboard() {
                 </p>
               </div>
             </div>
-            <Link 
-              href="/lobby"
-              style={{
-                backgroundColor: 'rgba(255,215,0,0.2)',
-                color: '#FFD700',
-                padding: '0.8rem 1.5rem',
-                borderRadius: '8px',
-                textDecoration: 'none',
-                border: '2px solid rgba(255,215,0,0.5)',
-                fontWeight: 'bold'
-              }}
-            >
-              🏠 로비로
-            </Link>
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <Link 
+                href="/lobby"
+                style={{
+                  backgroundColor: 'rgba(255,215,0,0.2)',
+                  color: '#FFD700',
+                  padding: '0.8rem 1.5rem',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  border: '2px solid rgba(255,215,0,0.5)',
+                  fontWeight: 'bold'
+                }}
+              >
+                🏠 로비로
+              </Link>
+              <LogoutButton />
+            </div>
           </div>
         </div>
 

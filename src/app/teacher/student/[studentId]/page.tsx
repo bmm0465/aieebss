@@ -77,8 +77,15 @@ export default async function StudentDetailPage({ params }: Props) {
     .eq('id', studentId)
     .single();
 
-  // 학생 이메일 가져오기
-  const { data: { user: studentUser } } = await supabase.auth.admin.getUserById(studentId);
+  // 학생 이메일 가져오기 (에러 처리 추가)
+  let studentUser = null;
+  try {
+    const { data } = await supabase.auth.admin.getUserById(studentId);
+    studentUser = data.user;
+  } catch (error) {
+    console.error('학생 이메일 조회 에러:', error);
+    // 이메일을 가져오지 못해도 계속 진행
+  }
 
   // 학생의 모든 테스트 결과 가져오기
   const { data: testResults, error: resultsError } = await supabase

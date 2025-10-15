@@ -50,6 +50,8 @@ export default function LobbyPage() {
   const [loading, setLoading] = useState(true);
   const [hasTestResults, setHasTestResults] = useState(false);
   const [isTeacher, setIsTeacher] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -59,6 +61,7 @@ export default function LobbyPage() {
         router.push('/');
       } else {
         setLoading(false);
+        setUserEmail(user.email || '');
         
         // 사용자의 테스트 결과가 있는지 확인
         const { data: results } = await supabase
@@ -81,6 +84,27 @@ export default function LobbyPage() {
     };
     checkUser();
   }, [router]);
+
+  const handleLogout = async () => {
+    if (!confirm('정말 로그아웃 하시겠습니까?')) {
+      return;
+    }
+
+    setLoggingOut(true);
+    const supabase = createClient();
+    
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      // 로그아웃 성공 시 로그인 페이지로 이동
+      router.push('/');
+    } catch (error) {
+      console.error('로그아웃 에러:', error);
+      alert('로그아웃 중 오류가 발생했습니다.');
+      setLoggingOut(false);
+    }
+  };
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = {
@@ -144,6 +168,39 @@ export default function LobbyPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
+        {/* 사용자 정보 및 로그아웃 버튼 */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1rem',
+          padding: '0.8rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          borderRadius: '8px'
+        }}>
+          <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+            로그인: <strong>{userEmail}</strong>
+          </div>
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            style={{
+              backgroundColor: loggingOut ? 'rgba(244, 67, 54, 0.5)' : 'rgba(244, 67, 54, 0.2)',
+              color: '#F44336',
+              border: '2px solid rgba(244, 67, 54, 0.5)',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              cursor: loggingOut ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              fontSize: '0.9rem',
+              transition: 'all 0.3s ease'
+            }}
+            className="logout-button"
+          >
+            {loggingOut ? '로그아웃 중...' : '🚪 로그아웃'}
+          </button>
+        </div>
+
         <div style={introStyle}>
           <Image src="/owl.png" alt="안내하는 부엉이" width={80} height={80} />
           <div style={owlMessageStyle}>
@@ -222,6 +279,14 @@ export default function LobbyPage() {
           </button>
         </div>
       </div>
+
+      {/* 스타일 추가 */}
+      <style jsx>{`
+        .logout-button:hover:not(:disabled) {
+          background-color: rgba(244, 67, 54, 0.4) !important;
+          transform: translateY(-1px);
+        }
+      `}</style>
     </div>
   );
 }
