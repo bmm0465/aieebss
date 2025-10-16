@@ -56,3 +56,9 @@ body {
   border-color: rgba(255, 215, 0, 0.5) !important;
   transform: translateY(-2px);
 }
+
+/* 교사 대시보드 빠른 링크 호버 효과 */
+.quick-link:hover {
+  background-color: rgba(33, 150, 243, 0.4) !important;
+  transform: translateY(-2px);
+}

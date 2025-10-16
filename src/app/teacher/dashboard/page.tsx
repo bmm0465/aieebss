@@ -438,14 +438,6 @@ export default async function TeacherDashboard() {
           ))
         )}
       </div>
-
-      {/* 스타일 추가 */}
-      <style jsx>{`
-        .quick-link:hover {
-          background-color: rgba(33, 150, 243, 0.4) !important;
-          transform: translateY(-2px);
-        }
-      `}</style>
     </div>
   );
 }
