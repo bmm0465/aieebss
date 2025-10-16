@@ -156,6 +156,15 @@ src/
 - `tsconfig.json`: TypeScript 설정
 - `package.json`: 프로젝트 의존성
 
+## 📢 프로젝트 소개 자료
+
+프로젝트를 다른 사람들에게 소개하고 싶으신가요? 다음 자료들을 활용하세요:
+
+- 📄 **[ONE_PAGE_SUMMARY.md](ONE_PAGE_SUMMARY.md)**: 한 페이지 요약본 (빠른 개요)
+- 📊 **[PROJECT_OVERVIEW.md](PROJECT_OVERVIEW.md)**: 프로젝트 전체 소개 (상세)
+- 🎥 **[DEMO_GUIDE.md](DEMO_GUIDE.md)**: 데모 시연 가이드 (15분)
+- 📽️ **[PRESENTATION_SLIDES.md](PRESENTATION_SLIDES.md)**: 발표용 슬라이드 내용 (25장)
+
 ## 📝 라이선스
 
 이 프로젝트는 MIT 라이선스 하에 배포됩니다.
