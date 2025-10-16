@@ -233,6 +233,32 @@ export default async function TeacherDashboard() {
           </div>
         </div>
 
+        {/* 빠른 링크 */}
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
+          <Link
+            href="/teacher/test-items"
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(33, 150, 243, 0.2)',
+              color: '#2196F3',
+              padding: '1rem',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              border: '2px solid rgba(33, 150, 243, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              transition: 'all 0.3s ease'
+            }}
+            className="quick-link"
+          >
+            📋 평가 문항 및 정답 확인
+          </Link>
+        </div>
+
         {/* 통계 요약 */}
         <div style={{
           display: 'grid',
@@ -412,6 +438,14 @@ export default async function TeacherDashboard() {
           ))
         )}
       </div>
+
+      {/* 스타일 추가 */}
+      <style jsx>{`
+        .quick-link:hover {
+          background-color: rgba(33, 150, 243, 0.4) !important;
+          transform: translateY(-2px);
+        }
+      `}</style>
     </div>
   );
 }

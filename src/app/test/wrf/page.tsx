@@ -5,8 +5,28 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-const wrfWords = ["the", "a", "see", "in", "it", "is", "and", "go", "can", "me", "like", "my", "little", "play", "with", "for", "you", "big", "red", "one"];
-const getShuffledWords = () => wrfWords.sort(() => 0.5 - Math.random());
+// [수정] 모든 학생에게 동일한 고정된 문항 출제 (중복 제거: 85개)
+const getFixedSightWords = () => {
+    const fixedWords = [
+        // 초고빈도 단어 (1-2글자) - 15개
+        "no", "do", "he", "go", "it", "to", "me", "up", "the", "she", "yes", "you", "not", "who", "how",
+        
+        // 고빈도 단어 (3-4글자) - 35개
+        "this", "that", "like", "look", "good", "come", "have", "said", "love",
+        "hat", "cat", "dad", "sit", "mom", "big", "dog", "pig", "six", "can", "two", "one",
+        "pen", "leg", "pan", "car", "zoo", "red", "ten", "too", "what", "here", "down", "open", "much", "nice",
+        
+        // 중빈도 단어 (4-5글자) - 25개
+        "tall", "small", "hello", "three", "four", "five", "door", "book", "jump", "swim",
+        "great", "green", "eight", "stand", "blue", "lion", "nine", "white", "many", "apple",
+        "seven", "pizza", "sorry", "color", "close",
+        
+        // 저빈도/복합 단어 (5-6글자) - 10개
+        "okay", "bye", "dance", "pencil", "sister", "sunny", "ball", "eraser"
+    ];
+    
+    return fixedWords;
+};
 
 export default function WrfTestPage() {
   const supabase = createClient();
@@ -37,7 +57,7 @@ export default function WrfTestPage() {
       if (!user) router.push('/');
       else {
         setUser(user);
-        setShuffledWords(getShuffledWords());
+        setShuffledWords(getFixedSightWords()); // [수정] 고정된 문항 사용
         // 미리 마이크 권한 요청 및 MediaRecorder 준비
         prepareMediaRecorder();
       }

@@ -5,8 +5,38 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-const nwfWords = ["nuf", "tib", "vog", "jez", "zop", "quim", "yeb", "wix", "fip", "roz", "kud"];
-const getShuffledWords = () => nwfWords.sort(() => 0.5 - Math.random());
+// [수정] 모든 학생에게 동일한 고정된 문항 출제
+// 중복 제거 및 난이도별 균형 잡힌 150개 Nonsense Words
+const getFixedNonsenseWords = () => {
+    const fixedWords = [
+        // 3글자 단어 (CVC 패턴) - 60개
+        "sep", "nem", "dib", "rop", "lin", "fom", "mig", "rup", "dep", "fod",
+        "pid", "rit", "mag", "pim", "sog", "tib", "pon", "heg", "dem", "seb",
+        "dop", "nug", "tet", "wep", "vom", "bem", "kun", "yut", "yad", "heb",
+        "pom", "gid", "pag", "kom", "wog", "yig", "lan", "nen", "het", "som",
+        "tig", "fon", "tup", "nin", "hon", "vid", "wim", "pob", "sed", "yod",
+        "tud", "mem", "vot", "dob", "vun", "yed", "bim", "wod", "yab", "yun",
+        
+        // 3글자 단어 추가 - 30개
+        "lem", "fub", "vut", "gim", "wid", "reb", "wap", "mip", "wem", "yom",
+        "vad", "wum", "nim", "kep", "biv", "lum", "rik", "sab", "wug", "pac",
+        "fot", "lut", "nam", "tok", "zam", "neb", "wut", "cun", "rif", "lom",
+        
+        // 4글자 단어 (CCVC, CVCC) - 40개
+        "stam", "clen", "frap", "smop", "grut", "ston", "cles", "snid", "blut", "pren",
+        "glom", "trab", "clom", "snut", "krat", "flot", "clor", "jent", "galk", "vrop",
+        "pler", "drem", "trul", "skom", "tolt", "vrat", "blim", "sner", "larm", "fral",
+        "sket", "trak", "plon", "trup", "smot", "gren", "frim", "prun", "twet", "draf",
+        
+        // 4글자 단어 추가 - 10개
+        "snib", "glap", "frem", "morl", "spen", "drup", "fran", "plap", "clut", "spet",
+        
+        // 4-5글자 복합 단어 - 10개
+        "crum", "frin", "baip", "ferk", "hilp", "krad", "clanp", "gop", "rin", "tep"
+    ];
+    
+    return fixedWords;
+};
 
 export default function NwfTestPage() {
   const supabase = createClient();
@@ -36,7 +66,7 @@ export default function NwfTestPage() {
       if (!user) router.push('/');
       else {
         setUser(user);
-        setShuffledWords(getShuffledWords());
+        setShuffledWords(getFixedNonsenseWords()); // [수정] 고정된 문항 사용
       }
     };
     setup();

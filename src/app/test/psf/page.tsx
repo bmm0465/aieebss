@@ -5,8 +5,23 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-const psfWords = ["map", "sit", "dog", "run", "cut", "fish", "ship", "that", "them", "sing"];
-const getShuffledWords = () => psfWords.sort(() => 0.5 - Math.random());
+// [수정] 모든 학생에게 동일한 고정된 문항 출제 (107개 단어)
+const getFixedWords = () => {
+    const fixedWords = [
+        "road", "dad", "six", "frog", "on", "cry", "sit", "camp", "farm", "bell",
+        "plan", "hand", "gift", "stop", "map", "mad", "van", "pin", "star", "get",
+        "top", "old", "ant", "cup", "pear", "pond", "milk", "son", "pen", "belt",
+        "rug", "hit", "nut", "doll", "box", "bat", "cat", "bug", "win", "moon",
+        "gold", "web", "mug", "man", "pig", "sand", "dig", "pot", "rock", "hot",
+        "go", "bed", "mom", "fan", "ship", "an", "so", "desk", "wig", "ski",
+        "car", "fog", "leg", "dog", "pull", "toad", "ten", "hen", "jog", "kid",
+        "at", "fit", "but", "cold", "lion", "red", "sun", "jam", "mud", "hug",
+        "up", "crab", "coin", "heel", "put", "run", "cut", "not", "tap", "pet",
+        "dot", "big", "sip", "mop", "lid", "lip", "fin", "kit", "had", "can",
+        "zoo", "hop", "hat", "deep", "lamp", "drum", "nest", "tent"
+    ];
+    return fixedWords;
+};
 
 export default function PsfTestPage() {
   const supabase = createClient();
@@ -38,7 +53,7 @@ export default function PsfTestPage() {
       if (!user) router.push('/');
       else {
         setUser(user);
-        setShuffledWords(getShuffledWords());
+        setShuffledWords(getFixedWords()); // [수정] 고정된 문항 사용
         // 미리 마이크 권한 요청 및 MediaRecorder 준비
         prepareMediaRecorder();
       }

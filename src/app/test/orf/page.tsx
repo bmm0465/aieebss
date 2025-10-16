@@ -5,7 +5,47 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-const passage = "A little cat saw a big dog. The dog had a red ball. The cat wanted to play. 'Can I play with you?' said the cat. The dog said, 'Yes, you can!' They played with the red ball all day.";
+// [수정] 모든 학생에게 동일한 고정된 지문 출제
+const passage = `Hello! How many dogs?
+Hi! One, two, three, four. Four dogs!
+Okay. Come in.
+
+Do you have a ball?
+Yes, I do. Here you are.
+Thank you.
+
+Catch the ball!
+
+Do you have juice?
+Yes, I do. Do you like orange juice?
+Yes, I do. I like orange juice.
+Here.
+Thank you. Bye.
+Goodbye.
+
+At the Desk
+Leo: What are you doing?
+Mia: I am drawing a picture.
+Leo: Wow. What is it?
+Mia: It is a big, yellow sun.
+Leo: I like your picture. It is very nice.
+Mia: Thank you, Leo.
+
+My Cookie
+Sam: I have a cookie.
+Kim: Wow, it is a big cookie.
+Sam: Yes, it is. Do you want some?
+Kim: Yes, please.
+Sam: Here you are.
+Kim: Thank you, Sam.
+
+In the Park
+Ann: What is that?
+Ben: This is my new ball.
+Ann: Wow, it is a big ball. I like the color.
+Ben: Thank you. It is blue.
+Ann: Can we play with the ball?
+Ben: Yes! Let's play together.`;
 
 export default function OrfTestPage() {
   const supabase = createClient();
