@@ -252,7 +252,6 @@ Ben: Yes! Let's play together.`,
           description={testItems.LNF.description}
           totalItems={testItems.LNF.totalItems}
           items={testItems.LNF.items}
-          type="list"
           note={testItems.LNF.note}
         />
 
@@ -262,7 +261,6 @@ Ben: Yes! Let's play together.`,
           description={testItems.PSF.description}
           totalItems={testItems.PSF.totalItems}
           items={testItems.PSF.items}
-          type="list"
           note={testItems.PSF.note}
         />
 
@@ -272,7 +270,6 @@ Ben: Yes! Let's play together.`,
           description={testItems.NWF.description}
           totalItems={testItems.NWF.totalItems}
           items={testItems.NWF.items}
-          type="list"
           note={testItems.NWF.note}
         />
 
@@ -282,7 +279,6 @@ Ben: Yes! Let's play together.`,
           description={testItems.WRF.description}
           totalItems={testItems.WRF.totalItems}
           items={testItems.WRF.items}
-          type="list"
           note={testItems.WRF.note}
         />
 
