@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 }
 
 // 전체 어려운 단어 목록
-async function getDifficultWords(supabase: ReturnType<typeof createClient>) {
+async function getDifficultWords(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data, error } = await supabase.rpc('get_psf_difficult_words');
   
   if (error) {
@@ -97,7 +97,7 @@ async function getDifficultWords(supabase: ReturnType<typeof createClient>) {
 }
 
 // 특정 학생의 약점 단어
-async function getStudentWeakWords(supabase: ReturnType<typeof createClient>, studentId: string) {
+async function getStudentWeakWords(supabase: Awaited<ReturnType<typeof createClient>>, studentId: string) {
   const { data: results, error } = await supabase
     .from('test_results')
     .select('question_word, correct_segments, target_segments')
@@ -136,7 +136,7 @@ async function getStudentWeakWords(supabase: ReturnType<typeof createClient>, st
 }
 
 // 반 전체 요약
-async function getClassSummary(supabase: ReturnType<typeof createClient>, className: string) {
+async function getClassSummary(supabase: Awaited<ReturnType<typeof createClient>>, className: string) {
   const { data: results, error } = await supabase
     .from('test_results')
     .select(`
