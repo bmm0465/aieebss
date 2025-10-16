@@ -109,7 +109,7 @@ export default async function TeacherDashboard() {
       .in('id', studentIds);
 
     // 학생 이메일 가져오기 (auth.users) - 에러 처리 추가
-    let users = [];
+    let users: Array<{ id: string; email?: string }> = [];
     try {
       const { data } = await supabase.auth.admin.listUsers();
       users = data.users || [];
