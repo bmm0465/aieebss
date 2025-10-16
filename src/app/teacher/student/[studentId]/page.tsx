@@ -43,31 +43,53 @@ export default async function StudentDetailPage({ params }: Props) {
   // 세션 확인 - getUser()로 변경 (더 안정적)
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   
+  console.log('[StudentDetail] Auth check:', { 
+    hasUser: !!user, 
+    userId: user?.id,
+    error: userError?.message 
+  });
+
   if (userError || !user) {
-    console.error('User authentication error:', userError);
-    redirect('/');
+    console.error('[StudentDetail] User authentication error:', userError);
+    // 에러 정보를 쿼리 파라미터로 전달
+    redirect(`/?error=auth_required&from=student_detail`);
   }
 
   // 교사 권한 확인
-  const { data: teacherProfile } = await supabase
+  const { data: teacherProfile, error: profileError } = await supabase
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
     .single();
 
+  console.log('[StudentDetail] Teacher profile check:', { 
+    hasProfile: !!teacherProfile, 
+    role: teacherProfile?.role,
+    error: profileError?.message 
+  });
+
   if (!teacherProfile || teacherProfile.role !== 'teacher') {
-    redirect('/lobby');
+    console.error('[StudentDetail] Not a teacher or profile not found');
+    redirect('/lobby?error=not_teacher');
   }
 
   // 해당 학생이 교사의 담당 학생인지 확인
-  const { data: assignment } = await supabase
+  const { data: assignment, error: assignmentError } = await supabase
     .from('teacher_student_assignments')
     .select('*')
     .eq('teacher_id', user.id)
     .eq('student_id', studentId)
     .single();
 
+  console.log('[StudentDetail] Assignment check:', { 
+    hasAssignment: !!assignment,
+    teacherId: user.id,
+    studentId,
+    error: assignmentError?.message 
+  });
+
   if (!assignment) {
+    console.error('[StudentDetail] Student not assigned to this teacher');
     notFound();
   }
 
