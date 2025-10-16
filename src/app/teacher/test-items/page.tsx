@@ -383,14 +383,12 @@ function TestItemSection({
   description, 
   totalItems, 
   items, 
-  type, 
   note 
 }: { 
   title: string; 
   description: string; 
   totalItems: number; 
   items: string[]; 
-  type: string; 
   note: string;
 }) {
   return (

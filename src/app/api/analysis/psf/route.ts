@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
 }
 
 // 전체 어려운 단어 목록
-async function getDifficultWords(supabase: any) {
+async function getDifficultWords(supabase: ReturnType<typeof createClient>) {
   const { data, error } = await supabase.rpc('get_psf_difficult_words');
   
   if (error) {
@@ -71,7 +71,7 @@ async function getDifficultWords(supabase: any) {
     // 단어별 정답률 계산
     const wordStats: { [key: string]: { total: number; correctSum: number; targetSum: number } } = {};
     
-    results?.forEach((r: any) => {
+    results?.forEach((r: { question_word: string; correct_segments: number; target_segments: number }) => {
       if (!wordStats[r.question_word]) {
         wordStats[r.question_word] = { total: 0, correctSum: 0, targetSum: 0 };
       }
@@ -97,7 +97,7 @@ async function getDifficultWords(supabase: any) {
 }
 
 // 특정 학생의 약점 단어
-async function getStudentWeakWords(supabase: any, studentId: string) {
+async function getStudentWeakWords(supabase: ReturnType<typeof createClient>, studentId: string) {
   const { data: results, error } = await supabase
     .from('test_results')
     .select('question_word, correct_segments, target_segments')
@@ -109,7 +109,7 @@ async function getStudentWeakWords(supabase: any, studentId: string) {
   // 단어별 통계
   const wordStats: { [key: string]: { correct: number[]; target: number[] } } = {};
   
-  results?.forEach((r: any) => {
+  results?.forEach((r: { question_word: string; correct_segments: number; target_segments: number }) => {
     if (!wordStats[r.question_word]) {
       wordStats[r.question_word] = { correct: [], target: [] };
     }
@@ -136,7 +136,7 @@ async function getStudentWeakWords(supabase: any, studentId: string) {
 }
 
 // 반 전체 요약
-async function getClassSummary(supabase: any, className: string) {
+async function getClassSummary(supabase: ReturnType<typeof createClient>, className: string) {
   const { data: results, error } = await supabase
     .from('test_results')
     .select(`
@@ -155,7 +155,7 @@ async function getClassSummary(supabase: any, className: string) {
   // 단어별 반 평균 계산
   const wordStats: { [key: string]: { correctSum: number; targetSum: number; count: number } } = {};
   
-  results?.forEach((r: any) => {
+  results?.forEach((r: { question_word: string; correct_segments: number; target_segments: number }) => {
     if (!wordStats[r.question_word]) {
       wordStats[r.question_word] = { correctSum: 0, targetSum: 0, count: 0 };
     }
