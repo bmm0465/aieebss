@@ -40,10 +40,11 @@ export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
   const supabase = await createClient();
 
-  // 세션 확인
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // 세션 확인 - getUser()로 변경 (더 안정적)
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  if (sessionError || !session) {
+  if (userError || !user) {
+    console.error('User authentication error:', userError);
     redirect('/');
   }
 
@@ -51,7 +52,7 @@ export default async function StudentDetailPage({ params }: Props) {
   const { data: teacherProfile } = await supabase
     .from('user_profiles')
     .select('role')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (!teacherProfile || teacherProfile.role !== 'teacher') {
@@ -62,7 +63,7 @@ export default async function StudentDetailPage({ params }: Props) {
   const { data: assignment } = await supabase
     .from('teacher_student_assignments')
     .select('*')
-    .eq('teacher_id', session.user.id)
+    .eq('teacher_id', user.id)
     .eq('student_id', studentId)
     .single();
 

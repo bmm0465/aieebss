@@ -29,10 +29,11 @@ type TestResult = {
 export default async function TeacherDashboard() {
   const supabase = await createClient();
 
-  // 세션 확인
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // 세션 확인 - getUser()로 변경 (더 안정적)
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  if (sessionError || !session) {
+  if (userError || !user) {
+    console.error('User authentication error:', userError);
     redirect('/');
   }
 
@@ -40,7 +41,7 @@ export default async function TeacherDashboard() {
   const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('*')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   // 프로필이 없거나 교사가 아닌 경우
@@ -90,7 +91,7 @@ export default async function TeacherDashboard() {
   const { data: assignments, error: assignmentsError } = await supabase
     .from('teacher_student_assignments')
     .select('student_id, class_name')
-    .eq('teacher_id', session.user.id);
+    .eq('teacher_id', user.id);
 
   if (assignmentsError) {
     console.error('학생 목록 조회 에러:', assignmentsError);
@@ -209,7 +210,7 @@ export default async function TeacherDashboard() {
                   🎓 교사 관리 대시보드
                 </h1>
                 <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
-                  {profile.full_name || session.user.email} 선생님
+                  {profile.full_name || user.email} 선생님
                 </p>
               </div>
             </div>

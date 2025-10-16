@@ -6,10 +6,11 @@ import Image from 'next/image';
 export default async function TestItemsPage() {
   const supabase = await createClient();
 
-  // 세션 확인
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  // 세션 확인 - getUser()로 변경 (더 안정적)
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  if (sessionError || !session) {
+  if (userError || !user) {
+    console.error('User authentication error:', userError);
     redirect('/');
   }
 
@@ -17,7 +18,7 @@ export default async function TestItemsPage() {
   const { data: profile } = await supabase
     .from('user_profiles')
     .select('role')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (!profile || profile.role !== 'teacher') {
