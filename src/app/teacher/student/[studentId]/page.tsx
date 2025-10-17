@@ -33,7 +33,7 @@ type ProcessedTestStats = {
 };
 
 interface Props {
-  params: Promise<{ studentId: string }>;
+  params: { studentId: string };
 }
 
 export default async function StudentDetailPage({ params }: Props) {
@@ -41,7 +41,7 @@ export default async function StudentDetailPage({ params }: Props) {
     timestamp: new Date().toISOString()
   });
   
-  const { studentId } = await params;
+  const { studentId } = params;
   console.log('[StudentDetail] StudentId received:', studentId);
   
   // Supabase 클라이언트 생성
