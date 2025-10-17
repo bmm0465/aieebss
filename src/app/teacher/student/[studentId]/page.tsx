@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import StudentResultChart from '@/components/StudentResultChart';
+import type { User } from '@supabase/supabase-js';
 
 // 타입 정의
 type TestResult = {
@@ -40,9 +41,9 @@ export default async function StudentDetailPage({ params }: Props) {
   console.log('[StudentDetail] 🔥 PAGE STARTED - Component is executing!');
   
   let studentId: string;
-  let user: any;
-  let userError: any;
-  let supabase: any;
+  let user: User | null = null;
+  let userError: Error | null = null;
+  let supabase: Awaited<ReturnType<typeof createClient>>;
   
   try {
     const resolvedParams = await params;
