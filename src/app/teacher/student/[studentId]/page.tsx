@@ -56,10 +56,14 @@ export default async function StudentDetailPage({ params }: Props) {
   if (userError || !user) {
     console.error('[StudentDetail] Authentication failed:', {
       error: userError,
+      errorMessage: userError?.message,
       hasUser: !!user,
-      studentId
+      studentId,
+      timestamp: new Date().toISOString()
     });
-    redirect(`/?error=auth_required&from=student_detail`);
+    
+    // 로그인 페이지로 리다이렉트
+    redirect('/');
   }
 
   // 교사 권한 확인
