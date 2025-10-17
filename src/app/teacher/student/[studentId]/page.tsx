@@ -63,7 +63,7 @@ export default async function StudentDetailPage({ params }: Props) {
     console.log('[StudentDetail] 🚀 Auth success, checking teacher profile...');
     
     // 교사 권한 확인
-    const { data: teacherProfile, error: profileError } = await supabase
+    const { data: teacherProfile, error: _profileError } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
@@ -82,7 +82,7 @@ export default async function StudentDetailPage({ params }: Props) {
     console.log('[StudentDetail] 🚀 Checking assignment...');
     
     // 해당 학생이 교사의 담당 학생인지 확인
-    const { data: assignment, error: assignmentError } = await supabase
+    const { data: assignment, error: _assignmentError } = await supabase
       .from('teacher_student_assignments')
       .select('*')
       .eq('teacher_id', user.id)
@@ -91,7 +91,7 @@ export default async function StudentDetailPage({ params }: Props) {
 
     console.log('[StudentDetail] 🚀 Assignment:', { 
       hasAssignment: !!assignment,
-      error: assignmentError?.message 
+      error: _assignmentError?.message 
     });
 
     if (!assignment) {
