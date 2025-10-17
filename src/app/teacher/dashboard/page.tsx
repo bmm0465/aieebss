@@ -258,6 +258,24 @@ export default async function TeacherDashboard() {
           >
             📋 평가 문항 및 정답 확인
           </Link>
+          <Link
+            href="/teacher/generate-items"
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(156, 39, 176, 0.2)',
+              color: '#9C27B0',
+              padding: '1rem',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              border: '2px solid rgba(156, 39, 176, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              transition: 'all 0.3s ease'
+            }}
+            className="quick-link"
+          >
+            🤖 AI 문항 생성기
+          </Link>
         </div>
 
         {/* 통계 요약 */}

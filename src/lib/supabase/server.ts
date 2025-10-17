@@ -12,13 +12,27 @@ export const createClient = async () => {
     {
       cookies: {
         get(name: string) {
-          return cookieStore.get(name)?.value;
+          const value = cookieStore.get(name)?.value;
+          // 디버깅용 로그 (프로덕션에서는 제거 가능)
+          if (name.includes('auth-token')) {
+            console.log('[Supabase Cookie] Get:', name, value ? 'exists' : 'missing');
+          }
+          return value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            console.error('[Supabase Cookie] Set error:', error);
+            // Server Component에서는 set이 실패할 수 있음
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: '', ...options });
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            console.error('[Supabase Cookie] Remove error:', error);
+          }
         },
       },
     }

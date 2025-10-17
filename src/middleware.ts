@@ -77,10 +77,8 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * - results (results pages - 임시로 제외)
-     * - teacher (teacher pages - 임시로 제외)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|results|teacher).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|_next).*)',
   ],
 }
