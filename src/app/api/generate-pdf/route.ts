@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+type MazeQuestion = {
+  num: number;
+  sentence: string;
+  choices: string[];
+  answer: string;
+};
+
 export async function POST(request: NextRequest) {
   try {
     const { items, title, gradeLevel } = await request.json();
@@ -186,7 +193,7 @@ export async function POST(request: NextRequest) {
     <p>총 ${items.MAZE.length}개 문항</p>
     <div class="note">학생은 문맥에 가장 적절한 단어를 선택해야 합니다</div>
 `;
-      items.MAZE.forEach((q: any) => {
+      items.MAZE.forEach((q: MazeQuestion) => {
         htmlContent += `
     <div class="maze-question">
       <strong>문항 ${q.num}:</strong> ${q.sentence}
