@@ -37,19 +37,33 @@ interface Props {
 }
 
 export default async function StudentDetailPage({ params }: Props) {
-  console.log('[StudentDetail] Page started:', { 
-    timestamp: new Date().toISOString()
-  });
+  console.log('[StudentDetail] 🔥 PAGE STARTED - Component is executing!');
   
-  const { studentId } = await params;
-  console.log('[StudentDetail] StudentId received:', studentId);
+  let studentId: string;
+  let user: any;
+  let userError: any;
+  let supabase: any;
   
-  // Supabase 클라이언트 생성
-  const supabase = await createClient();
-  console.log('[StudentDetail] Supabase client created');
+  try {
+    const resolvedParams = await params;
+    studentId = resolvedParams.studentId;
+    console.log('[StudentDetail] 🔥 StudentId received:', studentId);
+    
+    // Supabase 클라이언트 생성
+    console.log('[StudentDetail] 🔥 Creating Supabase client...');
+    supabase = await createClient();
+    console.log('[StudentDetail] 🔥 Supabase client created successfully');
 
-  // 세션 확인
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
+    // 세션 확인
+    console.log('[StudentDetail] 🔥 Checking authentication...');
+    const authResult = await supabase.auth.getUser();
+    user = authResult.data.user;
+    userError = authResult.error;
+    console.log('[StudentDetail] 🔥 Auth check completed');
+  } catch (error) {
+    console.error('[StudentDetail] ❌ CRITICAL ERROR in component:', error);
+    throw error;
+  }
   
   console.log('[StudentDetail] Auth check result:', { 
     hasUser: !!user, 
