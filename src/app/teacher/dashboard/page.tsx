@@ -27,15 +27,27 @@ type TestResult = {
 };
 
 export default async function TeacherDashboard() {
+  console.log('[TeacherDashboard] Page started');
+  
   const supabase = await createClient();
+  console.log('[TeacherDashboard] Supabase client created');
 
   // 세션 확인 - getUser()로 변경 (더 안정적)
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   
+  console.log('[TeacherDashboard] Auth check:', {
+    hasUser: !!user,
+    userId: user?.id,
+    userEmail: user?.email,
+    error: userError?.message
+  });
+  
   if (userError || !user) {
-    console.error('User authentication error:', userError);
+    console.error('[TeacherDashboard] ❌ Authentication FAILED:', userError);
     redirect('/');
   }
+  
+  console.log('[TeacherDashboard] ✅ Authentication SUCCESS:', user.email);
 
   // 교사 프로필 확인
   const { data: profile, error: profileError } = await supabase

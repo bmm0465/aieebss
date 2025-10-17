@@ -2,6 +2,14 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  
+  // teacher 경로는 middleware를 건너뜀 (각 페이지에서 자체적으로 인증 처리)
+  if (pathname.startsWith('/teacher')) {
+    console.log('[Middleware] Skipping teacher path:', pathname);
+    return NextResponse.next();
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -61,10 +69,10 @@ export async function middleware(request: NextRequest) {
     const { error } = await supabase.auth.getUser()
     
     if (error) {
-      console.error('Auth error in middleware:', error)
+      console.error('[Middleware] Auth error:', pathname, error.message)
     }
   } catch (error) {
-    console.error('Middleware error:', error)
+    console.error('[Middleware] Catch error:', pathname, error)
   }
 
   return response

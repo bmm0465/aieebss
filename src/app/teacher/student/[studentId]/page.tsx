@@ -37,26 +37,36 @@ interface Props {
 }
 
 export default async function StudentDetailPage({ params }: Props) {
+  console.log('[StudentDetail] Page started:', { 
+    timestamp: new Date().toISOString()
+  });
+  
   const { studentId } = await params;
+  console.log('[StudentDetail] StudentId received:', studentId);
   
   // Supabase 클라이언트 생성
   const supabase = await createClient();
+  console.log('[StudentDetail] Supabase client created');
 
   // 세션 확인
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  console.log('[StudentDetail] Auth check:', { 
+  console.log('[StudentDetail] Auth check result:', { 
     hasUser: !!user, 
     userId: user?.id,
+    userEmail: user?.email,
     error: userError?.message,
+    errorName: userError?.name,
     studentId,
     timestamp: new Date().toISOString()
   });
 
   if (userError || !user) {
-    console.error('[StudentDetail] Authentication failed:', {
+    console.error('[StudentDetail] ❌ Authentication FAILED - Redirecting to login');
+    console.error('[StudentDetail] Error details:', {
       error: userError,
       errorMessage: userError?.message,
+      errorStatus: userError?.status,
       hasUser: !!user,
       studentId,
       timestamp: new Date().toISOString()
@@ -65,6 +75,8 @@ export default async function StudentDetailPage({ params }: Props) {
     // 로그인 페이지로 리다이렉트
     redirect('/');
   }
+  
+  console.log('[StudentDetail] ✅ Authentication SUCCESS - User:', user.email);
 
   // 교사 권한 확인
   const { data: teacherProfile, error: profileError } = await supabase
