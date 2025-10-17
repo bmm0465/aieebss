@@ -3,7 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import StudentResultChart from '@/components/StudentResultChart';
-import type { User } from '@supabase/supabase-js';
+import type { User, AuthError } from '@supabase/supabase-js';
 
 // 타입 정의
 type TestResult = {
@@ -42,7 +42,7 @@ export default async function StudentDetailPage({ params }: Props) {
   
   let studentId: string;
   let user: User | null = null;
-  let userError: Error | null = null;
+  let userError: AuthError | null = null;
   let supabase: Awaited<ReturnType<typeof createClient>>;
   
   try {
@@ -81,7 +81,7 @@ export default async function StudentDetailPage({ params }: Props) {
     console.error('[StudentDetail] Error details:', {
       error: userError,
       errorMessage: userError?.message,
-      errorStatus: userError?.status,
+      errorName: userError?.name,
       hasUser: !!user,
       studentId,
       timestamp: new Date().toISOString()
