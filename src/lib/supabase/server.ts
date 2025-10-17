@@ -2,7 +2,7 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
-// 사용자 세션이 필요한 페이지용 클라이언트 (예: results 페이지)
+// 사용자 세션이 필요한 페이지용 클라이언트 (예: results 페이지, teacher 페이지)
 export const createClient = async () => {
   const cookieStore = await cookies();
   
@@ -11,27 +11,17 @@ export const createClient = async () => {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          const value = cookieStore.get(name)?.value;
-          // 디버깅용 로그 (프로덕션에서는 제거 가능)
-          if (name.includes('auth-token')) {
-            console.log('[Supabase Cookie] Get:', name, value ? 'exists' : 'missing');
-          }
-          return value;
+        getAll() {
+          return cookieStore.getAll();
         },
-        set(name: string, value: string, options: CookieOptions) {
+        setAll(cookiesToSet) {
           try {
-            cookieStore.set({ name, value, ...options });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            );
           } catch (error) {
-            console.error('[Supabase Cookie] Set error:', error);
+            console.error('[Supabase Cookie] SetAll error:', error);
             // Server Component에서는 set이 실패할 수 있음
-          }
-        },
-        remove(name: string, options: CookieOptions) {
-          try {
-            cookieStore.set({ name, value: '', ...options });
-          } catch (error) {
-            console.error('[Supabase Cookie] Remove error:', error);
           }
         },
       },

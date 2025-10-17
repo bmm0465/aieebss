@@ -38,20 +38,27 @@ interface Props {
 
 export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
+  
+  // Supabase 클라이언트 생성
   const supabase = await createClient();
 
-  // 세션 확인 - getUser()로 변경 (더 안정적)
+  // 세션 확인
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   
   console.log('[StudentDetail] Auth check:', { 
     hasUser: !!user, 
     userId: user?.id,
-    error: userError?.message 
+    error: userError?.message,
+    studentId,
+    timestamp: new Date().toISOString()
   });
 
   if (userError || !user) {
-    console.error('[StudentDetail] User authentication error:', userError);
-    // 에러 정보를 쿼리 파라미터로 전달
+    console.error('[StudentDetail] Authentication failed:', {
+      error: userError,
+      hasUser: !!user,
+      studentId
+    });
     redirect(`/?error=auth_required&from=student_detail`);
   }
 

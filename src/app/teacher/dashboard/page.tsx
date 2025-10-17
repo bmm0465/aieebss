@@ -377,6 +377,7 @@ export default async function TeacherDashboard() {
                   <Link
                     key={student.id}
                     href={`/teacher/student/${student.id}`}
+                    prefetch={false}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
                     <div 
