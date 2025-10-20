@@ -33,13 +33,13 @@ type ProcessedTestStats = {
 };
 
 interface Props {
-  params: { studentId: string };
+  params: Promise<{ studentId: string }>;
 }
 
 export default async function StudentDetailPage({ params }: Props) {
   console.log('[StudentDetail] 🚀 PAGE STARTED - Simple approach!');
   
-  const studentId = params.studentId;
+  const { studentId } = await params;
   console.log('[StudentDetail] 🚀 StudentId:', studentId);
 
   try {
@@ -63,11 +63,16 @@ export default async function StudentDetailPage({ params }: Props) {
     console.log('[StudentDetail] 🚀 Auth success, checking teacher profile...');
     
     // 교사 권한 확인
-    const { data: teacherProfile, error: _profileError } = await supabase
+    const { data: teacherProfile, error: profileError } = await supabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
       .single();
+
+    if (profileError) {
+      console.error('[StudentDetail] 🚨 Profile fetch error:', profileError);
+      redirect('/');
+    }
 
     console.log('[StudentDetail] 🚀 Teacher profile:', { 
       hasProfile: !!teacherProfile, 
@@ -82,7 +87,7 @@ export default async function StudentDetailPage({ params }: Props) {
     console.log('[StudentDetail] 🚀 Checking assignment...');
     
     // 해당 학생이 교사의 담당 학생인지 확인
-    const { data: assignment, error: _assignmentError } = await supabase
+    const { data: assignment, error: assignmentError } = await supabase
       .from('teacher_student_assignments')
       .select('*')
       .eq('teacher_id', user.id)
@@ -91,8 +96,13 @@ export default async function StudentDetailPage({ params }: Props) {
 
     console.log('[StudentDetail] 🚀 Assignment:', { 
       hasAssignment: !!assignment,
-      error: _assignmentError?.message 
+      error: assignmentError?.message 
     });
+
+    if (assignmentError) {
+      console.error('[StudentDetail] 🚨 Assignment fetch error:', assignmentError);
+      notFound();
+    }
 
     if (!assignment) {
       console.error('[StudentDetail] 🚨 Student not assigned');
