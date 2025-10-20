@@ -66,8 +66,8 @@ export default function ResultReport({ results }: ResultProps) {
             {/* NWF */}
             <div style={cardStyle}>
                 <h3>{testInfo.NWF.title}</h3>
-                <p>개별 소리 정확도: <strong>{results.NWF.phoneme_accuracy.toFixed(1)}%</strong></p>
-                <p>전체 단어 정확도: <strong>{results.NWF.whole_word_accuracy.toFixed(1)}%</strong></p>
+                <p>CLS (Correct Letter Sounds): <strong>{results.NWF.phoneme_accuracy.toFixed(0)}점</strong></p>
+                <p>WRC (Words Read Correctly): <strong>{results.NWF.whole_word_accuracy.toFixed(1)}%</strong> ({results.NWF.whole_word_correct}/{results.NWF.total})</p>
             </div>
             {/* WRF */}
             <div style={cardStyle}>

@@ -16,6 +16,7 @@ type TestResult = {
   target_segments?: number;
   is_phonemes_correct?: boolean;
   is_whole_word_correct?: boolean;
+  correct_letter_sounds?: number; // CLS 점수
   wcpm?: number;
   accuracy?: number;
   question_passage?: string;
@@ -42,7 +43,8 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
       summary.PSF.target_segments += res.target_segments || 0;
     } else if (res.test_type === 'NWF') {
       summary.NWF.total++;
-      if (res.is_phonemes_correct) summary.NWF.phonemes_correct++;
+      // 이미지 규칙에 따라: CLS는 correct_letter_sounds 필드 사용, WRC는 is_whole_word_correct 사용
+      summary.NWF.phonemes_correct += res.correct_letter_sounds || 0;
       if (res.is_whole_word_correct) summary.NWF.whole_word_correct++;
     } else if (res.test_type === 'WRF') {
       summary.WRF.total++;
@@ -61,8 +63,10 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
   if (summary.LNF.total > 0) summary.LNF.accuracy = (summary.LNF.correct / summary.LNF.total) * 100;
   if (summary.PSF.target_segments > 0) summary.PSF.accuracy = (summary.PSF.correct_segments / summary.PSF.target_segments) * 100;
   if (summary.NWF.total > 0) {
-    summary.NWF.phoneme_accuracy = (summary.NWF.phonemes_correct / summary.NWF.total) * 100;
-    summary.NWF.whole_word_accuracy = (summary.NWF.whole_word_correct / summary.NWF.total) * 100;
+    // 이미지 규칙에 따라: CLS는 총 음소 점수, WRC는 단어 정답률
+    // CLS 정확도는 총 CLS 점수 대비 방식으로 계산 (실제로는 raw 점수를 사용)
+    summary.NWF.phoneme_accuracy = summary.NWF.phonemes_correct; // CLS 총 점수
+    summary.NWF.whole_word_accuracy = (summary.NWF.whole_word_correct / summary.NWF.total) * 100; // WRC 정답률
   }
   if (summary.WRF.total > 0) summary.WRF.accuracy = (summary.WRF.correct / summary.WRF.total) * 100;
   if (summary.ORF.count > 0) {

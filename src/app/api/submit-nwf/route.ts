@@ -69,30 +69,55 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
           TARGET WORD: "${questionWord}"
           STUDENT RESPONSE: "${studentAnswer}"
 
-          EVALUATION GUIDELINES:
-          1. Accept various response formats:
-             - Complete word: "hap", "bim", "tog"
-             - Segmented sounds: "h-a-p", "b-i-m", "t-o-g"
-             - Korean pronunciation: "합", "빔", "톡"
-             - Mixed responses: "합-에이-피"
-             - Letter names: "aitch-ay-pee"
-          2. Be flexible with pronunciation variations in EFL contexts
-          3. Credit partial attempts and close approximations
+          EVALUATION GUIDELINES (DIBELS 8th Edition Official):
+          
+          According to the official DIBELS 8 administration guide, students can respond in multiple ways:
+          1. Individual letter sounds: "/h/ /a/ /p/" (each sound separately)
+          2. Whole word reading: "hap" (blended as one word)
+          3. Both combined: "/h/ /a/ /p/, hap" (sounds then whole word)
+          
+          Accept various response formats:
+          - Complete word: "hap", "bim", "tog"
+          - Segmented sounds: "/h/ /a/ /p/", "h-a-p", "b-i-m"
+          - Korean pronunciation: "합", "빔", "톡"
+          - Mixed responses: "/h/ /a/ /p/, 합" or "합-에이-피"
+          - Letter names: "aitch-ay-pee"
+          
+          SCORING RULES (DIBELS 8 NWF Standard):
+          
+          1. CLS (Correct Letter Sounds): Count individual letter sounds produced correctly
+             - Give 1 point for each accurate letter sound, regardless of blending
+             - Example: Student says "/h/ /a/ /p/, hap" → count 3 CLS points
+             - Example: Student says just "hap" → count 3 CLS points (all sounds present)
+             - Example: Student says "/h/ /a/" → count 2 CLS points
+          
+          2. WRC (Words Read Correctly): Count words read correctly or recoded accurately  
+             - Give 1 point if student successfully reads the whole word (either initially sounded out or blended)
+             - Student can get BOTH CLS points AND WRC points for the same word
+             - Example: "/h/ /a/ /p/, hap" → CLS: 3, WRC: 1
 
-          SCORING:
-          1. Correct Letter Sounds (CLS): Count individual letter sounds produced correctly
-          2. Whole Word Read (WWR): Determine if student read entire word as blended unit correctly
+          IMPORTANT: Following official DIBELS 8 guidelines, both CLS and WRC should be scored 
+          even if the student provides both individual sounds and whole word reading.
 
-          Respond with JSON: {"correct_letter_sounds": number, "is_whole_word_correct": boolean, "notes": "brief explanation"}`,
+          Respond with JSON: {
+            "correct_letter_sounds": number, 
+            "is_whole_word_correct": boolean,
+            "words_read_correctly": number,
+            "notes": "brief explanation"
+          }`,
         },
       ],
       response_format: { type: 'json_object' },
     });
     
-    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"correct_letter_sounds": 0, "is_whole_word_correct": false}');
+    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || 
+      '{"correct_letter_sounds": 0, "is_whole_word_correct": false, "words_read_correctly": 0}');
+    
     const correctLetterSounds = scoringResult.correct_letter_sounds || 0;
     const isWholeWordCorrect = scoringResult.is_whole_word_correct || false;
+    const wordsReadCorrectly = scoringResult.words_read_correctly || (isWholeWordCorrect ? 1 : 0);
 
+    // 이미지 규칙에 따라: CLS와 WRC는 별도로 측정되며, 둘 다 점수를 받을 수 있음
     await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'NWF',
@@ -104,9 +129,11 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
       audio_url: audioUrl,
     });
 
-    const resultMessage = isWholeWordCorrect ? '전체 단어 정답' : 
-                         correctLetterSounds > 0 ? `부분 점수 (${correctLetterSounds}개 음소)` : 
-                         '오답';
+    // 이미지 규칙에 따른 결과 메시지: CLS와 WRC를 별도로 표시
+    const clsScore = correctLetterSounds;
+    const wrcScore = wordsReadCorrectly;
+    const resultMessage = `CLS: ${clsScore}, WRC: ${wrcScore}${isWholeWordCorrect ? ' (단어 전체 정답)' : ''}`;
+    
     console.log(`[NWF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}`);
 
   } catch (error) {
