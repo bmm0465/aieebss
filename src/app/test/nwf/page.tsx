@@ -5,34 +5,32 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// [수정] 모든 학생에게 동일한 고정된 문항 출제
-// 중복 제거 및 난이도별 균형 잡힌 150개 Nonsense Words
+// [수정] NWF 표준 규격에 맞는 122개 고정된 nonsense words
 const getFixedNonsenseWords = () => {
+    // NWF 표준: 단순한 단모음 구조부터 시작하여 자음 연속까지 점진적 혼합
     const fixedWords = [
-        // 3글자 단어 (CVC 패턴) - 60개
+        // 초기 30개: 기본 CVC 패턴 우선 배치
         "sep", "nem", "dib", "rop", "lin", "fom", "mig", "rup", "dep", "fod",
-        "pid", "rit", "mag", "pim", "sog", "tib", "pon", "heg", "dem", "seb",
+        "pid", "rit", "mog", "pim", "sog", "tib", "pon", "heg", "dev", "seb",
         "dop", "nug", "tet", "wep", "vom", "bem", "kun", "yut", "yad", "heb",
+        
+        // 31-60: CVC 패턴 계속하여 기본기 강화
         "pom", "gid", "pag", "kom", "wog", "yig", "lan", "nen", "het", "som",
         "tig", "fon", "tup", "nin", "hon", "vid", "wim", "pob", "sed", "yod",
         "tud", "mem", "vot", "dob", "vun", "yed", "bim", "wod", "yab", "yun",
         
-        // 3글자 단어 추가 - 30개
+        // 61-90: CVC 패턴 마지막 섹션
         "lem", "fub", "vut", "gim", "wid", "reb", "wap", "mip", "wem", "yom",
         "vad", "wum", "nim", "kep", "biv", "lum", "rik", "sab", "wug", "pac",
         "fot", "lut", "nam", "tok", "zam", "neb", "wut", "cun", "rif", "lom",
         
-        // 4글자 단어 (CCVC, CVCC) - 40개
+        // 91-122: 자음 연속(Blends) 패턴 점진적 도입
         "stam", "clen", "frap", "smop", "grut", "ston", "cles", "snid", "blut", "pren",
         "glom", "trab", "clom", "snut", "krat", "flot", "clor", "jent", "galk", "vrop",
         "pler", "drem", "trul", "skom", "tolt", "vrat", "blim", "sner", "larm", "fral",
         "sket", "trak", "plon", "trup", "smot", "gren", "frim", "prun", "twet", "draf",
-        
-        // 4글자 단어 추가 - 10개
-        "snib", "glap", "frem", "morl", "spen", "drup", "fran", "plap", "clut", "spet",
-        
-        // 4-5글자 복합 단어 - 10개
-        "crum", "frin", "baip", "ferk", "hilp", "krad", "clanp", "gop", "rin", "tep"
+        "snib", "glap", "frem", "spov", "spen", "drup", "fran", "plap", "clut", "spet",
+        "crum", "frin", "bap", "fek", "himp", "krad", "clanp", "zib", "wux", "jev"
     ];
     
     return fixedWords;
@@ -66,7 +64,7 @@ export default function NwfTestPage() {
       if (!user) router.push('/');
       else {
         setUser(user);
-        setShuffledWords(getFixedNonsenseWords()); // [수정] 고정된 문항 사용
+        setShuffledWords(getFixedNonsenseWords()); // [수정] NWF 표준 122개 고정 문항 사용
       }
     };
     setup();

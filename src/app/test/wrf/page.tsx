@@ -5,24 +5,25 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// [수정] 모든 학생에게 동일한 고정된 문항 출제 (중복 제거: 85개)
+// [수정] WRF 표준 규격에 맞는 81개 고정된 단어 문항
 const getFixedSightWords = () => {
+    // WRF 표준: 4단계 난이도로 구성하되 혼합 배치하여 모든 학생이 다양한 난이도 평가받도록
     const fixedWords = [
-        // 초고빈도 단어 (1-2글자) - 15개
-        "no", "do", "he", "go", "it", "to", "me", "up", "the", "she", "yes", "you", "not", "who", "how",
+        // 초기 20개: Level 1 (기초 CVC 및 핵심 빈출 단어) 우선 배치
+        "it", "up", "no", "go", "he", "me", "to", "do", "big", "can",
+        "dad", "hat", "cat", "sit", "mom", "dog", "pig", "pen", "leg", "pan",
         
-        // 고빈도 단어 (3-4글자) - 35개
-        "this", "that", "like", "look", "good", "come", "have", "said", "love",
-        "hat", "cat", "dad", "sit", "mom", "big", "dog", "pig", "six", "can", "two", "one",
-        "pen", "leg", "pan", "car", "zoo", "red", "ten", "too", "what", "here", "down", "open", "much", "nice",
+        // 21-40: Level 1과 Level 2 혼합 (자음 연속/이중 음자)
+        "red", "ten", "sun", "six", "run", "not", "yes", "car", "zoo", "one",
+        "the", "she", "who", "how", "this", "that", "what", "swim", "jump", "stand",
         
-        // 중빈도 단어 (4-5글자) - 25개
-        "tall", "small", "hello", "three", "four", "five", "door", "book", "jump", "swim",
-        "great", "green", "eight", "stand", "blue", "lion", "nine", "white", "many", "apple",
-        "seven", "pizza", "sorry", "color", "close",
+        // 41-60: Level 2와 Level 3 혼합 (장모음/이중 모음)
+        "like", "nice", "here", "said", "look", "good", "book", "door", "ball", "tall",
+        "two", "too", "down", "open", "have", "come", "love", "blue", "green", "white",
         
-        // 저빈도/복합 단어 (5-6글자) - 10개
-        "okay", "bye", "dance", "pencil", "sister", "sunny", "ball", "eraser"
+        // 61-81: Level 3와 Level 4 혼합 (다음절 및 고급 단어)
+        "three", "four", "five", "great", "eight", "nine", "many", "much", "close", "dance",
+        "hello", "sorry", "color", "apple", "pizza", "sunny", "okay", "bye", "pencil", "sister", "eraser"
     ];
     
     return fixedWords;

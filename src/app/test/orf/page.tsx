@@ -5,47 +5,37 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// [수정] 모든 학생에게 동일한 고정된 지문 출제
-const passage = `Hello! How many dogs?
-Hi! One, two, three, four. Four dogs!
-Okay. Come in.
-
-Do you have a ball?
-Yes, I do. Here you are.
-Thank you.
-
-Catch the ball!
-
-Do you have juice?
-Yes, I do. Do you like orange juice?
-Yes, I do. I like orange juice.
-Here.
-Thank you. Bye.
-Goodbye.
-
-At the Desk
+// [수정] ORF 표준 규격에 맞는 5개 지문 (학년 수준에 맞는 어휘와 문장 구조)
+const passage = `Passage 1: Drawing a Picture
 Leo: What are you doing?
 Mia: I am drawing a picture.
 Leo: Wow. What is it?
 Mia: It is a big, yellow sun.
-Leo: I like your picture. It is very nice.
-Mia: Thank you, Leo.
+Leo: I like your picture.
 
-My Cookie
-Sam: I have a cookie.
-Kim: Wow, it is a big cookie.
-Sam: Yes, it is. Do you want some?
-Kim: Yes, please.
-Sam: Here you are.
-Kim: Thank you, Sam.
+Passage 2: Juice, Please
+Dan: Do you have juice?
+Pam: Yes, I do. Do you like orange juice?
+Dan: Yes, I do. I like orange juice.
+Pam: Here.
+Dan: Thank you. Bye.
 
-In the Park
-Ann: What is that?
-Ben: This is my new ball.
-Ann: Wow, it is a big ball. I like the color.
-Ben: Thank you. It is blue.
-Ann: Can we play with the ball?
-Ben: Yes! Let's play together.`;
+Passage 3: Counting Dogs
+Ken: Hello. How many dogs?
+Liz: Hi! One, two, three, four.
+Ken: Four dogs! Okay.
+
+Passage 4: My New Ball
+Sam: Do you have a ball?
+Ann: Yes, I do. Here you are.
+Sam: Thank you.
+Ann: Let's play together.
+
+Passage 5: What is This?
+Max: What is this?
+Kim: It is a book.
+Max: Is this your pencil?
+Kim: Yes, it is. It is my new pencil.`;
 
 export default function OrfTestPage() {
   const supabase = createClient();

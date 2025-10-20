@@ -5,52 +5,32 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// [수정] 모든 학생에게 동일한 고정된 MAZE 지문 출제
+// [수정] MAZE 표준 규격에 맞는 하나의 연결된 지문 (A Fun Day at the Park)
 const mazePassage = {
-  id: 'daily_conversations',
-  title: "Daily Conversations and Stories",
+  id: 'fun_day_at_park',
+  title: "A Fun Day at the Park",
   content: [
-    "Hi, I'm Hana. Nice to meet you. I like ",
-    { choices: ["apples", "books", "dogs"], correctAnswer: "apples" },
-    " and oranges. I don't like bananas and ",
-    { choices: ["jackets", "carrots", "robots"], correctAnswer: "carrots" },
-    ". I can sing and dance. I ",
-    { choices: ["don't", "can't", "will"], correctAnswer: "can't" },
-    " swim and skate. I like red. I ",
-    { choices: ["have", "make", "use"], correctAnswer: "have" },
-    " a red bag and a red ",
-    { choices: ["pig", "door", "bike"], correctAnswer: "bike" },
-    ". That's all about me. Goodbye, see you!\n\nMy Puppy\n\nMax has a new puppy. The ",
-    { choices: ["puppy", "house", "play"], correctAnswer: "puppy" },
-    " is small and brown. His ",
+    "Max has a small, brown puppy. His ",
     { choices: ["hat", "name", "on"], correctAnswer: "name" },
-    " is Sam. Max likes to play ",
-    { choices: ["under", "with", "happy"], correctAnswer: "with" },
-    " Sam. One day, Max and Sam ",
-    { choices: ["eat", "red", "go"], correctAnswer: "go" },
-    " to the park. Max has a red ",
-    { choices: ["ball", "is", "car"], correctAnswer: "ball" },
-    ".\n\nA Day at the Beach\n\nIt is a hot day. The sun is ",
-    { choices: ["big", "run", "on"], correctAnswer: "big" },
-    " and yellow. Tom and his sister ",
-    { choices: ["go", "sad", "bed"], correctAnswer: "go" },
-    " to the beach. They like the ",
-    { choices: ["for", "the", "her"], correctAnswer: "the" },  // 중복 정답 수정: the → beach로 변경하면 좋지만 선택지가 the이므로 유지
-    " beach very much. They play in the ",
-    { choices: ["sand", "book", "chair"], correctAnswer: "sand" },
-    ". Tom has a blue bag. Mia ",
-    { choices: ["has", "see", "is"], correctAnswer: "has" },
-    " a red hat.\n\nIn the Kitchen\n\nLeo is at home. He is in the ",
-    { choices: ["kitchen", "school", "car"], correctAnswer: "kitchen" },
-    ". He wants to make a ",
-    { choices: ["sandwich", "puppy", "game"], correctAnswer: "sandwich" },
-    ". He gets some bread and ",
-    { choices: ["cheese", "water", "ball"], correctAnswer: "cheese" },
-    ". He puts the cheese on ",
-    { choices: ["the", "run", "of"], correctAnswer: "the" },
-    " bread. He puts more ",
-    { choices: ["butter", "water", "cheese"], correctAnswer: "butter" },  // 중복 정답 수정: bread → butter로 변경
-    " on it."
+    " is Sam. Max likes to ",
+    { choices: ["eat", "happy", "play"], correctAnswer: "play" },
+    " with Sam. Today, they will ",
+    { choices: ["go", "is", "red"], correctAnswer: "go" },
+    " to the park. Max gets ",
+    { choices: ["under", "his", "run"], correctAnswer: "his" },
+    " red ball and they go. The ",
+    { choices: ["see", "bed", "sun"], correctAnswer: "sun" },
+    " is big and yellow in ",
+    { choices: ["the", "sad", "she"], correctAnswer: "the" },
+    " sky. At the park, Max ",
+    { choices: ["makes", "throws", "happy"], correctAnswer: "throws" },
+    " the red ball. Sam runs ",
+    { choices: ["for", "very", "and"], correctAnswer: "for" },
+    " catches it. They play for ",
+    { choices: ["see", "a", "it"], correctAnswer: "a" },
+    " long time. Max and Sam ",
+    { choices: ["on", "eat", "are"], correctAnswer: "are" },
+    " very happy together."
   ]
 };
 

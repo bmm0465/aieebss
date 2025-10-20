@@ -30,59 +30,49 @@ export default async function TestItemsPage() {
     LNF: {
       title: "LNF - 고대 룬 문자 해독 시험",
       description: "알파벳 인식 능력 평가",
-      totalItems: 200,
+      totalItems: 100,
       items: [
-        't', 'n', 'f', 'y', 'I', 'R', 'D', 'G', 'Y', 'V',
-        'r', 'b', 'P', 'L', 'Z', 'i', 'c', 'A', 'O', 'J',
-        'p', 'T', 'x', 'K', 'a', 'v', 'M', 'U', 'Q', 'h',
-        'g', 'N', 'j', 'X', 's', 'C', 'H', 'q', 'o', 'm',
-        'S', 'B', 'z', 'e', 'u', 'E', 'F', 'V', 'd', 'k',
-        'R', 'U', 'X', 'h', 'y', 'O', 'q', 't', 'm', 'S',
-        'x', 'K', 'e', 'c', 'T', 'G', 'Z', 'r', 'g', 'P',
-        'L', 'Q', 's', 'k', 'N', 'J', 'i', 'p', 'A', 'D',
-        'Y', 'a', 'f', 'I', 'H', 'V', 'n', 'v', 'E', 'F',
-        'V', 'd', 'b', 'M', 'j', 'o', 'u', 'C', 'B', 'z',
-        'e', 'h', 'c', 'v', 'T', 'P', 'D', 'L', 'K', 'V',
-        's', 'g', 'M', 'G', 'X', 'i', 'f', 'I', 'B', 'z',
-        'u', 'A', 'H', 'Y', 'o', 'k', 'R', 'j', 'Z', 'd',
-        'b', 'N', 'F', 'Q', 'r', 'S', 'O', 'q', 't', 'p',
-        'C', 'x', 'J', 'a', 'm', 'e', 'E', 'U', 'Z', 'n', 'y',
-        'E', 'F', 'V', 'n', 'b', 'H', 'z', 'i', 'p', 'S',
-        'O', 'Y', 'o', 'c', 'I', 'U', 'X', 'd', 'g', 'N',
-        'j', 'Q', 'h', 'v', 'M', 'K', 'a', 'f', 'A', 'B',
-        'J', 't', 'm', 'c', 'C', 'D', 'V', 'r', 'k', 'P', 'G',
-        'V', 's', 'y', 'R', 'L', 'e', 'u', 'T', 'x', 'q'
+        'T', 'a', 'S', 'o', 'r', 'E', 'i', 'n', 'D', 'h',
+        'f', 'P', 'm', 'C', 'u', 'L', 'd', 'G', 'H', 'R',
+        's', 'N', 'I', 'O', 'A', 'e', 'T', 'c', 'b', 'F',
+        'v', 'p', 'Y', 'k', 'g', 'M', 'u', 'a', 'R', 'I',
+        'E', 'S', 'd', 'o', 'T', 'j', 'n', 'q', 'C', 'b',
+        'h', 'L', 'A', 'P', 'r', 'f', 'e', 'K', 'V', 'z',
+        'O', 't', 'i', 's', 'N', 'G', 'c', 'u', 'M', 'D',
+        'a', 'E', 'H', 'k', 'Y', 'r', 'T', 'B', 'p', 'F',
+        'g', 'v', 'I', 'o', 'e', 'n', 's', 'L', 'J', 'q',
+        'x', 'C', 'a', 'P', 'd', 'R', 'i', 'A', 'm', 'U'
       ],
       type: 'list',
-      note: '학생은 알파벳의 이름(예: A → "에이")을 말해야 합니다. 대문자 81개, 소문자 119개 포함.'
+      note: '학생은 알파벳의 이름(예: A → "에이")을 말해야 합니다. LNF 표준 규격: 100개, 대소문자 균형, 빈도 높은 문자 우선, W와 소문자 l 제외.'
     },
     PSF: {
       title: "PSF - 소리의 원소 분리 시험",
       description: "음소 분리 능력 평가",
-      totalItems: 107,
+      totalItems: 110,
       items: [
-        "road", "dad", "six", "frog", "on", "cry", "sit", "camp", "farm", "bell",
-        "plan", "hand", "gift", "stop", "map", "mad", "van", "pin", "star", "get",
-        "top", "old", "ant", "cup", "pear", "pond", "milk", "son", "pen", "belt",
-        "rug", "hit", "nut", "doll", "box", "bat", "cat", "bug", "win", "moon",
-        "gold", "web", "mug", "man", "pig", "sand", "dig", "pot", "rock", "hot",
-        "go", "bed", "mom", "fan", "ship", "an", "so", "desk", "wig", "ski",
-        "car", "fog", "leg", "dog", "pull", "toad", "ten", "hen", "jog", "kid",
-        "at", "fit", "but", "cold", "lion", "red", "sun", "jam", "mud", "hug",
-        "up", "crab", "coin", "heel", "put", "run", "cut", "not", "tap", "pet",
+        "go", "on", "at", "up", "be", "it", "so", "in", "to", "an",
+        "dad", "sit", "map", "cup", "top", "pen", "cat", "dog", "get", "hot",
+        "mad", "van", "pin", "son", "rug", "hit", "nut", "box", "bat", "bug",
+        "win", "web", "mug", "man", "pig", "dig", "pot", "bed", "mom", "fan",
+        "wig", "car", "fog", "leg", "ten", "hen", "jog", "kid", "fit", "but",
+        "red", "sun", "jam", "mud", "hug", "run", "cut", "not", "tap", "pet",
+        "bell", "stop", "plan", "hand", "gift", "star", "belt", "doll", "gold", "sand",
         "dot", "big", "sip", "mop", "lid", "lip", "fin", "kit", "had", "can",
-        "zoo", "hop", "hat", "deep", "lamp", "drum", "nest", "tent"
+        "zoo", "hop", "hat", "six", "rock", "road", "pan", "jet", "bib", "ship",
+        "desk", "ski", "pull", "toad", "cold", "crab", "lamp", "drum", "nest", "tent",
+        "milk", "pond", "coin", "deep", "moon", "heel", "frog", "camp", "farm", "star"
       ],
       type: 'list',
-      note: '학생은 단어를 음소 단위로 분리해야 합니다 (예: cat → /k/ /æ/ /t/). AI가 자동 채점합니다.'
+      note: '학생은 단어를 음소 단위로 분리해야 합니다 (예: cat → /k/ /æ/ /t/). PSF 표준: 초기에 쉬운 단어(2-3음소), 이후 다양한 음소 수 혼합하여 모든 난이도 평가. AI가 자동 채점합니다.'
     },
     NWF: {
       title: "NWF - 초급 주문 시전 시험",
       description: "파닉스 적용 능력 평가",
-      totalItems: 150,
+      totalItems: 122,
       items: [
         "sep", "nem", "dib", "rop", "lin", "fom", "mig", "rup", "dep", "fod",
-        "pid", "rit", "mag", "pim", "sog", "tib", "pon", "heg", "dem", "seb",
+        "pid", "rit", "mog", "pim", "sog", "tib", "pon", "heg", "dev", "seb",
         "dop", "nug", "tet", "wep", "vom", "bem", "kun", "yut", "yad", "heb",
         "pom", "gid", "pag", "kom", "wog", "yig", "lan", "nen", "het", "som",
         "tig", "fon", "tup", "nin", "hon", "vid", "wim", "pob", "sed", "yod",
@@ -94,104 +84,84 @@ export default async function TestItemsPage() {
         "glom", "trab", "clom", "snut", "krat", "flot", "clor", "jent", "galk", "vrop",
         "pler", "drem", "trul", "skom", "tolt", "vrat", "blim", "sner", "larm", "fral",
         "sket", "trak", "plon", "trup", "smot", "gren", "frim", "prun", "twet", "draf",
-        "snib", "glap", "frem", "morl", "spen", "drup", "fran", "plap", "clut", "spet",
-        "crum", "frin", "baip", "ferk", "hilp", "krad", "clanp", "gop", "rin", "tep"
+        "snib", "glap", "frem", "spov", "spen", "drup", "fran", "plap", "clut", "spet",
+        "crum", "frin", "bap", "fek", "himp", "krad", "clanp", "zib", "wux", "jev"
       ],
       type: 'list',
-      note: 'Nonsense words (무의미 단어)를 파닉스 규칙으로 읽습니다. CVC 90개, CCVC/CVCC 50개, 복합 10개.'
+      note: 'Nonsense words (무의미 단어)를 파닉스 규칙으로 읽습니다. NWF 표준: 단모음 기본 구조(72개), 자음 연속 패턴(50개).'
     },
     WRF: {
       title: "WRF - 마법 단어 활성화 시험",
-      description: "Sight Words 인식 능력 평가",
-      totalItems: 85,
+      description: "단어 읽기 유창성 평가",
+      totalItems: 81,
       items: [
-        "no", "do", "he", "go", "it", "to", "me", "up", "the", "she", "yes", "you", "not", "who", "how",
-        "this", "that", "like", "look", "good", "come", "have", "said", "love",
-        "hat", "cat", "dad", "sit", "mom", "big", "dog", "pig", "six", "can", "two", "one",
-        "pen", "leg", "pan", "car", "zoo", "red", "ten", "too", "what", "here", "down", "open", "much", "nice",
-        "tall", "small", "hello", "three", "four", "five", "door", "book", "jump", "swim",
-        "great", "green", "eight", "stand", "blue", "lion", "nine", "white", "many", "apple",
-        "seven", "pizza", "sorry", "color", "close",
-        "okay", "bye", "dance", "pencil", "sister", "sunny", "ball", "eraser"
+        "it", "up", "no", "go", "he", "me", "to", "do", "big", "can",
+        "dad", "hat", "cat", "sit", "mom", "dog", "pig", "pen", "leg", "pan",
+        "red", "ten", "sun", "six", "run", "not", "yes", "car", "zoo", "one",
+        "the", "she", "who", "how", "this", "that", "what", "swim", "jump", "stand",
+        "like", "nice", "here", "said", "look", "good", "book", "door", "ball", "tall",
+        "two", "too", "down", "open", "have", "come", "love", "blue", "green", "white",
+        "three", "four", "five", "great", "eight", "nine", "many", "much", "close", "dance",
+        "hello", "sorry", "color", "apple", "pizza", "sunny", "okay", "bye", "pencil", "sister", "eraser"
       ],
       type: 'list',
-      note: '자주 사용하는 Sight Words를 자동으로 인식합니다. 초고빈도 15개, 고빈도 35개, 중빈도 25개, 저빈도 10개.'
+      note: '실제 단어를 빠르고 정확하게 읽는 능력을 측정합니다. WRF 표준: 4단계 난이도(기초 CVC → 자음 연속 → 장모음 → 다음절) 혼합 구성.'
     },
     ORF: {
       title: "ORF - 고대 이야기 소생술 시험",
       description: "읽기 유창성 평가",
       totalItems: 1,
-      passage: `Hello! How many dogs?
-Hi! One, two, three, four. Four dogs!
-Okay. Come in.
-
-Do you have a ball?
-Yes, I do. Here you are.
-Thank you.
-
-Catch the ball!
-
-Do you have juice?
-Yes, I do. Do you like orange juice?
-Yes, I do. I like orange juice.
-Here.
-Thank you. Bye.
-Goodbye.
-
-At the Desk
+      passage: `Passage 1: Drawing a Picture
 Leo: What are you doing?
 Mia: I am drawing a picture.
 Leo: Wow. What is it?
 Mia: It is a big, yellow sun.
-Leo: I like your picture. It is very nice.
-Mia: Thank you, Leo.
+Leo: I like your picture.
 
-My Cookie
-Sam: I have a cookie.
-Kim: Wow, it is a big cookie.
-Sam: Yes, it is. Do you want some?
-Kim: Yes, please.
-Sam: Here you are.
-Kim: Thank you, Sam.
+Passage 2: Juice, Please
+Dan: Do you have juice?
+Pam: Yes, I do. Do you like orange juice?
+Dan: Yes, I do. I like orange juice.
+Pam: Here.
+Dan: Thank you. Bye.
 
-In the Park
-Ann: What is that?
-Ben: This is my new ball.
-Ann: Wow, it is a big ball. I like the color.
-Ben: Thank you. It is blue.
-Ann: Can we play with the ball?
-Ben: Yes! Let's play together.`,
+Passage 3: Counting Dogs
+Ken: Hello. How many dogs?
+Liz: Hi! One, two, three, four.
+Ken: Four dogs! Okay.
+
+Passage 4: My New Ball
+Sam: Do you have a ball?
+Ann: Yes, I do. Here you are.
+Sam: Thank you.
+Ann: Let's play together.
+
+Passage 5: What is This?
+Max: What is this?
+Kim: It is a book.
+Max: Is this your pencil?
+Kim: Yes, it is. It is my new pencil.`,
       type: 'passage',
-      note: '약 150단어의 대화형 지문. 5개 미니 스토리로 구성. WCPM과 정확도를 AI가 측정합니다.'
+      note: 'ORF 표준: 5개 지문으로 구성, 학년 수준에 맞는 어휘와 문장 구조. WCPM과 정확도를 AI가 측정합니다.'
     },
     MAZE: {
       title: "MAZE - 지혜의 미로 탈출",
       description: "독해력 및 문맥 이해 평가",
-      totalItems: 20,
+      totalItems: 10,
       questions: [
-        { num: 1, sentence: "I like _____ and oranges.", choices: ["apples", "books", "dogs"], answer: "apples" },
-        { num: 2, sentence: "I don't like bananas and _____.", choices: ["jackets", "carrots", "robots"], answer: "carrots" },
-        { num: 3, sentence: "I _____ swim and skate.", choices: ["don't", "can't", "will"], answer: "can't" },
-        { num: 4, sentence: "I _____ a red bag.", choices: ["have", "make", "use"], answer: "have" },
-        { num: 5, sentence: "a red bag and a red _____.", choices: ["pig", "door", "bike"], answer: "bike" },
-        { num: 6, sentence: "The _____ is small and brown.", choices: ["puppy", "house", "play"], answer: "puppy" },
-        { num: 7, sentence: "His _____ is Sam.", choices: ["hat", "name", "on"], answer: "name" },
-        { num: 8, sentence: "Max likes to play _____ Sam.", choices: ["under", "with", "happy"], answer: "with" },
-        { num: 9, sentence: "Max and Sam _____ to the park.", choices: ["eat", "red", "go"], answer: "go" },
-        { num: 10, sentence: "Max has a red _____.", choices: ["ball", "is", "car"], answer: "ball" },
-        { num: 11, sentence: "The sun is _____ and yellow.", choices: ["big", "run", "on"], answer: "big" },
-        { num: 12, sentence: "Tom and his sister _____ to the beach.", choices: ["go", "sad", "bed"], answer: "go" },
-        { num: 13, sentence: "They like _____ beach very much.", choices: ["for", "the", "her"], answer: "the" },
-        { num: 14, sentence: "They play in the _____.", choices: ["sand", "book", "chair"], answer: "sand" },
-        { num: 15, sentence: "Mia _____ a red hat.", choices: ["has", "see", "is"], answer: "has" },
-        { num: 16, sentence: "He is in the _____.", choices: ["kitchen", "school", "car"], answer: "kitchen" },
-        { num: 17, sentence: "He wants to make a _____.", choices: ["sandwich", "puppy", "game"], answer: "sandwich" },
-        { num: 18, sentence: "He gets some bread and _____.", choices: ["cheese", "water", "ball"], answer: "cheese" },
-        { num: 19, sentence: "He puts the cheese on _____ bread.", choices: ["the", "run", "of"], answer: "the" },
-        { num: 20, sentence: "He puts more _____ on it.", choices: ["butter", "water", "cheese"], answer: "butter" }
+        { num: 1, sentence: "Max has a small, brown puppy. His _______ is Sam.", choices: ["hat", "name", "on"], answer: "name" },
+        { num: 2, sentence: "Max likes to _______ with Sam.", choices: ["eat", "happy", "play"], answer: "play" },
+        { num: 3, sentence: "Today, they will _______ to the park.", choices: ["go", "is", "red"], answer: "go" },
+        { num: 4, sentence: "Max gets _______ red ball and they go.", choices: ["under", "his", "run"], answer: "his" },
+        { num: 5, sentence: "The _______ is big and yellow in", choices: ["see", "bed", "sun"], answer: "sun" },
+        { num: 6, sentence: "big and yellow in _______ sky.", choices: ["the", "sad", "she"], answer: "the" },
+        { num: 7, sentence: "At the park, Max _______ the red ball.", choices: ["makes", "throws", "happy"], answer: "throws" },
+        { num: 8, sentence: "Sam runs _______ catches it.", choices: ["for", "very", "and"], answer: "for" },
+        { num: 9, sentence: "They play for _______ long time.", choices: ["see", "a", "it"], answer: "a" },
+        { num: 10, sentence: "Max and Sam _______ very happy together.", choices: ["on", "eat", "are"], answer: "are" }
       ],
       type: 'maze',
-      note: '4개 스토리, 20개 문항. 문맥에 가장 적절한 단어를 선택합니다.'
+      note: 'MAZE 표준: 하나의 연결된 지문(A Fun Day at the Park), 10개 문항. 매 7번째 단어 삭제, 문맥과 문법 모두 고려한 선택지.'
     }
   };
 

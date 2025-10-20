@@ -5,30 +5,20 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client'; // [수정] 새로운 클라이언트 경로
 import type { User } from '@supabase/supabase-js';
 
-// [수정] 모든 학생에게 동일한 고정된 문항 출제
+// [수정] LNF 표준 규격에 맞는 100개 고정된 알파벳 문항
 const getFixedAlphabet = () => {
-    // 200개의 고정된 알파벳 문항 (분석을 위해 모든 학생에게 동일하게 출제)
+    // LNF 표준: 100개 알파벳, 대소문자 균형, 빈도 반영, 특정 문자 제외 (W, 소문자 l)
     const fixedLetters = [
-        't', 'n', 'f', 'y', 'I', 'R', 'D', 'G', 'Y', 'V',
-        'r', 'b', 'P', 'L', 'Z', 'i', 'c', 'A', 'O', 'J',
-        'p', 'T', 'x', 'K', 'a', 'v', 'M', 'U', 'Q', 'h',
-        'g', 'N', 'j', 'X', 's', 'C', 'H', 'q', 'o', 'm',
-        'S', 'B', 'z', 'e', 'u', 'E', 'F', 'V', 'd', 'k',
-        'R', 'U', 'X', 'h', 'y', 'O', 'q', 't', 'm', 'S',
-        'x', 'K', 'e', 'c', 'T', 'G', 'Z', 'r', 'g', 'P',
-        'L', 'Q', 's', 'k', 'N', 'J', 'i', 'p', 'A', 'D',
-        'Y', 'a', 'f', 'I', 'H', 'V', 'n', 'v', 'E', 'F',
-        'V', 'd', 'b', 'M', 'j', 'o', 'u', 'C', 'B', 'z',
-        'e', 'h', 'c', 'v', 'T', 'P', 'D', 'L', 'K', 'V',
-        's', 'g', 'M', 'G', 'X', 'i', 'f', 'I', 'B', 'z',
-        'u', 'A', 'H', 'Y', 'o', 'k', 'R', 'j', 'Z', 'd',
-        'b', 'N', 'F', 'Q', 'r', 'S', 'O', 'q', 't', 'p',
-        'C', 'x', 'J', 'a', 'm', 'e', 'E', 'U', 'Z', 'n', 'y',
-        'E', 'F', 'V', 'n', 'b', 'H', 'z', 'i', 'p', 'S',
-        'O', 'Y', 'o', 'c', 'I', 'U', 'X', 'd', 'g', 'N',
-        'j', 'Q', 'h', 'v', 'M', 'K', 'a', 'f', 'A', 'B',
-        'J', 't', 'm', 'c', 'C', 'D', 'V', 'r', 'k', 'P', 'G',
-        'V', 's', 'y', 'R', 'L', 'e', 'u', 'T', 'x', 'q'
+        'T', 'a', 'S', 'o', 'r', 'E', 'i', 'n', 'D', 'h',
+        'f', 'P', 'm', 'C', 'u', 'L', 'd', 'G', 'H', 'R',
+        's', 'N', 'I', 'O', 'A', 'e', 'T', 'c', 'b', 'F',
+        'v', 'p', 'Y', 'k', 'g', 'M', 'u', 'a', 'R', 'I',
+        'E', 'S', 'd', 'o', 'T', 'j', 'n', 'q', 'C', 'b',
+        'h', 'L', 'A', 'P', 'r', 'f', 'e', 'K', 'V', 'z',
+        'O', 't', 'i', 's', 'N', 'G', 'c', 'u', 'M', 'D',
+        'a', 'E', 'H', 'k', 'Y', 'r', 'T', 'B', 'p', 'F',
+        'g', 'v', 'I', 'o', 'e', 'n', 's', 'L', 'J', 'q',
+        'x', 'C', 'a', 'P', 'd', 'R', 'i', 'A', 'm', 'U'
     ];
     return fixedLetters;
 };
@@ -62,7 +52,7 @@ export default function LnfTestPage() {
       if (!user) router.push('/');
       else {
         setUser(user);
-        setShuffledAlphabet(getFixedAlphabet()); // [수정] 고정된 문항 사용
+        setShuffledAlphabet(getFixedAlphabet()); // [수정] LNF 표준 100개 고정 문항 사용
         // 미리 마이크 권한 요청 및 MediaRecorder 준비
         prepareMediaRecorder();
       }

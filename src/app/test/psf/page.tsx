@@ -5,20 +5,28 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
-// [수정] 모든 학생에게 동일한 고정된 문항 출제 (107개 단어)
+// [수정] PSF 표준 규격에 맞는 110개 고정된 단어 문항 (다양한 음소 수 혼합)
 const getFixedWords = () => {
+    // PSF 표준: 초기에는 쉬운 단어, 이후 다양한 음소 수 혼합하여 모든 학생이 다양한 난이도 평가받도록
     const fixedWords = [
-        "road", "dad", "six", "frog", "on", "cry", "sit", "camp", "farm", "bell",
-        "plan", "hand", "gift", "stop", "map", "mad", "van", "pin", "star", "get",
-        "top", "old", "ant", "cup", "pear", "pond", "milk", "son", "pen", "belt",
-        "rug", "hit", "nut", "doll", "box", "bat", "cat", "bug", "win", "moon",
-        "gold", "web", "mug", "man", "pig", "sand", "dig", "pot", "rock", "hot",
-        "go", "bed", "mom", "fan", "ship", "an", "so", "desk", "wig", "ski",
-        "car", "fog", "leg", "dog", "pull", "toad", "ten", "hen", "jog", "kid",
-        "at", "fit", "but", "cold", "lion", "red", "sun", "jam", "mud", "hug",
-        "up", "crab", "coin", "heel", "put", "run", "cut", "not", "tap", "pet",
+        // 초기 20개: 주로 2-3음소 단어로 구성 (학생들이 쉽게 시작할 수 있도록)
+        "go", "on", "at", "up", "be", "it", "so", "in", "to", "an",
+        "dad", "sit", "map", "cup", "top", "pen", "cat", "dog", "get", "hot",
+        
+        // 21-50: 2-3음소와 일부 4음소 혼합
+        "mad", "van", "pin", "son", "rug", "hit", "nut", "box", "bat", "bug",
+        "win", "web", "mug", "man", "pig", "dig", "pot", "bed", "mom", "fan",
+        "wig", "car", "fog", "leg", "ten", "hen", "jog", "kid", "fit", "but",
+        
+        // 51-80: 다양한 음소 수 균형있게 혼합
+        "red", "sun", "jam", "mud", "hug", "run", "cut", "not", "tap", "pet",
+        "bell", "stop", "plan", "hand", "gift", "star", "belt", "doll", "gold", "sand",
         "dot", "big", "sip", "mop", "lid", "lip", "fin", "kit", "had", "can",
-        "zoo", "hop", "hat", "deep", "lamp", "drum", "nest", "tent"
+        
+        // 81-110: 계속 혼합하되 더 복잡한 단어들 포함
+        "zoo", "hop", "hat", "six", "rock", "road", "pan", "jet", "bib", "ship",
+        "desk", "ski", "pull", "toad", "cold", "crab", "lamp", "drum", "nest", "tent",
+        "milk", "pond", "coin", "deep", "moon", "heel", "frog", "camp", "farm", "star"
     ];
     return fixedWords;
 };
@@ -53,7 +61,7 @@ export default function PsfTestPage() {
       if (!user) router.push('/');
       else {
         setUser(user);
-        setShuffledWords(getFixedWords()); // [수정] 고정된 문항 사용
+        setShuffledWords(getFixedWords()); // [수정] PSF 표준 110개 고정 문항 사용
         // 미리 마이크 권한 요청 및 MediaRecorder 준비
         prepareMediaRecorder();
       }
