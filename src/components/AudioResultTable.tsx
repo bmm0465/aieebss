@@ -80,7 +80,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 
       if (fetchError) throw fetchError;
       
-      console.log('[AudioResultTable] 조회된 결과:', data);
+      console.log('[AudioResultTable] 조회된 결과:', data?.length || 0, '개');
       setResults(data || []);
     } catch (err) {
       console.error('결과 조회 에러:', err);
@@ -338,7 +338,7 @@ function AudioPlayer({
 
   React.useEffect(() => {
     const loadAudioUrl = async () => {
-      console.log('[AudioPlayer] 시작:', { audioPath });
+      console.log('[AudioPlayer] 시작:', audioPath.substring(0, 50) + '...');
       
       if (!audioPath || typeof audioPath !== 'string') {
         console.warn('[AudioPlayer] 유효하지 않은 경로:', audioPath);
@@ -355,12 +355,7 @@ function AudioPlayer({
         const isOldFormat = pathParts.length === 3;
         const isNewFormat = pathParts.length === 4;
         
-        console.log('[AudioPlayer] 경로 형식 분석:', { 
-          audioPath, 
-          parts: pathParts, 
-          isOldFormat, 
-          isNewFormat 
-        });
+        console.log('[AudioPlayer] 경로 형식:', isOldFormat ? '기존' : '새로운', `(${pathParts.length}개 부분)`);
 
         // 여러 경로를 시도할 리스트 생성
         const pathsToTry = [audioPath];
@@ -408,10 +403,15 @@ function AudioPlayer({
           pathsToTry.push(...uniquePaths);
         }
         
-        // 각 경로를 시도해보기
-        for (const tryPath of pathsToTry) {
+        // 각 경로를 시도해보기 (최대 5개까지로 제한)
+        const maxAttempts = Math.min(pathsToTry.length, 5);
+        let lastError: string = '';
+        
+        for (let i = 0; i < maxAttempts; i++) {
+          const tryPath = pathsToTry[i];
+          
           try {
-            console.log('[AudioPlayer] 경로 시도:', tryPath);
+            console.log(`[AudioPlayer] 경로 시도 ${i + 1}/${maxAttempts}:`, tryPath);
             
             const { data, error: urlError } = await supabase.storage
               .from('student-recordings')
@@ -424,16 +424,34 @@ function AudioPlayer({
               setLoading(false);
               return;
             } else {
-              console.log('[AudioPlayer] 경로 실패:', tryPath, urlError?.message);
+              lastError = urlError?.message || 'Unknown error';
+              console.log('[AudioPlayer] 경로 실패:', tryPath, lastError);
+              
+              // 첫 번째 시도가 실패하고 기존 형식인 경우, 조기 종료하지 않고 계속 시도
+              if (i === 0 && !isOldFormat) {
+                console.log('[AudioPlayer] 첫 번째 시도 실패, 다른 경로들을 시도하지 않음');
+                break;
+              }
             }
           } catch (tryError) {
+            lastError = String(tryError);
             console.log('[AudioPlayer] 경로 시도 중 오류:', tryPath, tryError);
+          }
+          
+          // 첫 번째 경로가 실패하고 새로운 형식인 경우 더 이상 시도하지 않음
+          if (i === 0 && !isOldFormat && pathsToTry.length > 1) {
+            break;
           }
         }
         
         // 모든 경로가 실패한 경우
-        console.error('[AudioPlayer] 모든 경로 시도 실패:', { audioPath, pathsToTry });
-        setError(isOldFormat ? '파일을 찾을 수 없습니다 (기존 형식)' : '파일을 찾을 수 없습니다');
+        console.error('[AudioPlayer] 모든 경로 시도 실패:', { 
+          audioPath, 
+          pathsTried: pathsToTry.slice(0, maxAttempts),
+          lastError,
+          isOldFormat 
+        });
+        setError(isOldFormat ? `파일을 찾을 수 없습니다 (기존 형식, ${maxAttempts}개 경로 시도)` : `파일을 찾을 수 없습니다 (${lastError})`);
         
       } catch (err) {
         console.error('[AudioPlayer] 오디오 URL 생성 실패:', err, { audioPath });

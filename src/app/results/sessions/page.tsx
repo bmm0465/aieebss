@@ -117,31 +117,31 @@ export default async function SessionsPage() {
   const supabase = await createClient();
 
   // 세션 체크를 더 관대하게 처리
-  let session = null;
-  let sessionError = null;
+  let user = null;
+  let userError = null;
   
   try {
-    const sessionResult = await supabase.auth.getSession();
-    session = sessionResult.data.session;
-    sessionError = sessionResult.error;
+    const userResult = await supabase.auth.getUser();
+    user = userResult.data.user;
+    userError = userResult.error;
   } catch (error) {
-    console.error("세션 가져오기 실패:", error);
-    sessionError = error;
+    console.error("사용자 정보 가져오기 실패:", error);
+    userError = error;
   }
   
-  console.log("SessionsPage - session:", session ? "존재함" : "없음");
-  console.log("SessionsPage - sessionError:", sessionError);
+  console.log("SessionsPage - user:", user ? "존재함" : "없음");
+  console.log("SessionsPage - userError:", userError);
   
-  // 세션이 없으면 로그인 페이지로 리다이렉트
-  if (!session) {
-    console.log("세션이 없습니다. 로그인 페이지로 리다이렉트합니다.");
+  // 사용자가 인증되지 않았으면 로그인 페이지로 리다이렉트
+  if (!user) {
+    console.log("사용자가 인증되지 않았습니다. 로그인 페이지로 리다이렉트합니다.");
     redirect('/');
   }
 
   const { data: results, error } = await supabase
     .from('test_results')
     .select('*')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
   if (error) {

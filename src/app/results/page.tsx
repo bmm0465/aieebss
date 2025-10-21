@@ -6,22 +6,22 @@ import { redirect } from 'next/navigation';
 export default async function ResultsPage() {
   const supabase = await createClient();
 
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
   
-  if (sessionError) {
-    console.error("세션 에러:", sessionError);
+  if (userError) {
+    console.error("사용자 인증 에러:", userError);
     redirect('/');
   }
   
-  if (!session) {
-    console.log("세션이 없습니다. 로그인 페이지로 리다이렉트합니다.");
+  if (!user) {
+    console.log("사용자가 인증되지 않았습니다. 로그인 페이지로 리다이렉트합니다.");
     redirect('/');
   }
 
   const { data: results, error } = await supabase
     .from('test_results')
     .select('*')
-    .eq('user_id', session.user.id);
+    .eq('user_id', user.id);
 
   if (error) {
     console.error("결과 조회 에러:", error);
