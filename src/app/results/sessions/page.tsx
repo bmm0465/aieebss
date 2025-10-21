@@ -17,6 +17,7 @@ type TestResult = {
   wcpm?: number;
   accuracy?: number;
   question_passage?: string;
+  audio_url?: string;
   created_at?: string;
 };
 

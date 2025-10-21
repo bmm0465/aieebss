@@ -21,6 +21,7 @@ type TestResult = {
   is_whole_word_correct?: boolean;
   wcpm?: number;
   accuracy?: number;
+  audio_url?: string;
   created_at?: string;
 };
 
