@@ -81,6 +81,17 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
       if (fetchError) throw fetchError;
       
       console.log('[AudioResultTable] 조회된 결과:', data?.length || 0, '개');
+      
+      // audio_url 경로 분석을 위한 디버깅 정보
+      if (data && data.length > 0) {
+        const audioPaths = data
+          .filter(item => item.audio_url)
+          .map(item => item.audio_url)
+          .slice(0, 3); // 처음 3개만 로깅
+        
+        console.log('[AudioResultTable] 샘플 audio_url 경로들:', audioPaths);
+      }
+      
       setResults(data || []);
     } catch (err) {
       console.error('결과 조회 에러:', err);
@@ -360,8 +371,30 @@ function AudioPlayer({
         const pathsToTry = [audioPath];
         
         if (isOldFormat && userId && testType) {
-          // 기존 형식인 경우, 여러 가능한 새로운 경로들을 생성해 시도
+          // 기존 형식인 경우, 파일이 실제로 존재하는지 먼저 확인
+          console.log('[AudioPlayer] 기존 형식 파일 확인 중:', { oldFormat: audioPath, userId, testType, createdAt });
+          
           const [oldTestType, oldUserId, fileName] = pathParts;
+          
+          // testType 정규화 (대소문자 및 오타 수정)
+          const normalizeTestType = (type: string) => {
+            if (!type) return '';
+            const normalized = type.toLowerCase();
+            
+            // 일반적인 오타 및 대소문자 문제 수정
+            const corrections: Record<string, string> = {
+              'inf': 'lnf',           // Inf -> LNF
+              'wrf': 'wrf',           // 이미 올바름
+              'orf': 'orf',           // 이미 올바름
+              'psf': 'psf',           // 이미 올바름
+              'nwf': 'nwf',           // 이미 올바름
+              'maze': 'maze'          // 이미 올바름
+            };
+            
+            return corrections[normalized] || normalized;
+          };
+          
+          const normalizedTestType = normalizeTestType(testType || oldTestType);
           
           // createdAt 날짜를 사용하여 정확한 날짜 추정
           let sessionDate = '2024-12-01'; // 기본값
@@ -370,36 +403,29 @@ function AudioPlayer({
             sessionDate = date.toISOString().split('T')[0];
           }
           
-          // 다양한 가능한 경로 생성 (중복 제거)
-          const possiblePaths = new Set();
-          
-          // 기본 경로들 추가
-          const basePaths = [
-            `student_${userId.slice(0, 8)}/${sessionDate}/${testType.toLowerCase()}/${fileName}`,
-            `student_${oldUserId.slice(0, 8)}/${sessionDate}/${oldTestType.toLowerCase()}/${fileName}`,
-          ];
-          
-          basePaths.forEach(path => possiblePaths.add(path));
-          
-          // 날짜를 하루씩 앞뒤로 시도 (중복 제거)
-          if (createdAt) {
-            const date = new Date(createdAt);
-            for (let i = -3; i <= 3; i++) {
-              const testDate = new Date(date);
-              testDate.setDate(date.getDate() + i);
-              const dateStr = testDate.toISOString().split('T')[0];
-              
-              // userId와 oldUserId 모두 시도, testType과 oldTestType 모두 시도
-              possiblePaths.add(`student_${userId.slice(0, 8)}/${dateStr}/${testType.toLowerCase()}/${fileName}`);
-              possiblePaths.add(`student_${userId.slice(0, 8)}/${dateStr}/${oldTestType.toLowerCase()}/${fileName}`);
-              possiblePaths.add(`student_${oldUserId.slice(0, 8)}/${dateStr}/${testType.toLowerCase()}/${fileName}`);
-              possiblePaths.add(`student_${oldUserId.slice(0, 8)}/${dateStr}/${oldTestType.toLowerCase()}/${fileName}`);
+          // 실제 Storage에서 파일 목록을 확인하는 방법 시도
+          try {
+            const { data: fileList, error: listError } = await supabase.storage
+              .from('student-recordings')
+              .list('', {
+                limit: 100,
+                search: `${normalizedTestType}`
+              });
+            
+            if (!listError && fileList) {
+              console.log('[AudioPlayer] Storage 검색 결과:', fileList.length, '개 폴더 발견');
             }
+          } catch (searchError) {
+            console.log('[AudioPlayer] Storage 검색 실패:', searchError);
           }
           
-          const uniquePaths = Array.from(possiblePaths) as string[];
+          // 우선순위가 높은 경로들만 시도 (성능 개선)
+          const priorityPaths = [
+            `student_${userId.slice(0, 8)}/${sessionDate}/${normalizedTestType}/${fileName}`,
+            `student_${oldUserId.slice(0, 8)}/${sessionDate}/${normalizeTestType(oldTestType)}/${fileName}`,
+          ];
           
-          pathsToTry.push(...uniquePaths);
+          pathsToTry.push(...priorityPaths);
         }
         
         // 각 경로를 시도해보기 (최대 5개까지로 제한)
