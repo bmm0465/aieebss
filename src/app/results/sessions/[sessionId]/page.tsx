@@ -238,16 +238,9 @@ export default async function SessionDetailPage({ params }: PageProps) {
         </div>
 
         {/* 결과 리포트 */}
-        <ResultReport results={processedResults} />
+        <ResultReport results={processedResults} sessionId={sessionId} />
 
-        {/* 음성 결과 테이블 */}
-        {testTypes.filter(testType => ['LNF', 'PSF', 'NWF', 'WRF', 'ORF'].includes(testType)).map(testType => (
-          <AudioResultTable
-            key={`audio-${testType}`}
-            testType={testType}
-            sessionId={sessionId}
-          />
-        ))}
+        {/* 음성 결과 테이블은 이제 ResultReport 컴포넌트에서 선택적으로 표시됩니다 */}
 
         {/* AI 피드백 섹션 */}
         {testTypes.map(testType => (
