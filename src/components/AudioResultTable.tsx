@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { createClient } from '@/lib/supabase/client';
 
 interface AudioResult {
@@ -31,7 +31,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
   const [error, setError] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
-  const fetchResults = async () => {
+  const fetchResults = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -76,13 +76,13 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
     } finally {
       setLoading(false);
     }
-  };
+  }, [testType, sessionId, studentId]);
 
   React.useEffect(() => {
     if (testType) {
       fetchResults();
     }
-  }, [testType, sessionId, studentId]);
+  }, [testType, sessionId, studentId, fetchResults]);
 
   const getCorrectAnswer = (result: AudioResult): string => {
     return result.question || result.question_word || 'N/A';
@@ -218,7 +218,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
             </tr>
           </thead>
           <tbody>
-            {results.map((result, index) => (
+            {results.map((result) => (
               <React.Fragment key={result.id}>
                 <tr 
                   style={{ 
@@ -246,7 +246,6 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                   <td style={{ padding: '1rem', textAlign: 'center' }}>
                     <ResultBadge 
                       isCorrect={result.is_correct} 
-                      errorType={result.error_type}
                       correctSegments={result.correct_segments}
                       targetSegments={result.target_segments}
                     />
@@ -346,12 +345,10 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
 // 결과 배지 컴포넌트
 function ResultBadge({ 
   isCorrect, 
-  errorType, 
   correctSegments, 
   targetSegments 
 }: { 
   isCorrect?: boolean; 
-  errorType?: string;
   correctSegments?: number;
   targetSegments?: number;
 }) {
