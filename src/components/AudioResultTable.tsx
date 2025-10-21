@@ -353,7 +353,6 @@ function AudioPlayer({
         // 경로 형식 확인 (기존: testType/userId/timestamp.webm vs 새로운: studentName/sessionDate/testType/timestamp.webm)
         const pathParts = audioPath.split('/');
         const isOldFormat = pathParts.length === 3;
-        const isNewFormat = pathParts.length === 4;
         
         console.log('[AudioPlayer] 경로 형식:', isOldFormat ? '기존' : '새로운', `(${pathParts.length}개 부분)`);
 

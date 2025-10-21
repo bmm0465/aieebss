@@ -3,7 +3,6 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ResultReport, { type ProcessedResults } from '@/components/ResultReport';
 import FeedbackSection from '@/components/FeedbackSection';
-import AudioResultTable from '@/components/AudioResultTable';
 
 // Supabase 테이블 타입 정의
 type TestResult = {
