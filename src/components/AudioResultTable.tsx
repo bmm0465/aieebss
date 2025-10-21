@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client';
 
 interface AudioResult {
   id: string;
+  user_id?: string;
   test_type: string;
   question?: string;
   question_word?: string;
@@ -243,7 +244,12 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                   >
                   <td style={{ padding: '1rem' }}>
                     {result.audio_url ? (
-                      <AudioPlayer audioPath={result.audio_url} />
+                      <AudioPlayer 
+                        audioPath={result.audio_url} 
+                        userId={result.user_id}
+                        testType={result.test_type}
+                        createdAt={result.created_at}
+                      />
                     ) : (
                       <span style={{ color: '#ccc' }}>음성 파일 없음</span>
                     )}
@@ -315,7 +321,17 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 }
 
 // 오디오 플레이어 컴포넌트
-function AudioPlayer({ audioPath }: { audioPath: string }) {
+function AudioPlayer({ 
+  audioPath, 
+  userId, 
+  testType, 
+  createdAt 
+}: { 
+  audioPath: string;
+  userId?: string;
+  testType?: string;
+  createdAt?: string;
+}) {
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -345,31 +361,80 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
           isOldFormat, 
           isNewFormat 
         });
+
+        // 여러 경로를 시도할 리스트 생성
+        const pathsToTry = [audioPath];
         
-        const { data, error: urlError } = await supabase.storage
-          .from('student-recordings')
-          .createSignedUrl(audioPath, 3600);
-        
-        if (urlError) {
-          console.error('[AudioPlayer] Signed URL 생성 오류:', urlError, { audioPath });
+        if (isOldFormat && userId && testType) {
+          // 기존 형식인 경우, 여러 가능한 새로운 경로들을 생성해 시도
+          const [oldTestType, oldUserId, fileName] = pathParts;
           
-          // 기존 형식의 파일이고 "Object not found" 오류인 경우
-          if (isOldFormat && urlError.message?.includes('Object not found')) {
-            setError('파일이 이동되었습니다 (기존 형식)');
-          } else {
-            setError(`URL 생성 실패: ${urlError.message}`);
+          // createdAt 날짜를 사용하여 정확한 날짜 추정
+          let sessionDate = '2024-12-01'; // 기본값
+          if (createdAt) {
+            const date = new Date(createdAt);
+            sessionDate = date.toISOString().split('T')[0];
           }
-          return;
+          
+          // 다양한 가능한 경로 생성 (중복 제거)
+          const possiblePaths = new Set();
+          
+          // 기본 경로들 추가
+          const basePaths = [
+            `student_${userId.slice(0, 8)}/${sessionDate}/${testType.toLowerCase()}/${fileName}`,
+            `student_${oldUserId.slice(0, 8)}/${sessionDate}/${oldTestType.toLowerCase()}/${fileName}`,
+          ];
+          
+          basePaths.forEach(path => possiblePaths.add(path));
+          
+          // 날짜를 하루씩 앞뒤로 시도 (중복 제거)
+          if (createdAt) {
+            const date = new Date(createdAt);
+            for (let i = -3; i <= 3; i++) {
+              const testDate = new Date(date);
+              testDate.setDate(date.getDate() + i);
+              const dateStr = testDate.toISOString().split('T')[0];
+              
+              // userId와 oldUserId 모두 시도, testType과 oldTestType 모두 시도
+              possiblePaths.add(`student_${userId.slice(0, 8)}/${dateStr}/${testType.toLowerCase()}/${fileName}`);
+              possiblePaths.add(`student_${userId.slice(0, 8)}/${dateStr}/${oldTestType.toLowerCase()}/${fileName}`);
+              possiblePaths.add(`student_${oldUserId.slice(0, 8)}/${dateStr}/${testType.toLowerCase()}/${fileName}`);
+              possiblePaths.add(`student_${oldUserId.slice(0, 8)}/${dateStr}/${oldTestType.toLowerCase()}/${fileName}`);
+            }
+          }
+          
+          const uniquePaths = Array.from(possiblePaths) as string[];
+          
+          pathsToTry.push(...uniquePaths);
         }
         
-        if (data?.signedUrl) {
-          console.log('[AudioPlayer] Signed URL 생성 성공:', data.signedUrl);
-          setAudioUrl(data.signedUrl);
-          setError(null);
-        } else {
-          console.warn('[AudioPlayer] Signed URL이 비어있음:', data);
-          setError('URL 생성 실패');
+        // 각 경로를 시도해보기
+        for (const tryPath of pathsToTry) {
+          try {
+            console.log('[AudioPlayer] 경로 시도:', tryPath);
+            
+            const { data, error: urlError } = await supabase.storage
+              .from('student-recordings')
+              .createSignedUrl(tryPath, 3600);
+            
+            if (!urlError && data?.signedUrl) {
+              console.log('[AudioPlayer] Signed URL 생성 성공:', data.signedUrl, { tryPath });
+              setAudioUrl(data.signedUrl);
+              setError(null);
+              setLoading(false);
+              return;
+            } else {
+              console.log('[AudioPlayer] 경로 실패:', tryPath, urlError?.message);
+            }
+          } catch (tryError) {
+            console.log('[AudioPlayer] 경로 시도 중 오류:', tryPath, tryError);
+          }
         }
+        
+        // 모든 경로가 실패한 경우
+        console.error('[AudioPlayer] 모든 경로 시도 실패:', { audioPath, pathsToTry });
+        setError(isOldFormat ? '파일을 찾을 수 없습니다 (기존 형식)' : '파일을 찾을 수 없습니다');
+        
       } catch (err) {
         console.error('[AudioPlayer] 오디오 URL 생성 실패:', err, { audioPath });
         setError('오디오 로드 실패');
@@ -379,7 +444,7 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
     };
 
     loadAudioUrl();
-  }, [audioPath]);
+  }, [audioPath, userId, testType, createdAt]);
 
   if (loading) {
     return <span style={{ color: '#ccc' }}>로딩 중...</span>;
