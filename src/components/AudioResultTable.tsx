@@ -31,6 +31,15 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
   const [error, setError] = useState<string | null>(null);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
 
+  // 안전한 ID 비교 함수
+  const isExpanded = (resultId: string): boolean => {
+    return expandedRow === resultId;
+  };
+
+  const toggleExpanded = (resultId: string): void => {
+    setExpandedRow(expandedRow === resultId ? null : resultId);
+  };
+
   const fetchResults = useCallback(async () => {
     setLoading(true);
     setError(null);
@@ -69,6 +78,8 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
       const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
+      
+      console.log('[AudioResultTable] 조회된 결과:', data);
       setResults(data || []);
     } catch (err) {
       console.error('결과 조회 에러:', err);
@@ -218,16 +229,18 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
             </tr>
           </thead>
           <tbody>
-            {results.map((result) => (
-              <React.Fragment key={result.id}>
-                <tr 
-                  style={{ 
-                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-                    cursor: 'pointer',
-                    backgroundColor: expandedRow === result.id ? 'rgba(255, 215, 0, 0.05)' : 'transparent'
-                  }}
-                  onClick={() => setExpandedRow(expandedRow === result.id ? null : result.id)}
-                >
+            {results.map((result) => {
+              const safeId = result.id ? String(result.id) : `result-${Math.random()}`;
+              return (
+                <React.Fragment key={safeId}>
+                  <tr 
+                    style={{ 
+                      borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                      cursor: 'pointer',
+                      backgroundColor: isExpanded(safeId) ? 'rgba(255, 215, 0, 0.05)' : 'transparent'
+                    }}
+                    onClick={() => toggleExpanded(safeId)}
+                  >
                   <td style={{ padding: '1rem' }}>
                     {result.audio_url ? (
                       <AudioPlayer audioPath={result.audio_url} />
@@ -257,8 +270,8 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                       second: '2-digit'
                     }) : 'N/A'}
                   </td>
-                </tr>
-                {expandedRow === result.id && (
+                  </tr>
+                  {isExpanded(safeId) && (
                   <tr>
                     <td colSpan={5} style={{ padding: '0 1rem 1rem 1rem' }}>
                       <div style={{ 
@@ -269,7 +282,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                       }}>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
                           <div>
-                            <strong style={{ color: '#FFD700' }}>문제 ID:</strong> {result.id.slice(0, 8)}...
+                            <strong style={{ color: '#FFD700' }}>문제 ID:</strong> {result.id ? (typeof result.id === 'string' ? result.id.slice(0, 8) : String(result.id).slice(0, 8)) : 'N/A'}...
                           </div>
                           {result.correct_segments !== undefined && result.target_segments !== undefined && (
                             <div>
@@ -290,9 +303,10 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                       </div>
                     </td>
                   </tr>
-                )}
-              </React.Fragment>
-            ))}
+                  )}
+                </React.Fragment>
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -304,20 +318,45 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 function AudioPlayer({ audioPath }: { audioPath: string }) {
   const [audioUrl, setAudioUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   React.useEffect(() => {
     const loadAudioUrl = async () => {
+      console.log('[AudioPlayer] 시작:', { audioPath });
+      
+      if (!audioPath || typeof audioPath !== 'string') {
+        console.warn('[AudioPlayer] 유효하지 않은 경로:', audioPath);
+        setError('유효하지 않은 오디오 경로');
+        setLoading(false);
+        return;
+      }
+
       try {
         const supabase = createClient();
-        const { data } = await supabase.storage
+        
+        console.log('[AudioPlayer] Signed URL 생성 시도:', audioPath);
+        
+        const { data, error: urlError } = await supabase.storage
           .from('student-recordings')
           .createSignedUrl(audioPath, 3600);
         
-        if (data?.signedUrl) {
-          setAudioUrl(data.signedUrl);
+        if (urlError) {
+          console.error('[AudioPlayer] Signed URL 생성 오류:', urlError, { audioPath });
+          setError(`URL 생성 실패: ${urlError.message}`);
+          return;
         }
-      } catch (error) {
-        console.error('오디오 URL 생성 실패:', error);
+        
+        if (data?.signedUrl) {
+          console.log('[AudioPlayer] Signed URL 생성 성공:', data.signedUrl);
+          setAudioUrl(data.signedUrl);
+          setError(null);
+        } else {
+          console.warn('[AudioPlayer] Signed URL이 비어있음:', data);
+          setError('URL 생성 실패');
+        }
+      } catch (err) {
+        console.error('[AudioPlayer] 오디오 URL 생성 실패:', err, { audioPath });
+        setError('오디오 로드 실패');
       } finally {
         setLoading(false);
       }
@@ -330,12 +369,19 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
     return <span style={{ color: '#ccc' }}>로딩 중...</span>;
   }
 
-  if (!audioUrl) {
-    return <span style={{ color: '#dc3545' }}>재생 불가</span>;
+  if (error || !audioUrl) {
+    return <span style={{ color: '#dc3545' }}>{error || '재생 불가'}</span>;
   }
 
   return (
-    <audio controls style={{ width: '200px', height: '40px' }}>
+    <audio 
+      controls 
+      style={{ width: '200px', height: '40px' }}
+      onError={(e) => {
+        console.error('오디오 재생 오류:', e);
+        setError('재생 오류');
+      }}
+    >
       <source src={audioUrl} type="audio/webm" />
       브라우저가 오디오 재생을 지원하지 않습니다.
     </audio>
