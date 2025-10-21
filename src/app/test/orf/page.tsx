@@ -221,7 +221,7 @@ export default function OrfTestPage() {
         <h1 style={titleStyle}>5교시: 고대 이야기 소생술 시험</h1>
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>낡은 이야기책에 적힌 짧은 이야기를 자연스러운 억양과 속도로 읽어 생명력을 불어넣어야 합니다.<br/>대화 내용만 읽어주세요. 화자 이름과 "Passage"는 읽지 않아도 됩니다.</p>
+            <p style={paragraphStyle}>낡은 이야기책에 적힌 짧은 이야기를 자연스러운 억양과 속도로 읽어 생명력을 불어넣어야 합니다.<br/>대화 내용만 읽어주세요. 화자 이름과 &quot;Passage&quot;는 읽지 않아도 됩니다.</p>
             <button onClick={handleStartTest} style={buttonStyle}>이야기 시작하기</button>
           </div>
         )}

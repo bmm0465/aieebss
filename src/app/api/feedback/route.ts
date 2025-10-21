@@ -248,8 +248,8 @@ function analyzeErrorPatterns(incorrectAnswers: Array<{
   return patterns;
 }
 
-// OpenAI API를 통한 피드백 생성
-async function generateFeedback(testType: string, analysis: {
+// 분석 결과 타입 정의
+type AnalysisResult = {
   total: number;
   correct: number;
   accuracy: number;
@@ -264,7 +264,11 @@ async function generateFeedback(testType: string, analysis: {
     uncommonLetters: Array<{ question: string; studentAnswer: string }>;
     other: Array<{ question: string; studentAnswer: string }>;
   };
-}) {
+  avgWcpm?: number;
+};
+
+// OpenAI API를 통한 피드백 생성
+async function generateFeedback(testType: string, analysis: AnalysisResult) {
   const openaiApiKey = process.env.OPENAI_API_KEY;
   
   if (!openaiApiKey) {
@@ -358,7 +362,7 @@ Hattie의 피드백 개념에 따라 다음 세 가지 질문에 답하는 피�
 학생의 ORF 평가 결과:
 - 평가 횟수: ${analysis.total}회
 - 평균 정확도: ${analysis.accuracy.toFixed(1)}%
-- 평균 WCPM: ${(analysis as any).avgWcpm?.toFixed(1) || '데이터 없음'}
+- 평균 WCPM: ${analysis.avgWcpm?.toFixed(1) || '데이터 없음'}
 
 응답 형식:
 {
