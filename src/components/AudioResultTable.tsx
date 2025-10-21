@@ -334,7 +334,17 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
       try {
         const supabase = createClient();
         
-        console.log('[AudioPlayer] Signed URL 생성 시도:', audioPath);
+        // 경로 형식 확인 (기존: testType/userId/timestamp.webm vs 새로운: studentName/sessionDate/testType/timestamp.webm)
+        const pathParts = audioPath.split('/');
+        const isOldFormat = pathParts.length === 3;
+        const isNewFormat = pathParts.length === 4;
+        
+        console.log('[AudioPlayer] 경로 형식 분석:', { 
+          audioPath, 
+          parts: pathParts, 
+          isOldFormat, 
+          isNewFormat 
+        });
         
         const { data, error: urlError } = await supabase.storage
           .from('student-recordings')
@@ -342,7 +352,13 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
         
         if (urlError) {
           console.error('[AudioPlayer] Signed URL 생성 오류:', urlError, { audioPath });
-          setError(`URL 생성 실패: ${urlError.message}`);
+          
+          // 기존 형식의 파일이고 "Object not found" 오류인 경우
+          if (isOldFormat && urlError.message?.includes('Object not found')) {
+            setError('파일이 이동되었습니다 (기존 형식)');
+          } else {
+            setError(`URL 생성 실패: ${urlError.message}`);
+          }
           return;
         }
         
@@ -370,7 +386,20 @@ function AudioPlayer({ audioPath }: { audioPath: string }) {
   }
 
   if (error || !audioUrl) {
-    return <span style={{ color: '#dc3545' }}>{error || '재생 불가'}</span>;
+    const errorMessage = error || '재생 불가';
+    const isOldFormatError = errorMessage.includes('기존 형식');
+    
+    return (
+      <span 
+        style={{ 
+          color: isOldFormatError ? '#ffc107' : '#dc3545',
+          fontSize: '0.8rem'
+        }}
+        title={isOldFormatError ? '이 파일은 이전 형식으로 저장되어 접근할 수 없습니다' : errorMessage}
+      >
+        {isOldFormatError ? '⚠️ 이전 형식' : errorMessage}
+      </span>
+    );
   }
 
   return (
