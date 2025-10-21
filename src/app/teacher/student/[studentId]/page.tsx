@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import StudentResultChart from '@/components/StudentResultChart';
+import AudioResultTable from '@/components/AudioResultTable';
 
 // 타입 정의
 type TestResult = {
@@ -482,6 +483,18 @@ export default async function StudentDetailPage({ params }: Props) {
               </div>
             )}
           </div>
+
+          {/* 음성 결과 테이블 */}
+          {(['LNF', 'PSF', 'NWF', 'WRF', 'ORF'] as const).map(testType => {
+            const hasResults = results.some(r => r.test_type === testType && r.audio_url);
+            return hasResults ? (
+              <AudioResultTable
+                key={`teacher-audio-${testType}`}
+                testType={testType}
+                studentId={studentId}
+              />
+            ) : null;
+          })}
         </div>
       </div>
     );

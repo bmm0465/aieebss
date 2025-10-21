@@ -3,6 +3,7 @@ import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ResultReport, { type ProcessedResults } from '@/components/ResultReport';
 import FeedbackSection from '@/components/FeedbackSection';
+import AudioResultTable from '@/components/AudioResultTable';
 
 // Supabase 테이블 타입 정의
 type TestResult = {
@@ -237,6 +238,15 @@ export default async function SessionDetailPage({ params }: PageProps) {
 
         {/* 결과 리포트 */}
         <ResultReport results={processedResults} />
+
+        {/* 음성 결과 테이블 */}
+        {testTypes.filter(testType => ['LNF', 'PSF', 'NWF', 'WRF', 'ORF'].includes(testType)).map(testType => (
+          <AudioResultTable
+            key={`audio-${testType}`}
+            testType={testType}
+            sessionId={sessionId}
+          />
+        ))}
 
         {/* AI 피드백 섹션 */}
         {testTypes.map(testType => (

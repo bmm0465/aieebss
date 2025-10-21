@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { createClient as createClientSide } from '@/lib/supabase/client';
+import { generateStoragePath } from '@/lib/storage-path';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -12,10 +13,12 @@ const openai = new OpenAI({
 // [핵심 2] 오래 걸리는 모든 작업을 처리하는 별도의 비동기 함수
 async function processOrfInBackground(supabase: SupabaseClient, userId: string, questionPassage: string, arrayBuffer: ArrayBuffer, timeTaken: number) {
   try {
+    const storagePath = await generateStoragePath(userId, 'ORF');
+    
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`orf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+        .upload(storagePath, arrayBuffer, { 
           contentType: 'audio/webm',
           upsert: false
         }),

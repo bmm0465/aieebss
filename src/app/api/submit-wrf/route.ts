@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { createClient as createClientSide } from '@/lib/supabase/client';
+import { generateStoragePath } from '@/lib/storage-path';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -21,10 +22,12 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
       return;
     }
 
+    const storagePath = await generateStoragePath(userId, 'WRF');
+    
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(`wrf/${userId}/${Date.now()}.webm`, arrayBuffer, { 
+        .upload(storagePath, arrayBuffer, { 
           contentType: 'audio/webm',
           upsert: false
         }),
