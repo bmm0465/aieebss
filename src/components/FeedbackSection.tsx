@@ -33,6 +33,19 @@ interface FeedbackSectionProps {
   hasResults: boolean;
 }
 
+// 테스트 타입별 제목 매핑
+const getTestTypeTitle = (testType: string): string => {
+  const testTitles: Record<string, string> = {
+    'LNF': '1교시 고대 룬 문자 해독',
+    'PSF': '2교시 소리의 원소 분리',
+    'NWF': '3교시 초급 주문 시전',
+    'WRF': '4교시 마법 단어 활성화',
+    'ORF': '5교시 고대 이야기 소생술',
+    'MAZE': '6교시 지혜의 미로 탈출'
+  };
+  return testTitles[testType] || testType;
+};
+
 export default function FeedbackSection({ testType, sessionId, hasResults }: FeedbackSectionProps) {
   const [feedback, setFeedback] = useState<FeedbackData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -102,7 +115,7 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
     }}>
       <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
         <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '2rem' }}>
-          🤖 AI 개인화 피드백
+          🤖 AI 개별화 피드백: {getTestTypeTitle(testType)}
         </h2>
         <p style={{ color: '#ccc', marginBottom: '1.5rem' }}>
           Hattie의 피드백 개념을 적용한 개인화된 학습 피드백을 받아보세요
@@ -176,6 +189,54 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
               </div>
             </div>
           </div>
+
+          {/* 상세 결과 리포트 */}
+          {feedback.analysis.incorrectAnswers.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(220, 53, 69, 0.1)',
+              border: '1px solid rgba(220, 53, 69, 0.3)',
+              borderRadius: '10px',
+              padding: '1.5rem',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#dc3545', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
+                📋 틀린 문제 상세 보기 ({feedback.analysis.incorrectAnswers.length}개)
+              </h3>
+              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                {feedback.analysis.incorrectAnswers.map((answer, index) => (
+                  <div key={index} style={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                    border: '1px solid rgba(220, 53, 69, 0.2)',
+                    borderRadius: '8px',
+                    padding: '1rem',
+                    marginBottom: '0.8rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: '0 0 0.3rem 0', color: '#ffc107', fontWeight: 'bold' }}>
+                        문제: {answer.question}
+                      </p>
+                      <p style={{ margin: 0, color: '#ccc' }}>
+                        학생 답: <span style={{ color: '#dc3545' }}>{answer.studentAnswer}</span>
+                      </p>
+                    </div>
+                    <div style={{
+                      backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                      color: '#dc3545',
+                      padding: '0.3rem 0.8rem',
+                      borderRadius: '15px',
+                      fontSize: '0.8rem',
+                      fontWeight: 'bold'
+                    }}>
+                      ❌ 틀림
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Hattie의 피드백 */}
           <div style={{ display: 'grid', gap: '1.5rem' }}>

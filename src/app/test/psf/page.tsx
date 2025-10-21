@@ -112,8 +112,13 @@ export default function PsfTestPage() {
     if (nextIndex >= shuffledWords.length) {
       setPhase('finished');
     } else {
+      // [수정] 상태 초기화하여 버튼들이 다시 활성화되도록 함
+      setIsSubmitting(false);
+      setIsAudioLoading(false);
+      setIsRecording(false);
       setWordIndex(nextIndex);
       setCurrentWord(shuffledWords[nextIndex]);
+      setFeedback('');
     }
   };
 
@@ -234,16 +239,21 @@ export default function PsfTestPage() {
     
     try {
       // [핵심 수정] API 호출 후 결과를 기다리지 않음
-      fetch('/api/submit-psf', { method: 'POST', body: formData });
+      fetch('/api/submit-psf', { method: 'POST', body: formData })
+        .catch(error => {
+          console.error('PSF 요청 전송 실패:', error);
+          // 백그라운드에서 실패해도 UI에는 영향을 주지 않음
+        });
       
       // UI를 즉시 업데이트
       setFeedback("좋아요! 다음 문제예요.");
-      goToNextWord();
+      setTimeout(() => {
+        goToNextWord();
+      }, 500); // 잠시 딜레이를 두어 사용자가 피드백을 볼 수 있도록 함
 
     } catch (error) {
       console.error('PSF 요청 전송 실패:', error);
       setFeedback("요청 전송 중 오류가 발생했습니다.");
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -299,7 +309,43 @@ export default function PsfTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>{feedback || "2교시 '소리의 원소 분리 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
-            <button style={buttonStyle} onClick={() => router.push('/test/nwf')}>다음 시험으로 이동</button>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
+              <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/nwf')}>
+                다음 시험으로 이동
+              </button>
+              <button 
+                style={{
+                  ...buttonStyle, 
+                  maxWidth: '200px', 
+                  backgroundColor: 'rgba(108, 117, 125, 0.8)', 
+                  color: 'white',
+                  fontSize: '1rem'
+                }} 
+                onClick={() => router.push('/lobby')}
+              >
+                🏠 홈으로 가기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* [개선] 홈으로 가기 버튼 (테스트 중에도 표시) */}
+        {phase === 'testing' && (
+          <div style={{marginTop: '2rem'}}>
+            <button 
+              style={{
+                backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                padding: '0.7rem 1.5rem',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+              onClick={() => router.push('/lobby')}
+            >
+              🏠 홈으로 가기
+            </button>
           </div>
         )}
       </div>

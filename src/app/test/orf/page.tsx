@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 
 // [수정] ORF 표준 규격에 맞는 5개 지문 (학년 수준에 맞는 어휘와 문장 구조)
-const passage = `Passage 1: Drawing a Picture
+const rawPassage = `Passage 1: Drawing a Picture
 Leo: What are you doing?
 Mia: I am drawing a picture.
 Leo: Wow. What is it?
@@ -37,14 +37,31 @@ Kim: It is a book.
 Max: Is this your pencil?
 Kim: Yes, it is. It is my new pencil.`;
 
+// [개선] 대화문 가독성을 위한 화자별 줄바꿈 처리
+const formatPassage = (rawText: string) => {
+  return rawText
+    .split('\n')
+    .map(line => {
+      // 화자 이름 다음에 줄바꿈 추가
+      if (line.match(/^[A-Za-z]+:/)) {
+        return line.replace(/^([A-Za-z]+:)/, '$1');
+      }
+      return line;
+    })
+    .join('\n');
+};
+
+const passage = formatPassage(rawPassage);
+
 export default function OrfTestPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
-  const [phase, setPhase] = useState('ready');
+  const [phase, setPhase] = useState('ready'); // ready -> countdown -> testing -> submitting -> finished
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [timeLeft, setTimeLeft] = useState(60);
+  const [countdown, setCountdown] = useState(0); // 3초 카운트다운용
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -72,6 +89,36 @@ export default function OrfTestPage() {
     }
   }, [timeLeft, phase]);
 
+  // [개선] 자동 제출 기능 - 시간 만료 10초 전 알림
+  useEffect(() => {
+    if (timeLeft === 10 && phase === 'testing') {
+      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
+    }
+  }, [timeLeft, phase]);
+
+  // [개선] 카운트다운 처리
+  useEffect(() => {
+    if (phase === 'countdown' && countdown > 0) {
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
+    } else if (phase === 'countdown' && countdown === 0) {
+      // 카운트다운 완료 후 testing 단계로 이동
+      setPhase('testing');
+      setTimeLeft(60); // 시간 초기화
+      setFeedback('이제 녹음 버튼을 눌러 이야기를 읽어주세요.');
+    }
+  }, [phase, countdown]);
+
+  // [개선] 테스트 준비 시작 (카운트다운 단계)
+  const handleStartTest = () => {
+    setPhase('countdown');
+    setCountdown(3);
+    setFeedback('잠시 후 이야기를 읽을 준비를 해주세요...');
+  };
+
+  // [개선] 실제 녹음 시작
   const startRecording = async () => {
     setFeedback('이야기에 생명력을 불어넣어 주세요...');
     if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -103,7 +150,6 @@ export default function OrfTestPage() {
         mediaRecorder.start();
         readingStartTimeRef.current = Date.now(); // [핵심 수정] 녹음 시작 시간 기록
         setIsRecording(true);
-        setPhase('testing');
         setTimeLeft(60);
       } catch (err) {
         console.error("마이크 접근 에러:", err);
@@ -175,25 +221,74 @@ export default function OrfTestPage() {
         <h1 style={titleStyle}>5교시: 고대 이야기 소생술 시험</h1>
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>낡은 이야기책에 적힌 짧은 이야기를 자연스러운 억양과 속도로 읽어 생명력을 불어넣어야 합니다.<br/>&apos;이야기 시작하기&apos; 버튼을 누르면 1분간 녹음이 시작됩니다.</p>
-            <button onClick={startRecording} style={buttonStyle}>이야기 시작하기</button>
+            <p style={paragraphStyle}>낡은 이야기책에 적힌 짧은 이야기를 자연스러운 억양과 속도로 읽어 생명력을 불어넣어야 합니다.<br/>대화 내용만 읽어주세요. 화자 이름과 "Passage"는 읽지 않아도 됩니다.</p>
+            <button onClick={handleStartTest} style={buttonStyle}>이야기 시작하기</button>
+          </div>
+        )}
+        {phase === 'countdown' && (
+          <div>
+            <div style={timerStyle}>준비 시간: {countdown}초</div>
+            <div style={passageBoxStyle}><pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit'}}>{passage}</pre></div>
+            <p style={feedbackStyle}>{feedback}</p>
           </div>
         )}
         {(phase === 'testing' || phase === 'submitting') && (
           <div>
             <div style={timerStyle}>남은 시간: {timeLeft}초</div>
-            <div style={passageBoxStyle}><p>{passage}</p></div>
+            <div style={passageBoxStyle}><pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit'}}>{passage}</pre></div>
             <p style={feedbackStyle}>{feedback}</p>
-            {isRecording && (<button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>읽기 끝내기</button>)}
+            {!isRecording ? (
+              <button onClick={startRecording} style={buttonStyle} disabled={timeLeft <= 0}>
+                {timeLeft <= 0 ? '시간 초과' : '녹음하기'}
+              </button>
+            ) : (
+              <button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>
+                읽기 끝내기
+              </button>
+            )}
           </div>
         )}
         {phase === 'finished' && (
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>5교시 &apos;고대 이야기 소생술 시험&apos;이 끝났습니다. 수고 많으셨습니다!</p>
-            <button style={buttonStyle} onClick={() => router.push('/test/maze')}>
-  마지막 시험으로 이동
-</button>
+            <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
+              <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/maze')}>
+                마지막 시험으로 이동
+              </button>
+              <button 
+                style={{
+                  ...buttonStyle, 
+                  maxWidth: '200px', 
+                  backgroundColor: 'rgba(108, 117, 125, 0.8)', 
+                  color: 'white',
+                  fontSize: '1rem'
+                }} 
+                onClick={() => router.push('/lobby')}
+              >
+                🏠 홈으로 가기
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* [개선] 홈으로 가기 버튼 (모든 단계에서 표시) */}
+        {phase !== 'finished' && phase !== 'ready' && (
+          <div style={{marginTop: '2rem'}}>
+            <button 
+              style={{
+                backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                padding: '0.7rem 1.5rem',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+              onClick={() => router.push('/lobby')}
+            >
+              🏠 홈으로 가기
+            </button>
           </div>
         )}
       </div>

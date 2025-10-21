@@ -52,6 +52,144 @@ function analyzeLNFResults(results: TestResult[]) {
   };
 }
 
+// PSF 결과 분석 함수
+function analyzePSFResults(results: TestResult[]) {
+  const psfResults = results.filter(r => r.test_type === 'PSF');
+  
+  if (psfResults.length === 0) {
+    return null;
+  }
+
+  const total = psfResults.length;
+  const correct = psfResults.filter(r => r.is_phonemes_correct).length;
+  const accuracy = (correct / total) * 100;
+  
+  const incorrectAnswers = psfResults
+    .filter(r => !r.is_phonemes_correct && r.question_word && r.student_answer)
+    .map(r => ({
+      question: r.question_word!,
+      studentAnswer: r.student_answer!,
+      isCorrect: r.is_phonemes_correct!
+    }));
+  
+  return {
+    total,
+    correct,
+    accuracy,
+    incorrectAnswers,
+    errorPatterns: { similarShapes: [], caseConfusion: [], uncommonLetters: [], other: [] }
+  };
+}
+
+// NWF 결과 분석 함수
+function analyzeNWFResults(results: TestResult[]) {
+  const nwfResults = results.filter(r => r.test_type === 'NWF');
+  
+  if (nwfResults.length === 0) {
+    return null;
+  }
+
+  const total = nwfResults.length;
+  const correct = nwfResults.filter(r => r.is_whole_word_correct).length;
+  const accuracy = (correct / total) * 100;
+  
+  const incorrectAnswers = nwfResults
+    .filter(r => !r.is_whole_word_correct && r.question_word && r.student_answer)
+    .map(r => ({
+      question: r.question_word!,
+      studentAnswer: r.student_answer!,
+      isCorrect: r.is_whole_word_correct!
+    }));
+  
+  return {
+    total,
+    correct,
+    accuracy,
+    incorrectAnswers,
+    errorPatterns: { similarShapes: [], caseConfusion: [], uncommonLetters: [], other: [] }
+  };
+}
+
+// WRF 결과 분석 함수
+function analyzeWRFResults(results: TestResult[]) {
+  const wrfResults = results.filter(r => r.test_type === 'WRF');
+  
+  if (wrfResults.length === 0) {
+    return null;
+  }
+
+  const total = wrfResults.length;
+  const correct = wrfResults.filter(r => r.is_correct).length;
+  const accuracy = (correct / total) * 100;
+  
+  const incorrectAnswers = wrfResults
+    .filter(r => !r.is_correct && r.question_word && r.student_answer)
+    .map(r => ({
+      question: r.question_word!,
+      studentAnswer: r.student_answer!,
+      isCorrect: r.is_correct!
+    }));
+  
+  return {
+    total,
+    correct,
+    accuracy,
+    incorrectAnswers,
+    errorPatterns: { similarShapes: [], caseConfusion: [], uncommonLetters: [], other: [] }
+  };
+}
+
+// ORF 결과 분석 함수
+function analyzeORFResults(results: TestResult[]) {
+  const orfResults = results.filter(r => r.test_type === 'ORF');
+  
+  if (orfResults.length === 0) {
+    return null;
+  }
+
+  const total = orfResults.length;
+  const avgWcpm = orfResults.reduce((sum, r) => sum + (r.wcpm || 0), 0) / total;
+  const avgAccuracy = orfResults.reduce((sum, r) => sum + (r.accuracy || 0), 0) / total;
+  
+  return {
+    total,
+    correct: Math.round(avgAccuracy * total / 100),
+    accuracy: avgAccuracy,
+    incorrectAnswers: [],
+    errorPatterns: { similarShapes: [], caseConfusion: [], uncommonLetters: [], other: [] },
+    avgWcpm
+  };
+}
+
+// MAZE 결과 분석 함수
+function analyzeMAZEResults(results: TestResult[]) {
+  const mazeResults = results.filter(r => r.test_type === 'MAZE');
+  
+  if (mazeResults.length === 0) {
+    return null;
+  }
+
+  const total = mazeResults.length;
+  const correct = mazeResults.filter(r => r.is_correct).length;
+  const accuracy = (correct / total) * 100;
+  
+  const incorrectAnswers = mazeResults
+    .filter(r => !r.is_correct && r.question_word && r.student_answer)
+    .map(r => ({
+      question: r.question_word!,
+      studentAnswer: r.student_answer!,
+      isCorrect: r.is_correct!
+    }));
+  
+  return {
+    total,
+    correct,
+    accuracy,
+    incorrectAnswers,
+    errorPatterns: { similarShapes: [], caseConfusion: [], uncommonLetters: [], other: [] }
+  };
+}
+
 // 오류 패턴 분석 함수
 function analyzeErrorPatterns(incorrectAnswers: Array<{
   question: string;
@@ -172,6 +310,82 @@ Hattie의 피드백 개념에 따라 다음 세 가지 질문에 답하는 피�
   "feedBack": "현재 상태 평가 내용", 
   "feedForward": "향후 학습 전략 내용"
 }`;
+  } else if (testType === 'PSF') {
+    prompt = `당신은 초등학교 읽기 교육 전문가입니다. DIBELS 8th PSF(Phoneme Segmentation Fluency) 평가 결과를 바탕으로 개인화된 피드백을 제공해주세요.
+
+학생의 PSF 평가 결과:
+- 총 문제 수: ${analysis.total}개
+- 정답 수: ${analysis.correct}개  
+- 정확도: ${analysis.accuracy.toFixed(1)}%
+
+응답 형식:
+{
+  "feedUp": "PSF 학습 목표 설명",
+  "feedBack": "현재 음소 분리 능력 평가", 
+  "feedForward": "음소 분리 능력 향상 전략"
+}`;
+  } else if (testType === 'NWF') {
+    prompt = `당신은 초등학교 읽기 교육 전문가입니다. DIBELS 8th NWF(Nonsense Word Fluency) 평가 결과를 바탕으로 개인화된 피드백을 제공해주세요.
+
+학생의 NWF 평가 결과:
+- 총 문제 수: ${analysis.total}개
+- 정답 수: ${analysis.correct}개  
+- 정확도: ${analysis.accuracy.toFixed(1)}%
+
+응답 형식:
+{
+  "feedUp": "NWF 학습 목표 설명",
+  "feedBack": "현재 파닉스 능력 평가", 
+  "feedForward": "파닉스 능력 향상 전략"
+}`;
+  } else if (testType === 'WRF') {
+    prompt = `당신은 초등학교 읽기 교육 전문가입니다. DIBELS 8th WRF(Word Reading Fluency) 평가 결과를 바탕으로 개인화된 피드백을 제공해주세요.
+
+학생의 WRF 평가 결과:
+- 총 문제 수: ${analysis.total}개
+- 정답 수: ${analysis.correct}개  
+- 정확도: ${analysis.accuracy.toFixed(1)}%
+
+응답 형식:
+{
+  "feedUp": "WRF 학습 목표 설명",
+  "feedBack": "현재 단어 읽기 능력 평가", 
+  "feedForward": "단어 읽기 능력 향상 전략"
+}`;
+  } else if (testType === 'ORF') {
+    prompt = `당신은 초등학교 읽기 교육 전문가입니다. DIBELS 8th ORF(Oral Reading Fluency) 평가 결과를 바탕으로 개인화된 피드백을 제공해주세요.
+
+학생의 ORF 평가 결과:
+- 평가 횟수: ${analysis.total}회
+- 평균 정확도: ${analysis.accuracy.toFixed(1)}%
+- 평균 WCPM: ${(analysis as any).avgWcpm?.toFixed(1) || '데이터 없음'}
+
+응답 형식:
+{
+  "feedUp": "ORF 학습 목표 설명",
+  "feedBack": "현재 낭독 유창성 평가", 
+  "feedForward": "낭독 유창성 향상 전략"
+}`;
+  } else if (testType === 'MAZE') {
+    prompt = `당신은 초등학교 읽기 교육 전문가입니다. DIBELS 8th MAZE 평가 결과를 바탕으로 개인화된 피드백을 제공해주세요.
+
+학생의 MAZE 평가 결과:
+- 총 문제 수: ${analysis.total}개
+- 정답 수: ${analysis.correct}개  
+- 정확도: ${analysis.accuracy.toFixed(1)}%
+
+응답 형식:
+{
+  "feedUp": "MAZE 학습 목표 설명",
+  "feedBack": "현재 독해 능력 평가", 
+  "feedForward": "독해 능력 향상 전략"
+    }`;
+  } else {
+    throw new Error(`지원하지 않는 테스트 타입: ${testType}`);
+  }
+
+  if (!prompt) {
+    throw new Error('프롬프트 생성에 실패했습니다.');
   }
 
   try {
@@ -313,11 +527,21 @@ export async function POST(request: NextRequest) {
     let analysis = null;
     if (testType === 'LNF') {
       analysis = analyzeLNFResults(sessionResults);
+    } else if (testType === 'PSF') {
+      analysis = analyzePSFResults(sessionResults);
+    } else if (testType === 'NWF') {
+      analysis = analyzeNWFResults(sessionResults);
+    } else if (testType === 'WRF') {
+      analysis = analyzeWRFResults(sessionResults);
+    } else if (testType === 'ORF') {
+      analysis = analyzeORFResults(sessionResults);
+    } else if (testType === 'MAZE') {
+      analysis = analyzeMAZEResults(sessionResults);
     }
 
     if (!analysis) {
       return NextResponse.json(
-        { error: '해당 테스트 타입의 결과를 찾을 수 없습니다.' },
+        { error: `해당 테스트 타입(${testType})의 결과를 찾을 수 없습니다.` },
         { status: 404 }
       );
     }

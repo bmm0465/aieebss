@@ -93,6 +93,15 @@ export default function WrfTestPage() {
     }
   }, [timeLeft, phase, isRecording]);
 
+  // [개선] 자동 제출 기능 - 시간 만료 알림 추가
+  useEffect(() => {
+    if (timeLeft === 10 && phase === 'testing') {
+      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
+    }
+  }, [timeLeft, phase]);
+
   const goToNextWord = () => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
@@ -264,8 +273,44 @@ export default function WrfTestPage() {
             <div>
                 <h1 style={titleStyle}>시험 종료!</h1>
                 <p style={paragraphStyle}>{feedback || "4교시 '마법 단어 활성화 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
-                <button style={buttonStyle} onClick={() => router.push('/test/orf')}>다음 시험으로 이동</button>
+                <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
+                  <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/orf')}>
+                    다음 시험으로 이동
+                  </button>
+                  <button 
+                    style={{
+                      ...buttonStyle, 
+                      maxWidth: '200px', 
+                      backgroundColor: 'rgba(108, 117, 125, 0.8)', 
+                      color: 'white',
+                      fontSize: '1rem'
+                    }} 
+                    onClick={() => router.push('/lobby')}
+                  >
+                    🏠 홈으로 가기
+                  </button>
+                </div>
             </div>
+        )}
+
+        {/* [개선] 홈으로 가기 버튼 (테스트 중에도 표시) */}
+        {phase === 'testing' && (
+          <div style={{marginTop: '2rem'}}>
+            <button 
+              style={{
+                backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                color: 'white',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                padding: '0.7rem 1.5rem',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+              onClick={() => router.push('/lobby')}
+            >
+              🏠 홈으로 가기
+            </button>
+          </div>
         )}
       </div>
     </div>

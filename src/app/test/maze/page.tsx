@@ -52,6 +52,30 @@ export default function MazeTestPage() {
     checkUser();
   }, [router, supabase.auth]);
 
+  // [개선] 확인 팝업 추가
+  const handleFinishTestWithConfirmation = () => {
+    if (phase === 'submitting') return;
+    
+    const answeredCount = answers.filter(answer => answer !== null).length;
+    const totalQuestions = totalItems;
+    
+    if (answeredCount === 0) {
+      if (!confirm('아직 답을 선택하지 않았습니다. 정말로 시험을 종료하시겠습니까?')) {
+        return;
+      }
+    } else if (answeredCount < totalQuestions) {
+      if (!confirm(`${totalQuestions}개 문제 중 ${answeredCount}개만 답했습니다. 정말로 시험을 완료하시겠습니까?`)) {
+        return;
+      }
+    } else {
+      if (!confirm('모든 문제에 답했습니다. 시험을 완료하시겠습니까?')) {
+        return;
+      }
+    }
+    
+    finishTest();
+  };
+
   const finishTest = useCallback(async () => {
     if (!user || phase === 'submitting') return;
     setPhase('submitting');
@@ -142,7 +166,19 @@ export default function MazeTestPage() {
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', color: '#FFD700', textShadow: '0 0 10px #FFD700' };
   const paragraphStyle: React.CSSProperties = { fontSize: '1.1rem', lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.9)', marginBottom: '2.5rem' };
   const passageContainerStyle: React.CSSProperties = { textAlign: 'left', fontSize: '1.5rem', lineHeight: '3.5rem', backgroundColor: 'rgba(0,0,0,0.3)', padding: '2rem', borderRadius: '10px', maxHeight: '60vh', overflowY: 'auto' };
-  const choiceGroupStyle: React.CSSProperties = { display: 'inline-flex', flexDirection: 'column', textAlign: 'center', margin: '0 0.5rem', transform: 'translateY(10px)', verticalAlign: 'middle' };
+  const choiceGroupStyle: React.CSSProperties = { 
+    display: 'inline-flex', 
+    flexDirection: 'column', 
+    textAlign: 'center', 
+    margin: '0 0.5rem', 
+    transform: 'translateY(10px)', 
+    verticalAlign: 'middle',
+    border: '1px solid rgba(255, 215, 0, 0.3)',
+    borderRadius: '8px',
+    padding: '0.5rem',
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
+    minWidth: '120px'
+  };
   const choiceButtonStyle = (isSelected: boolean): React.CSSProperties => ({
       border: isSelected ? '2px solid #FFD700' : '1px solid #ccc',
       borderRadius: '5px', padding: '0.2rem 0.5rem', margin: '0.1rem 0', cursor: 'pointer',
@@ -184,7 +220,25 @@ export default function MazeTestPage() {
                 );
               })}
             </div>
-            <button style={finishButtonStyle} onClick={finishTest}>시험 완료하기</button>
+            <button style={finishButtonStyle} onClick={handleFinishTestWithConfirmation}>시험 완료하기</button>
+            
+            {/* [개선] 홈으로 가기 버튼 */}
+            <div style={{marginTop: '1rem'}}>
+              <button 
+                style={{
+                  backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                  color: 'white',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  padding: '0.7rem 1.5rem',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem'
+                }}
+                onClick={() => router.push('/lobby')}
+              >
+                🏠 홈으로 가기
+              </button>
+            </div>
           </div>
         )}
 
