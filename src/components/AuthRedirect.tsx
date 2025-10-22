@@ -11,8 +11,10 @@ interface AuthRedirectProps {
 export default function AuthRedirect({ to, message }: AuthRedirectProps) {
   const router = useRouter()
 
+  console.log('[AuthRedirect] Component rendered:', { to, message })
+
   useEffect(() => {
-    console.log('[AuthRedirect] Redirecting to:', to)
+    console.log('[AuthRedirect] useEffect - Redirecting to:', to)
     router.replace(to)
   }, [to, router])
 

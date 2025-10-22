@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import LogoutButton from '@/components/LogoutButton';
+import SessionDebug from '@/components/SessionDebug';
 
 // 타입 정의
 type StudentWithStats = {
@@ -513,6 +514,7 @@ export default async function TeacherDashboard() {
           ))
         )}
       </div>
+      <SessionDebug />
     </div>
   );
 }

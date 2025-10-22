@@ -4,6 +4,7 @@ import Image from 'next/image';
 import StudentResultChart from '@/components/StudentResultChart';
 import AudioResultTable from '@/components/AudioResultTable';
 import AuthRedirect from '@/components/AuthRedirect';
+import ClientWrapper from './ClientWrapper';
 
 // 타입 정의
 type TestResult = {
@@ -247,6 +248,7 @@ export default async function StudentDetailPage({ params }: Props) {
     console.log('[StudentDetail] 🚀 Rendering page...');
 
     return (
+      <ClientWrapper studentId={studentId}>
       <div style={{ 
         backgroundImage: `url('/background.jpg')`, 
         backgroundSize: 'cover', 
@@ -518,6 +520,7 @@ export default async function StudentDetailPage({ params }: Props) {
           })}
         </div>
       </div>
+      </ClientWrapper>
     );
 
   } catch (error) {
