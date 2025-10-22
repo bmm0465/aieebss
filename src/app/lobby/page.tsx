@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { SkeletonPage, SkeletonCard } from '@/components/LoadingSkeleton'
+import { SkeletonPage } from '@/components/LoadingSkeleton'
 import { useToastHelpers } from '@/components/Toast'
 
 // 시험 정보를 담은 데이터 배열
@@ -89,7 +89,7 @@ export default function LobbyPage() {
       }
     };
     checkUser();
-  }, [router]);
+  }, [router, success]);
 
   const handleLogout = async () => {
     if (!confirm('정말 로그아웃 하시겠습니까?')) {

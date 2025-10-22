@@ -94,6 +94,13 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
     return () => clearTimeout(timer);
   }, []);
 
+  const handleRemove = useCallback(() => {
+    setIsLeaving(true);
+    setTimeout(() => {
+      onRemove(toast.id);
+    }, 300); // 애니메이션 시간
+  }, [toast.id, onRemove]);
+
   useEffect(() => {
     if (toast.duration && toast.duration > 0) {
       const timer = setTimeout(() => {
@@ -101,14 +108,7 @@ function ToastItem({ toast, onRemove }: { toast: Toast; onRemove: (id: string) =
       }, toast.duration);
       return () => clearTimeout(timer);
     }
-  }, [toast.duration]);
-
-  const handleRemove = useCallback(() => {
-    setIsLeaving(true);
-    setTimeout(() => {
-      onRemove(toast.id);
-    }, 300); // 애니메이션 시간
-  }, [toast.id, onRemove]);
+  }, [toast.duration, handleRemove]);
 
   return (
     <div

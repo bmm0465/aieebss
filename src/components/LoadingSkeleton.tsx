@@ -166,7 +166,7 @@ export function SkeletonPage({ className = '' }: { className?: string }) {
   );
 }
 
-export default {
+const SkeletonComponents = {
   Box: SkeletonBox,
   Text: SkeletonText,
   Card: SkeletonCard,
@@ -175,3 +175,5 @@ export default {
   Button: SkeletonButton,
   Page: SkeletonPage
 };
+
+export default SkeletonComponents;
