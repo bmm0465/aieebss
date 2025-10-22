@@ -442,6 +442,13 @@ function AudioPlayer({
               // 기존 형식 폴더가 있는지 확인
               const hasOldFormatFolder = fileList.some(f => f.name === normalizedTestType);
               console.log('[AudioPlayer] 기존 형식 폴더 존재:', hasOldFormatFolder, normalizedTestType);
+              
+              // 스토리지가 비어있는 경우 경고
+              if (fileList.length === 0) {
+                console.warn('[AudioPlayer] ⚠️ 스토리지가 비어있습니다! 파일이 저장되지 않았을 수 있습니다.');
+              }
+            } else {
+              console.error('[AudioPlayer] 스토리지 목록 조회 실패:', listError);
             }
           } catch (searchError) {
             console.log('[AudioPlayer] 스토리지 검색 실패:', searchError);
@@ -511,7 +518,12 @@ function AudioPlayer({
           // 더 구체적인 에러 메시지 제공
           let errorMessage = '';
           if (isOldFormat) {
-            errorMessage = `⚠️ 이전 형식 파일을 찾을 수 없습니다 (${maxAttempts}개 경로 시도)`;
+            // 스토리지가 비어있는 경우 특별한 메시지
+            if (lastError.includes('Object not found') && pathsToTry.length > 0) {
+              errorMessage = `⚠️ 음성 파일이 저장되지 않았습니다. 평가를 다시 시도해주세요.`;
+            } else {
+              errorMessage = `⚠️ 이전 형식 파일을 찾을 수 없습니다 (${maxAttempts}개 경로 시도)`;
+            }
           } else {
             errorMessage = `파일을 찾을 수 없습니다: ${lastError}`;
           }

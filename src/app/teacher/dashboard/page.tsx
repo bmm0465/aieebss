@@ -290,6 +290,50 @@ export default async function TeacherDashboard() {
           </Link>
         </div>
 
+        {/* 관리 도구 */}
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          marginBottom: '2rem'
+        }}>
+          <Link
+            href="/teacher/debug"
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(255, 152, 0, 0.2)',
+              color: '#FF9800',
+              padding: '1rem',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              border: '2px solid rgba(255, 152, 0, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              transition: 'all 0.3s ease'
+            }}
+            className="quick-link"
+          >
+            🔧 시스템 디버그
+          </Link>
+          <Link
+            href="/teacher/debug-audio"
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
+              color: '#4CAF50',
+              padding: '1rem',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              border: '2px solid rgba(76, 175, 80, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              transition: 'all 0.3s ease'
+            }}
+            className="quick-link"
+          >
+            🎵 음성 파일 진단
+          </Link>
+        </div>
+
         {/* 통계 요약 */}
         <div style={{
           display: 'grid',

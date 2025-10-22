@@ -160,10 +160,11 @@ export async function POST(request: Request) {
     
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달합니다.
-    processPsfInBackground(supabase, userId, questionWord, arrayBuffer);
+    // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달하고, 작업이 끝날 때까지 기다립니다.
+    await processPsfInBackground(supabase, userId, questionWord, arrayBuffer);
 
-    return NextResponse.json({ message: '요청이 성공적으로 접수되었습니다.' }, { status: 202 });
+    // 백그라운드 작업이 성공적으로 완료된 후 응답을 반환합니다.
+    return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
 
   } catch (error) {
     console.error('PSF API 요청 접수 에러:', error);

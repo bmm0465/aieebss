@@ -150,11 +150,11 @@ export async function POST(request: Request) {
 
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // [핵심 4] 오래 걸리는 작업을 '기다리지 않고' 백그라운드에서 실행하도록 호출
-    processOrfInBackground(supabase, userId, questionPassage, arrayBuffer, timeTaken);
+    // [핵심 4] 오래 걸리는 작업을 백그라운드에서 실행하되, 스토리지 저장은 먼저 완료
+    await processOrfInBackground(supabase, userId, questionPassage, arrayBuffer, timeTaken);
 
-    // 프론트엔드에는 "파일 접수 완료" 신호를 즉시 보냄
-    return NextResponse.json({ message: '요청이 성공적으로 접수되었습니다.' }, { status: 202 });
+    // 스토리지 저장이 완료된 후 응답 반환
+    return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
 
   } catch (error) {
     console.error('ORF API 요청 접수 에러:', error);
