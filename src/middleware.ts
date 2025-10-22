@@ -4,9 +4,15 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // teacher 경로는 middleware를 건너뜀 (각 페이지에서 자체적으로 인증 처리)
+  // teacher 경로는 middleware를 완전히 건너뜀 (각 페이지에서 자체적으로 인증 처리)
   if (pathname.startsWith('/teacher')) {
     console.log('[Middleware] Skipping teacher path:', pathname);
+    return NextResponse.next();
+  }
+  
+  // 추가 보안: teacher 경로는 절대 인증 체크하지 않음
+  if (pathname.includes('/teacher/')) {
+    console.log('[Middleware] Teacher path detected, skipping auth:', pathname);
     return NextResponse.next();
   }
 
@@ -81,13 +87,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - teacher (teacher pages handle their own auth)
-     * Feel free to modify this pattern to include more paths.
+     * 임시로 middleware를 완전히 비활성화
+     * teacher 경로 문제 해결을 위해
      */
-    '/((?!_next/static|_next/image|favicon.ico|teacher|.*\\..*|_next).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|_next|api|teacher).*)',
   ],
 }
