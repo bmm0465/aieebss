@@ -1,36 +1,4 @@
-import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
-import Image from 'next/image';
-import AuthRedirect from '@/components/AuthRedirect';
-
-// 타입 정의
-type TestResult = {
-  id: string;
-  user_id: string;
-  test_type: string;
-  question?: string;
-  question_word?: string;
-  question_passage?: string;
-  student_answer?: string;
-  is_correct?: boolean;
-  correct_segments?: number;
-  target_segments?: number;
-  is_phonemes_correct?: boolean;
-  is_whole_word_correct?: boolean;
-  wcpm?: number;
-  accuracy?: number;
-  audio_url?: string;
-  created_at?: string;
-};
-
-type ProcessedTestStats = {
-  LNF: { correct: number; total: number; accuracy: number };
-  PSF: { correct: number; total: number; accuracy: number };
-  NWF: { correct: number; total: number; accuracy: number };
-  WRF: { correct: number; total: number; accuracy: number };
-  ORF: { avg_wcpm: number; avg_accuracy: number; count: number };
-  MAZE: { correct: number; total: number; accuracy: number };
-};
 
 interface Props {
   params: Promise<{ studentId: string }>;
