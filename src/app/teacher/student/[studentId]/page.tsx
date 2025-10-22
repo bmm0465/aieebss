@@ -62,6 +62,8 @@ export default async function StudentDetailPage({ params }: Props) {
     </div>
   );
 
+  // 인증 체크 없이 즉시 반환하므로 이 코드는 실행되지 않음
+  /*
   try {
     console.log('[StudentDetail] 🔧 Creating Supabase client...');
     const supabase = await createClient();
@@ -542,4 +544,5 @@ export default async function StudentDetailPage({ params }: Props) {
     console.error('[StudentDetail] 🚨 FATAL ERROR:', error);
     return <AuthRedirect to="/lobby" message="오류가 발생했습니다" />;
   }
+  */
 }
