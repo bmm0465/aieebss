@@ -39,10 +39,27 @@ interface Props {
 }
 
 export default async function StudentDetailPage({ params }: Props) {
-  console.log('[StudentDetail] 🚀 PAGE STARTED');
+  console.log('[StudentDetail] 🚀 PAGE STARTED - BEFORE ANY AUTH');
   
   const { studentId } = await params;
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
+  
+  // 즉시 반환하여 페이지가 로드되는지 확인
+  return (
+    <div style={{ 
+      backgroundImage: `url('/background.jpg')`, 
+      backgroundSize: 'cover', 
+      minHeight: '100vh',
+      padding: '2rem',
+      color: 'white'
+    }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <h1 style={{ color: '#FFD700' }}>🔧 디버그 모드 - 페이지 로드 확인</h1>
+        <p>StudentId: {studentId}</p>
+        <p>이 페이지가 보인다면 라우팅은 정상입니다.</p>
+      </div>
+    </div>
+  );
 
   try {
     console.log('[StudentDetail] 🔧 Creating Supabase client...');
