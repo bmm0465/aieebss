@@ -71,17 +71,31 @@ export default function AudioDiagnosticPage() {
         };
 
         try {
-          // 스토리지에서 파일 존재 여부 확인
-          const { data, error: storageError } = await supabase.storage
+          // 먼저 Signed URL로 확인
+          const { data: signedData, error: signedError } = await supabase.storage
             .from('student-recordings')
             .createSignedUrl(result.audio_url, 3600);
 
-          if (!storageError && data?.signedUrl) {
+          if (!signedError && signedData?.signedUrl) {
             diagnostic.storageStatus = 'exists';
             diagnostic.storagePath = result.audio_url;
           } else {
-            diagnostic.storageStatus = 'missing';
-            diagnostic.errorMessage = storageError?.message || 'File not found';
+            // Signed URL 실패 시 Public URL 확인
+            const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/student-recordings/${result.audio_url}`;
+            
+            try {
+              const response = await fetch(publicUrl, { method: 'HEAD' });
+              if (response.ok) {
+                diagnostic.storageStatus = 'exists';
+                diagnostic.storagePath = result.audio_url;
+              } else {
+                diagnostic.storageStatus = 'missing';
+                diagnostic.errorMessage = `Signed URL: ${signedError?.message || 'Unknown'}, Public URL: ${response.status}`;
+              }
+            } catch (fetchError) {
+              diagnostic.storageStatus = 'missing';
+              diagnostic.errorMessage = `Signed URL: ${signedError?.message || 'Unknown'}, Public URL: ${fetchError}`;
+            }
           }
         } catch (err) {
           diagnostic.storageStatus = 'error';

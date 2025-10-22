@@ -466,23 +466,48 @@ function AudioPlayer({
           try {
             console.log(`[AudioPlayer] 경로 시도 ${i + 1}/${maxAttempts}:`, tryPath);
             
-            const { data, error: urlError } = await supabase.storage
+            // 먼저 Signed URL 시도
+            const { data: signedData, error: signedError } = await supabase.storage
               .from('student-recordings')
               .createSignedUrl(tryPath, 3600);
             
-            if (!urlError && data?.signedUrl) {
+            if (!signedError && signedData?.signedUrl) {
               console.log('[AudioPlayer] ✅ Signed URL 생성 성공:', { 
                 tryPath, 
-                urlLength: data.signedUrl.length,
+                urlLength: signedData.signedUrl.length,
                 isOldFormat 
               });
-              setAudioUrl(data.signedUrl);
+              setAudioUrl(signedData.signedUrl);
               setError(null);
               setLoading(false);
               foundValidPath = true;
               return;
             } else {
-              lastError = urlError?.message || 'Unknown error';
+              // Signed URL 실패 시 Public URL 시도
+              console.log('[AudioPlayer] Signed URL 실패, Public URL 시도:', signedError?.message);
+              
+              const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/student-recordings/${tryPath}`;
+              
+              // Public URL이 실제로 작동하는지 확인
+              try {
+                const response = await fetch(publicUrl, { method: 'HEAD' });
+                if (response.ok) {
+                  console.log('[AudioPlayer] ✅ Public URL 성공:', publicUrl);
+                  setAudioUrl(publicUrl);
+                  setError(null);
+                  setLoading(false);
+                  foundValidPath = true;
+                  return;
+                } else {
+                  console.log('[AudioPlayer] ❌ Public URL 실패:', response.status);
+                  lastError = `Public URL failed: ${response.status}`;
+                }
+              } catch (fetchError) {
+                console.log('[AudioPlayer] ❌ Public URL fetch 실패:', fetchError);
+                lastError = `Public URL fetch failed: ${fetchError}`;
+              }
+              
+              lastError = signedError?.message || lastError || 'Unknown error';
               console.log('[AudioPlayer] ❌ 경로 실패:', tryPath, lastError);
               
               // 기존 형식의 첫 번째 시도가 실패한 경우, 다른 경로들을 계속 시도
