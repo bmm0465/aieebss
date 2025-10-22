@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import Image from 'next/image';
-import StudentResultChart from '@/components/StudentResultChart';
-import AudioResultTable from '@/components/AudioResultTable';
+// import StudentResultChart from '@/components/StudentResultChart';
+// import AudioResultTable from '@/components/AudioResultTable';
 import AuthRedirect from '@/components/AuthRedirect';
 
 // 타입 정의
@@ -425,8 +425,8 @@ export default async function StudentDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* 시각화 차트 */}
-          <StudentResultChart stats={stats} />
+          {/* 시각화 차트 - 임시 비활성화 */}
+          {/* <StudentResultChart stats={stats} /> */}
 
           {/* 세션별 결과 */}
           <div style={{
@@ -505,8 +505,8 @@ export default async function StudentDetailPage({ params }: Props) {
             )}
           </div>
 
-          {/* 음성 결과 테이블 */}
-          {(['LNF', 'PSF', 'NWF', 'WRF', 'ORF'] as const).map(testType => {
+          {/* 음성 결과 테이블 - 임시 비활성화 */}
+          {/* {(['LNF', 'PSF', 'NWF', 'WRF', 'ORF'] as const).map(testType => {
             const hasResults = results.some(r => r.test_type === testType && r.audio_url);
             return hasResults ? (
               <AudioResultTable
@@ -515,7 +515,7 @@ export default async function StudentDetailPage({ params }: Props) {
                 studentId={studentId}
               />
             ) : null;
-          })}
+          })} */}
         </div>
       </div>
     );
