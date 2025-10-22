@@ -39,10 +39,28 @@ interface Props {
 }
 
 export default async function StudentDetailPage({ params }: Props) {
-  console.log('[StudentDetail] 🚀 PAGE STARTED - BEFORE ANY AUTH');
+  console.log('[StudentDetail] 🚀 PAGE STARTED - NO AUTH CHECK');
   
   const { studentId } = await params;
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
+
+  // 인증 체크 없이 즉시 반환
+  return (
+    <div style={{ 
+      backgroundImage: `url('/background.jpg')`, 
+      backgroundSize: 'cover', 
+      minHeight: '100vh',
+      padding: '2rem',
+      color: 'white'
+    }}>
+      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+        <h1 style={{ color: '#FFD700' }}>🔧 디버그 모드 - 인증 없음</h1>
+        <p>StudentId: {studentId}</p>
+        <p>이 페이지가 보인다면 라우팅과 렌더링은 정상입니다.</p>
+        <p>인증 체크를 제거했습니다.</p>
+      </div>
+    </div>
+  );
 
   try {
     console.log('[StudentDetail] 🔧 Creating Supabase client...');

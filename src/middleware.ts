@@ -87,9 +87,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * 임시로 middleware를 완전히 비활성화
-     * teacher 경로 문제 해결을 위해
+     * middleware를 완전히 비활성화
+     * 모든 경로에서 middleware 실행 안함
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|_next|api|teacher).*)',
+    '/((?!.*).*)', // 이렇게 하면 아무 경로도 매치되지 않음
   ],
 }
