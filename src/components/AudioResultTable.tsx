@@ -371,6 +371,11 @@ function AudioPlayer({
         // 여러 경로를 시도할 리스트 생성
         const pathsToTry = [audioPath];
         
+        // 기존 형식인 경우, 원본 경로를 먼저 시도
+        if (isOldFormat) {
+          console.log('[AudioPlayer] 기존 형식 파일 - 원본 경로 먼저 시도:', audioPath);
+        }
+        
         if (isOldFormat && userId && testType) {
           // 기존 형식인 경우, 파일이 실제로 존재하는지 먼저 확인
           console.log('[AudioPlayer] 기존 형식 파일 확인 중:', { oldFormat: audioPath, userId, testType, createdAt });
@@ -423,11 +428,30 @@ function AudioPlayer({
           
           console.log('[AudioPlayer] 생성된 경로들:', priorityPaths);
           pathsToTry.push(...priorityPaths);
+          
+          // 스토리지에서 실제 파일 존재 여부를 빠르게 확인
+          try {
+            console.log('[AudioPlayer] 스토리지 파일 존재 여부 확인 중...');
+            const { data: fileList, error: listError } = await supabase.storage
+              .from('student-recordings')
+              .list('', { limit: 1000 });
+            
+            if (!listError && fileList) {
+              console.log('[AudioPlayer] 스토리지 루트 폴더 목록:', fileList.map(f => f.name));
+              
+              // 기존 형식 폴더가 있는지 확인
+              const hasOldFormatFolder = fileList.some(f => f.name === normalizedTestType);
+              console.log('[AudioPlayer] 기존 형식 폴더 존재:', hasOldFormatFolder, normalizedTestType);
+            }
+          } catch (searchError) {
+            console.log('[AudioPlayer] 스토리지 검색 실패:', searchError);
+          }
         }
         
         // 각 경로를 시도해보기 (최대 5개까지로 제한)
         const maxAttempts = Math.min(pathsToTry.length, 5);
         let lastError: string = '';
+        let foundValidPath = false;
         
         for (let i = 0; i < maxAttempts; i++) {
           const tryPath = pathsToTry[i];
@@ -448,14 +472,21 @@ function AudioPlayer({
               setAudioUrl(data.signedUrl);
               setError(null);
               setLoading(false);
+              foundValidPath = true;
               return;
             } else {
               lastError = urlError?.message || 'Unknown error';
               console.log('[AudioPlayer] ❌ 경로 실패:', tryPath, lastError);
               
-              // 첫 번째 시도가 실패하고 기존 형식인 경우, 조기 종료하지 않고 계속 시도
+              // 기존 형식의 첫 번째 시도가 실패한 경우, 다른 경로들을 계속 시도
+              if (i === 0 && isOldFormat) {
+                console.log('[AudioPlayer] 기존 형식 첫 번째 시도 실패, 다른 경로들을 계속 시도');
+                continue;
+              }
+              
+              // 새로운 형식의 첫 번째 시도가 실패한 경우, 조기 종료
               if (i === 0 && !isOldFormat) {
-                console.log('[AudioPlayer] 첫 번째 시도 실패, 다른 경로들을 시도하지 않음');
+                console.log('[AudioPlayer] 새로운 형식 첫 번째 시도 실패, 조기 종료');
                 break;
               }
             }
@@ -463,33 +494,30 @@ function AudioPlayer({
             lastError = String(tryError);
             console.log('[AudioPlayer] ⚠️ 경로 시도 중 오류:', tryPath, tryError);
           }
-          
-          // 첫 번째 경로가 실패하고 새로운 형식인 경우 더 이상 시도하지 않음
-          if (i === 0 && !isOldFormat && pathsToTry.length > 1) {
-            break;
-          }
         }
         
         // 모든 경로가 실패한 경우
-        console.error('[AudioPlayer] 모든 경로 시도 실패:', { 
-          audioPath, 
-          pathsTried: pathsToTry.slice(0, maxAttempts),
-          lastError,
-          isOldFormat,
-          userId,
-          testType,
-          createdAt
-        });
-        
-        // 더 구체적인 에러 메시지 제공
-        let errorMessage = '';
-        if (isOldFormat) {
-          errorMessage = `⚠️ 이전 형식 파일을 찾을 수 없습니다 (${maxAttempts}개 경로 시도)`;
-        } else {
-          errorMessage = `파일을 찾을 수 없습니다: ${lastError}`;
+        if (!foundValidPath) {
+          console.error('[AudioPlayer] 모든 경로 시도 실패:', { 
+            audioPath, 
+            pathsTried: pathsToTry.slice(0, maxAttempts),
+            lastError,
+            isOldFormat,
+            userId,
+            testType,
+            createdAt
+          });
+          
+          // 더 구체적인 에러 메시지 제공
+          let errorMessage = '';
+          if (isOldFormat) {
+            errorMessage = `⚠️ 이전 형식 파일을 찾을 수 없습니다 (${maxAttempts}개 경로 시도)`;
+          } else {
+            errorMessage = `파일을 찾을 수 없습니다: ${lastError}`;
+          }
+          
+          setError(errorMessage);
         }
-        
-        setError(errorMessage);
         
       } catch (err) {
         console.error('[AudioPlayer] 오디오 URL 생성 실패:', err, { audioPath });
