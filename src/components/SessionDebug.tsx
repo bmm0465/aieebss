@@ -3,8 +3,15 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
+interface SessionInfo {
+  hasSession: boolean
+  userEmail?: string
+  userId?: string
+  error?: string
+}
+
 export default function SessionDebug() {
-  const [sessionInfo, setSessionInfo] = useState<any>(null)
+  const [sessionInfo, setSessionInfo] = useState<SessionInfo | null>(null)
 
   useEffect(() => {
     const checkSession = async () => {
