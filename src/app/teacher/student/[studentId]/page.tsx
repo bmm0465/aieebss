@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
-import { redirect, notFound } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import StudentResultChart from '@/components/StudentResultChart';
 import AudioResultTable from '@/components/AudioResultTable';
+import AuthRedirect from '@/components/AuthRedirect';
 
 // 타입 정의
 type TestResult = {
@@ -59,11 +60,11 @@ export default async function StudentDetailPage({ params }: Props) {
     });
 
     if (userError || !user) {
-      console.error('[StudentDetail] ❌ Auth failed - redirecting to login:', {
+      console.error('[StudentDetail] ❌ Auth failed - redirecting to lobby:', {
         error: userError?.message,
         code: userError?.code
       });
-      redirect('/');
+      return <AuthRedirect to="/lobby" message="로그인이 필요합니다" />;
     }
 
     console.log('[StudentDetail] ✅ Auth success for user:', user.email);
@@ -83,7 +84,7 @@ export default async function StudentDetailPage({ params }: Props) {
         code: profileError.code,
         userId: user.id
       });
-      redirect('/');
+      return <AuthRedirect to="/lobby" message="프로필을 불러올 수 없습니다" />;
     }
 
     console.log('[StudentDetail] 📋 Teacher profile:', { 
@@ -93,7 +94,7 @@ export default async function StudentDetailPage({ params }: Props) {
 
     if (!teacherProfile || teacherProfile.role !== 'teacher') {
       console.error('[StudentDetail] ❌ Not a teacher - user role:', teacherProfile?.role);
-      redirect('/lobby?error=not_teacher');
+      return <AuthRedirect to="/lobby" message="교사 권한이 필요합니다" />;
     }
 
     console.log('[StudentDetail] ✅ Teacher verified');
@@ -121,12 +122,12 @@ export default async function StudentDetailPage({ params }: Props) {
         code: assignmentError.code,
         details: assignmentError.details
       });
-      notFound();
+      return <AuthRedirect to="/teacher/dashboard" message="학생 배정 정보를 확인할 수 없습니다" />;
     }
 
     if (!assignment) {
       console.error('[StudentDetail] ❌ Student not assigned to this teacher');
-      notFound();
+      return <AuthRedirect to="/teacher/dashboard" message="담당 학생이 아닙니다" />;
     }
 
     console.log('[StudentDetail] ✅ Assignment verified');
@@ -522,6 +523,6 @@ export default async function StudentDetailPage({ params }: Props) {
 
   } catch (error) {
     console.error('[StudentDetail] 🚨 FATAL ERROR:', error);
-    redirect('/');
+    return <AuthRedirect to="/lobby" message="오류가 발생했습니다" />;
   }
 }
