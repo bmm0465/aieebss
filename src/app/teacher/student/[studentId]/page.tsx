@@ -535,7 +535,7 @@ export default async function StudentDetailPage({ params }: Props) {
                 studentId={studentId}
               />
             ) : null;
-          })} */}
+          })} */
         </div>
       </div>
     );
