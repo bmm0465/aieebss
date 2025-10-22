@@ -85,8 +85,9 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
+     * - teacher (teacher pages handle their own auth)
      * Feel free to modify this pattern to include more paths.
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\..*|_next).*)',
+    '/((?!_next/static|_next/image|favicon.ico|teacher|.*\\..*|_next).*)',
   ],
 }
