@@ -39,30 +39,36 @@ interface Props {
 }
 
 export default async function StudentDetailPage({ params }: Props) {
-  console.log('[StudentDetail] 🚀 PAGE STARTED - Simple approach!');
+  console.log('[StudentDetail] 🚀 PAGE STARTED');
   
   const { studentId } = await params;
-  console.log('[StudentDetail] 🚀 StudentId:', studentId);
+  console.log('[StudentDetail] 🔍 StudentId:', studentId);
 
   try {
-    console.log('[StudentDetail] 🚀 Creating Supabase client...');
+    console.log('[StudentDetail] 🔧 Creating Supabase client...');
     const supabase = await createClient();
-    console.log('[StudentDetail] 🚀 Supabase client created');
+    console.log('[StudentDetail] ✅ Supabase client created');
 
-    console.log('[StudentDetail] 🚀 Getting user...');
+    console.log('[StudentDetail] 🔐 Getting authenticated user...');
     const { data: { user }, error: userError } = await supabase.auth.getUser();
-    console.log('[StudentDetail] 🚀 User result:', { 
+    console.log('[StudentDetail] 📊 User result:', { 
       hasUser: !!user, 
+      userId: user?.id,
       userEmail: user?.email,
       error: userError?.message 
     });
 
     if (userError || !user) {
-      console.error('[StudentDetail] 🚨 Auth failed:', userError);
+      console.error('[StudentDetail] ❌ Auth failed - redirecting to login:', {
+        error: userError?.message,
+        code: userError?.code
+      });
       redirect('/');
     }
 
-    console.log('[StudentDetail] 🚀 Auth success, checking teacher profile...');
+    console.log('[StudentDetail] ✅ Auth success for user:', user.email);
+
+    console.log('[StudentDetail] 👨‍🏫 Checking teacher profile...');
     
     // 교사 권한 확인
     const { data: teacherProfile, error: profileError } = await supabase
@@ -72,21 +78,26 @@ export default async function StudentDetailPage({ params }: Props) {
       .single();
 
     if (profileError) {
-      console.error('[StudentDetail] 🚨 Profile fetch error:', profileError);
+      console.error('[StudentDetail] ❌ Profile fetch error:', {
+        error: profileError.message,
+        code: profileError.code,
+        userId: user.id
+      });
       redirect('/');
     }
 
-    console.log('[StudentDetail] 🚀 Teacher profile:', { 
+    console.log('[StudentDetail] 📋 Teacher profile:', { 
       hasProfile: !!teacherProfile, 
       role: teacherProfile?.role 
     });
 
     if (!teacherProfile || teacherProfile.role !== 'teacher') {
-      console.error('[StudentDetail] 🚨 Not a teacher');
+      console.error('[StudentDetail] ❌ Not a teacher - user role:', teacherProfile?.role);
       redirect('/lobby?error=not_teacher');
     }
 
-    console.log('[StudentDetail] 🚀 Checking assignment...');
+    console.log('[StudentDetail] ✅ Teacher verified');
+    console.log('[StudentDetail] 🔍 Checking student assignment...');
     
     // 해당 학생이 교사의 담당 학생인지 확인
     const { data: assignment, error: assignmentError } = await supabase
@@ -96,20 +107,29 @@ export default async function StudentDetailPage({ params }: Props) {
       .eq('student_id', studentId)
       .single();
 
-    console.log('[StudentDetail] 🚀 Assignment:', { 
+    console.log('[StudentDetail] 📊 Assignment result:', { 
       hasAssignment: !!assignment,
-      error: assignmentError?.message 
+      teacherId: user.id,
+      studentId: studentId,
+      error: assignmentError?.message,
+      errorCode: assignmentError?.code
     });
 
     if (assignmentError) {
-      console.error('[StudentDetail] 🚨 Assignment fetch error:', assignmentError);
+      console.error('[StudentDetail] ❌ Assignment fetch error:', {
+        error: assignmentError.message,
+        code: assignmentError.code,
+        details: assignmentError.details
+      });
       notFound();
     }
 
     if (!assignment) {
-      console.error('[StudentDetail] 🚨 Student not assigned');
+      console.error('[StudentDetail] ❌ Student not assigned to this teacher');
       notFound();
     }
+
+    console.log('[StudentDetail] ✅ Assignment verified');
 
     console.log('[StudentDetail] 🚀 Getting student profile...');
     
