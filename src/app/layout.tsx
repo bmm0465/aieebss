@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 // [핵심 수정] Inter, Nanum_Pen_Script 외에 Lexend 폰트를 추가로 import 합니다.
 import { Inter, Nanum_Pen_Script, Lexend } from "next/font/google";
 import "./globals.css";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 const nanumPenScript = Nanum_Pen_Script({
@@ -26,7 +28,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       {/* [핵심 수정] body의 className에 lexend.variable을 추가합니다. */}
-      <body className={`${inter.className} ${nanumPenScript.variable} ${lexend.variable}`}>{children}</body>
+      <body className={`${inter.className} ${nanumPenScript.variable} ${lexend.variable}`}>
+        <ErrorBoundary>
+          <ToastProvider>
+            {children}
+          </ToastProvider>
+        </ErrorBoundary>
+      </body>
     </html>
   );
 }

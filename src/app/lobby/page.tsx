@@ -4,6 +4,8 @@ import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { SkeletonPage, SkeletonCard } from '@/components/LoadingSkeleton'
+import { useToastHelpers } from '@/components/Toast'
 
 // 시험 정보를 담은 데이터 배열
 const tests = [
@@ -48,6 +50,7 @@ const tests = [
 export default function LobbyPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const { success } = useToastHelpers();
   const [hasTestResults, setHasTestResults] = useState(false);
   const [isTeacher, setIsTeacher] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -80,6 +83,9 @@ export default function LobbyPage() {
           .single();
         
         setIsTeacher(profile?.role === 'teacher');
+        
+        setLoading(false);
+        success('환영합니다!', '마법학교 입학 허가가 확인되었습니다.');
       }
     };
     checkUser();
@@ -158,8 +164,8 @@ export default function LobbyPage() {
   if (loading) {
     return (
       <div style={pageStyle}>
-        <div style={{ textAlign: 'center' }}>
-          <h2>마법학교 입학 허가를 확인하는 중...</h2>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <SkeletonPage />
         </div>
       </div>
     );
