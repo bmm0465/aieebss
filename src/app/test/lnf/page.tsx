@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client'; // [수정] 새로운 클라이언트 경로
 import type { User } from '@supabase/supabase-js';
@@ -113,7 +113,7 @@ export default function LnfTestPage() {
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [phase, isRecording, isSubmitting]);
+  }, [phase, isRecording, isSubmitting, startRecording, stopRecording]);
 
   // [개선] 자동 제출 기능 - 시간 만료 알림 추가
   useEffect(() => {
@@ -139,7 +139,7 @@ export default function LnfTestPage() {
     }
   };
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     setFeedback('');
     
     try {
@@ -193,9 +193,9 @@ export default function LnfTestPage() {
       console.error("마이크 접근 에러:", err);
       setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
-  };
+  }, [stopRecording]);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
@@ -204,7 +204,7 @@ export default function LnfTestPage() {
       setIsSubmitting(true);
       setFeedback('🎵 녹음 완료! 처리 중...');
     }
-  };
+  }, []);
 
   const submitRecordingInBackground = async (audioBlob: Blob) => {
     if (!user || !currentLetter) {
