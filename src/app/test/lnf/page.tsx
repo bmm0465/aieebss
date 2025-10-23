@@ -90,7 +90,7 @@ export default function LnfTestPage() {
       if (isRecording) stopRecording();
       setPhase('finished');
     }
-  }, [timeLeft, phase, isRecording]);
+  }, [timeLeft, phase, isRecording, stopRecording]);
 
   // 키보드 단축키 지원
   useEffect(() => {
@@ -193,7 +193,7 @@ export default function LnfTestPage() {
       console.error("마이크 접근 에러:", err);
       setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
-  }, [stopRecording]);
+  }, [stopRecording, submitRecordingInBackground]);
 
   const stopRecording = useCallback(() => {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
@@ -206,7 +206,7 @@ export default function LnfTestPage() {
     }
   }, []);
 
-  const submitRecordingInBackground = async (audioBlob: Blob) => {
+  const submitRecordingInBackground = useCallback(async (audioBlob: Blob) => {
     if (!user || !currentLetter) {
       setIsSubmitting(false);
       return;
@@ -279,7 +279,7 @@ export default function LnfTestPage() {
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [user, currentLetter, supabase.auth]);
   
   const handleStartTest = () => {
     setPhase('testing');
