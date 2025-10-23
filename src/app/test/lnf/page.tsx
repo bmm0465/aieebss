@@ -79,50 +79,6 @@ export default function LnfTestPage() {
     }
   };
   
-  useEffect(() => {
-    if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
-    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timerId);
-  }, [phase, timeLeft, isSubmitting]);
-
-  useEffect(() => {
-    if (timeLeft <= 0 && phase === 'testing') {
-      if (isRecording) stopRecording();
-      setPhase('finished');
-    }
-  }, [timeLeft, phase, isRecording, stopRecording]);
-
-  // 키보드 단축키 지원
-  useEffect(() => {
-    const handleKeyPress = (event: KeyboardEvent) => {
-      if (phase === 'testing' && !isSubmitting) {
-        if (event.key === ' ' || event.key === 'Enter') {
-          event.preventDefault();
-          if (!isRecording) {
-            startRecording();
-          } else {
-            stopRecording();
-          }
-        } else if (event.key === 'Escape') {
-          if (isRecording) {
-            stopRecording();
-          }
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyPress);
-    return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [phase, isRecording, isSubmitting, startRecording, stopRecording]);
-
-  // [개선] 자동 제출 기능 - 시간 만료 알림 추가
-  useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
-      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
-    }
-  }, [timeLeft, phase]);
 
   const goToNextLetter = useCallback(() => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
@@ -288,6 +244,52 @@ export default function LnfTestPage() {
     setTimeLeft(60);
     setFeedback("화면에 나타나는 룬 문자의 이름을 말해주세요.");
   };
+
+  // useEffect들 - 모든 함수 선언 후에 배치
+  useEffect(() => {
+    if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
+    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timerId);
+  }, [phase, timeLeft, isSubmitting]);
+
+  useEffect(() => {
+    if (timeLeft <= 0 && phase === 'testing') {
+      if (isRecording) stopRecording();
+      setPhase('finished');
+    }
+  }, [timeLeft, phase, isRecording, stopRecording]);
+
+  // 키보드 단축키 지원
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (phase === 'testing' && !isSubmitting) {
+        if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          if (!isRecording) {
+            startRecording();
+          } else {
+            stopRecording();
+          }
+        } else if (event.key === 'Escape') {
+          if (isRecording) {
+            stopRecording();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [phase, isRecording, isSubmitting, startRecording, stopRecording]);
+
+  // [개선] 자동 제출 기능 - 시간 만료 알림 추가
+  useEffect(() => {
+    if (timeLeft === 10 && phase === 'testing') {
+      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
+    }
+  }, [timeLeft, phase]);
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: 'white', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
