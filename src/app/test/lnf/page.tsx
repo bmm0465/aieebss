@@ -34,6 +34,11 @@ export default function LnfTestPage() {
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
+  const [progress, setProgress] = useState(0);
+  const [recentResults, setRecentResults] = useState<Array<{letter: string, result: string, timestamp: number}>>([]);
+  const [showProgress, setShowProgress] = useState(false);
+  const [realTimeFeedback, setRealTimeFeedback] = useState<{feedback: string, tip: string} | null>(null);
+  const [showFeedback, setShowFeedback] = useState(false);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
@@ -87,6 +92,29 @@ export default function LnfTestPage() {
     }
   }, [timeLeft, phase, isRecording]);
 
+  // 키보드 단축키 지원
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (phase === 'testing' && !isSubmitting) {
+        if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          if (!isRecording) {
+            startRecording();
+          } else {
+            stopRecording();
+          }
+        } else if (event.key === 'Escape') {
+          if (isRecording) {
+            stopRecording();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [phase, isRecording, isSubmitting]);
+
   // [개선] 자동 제출 기능 - 시간 만료 알림 추가
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
@@ -99,11 +127,15 @@ export default function LnfTestPage() {
   const goToNextLetter = () => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = letterIndex + 1;
+    const newProgress = Math.round(((nextIndex) / shuffledAlphabet.length) * 100);
+    setProgress(newProgress);
+    
     if (nextIndex >= shuffledAlphabet.length) {
       setPhase('finished');
     } else {
       setLetterIndex(nextIndex);
       setCurrentLetter(shuffledAlphabet[nextIndex]);
+      setShowProgress(true);
     }
   };
 
@@ -198,10 +230,48 @@ export default function LnfTestPage() {
     try {
         fetch('/api/submit-lnf', { method: 'POST', body: formData });
         
-        // 피드백을 일반적인 긍정 메시지로 변경
-        setFeedback("좋아요! 다음 룬 문자를 해독해 보세요!");
-        // 즉시 다음 문제로 이동
-        goToNextLetter();
+      // 피드백을 일반적인 긍정 메시지로 변경
+      setFeedback("좋아요! 다음 룬 문자를 해독해 보세요!");
+      
+      // 최근 결과에 추가 (시뮬레이션)
+      const result = Math.random() > 0.3 ? "정답" : "오답";
+      setRecentResults(prev => [...prev.slice(-4), {
+        letter: currentLetter,
+        result: result,
+        timestamp: Date.now()
+      }]);
+      
+      // 실시간 피드백 요청
+      try {
+        const feedbackResponse = await fetch('/api/feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            testType: 'LNF',
+            question: currentLetter,
+            studentAnswer: '시뮬레이션 답변',
+            isCorrect: result === "정답",
+            errorType: result === "오답" ? "incorrect" : null
+          })
+        });
+        
+        if (feedbackResponse.ok) {
+          const feedbackData = await feedbackResponse.json();
+          setRealTimeFeedback(feedbackData);
+          setShowFeedback(true);
+          
+          // 3초 후 피드백 숨기기
+          setTimeout(() => {
+            setShowFeedback(false);
+            setRealTimeFeedback(null);
+          }, 3000);
+        }
+      } catch (error) {
+        console.error('피드백 요청 실패:', error);
+      }
+      
+      // 즉시 다음 문제로 이동
+      goToNextLetter();
 
     } catch (error) {
       console.error('LNF 요청 전송 실패:', error);
@@ -229,14 +299,76 @@ export default function LnfTestPage() {
   const feedbackStyle: React.CSSProperties = { minHeight: '2.5em', fontSize: '1.1rem', color: 'rgba(255, 255, 255, 0.8)', padding: '0 1rem', transition: 'color 0.3s' };
   const timerStyle: React.CSSProperties = { fontSize: '1.5rem', color: '#FFD700', marginBottom: '1rem', fontFamily: 'monospace' };
   
+  // CSS 애니메이션 스타일
+  const animationStyles = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+  `;
+  
   if (!user) { return (<div style={pageStyle}><h2 style={{color: 'white'}}>사용자 정보를 불러오는 중...</h2></div>); }
 
   return (
     <div style={pageStyle}>
+      <style>{animationStyles}</style>
       <div style={containerStyle}>
         {phase !== 'finished' && <h1 style={titleStyle}>1교시: 고대 룬 문자 해독 시험</h1>}
         
-        {phase === 'testing' && (<div style={timerStyle}>남은 시간: {timeLeft}초</div>)}
+        {phase === 'testing' && (
+          <div>
+            <div style={timerStyle}>남은 시간: {timeLeft}초</div>
+            {showProgress && (
+              <div style={{marginBottom: '1rem'}}>
+                <div style={{fontSize: '1rem', color: '#FFD700', marginBottom: '0.5rem'}}>
+                  진행률: {progress}% ({letterIndex + 1}/{shuffledAlphabet.length})
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${progress}%`,
+                    height: '100%',
+                    backgroundColor: '#FFD700',
+                    transition: 'width 0.3s ease',
+                    borderRadius: '4px'
+                  }} />
+                </div>
+              </div>
+            )}
+            {recentResults.length > 0 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem',
+                flexWrap: 'wrap'
+              }}>
+                {recentResults.slice(-5).map((result, index) => (
+                  <div key={index} style={{
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '12px',
+                    fontSize: '0.8rem',
+                    backgroundColor: result.result === '정답' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                    color: result.result === '정답' ? '#22c55e' : '#ef4444',
+                    border: `1px solid ${result.result === '정답' ? '#22c55e' : '#ef4444'}`,
+                    opacity: 0.8
+                  }}>
+                    {result.letter}: {result.result}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {phase === 'ready' && (
           <div>
@@ -254,7 +386,47 @@ export default function LnfTestPage() {
           <div>
             <div style={letterBoxStyle}>{currentLetter}</div>
             <p style={feedbackStyle}>{feedback}</p>
-            {!isRecording ? (<button onClick={startRecording} style={buttonStyle} disabled={isSubmitting}>{isSubmitting ? '처리 중...' : '녹음하기'}</button>) : (<button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>녹음 끝내기</button>)}
+            
+            {/* 실시간 피드백 표시 */}
+            {showFeedback && realTimeFeedback && (
+              <div style={{
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                border: '2px solid #22c55e',
+                borderRadius: '12px',
+                padding: '1rem',
+                margin: '1rem 0',
+                animation: 'fadeIn 0.5s ease-in'
+              }}>
+                <div style={{color: '#22c55e', fontWeight: 'bold', marginBottom: '0.5rem'}}>
+                  💡 {realTimeFeedback.feedback}
+                </div>
+                {realTimeFeedback.tip && (
+                  <div style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem'}}>
+                    💡 {realTimeFeedback.tip}
+                  </div>
+                )}
+              </div>
+            )}
+            {!isRecording ? (
+              <button 
+                onClick={startRecording} 
+                style={buttonStyle} 
+                disabled={isSubmitting}
+                aria-label={`${currentLetter} 문자 녹음하기`}
+                title="스페이스바 또는 엔터키로도 녹음할 수 있습니다"
+              >
+                {isSubmitting ? '처리 중...' : '녹음하기'}
+              </button>
+            ) : (
+              <button 
+                onClick={stopRecording} 
+                style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}
+                aria-label="녹음 중지하기"
+                title="스페이스바, 엔터키 또는 ESC키로도 중지할 수 있습니다"
+              >
+                녹음 끝내기
+              </button>
+            )}
           </div>
         )}
 

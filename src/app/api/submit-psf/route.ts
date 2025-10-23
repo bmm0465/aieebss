@@ -12,14 +12,38 @@ const openai = new OpenAI({
 
 // [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
 async function processPsfInBackground(supabase: SupabaseClient, userId: string, questionWord: string, arrayBuffer: ArrayBuffer) {
+  const startTime = Date.now();
+  
   try {
-    // 3초 주저 등으로 빈 파일이 온 경우
+    // 빈 오디오 파일 처리
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'PSF', question: questionWord, is_correct: false,
-          error_type: 'hesitation', correct_segments: 0, target_segments: null
+          error_type: 'hesitation', correct_segments: 0, target_segments: null,
+          processing_time_ms: Date.now() - startTime
       });
-      console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: hesitation`);
+      console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
+      return;
+    }
+
+    // 오디오 파일 크기 검증 (최소 1KB, 최대 10MB)
+    if (arrayBuffer.byteLength < 1024) {
+      await supabase.from('test_results').insert({
+          user_id: userId, test_type: 'PSF', question: questionWord, is_correct: false,
+          error_type: 'insufficient_audio', correct_segments: 0, target_segments: null,
+          processing_time_ms: Date.now() - startTime
+      });
+      console.log(`[PSF 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
+      return;
+    }
+
+    if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
+      await supabase.from('test_results').insert({
+          user_id: userId, test_type: 'PSF', question: questionWord, is_correct: false,
+          error_type: 'audio_too_large', correct_segments: 0, target_segments: null,
+          processing_time_ms: Date.now() - startTime
+      });
+      console.log(`[PSF 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
       return;
     }
 
@@ -33,18 +57,54 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
           upsert: false
         }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-mini-transcribe',
+        model: 'gpt-4o-transcribe',
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
-        // language 필드 제거 - 자동 감지가 기본값
+        language: 'en',
         response_format: 'json', 
-        prompt: `This is a DIBELS 8th Phonemic Segmentation Fluency (PSF) test for EFL students. The student will break words into individual phonemes (sounds). Accept various response formats:
-        - English phonemes: "m-a-p", "b-e-e", "s-u-n"
-        - Korean pronunciation: "엠-에이-피", "비-이-이", "에스-유-엔"
-        - Mixed responses: "엠-에이-피"
-        - Space-separated: "m a p", "b e e"
-        - Hyphen-separated: "m-a-p", "b-e-e"
-        - Partial attempts: "m...p" or "엠...피"
-        Transcribe exactly what you hear, preserving all segmentation attempts and hesitations.`,
+        prompt: `This is a DIBELS 8th Phonemic Segmentation Fluency (PSF) test for Korean EFL students. The student will break words into individual phonemes (sounds).
+
+TARGET WORD: "${questionWord}"
+
+CRITICAL INSTRUCTIONS:
+1. Accept Korean phoneme pronunciations:
+   - /k/ → "크", "크어", "크으"
+   - /æ/ → "애", "애이", "애으" 
+   - /t/ → "트", "트으", "트어"
+   - /m/ → "음", "엠", "므"
+   - /p/ → "프", "피", "푸"
+   - /b/ → "브", "비", "부"
+   - /d/ → "드", "디", "두"
+   - /g/ → "그", "기", "구"
+   - /f/ → "프", "피", "푸"
+   - /v/ → "브", "비", "부"
+   - /s/ → "스", "시", "수"
+   - /z/ → "즈", "지", "주"
+   - /ʃ/ → "시", "쉬", "슈"
+   - /ʒ/ → "지", "주", "즈"
+   - /tʃ/ → "치", "추", "츠"
+   - /dʒ/ → "지", "주", "즈"
+   - /θ/ → "스", "시", "쓰"
+   - /ð/ → "드", "디", "즈"
+   - /n/ → "은", "엔", "느"
+   - /ŋ/ → "응", "엥", "으"
+   - /l/ → "을", "엘", "르"
+   - /r/ → "르", "알", "어"
+   - /w/ → "우", "워", "와"
+   - /j/ → "이", "야", "여"
+   - /h/ → "으", "허", "하"
+
+2. Accept various response formats:
+   - Korean phonemes: "크-애-트", "음-애-프"
+   - English phonemes: "k-æ-t", "m-æ-p"
+   - Mixed: "크-애-트", "음-애-프"
+   - Space-separated: "k æ t", "m æ p"
+   - Hyphen-separated: "k-æ-t", "m-æ-p"
+   - Partial attempts: "크...트", "음...프"
+   - Hesitations: "크...음...애...트"
+
+3. Be extremely flexible with pronunciation variations
+4. Preserve all segmentation attempts, hesitations, and repetitions
+5. Return JSON: {"text": "exact transcription", "confidence": "high/medium/low", "phoneme_count": number}`,
       })
     ]);
 
@@ -52,13 +112,24 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    let studentAnswer = "";
+    // JSON 응답 파싱
+    let transcriptionData;
+    try {
+      transcriptionData = JSON.parse(transcription.text);
+    } catch {
+      // JSON 파싱 실패 시 기본 텍스트 사용
+      transcriptionData = { text: transcription.text, confidence: "medium", phoneme_count: 0 };
+    }
     
-    if (transcription.text && transcription.text.trim()) {
-        studentAnswer = transcription.text.trim();
-        console.log(`[PSF 음성 인식] 내용: "${studentAnswer}"`);
+    let studentAnswer = "";
+    const confidence = transcriptionData.confidence || "medium";
+    const phonemeCount = transcriptionData.phoneme_count || 0;
+    
+    if (transcriptionData.text && transcriptionData.text.trim()) {
+        studentAnswer = transcriptionData.text.trim();
+        console.log(`[PSF 음성 인식] 내용: "${studentAnswer}", 신뢰도: ${confidence}, 음소 수: ${phonemeCount}`);
     } else {
-        console.warn(`[PSF 경고] 음성 인식 실패 - 내용: "${transcription.text}"`);
+        console.warn(`[PSF 경고] 음성 인식 실패 - 내용: "${transcriptionData.text}"`);
         studentAnswer = "no_response";
     }
 
@@ -108,6 +179,8 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
     const isFullyCorrect = correct_segments === target_segments; // 모든 음소를 맞추면 완전 정답
     const errorType = !isCorrect ? evaluation : null;
 
+    const processingTime = Date.now() - startTime;
+    
     await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'PSF',
@@ -118,6 +191,9 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
       correct_segments: correct_segments,
       target_segments: target_segments,
       audio_url: audioUrl,
+      confidence_level: confidence,
+      detected_phoneme_count: phonemeCount,
+      processing_time_ms: processingTime,
     });
 
     // 더 상세한 로깅
@@ -125,13 +201,31 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
                          isCorrect ? `부분 정답 (${correct_segments}/${target_segments})` : 
                          `오답 (${evaluation})`;
     
-    console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}`);
+    console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
     if (notes) {
       console.log(`[PSF 채점 노트] ${notes}`);
     }
 
   } catch (error) {
-    console.error(`[PSF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionWord}`, error);
+    const processingTime = Date.now() - startTime;
+    console.error(`[PSF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionWord}, 처리시간: ${processingTime}ms`, error);
+    
+    // 오류 발생 시에도 데이터베이스에 기록
+    try {
+      await supabase.from('test_results').insert({
+        user_id: userId,
+        test_type: 'PSF',
+        question: questionWord,
+        is_correct: false,
+        error_type: 'processing_error',
+        correct_segments: 0,
+        target_segments: null,
+        processing_time_ms: processingTime,
+        error_details: error instanceof Error ? error.message : 'Unknown error'
+      });
+    } catch (dbError) {
+      console.error(`[PSF 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
+    }
   }
 }
 

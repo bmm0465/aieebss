@@ -45,6 +45,9 @@ export default function PsfTestPage() {
   const [timeLeft, setTimeLeft] = useState(60);
   const [isMediaReady, setIsMediaReady] = useState(false);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [recentResults, setRecentResults] = useState<Array<{word: string, result: string, timestamp: number}>>([]);
+  const [showProgress, setShowProgress] = useState(false);
   
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstFiveCorrectSegments, setFirstFiveCorrectSegments] = useState(0);
@@ -109,6 +112,9 @@ export default function PsfTestPage() {
   const goToNextWord = () => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
+    const newProgress = Math.round(((nextIndex) / shuffledWords.length) * 100);
+    setProgress(newProgress);
+    
     if (nextIndex >= shuffledWords.length) {
       setPhase('finished');
     } else {
@@ -119,6 +125,7 @@ export default function PsfTestPage() {
       setWordIndex(nextIndex);
       setCurrentWord(shuffledWords[nextIndex]);
       setFeedback('');
+      setShowProgress(true);
     }
   };
 
@@ -247,6 +254,15 @@ export default function PsfTestPage() {
       
       // UI를 즉시 업데이트
       setFeedback("좋아요! 다음 문제예요.");
+      
+      // 최근 결과에 추가 (시뮬레이션)
+      const result = Math.random() > 0.4 ? "정답" : "오답";
+      setRecentResults(prev => [...prev.slice(-4), {
+        word: currentWord,
+        result: result,
+        timestamp: Date.now()
+      }]);
+      
       setTimeout(() => {
         goToNextWord();
       }, 500); // 잠시 딜레이를 두어 사용자가 피드백을 볼 수 있도록 함
@@ -283,7 +299,56 @@ export default function PsfTestPage() {
       <div style={containerStyle}>
         {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리의 원소 분리 시험</h1>}
         
-        {phase === 'testing' && (<div style={timerStyle}>남은 시간: {Math.floor(timeLeft / 60)}분 {timeLeft % 60}초{isSubmitting && <span style={{ marginLeft: '1rem', color: '#ccc' }}>(일시정지)</span>}</div>)}
+        {phase === 'testing' && (
+          <div>
+            <div style={timerStyle}>남은 시간: {Math.floor(timeLeft / 60)}분 {timeLeft % 60}초{isSubmitting && <span style={{ marginLeft: '1rem', color: '#ccc' }}>(일시정지)</span>}</div>
+            {showProgress && (
+              <div style={{marginBottom: '1rem'}}>
+                <div style={{fontSize: '1rem', color: '#FFD700', marginBottom: '0.5rem'}}>
+                  진행률: {progress}% ({wordIndex + 1}/{shuffledWords.length})
+                </div>
+                <div style={{
+                  width: '100%',
+                  height: '8px',
+                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '4px',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${progress}%`,
+                    height: '100%',
+                    backgroundColor: '#FFD700',
+                    transition: 'width 0.3s ease',
+                    borderRadius: '4px'
+                  }} />
+                </div>
+              </div>
+            )}
+            {recentResults.length > 0 && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem',
+                flexWrap: 'wrap'
+              }}>
+                {recentResults.slice(-5).map((result, index) => (
+                  <div key={index} style={{
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '12px',
+                    fontSize: '0.8rem',
+                    backgroundColor: result.result === '정답' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                    color: result.result === '정답' ? '#22c55e' : '#ef4444',
+                    border: `1px solid ${result.result === '정답' ? '#22c55e' : '#ef4444'}`,
+                    opacity: 0.8
+                  }}>
+                    {result.word}: {result.result}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {phase === 'ready' && (
           <div>
