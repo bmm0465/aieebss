@@ -106,62 +106,6 @@ export default function LnfTestPage() {
     }
   }, []);
 
-  const startRecording = useCallback(async () => {
-    setFeedback('');
-    
-    try {
-      let stream = streamRef.current;
-      
-      // 미리 준비된 스트림이 없으면 새로 생성
-      if (!stream && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        streamRef.current = stream;
-      }
-      
-      if (!stream) {
-        throw new Error('마이크 스트림을 가져올 수 없습니다.');
-      }
-      
-      // 매번 새로운 MediaRecorder 생성 (재사용 불가)
-      const options = { mimeType: 'audio/webm;codecs=opus' };
-      const mediaRecorder = new MediaRecorder(stream, options);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-      
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-          console.log('🎤 오디오 데이터 수신:', event.data.size, 'bytes');
-        }
-      };
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        console.log('🎵 녹음 완료:', audioBlob.size, 'bytes');
-        if (audioBlob.size === 0) {
-          console.warn('⚠️ 빈 오디오 파일이 생성되었습니다!');
-          setFeedback('녹음이 제대로 되지 않았습니다. 다시 시도해주세요.');
-          setIsSubmitting(false);
-          return;
-        }
-        submitRecordingInBackground(audioBlob);
-      };
-      
-      mediaRecorder.start();
-      setIsRecording(true);
-      setFeedback('🎤 녹음 중... 룬 문자를 읽어주세요!');
-      
-      // 5초로 늘리고, 더 명확한 피드백 제공
-      silenceTimeoutRef.current = setTimeout(() => {
-        setFeedback('시간이 다 되어서 녹음을 종료합니다.');
-        stopRecording();
-      }, 5000);
-      
-    } catch (err) {
-      console.error("마이크 접근 에러:", err);
-      setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
-    }
-  }, [stopRecording, submitRecordingInBackground]);
-
   const submitRecordingInBackground = useCallback(async (audioBlob: Blob) => {
     if (!user || !currentLetter) {
       setIsSubmitting(false);
@@ -236,6 +180,63 @@ export default function LnfTestPage() {
       setIsSubmitting(false);
     }
   }, [user, currentLetter, supabase.auth, goToNextLetter]);
+
+  const startRecording = useCallback(async () => {
+    setFeedback('');
+    
+    try {
+      let stream = streamRef.current;
+      
+      // 미리 준비된 스트림이 없으면 새로 생성
+      if (!stream && navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        streamRef.current = stream;
+      }
+      
+      if (!stream) {
+        throw new Error('마이크 스트림을 가져올 수 없습니다.');
+      }
+      
+      // 매번 새로운 MediaRecorder 생성 (재사용 불가)
+      const options = { mimeType: 'audio/webm;codecs=opus' };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+          console.log('🎤 오디오 데이터 수신:', event.data.size, 'bytes');
+        }
+      };
+      mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        console.log('🎵 녹음 완료:', audioBlob.size, 'bytes');
+        if (audioBlob.size === 0) {
+          console.warn('⚠️ 빈 오디오 파일이 생성되었습니다!');
+          setFeedback('녹음이 제대로 되지 않았습니다. 다시 시도해주세요.');
+          setIsSubmitting(false);
+          return;
+        }
+        submitRecordingInBackground(audioBlob);
+      };
+      
+      mediaRecorder.start();
+      setIsRecording(true);
+      setFeedback('🎤 녹음 중... 룬 문자를 읽어주세요!');
+      
+      // 5초로 늘리고, 더 명확한 피드백 제공
+      silenceTimeoutRef.current = setTimeout(() => {
+        setFeedback('시간이 다 되어서 녹음을 종료합니다.');
+        stopRecording();
+      }, 5000);
+      
+    } catch (err) {
+      console.error("마이크 접근 에러:", err);
+      setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
+    }
+  }, [stopRecording, submitRecordingInBackground]);
+
   
   const handleStartTest = () => {
     setPhase('testing');
