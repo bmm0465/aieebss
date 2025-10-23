@@ -124,7 +124,7 @@ export default function LnfTestPage() {
     }
   }, [timeLeft, phase]);
 
-  const goToNextLetter = () => {
+  const goToNextLetter = useCallback(() => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = letterIndex + 1;
     const newProgress = Math.round(((nextIndex) / shuffledAlphabet.length) * 100);
@@ -137,7 +137,7 @@ export default function LnfTestPage() {
       setCurrentLetter(shuffledAlphabet[nextIndex]);
       setShowProgress(true);
     }
-  };
+  }, [letterIndex, shuffledAlphabet]);
 
   const startRecording = useCallback(async () => {
     setFeedback('');
@@ -279,7 +279,7 @@ export default function LnfTestPage() {
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, currentLetter, supabase.auth]);
+  }, [user, currentLetter, supabase.auth, goToNextLetter]);
   
   const handleStartTest = () => {
     setPhase('testing');
