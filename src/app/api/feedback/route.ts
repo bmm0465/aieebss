@@ -44,8 +44,7 @@ export async function POST(request: Request) {
         .eq('test_type', testType)
         .gte('created_at', sessionDate.toISOString().split('T')[0])
         .lt('created_at', new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
-        .order('created_at', { ascending: false })
-        .limit(1);
+        .order('created_at', { ascending: false });
       
       console.log('데이터베이스 조회 결과:', { resultsCount: results?.length, error });
 
@@ -58,14 +57,25 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: '해당 세션의 결과를 찾을 수 없습니다.' }, { status: 404 });
       }
 
-      const result = results[0];
-      feedbackData = {
+      // 전체 세션 데이터를 종합 피드백용으로 구성
+      const sessionData = {
         testType,
-        question: result.question || result.question_word || result.question_passage || '테스트 문항',
-        studentAnswer: result.student_answer || '학생 답변',
-        isCorrect: result.is_correct || false,
-        errorType: result.error_type || null
+        totalQuestions: results.length,
+        correctAnswers: results.filter(r => r.is_correct).length,
+        accuracy: (results.filter(r => r.is_correct).length / results.length) * 100,
+        questions: results.map(r => ({
+          question: r.question || r.question_word || r.question_passage || '문항',
+          studentAnswer: r.student_answer || '',
+          isCorrect: r.is_correct || false,
+          errorType: r.error_type || null,
+          correctSegments: r.correct_segments || 0,
+          targetSegments: r.target_segments || 0,
+          wcpm: r.wcpm || 0,
+          accuracy: r.accuracy || 0
+        }))
       };
+
+      feedbackData = sessionData;
     } else {
       // 직접 전달된 데이터 사용 (기존 방식)
       if (!testType || !question || !studentAnswer) {
@@ -81,33 +91,87 @@ export async function POST(request: Request) {
       };
     }
 
-    // 실시간 피드백 생성
+    // 종합 피드백 생성
     console.log('OpenAI API 호출 시작, 피드백 데이터:', feedbackData);
     
-    let aiFeedback: { feedback?: string; tip?: string } = {};
+    let aiFeedback: { 
+      feedback?: string; 
+      tip?: string;
+      strengths?: string[];
+      improvements?: string[];
+      nextSteps?: string[];
+    } = {};
+    
     try {
+      // 세션 데이터인지 개별 문항 데이터인지 확인
+      const isSessionData = feedbackData && 'totalQuestions' in feedbackData;
+      
+      let systemPrompt = '';
+      
+      if (isSessionData) {
+        // 전체 세션 종합 피드백
+        const sessionData = feedbackData as any;
+        systemPrompt = `You are an expert EFL teacher providing comprehensive feedback for DIBELS assessments. 
+        
+        STUDENT PERFORMANCE SUMMARY:
+        - Test Type: ${sessionData.testType}
+        - Total Questions: ${sessionData.totalQuestions}
+        - Correct Answers: ${sessionData.correctAnswers}
+        - Overall Accuracy: ${sessionData.accuracy.toFixed(1)}%
+        
+        DETAILED RESULTS:
+        ${sessionData.questions.map((q: any, i: number) => 
+          `${i + 1}. Question: "${q.question}" | Student Answer: "${q.studentAnswer}" | ${q.isCorrect ? 'CORRECT' : 'INCORRECT'}${q.errorType ? ` | Error: ${q.errorType}` : ''}${q.correctSegments ? ` | Segments: ${q.correctSegments}/${q.targetSegments}` : ''}${q.wcpm ? ` | WCPM: ${q.wcpm}` : ''}`
+        ).join('\n')}
+        
+        TASK: Provide comprehensive feedback that includes:
+        1. Overall performance assessment
+        2. Specific strengths identified
+        3. Areas needing improvement
+        4. Concrete next steps for learning
+        
+        GUIDELINES:
+        - Be encouraging but honest about performance
+        - Identify specific patterns in errors
+        - Provide actionable improvement strategies
+        - Use Korean for emotional support, English for technical terms
+        - Focus on learning progression, not just scores
+        
+        Respond with JSON: {
+          "feedback": "overall assessment message",
+          "tip": "main learning tip",
+          "strengths": ["strength1", "strength2"],
+          "improvements": ["improvement1", "improvement2"],
+          "nextSteps": ["step1", "step2"]
+        }`;
+      } else {
+        // 개별 문항 피드백 (기존 방식)
+        const individualData = feedbackData as any;
+        systemPrompt = `You are an encouraging EFL teacher providing real-time feedback for DIBELS assessments. 
+        
+        CONTEXT: ${individualData.testType} test
+        QUESTION: ${individualData.question}
+        STUDENT ANSWER: ${individualData.studentAnswer}
+        RESULT: ${individualData.isCorrect ? 'Correct' : 'Incorrect'}
+        ERROR TYPE: ${individualData.errorType || 'None'}
+        
+        GUIDELINES:
+        1. Be encouraging and supportive
+        2. Provide specific, actionable feedback
+        3. Use simple Korean when appropriate
+        4. Keep feedback brief (1-2 sentences)
+        5. Focus on what the student did well
+        6. If incorrect, gently guide toward the correct answer
+        
+        Respond with JSON: {"feedback": "encouraging message", "tip": "helpful tip"}`;
+      }
+
       const feedbackResponse = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           {
             role: 'system',
-            content: `You are an encouraging EFL teacher providing real-time feedback for DIBELS assessments. 
-            
-            CONTEXT: ${feedbackData.testType} test
-            QUESTION: ${feedbackData.question}
-            STUDENT ANSWER: ${feedbackData.studentAnswer}
-            RESULT: ${feedbackData.isCorrect ? 'Correct' : 'Incorrect'}
-            ERROR TYPE: ${feedbackData.errorType || 'None'}
-            
-            GUIDELINES:
-            1. Be encouraging and supportive
-            2. Provide specific, actionable feedback
-            3. Use simple Korean when appropriate
-            4. Keep feedback brief (1-2 sentences)
-            5. Focus on what the student did well
-            6. If incorrect, gently guide toward the correct answer
-            
-            Respond with JSON: {"feedback": "encouraging message", "tip": "helpful tip"}`
+            content: systemPrompt
           }
         ],
         response_format: { type: 'json_object' },
@@ -126,7 +190,10 @@ export async function POST(request: Request) {
     
     const response = {
       feedback: aiFeedback.feedback || "좋은 시도입니다!",
-      tip: aiFeedback.tip || "계속 노력해보세요!"
+      tip: aiFeedback.tip || "계속 노력해보세요!",
+      strengths: aiFeedback.strengths || [],
+      improvements: aiFeedback.improvements || [],
+      nextSteps: aiFeedback.nextSteps || []
     };
     
     console.log('최종 응답:', response);

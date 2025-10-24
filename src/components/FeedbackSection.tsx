@@ -5,6 +5,9 @@ import { useState } from 'react';
 interface FeedbackData {
   feedback: string;
   tip: string;
+  strengths?: string[];
+  improvements?: string[];
+  nextSteps?: string[];
 }
 
 interface FeedbackSectionProps {
@@ -145,7 +148,7 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
 
       {feedback && (
         <div>
-          {/* AI 피드백 */}
+          {/* 종합 피드백 */}
           <div style={{
             backgroundColor: 'rgba(33, 150, 243, 0.1)',
             border: '1px solid rgba(33, 150, 243, 0.3)',
@@ -154,21 +157,87 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
             marginBottom: '2rem'
           }}>
             <h3 style={{ color: '#2196F3', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-              🤖 AI 피드백
+              🤖 종합 평가 피드백
             </h3>
             <div style={{ marginBottom: '1rem' }}>
-              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>피드백</p>
+              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>전체 평가</p>
               <p style={{ margin: 0, color: '#fff', fontSize: '1.1rem', lineHeight: '1.5' }}>
                 {feedback.feedback}
               </p>
             </div>
             <div>
-              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>학습 팁</p>
+              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>핵심 학습 팁</p>
               <p style={{ margin: 0, color: '#4CAF50', fontSize: '1.1rem', lineHeight: '1.5' }}>
                 {feedback.tip}
               </p>
             </div>
           </div>
+
+          {/* 강점 분석 */}
+          {feedback.strengths && feedback.strengths.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(40, 167, 69, 0.1)',
+              border: '1px solid rgba(40, 167, 69, 0.3)',
+              borderRadius: '10px',
+              padding: '1.5rem',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#28a745', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
+                💪 잘한 점
+              </h3>
+              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                {feedback.strengths.map((strength, index) => (
+                  <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                    {strength}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 개선점 분석 */}
+          {feedback.improvements && feedback.improvements.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(255, 193, 7, 0.1)',
+              border: '1px solid rgba(255, 193, 7, 0.3)',
+              borderRadius: '10px',
+              padding: '1.5rem',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#ffc107', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
+                🎯 개선할 점
+              </h3>
+              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                {feedback.improvements.map((improvement, index) => (
+                  <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                    {improvement}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 다음 단계 */}
+          {feedback.nextSteps && feedback.nextSteps.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(156, 39, 176, 0.1)',
+              border: '1px solid rgba(156, 39, 176, 0.3)',
+              borderRadius: '10px',
+              padding: '1.5rem',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#9C27B0', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
+                🚀 다음 학습 단계
+              </h3>
+              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                {feedback.nextSteps.map((step, index) => (
+                  <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                    {step}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* 다시 피드백 받기 버튼 */}
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
