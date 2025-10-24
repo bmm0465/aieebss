@@ -124,7 +124,7 @@ export default function LnfTestPage() {
     formData.append('audio', audioBlob);
     formData.append('question', currentLetter);
     formData.append('userId', user.id);
-    formData.append('authToken', session.access_token);
+    formData.append('authToken', authUser.id);
     
     // [핵심 수정] API 호출 후 결과를 기다리지 않고, UI를 즉시 업데이트
     try {

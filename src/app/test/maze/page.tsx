@@ -116,7 +116,7 @@ export default function MazeTestPage() {
                 body: JSON.stringify({
                     submissions,
                     userId: user.id,
-                    authToken: session.access_token
+                    authToken: authUser.id
                 })
             });
             

@@ -242,7 +242,7 @@ export default function PsfTestPage() {
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
-    formData.append('authToken', session.access_token);
+    formData.append('authToken', authUser.id);
     
     try {
       // [핵심 수정] API 호출 후 결과를 기다리지 않음
