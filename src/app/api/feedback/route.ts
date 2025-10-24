@@ -84,7 +84,7 @@ export async function POST(request: Request) {
     // 실시간 피드백 생성
     console.log('OpenAI API 호출 시작, 피드백 데이터:', feedbackData);
     
-    let aiFeedback = {};
+    let aiFeedback: { feedback?: string; tip?: string } = {};
     try {
       const feedbackResponse = await openai.chat.completions.create({
         model: 'gpt-4o',
