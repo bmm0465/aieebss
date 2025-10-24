@@ -94,6 +94,32 @@ export async function POST(request: Request) {
     // 종합 피드백 생성
     console.log('OpenAI API 호출 시작, 피드백 데이터:', feedbackData);
     
+    // 타입 정의
+    interface SessionData {
+      testType: string;
+      totalQuestions: number;
+      correctAnswers: number;
+      accuracy: number;
+      questions: Array<{
+        question: string;
+        studentAnswer: string;
+        isCorrect: boolean;
+        errorType: string | null;
+        correctSegments: number;
+        targetSegments: number;
+        wcpm: number;
+        accuracy: number;
+      }>;
+    }
+
+    interface IndividualData {
+      testType: string;
+      question: string;
+      studentAnswer: string;
+      isCorrect: boolean;
+      errorType: string | null;
+    }
+
     let aiFeedback: { 
       feedback?: string; 
       tip?: string;
@@ -110,7 +136,7 @@ export async function POST(request: Request) {
       
       if (isSessionData) {
         // 전체 세션 종합 피드백
-        const sessionData = feedbackData as any;
+        const sessionData = feedbackData as SessionData;
         systemPrompt = `You are an expert EFL teacher providing comprehensive feedback for DIBELS assessments. 
         
         STUDENT PERFORMANCE SUMMARY:
@@ -120,7 +146,7 @@ export async function POST(request: Request) {
         - Overall Accuracy: ${sessionData.accuracy.toFixed(1)}%
         
         DETAILED RESULTS:
-        ${sessionData.questions.map((q: any, i: number) => 
+        ${sessionData.questions.map((q, i: number) => 
           `${i + 1}. Question: "${q.question}" | Student Answer: "${q.studentAnswer}" | ${q.isCorrect ? 'CORRECT' : 'INCORRECT'}${q.errorType ? ` | Error: ${q.errorType}` : ''}${q.correctSegments ? ` | Segments: ${q.correctSegments}/${q.targetSegments}` : ''}${q.wcpm ? ` | WCPM: ${q.wcpm}` : ''}`
         ).join('\n')}
         
@@ -146,7 +172,7 @@ export async function POST(request: Request) {
         }`;
       } else {
         // 개별 문항 피드백 (기존 방식)
-        const individualData = feedbackData as any;
+        const individualData = feedbackData as IndividualData;
         systemPrompt = `You are an encouraging EFL teacher providing real-time feedback for DIBELS assessments. 
         
         CONTEXT: ${individualData.testType} test
