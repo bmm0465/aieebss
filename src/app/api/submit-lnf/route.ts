@@ -112,7 +112,7 @@ CRITICAL INSTRUCTIONS:
       evaluation = 'letter_sound';
     } else {
       const scoringResponse = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         messages: [ 
           { role: 'system', content: `You are a DIBELS 8 LNF test evaluator. Please respond with a JSON object containing the evaluation result.` },
           { role: 'user', content: `Evaluate this student's pronunciation of letter "${questionLetter}": "${studentAnswer}". Return JSON with "evaluation" field.` }
