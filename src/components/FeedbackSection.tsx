@@ -3,28 +3,8 @@
 import { useState } from 'react';
 
 interface FeedbackData {
-  testType: string;
-  analysis: {
-    total: number;
-    correct: number;
-    accuracy: number;
-    incorrectAnswers: Array<{
-      question: string;
-      studentAnswer: string;
-      isCorrect: boolean;
-    }>;
-    errorPatterns: {
-      similarShapes: Array<{ question: string; studentAnswer: string }>;
-      caseConfusion: Array<{ question: string; studentAnswer: string }>;
-      uncommonLetters: Array<{ question: string; studentAnswer: string }>;
-      other: Array<{ question: string; studentAnswer: string }>;
-    };
-  };
-  feedback: {
-    feedUp: string;
-    feedBack: string;
-    feedForward: string;
-  };
+  feedback: string;
+  tip: string;
 }
 
 interface FeedbackSectionProps {
@@ -165,129 +145,27 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
 
       {feedback && (
         <div>
-          {/* 결과 요약 */}
+          {/* AI 피드백 */}
           <div style={{
-            backgroundColor: 'rgba(255,215,0,0.1)',
-            border: '1px solid rgba(255,215,0,0.3)',
+            backgroundColor: 'rgba(33, 150, 243, 0.1)',
+            border: '1px solid rgba(33, 150, 243, 0.3)',
             borderRadius: '10px',
             padding: '1.5rem',
             marginBottom: '2rem'
           }}>
-            <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>📊 평가 결과 요약</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1rem' }}>
-              <div>
-                <p style={{ margin: '0 0 0.5rem 0', color: '#ccc' }}>총 문제 수</p>
-                <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#FFD700' }}>
-                  {feedback.analysis.total}개
-                </p>
-              </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem 0', color: '#ccc' }}>정답 수</p>
-                <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                  {feedback.analysis.correct}개
-                </p>
-              </div>
-              <div>
-                <p style={{ margin: '0 0 0.5rem 0', color: '#ccc' }}>정확도</p>
-                <p style={{ margin: 0, fontSize: '1.2rem', fontWeight: 'bold', color: '#FFD700' }}>
-                  {feedback.analysis.accuracy.toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 상세 결과 리포트 */}
-          {feedback.analysis.incorrectAnswers.length > 0 && (
-            <div style={{
-              backgroundColor: 'rgba(220, 53, 69, 0.1)',
-              border: '1px solid rgba(220, 53, 69, 0.3)',
-              borderRadius: '10px',
-              padding: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <h3 style={{ color: '#dc3545', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                📋 틀린 문제 상세 보기 ({feedback.analysis.incorrectAnswers.length}개)
-              </h3>
-              <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                {feedback.analysis.incorrectAnswers.map((answer, index) => (
-                  <div key={index} style={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                    border: '1px solid rgba(220, 53, 69, 0.2)',
-                    borderRadius: '8px',
-                    padding: '1rem',
-                    marginBottom: '0.8rem',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: '0 0 0.3rem 0', color: '#ffc107', fontWeight: 'bold' }}>
-                        문제: {answer.question}
-                      </p>
-                      <p style={{ margin: 0, color: '#ccc' }}>
-                        학생 답: <span style={{ color: '#dc3545' }}>{answer.studentAnswer}</span>
-                      </p>
-                    </div>
-                    <div style={{
-                      backgroundColor: 'rgba(220, 53, 69, 0.2)',
-                      color: '#dc3545',
-                      padding: '0.3rem 0.8rem',
-                      borderRadius: '15px',
-                      fontSize: '0.8rem',
-                      fontWeight: 'bold'
-                    }}>
-                      ❌ 틀림
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Hattie의 피드백 */}
-          <div style={{ display: 'grid', gap: '1.5rem' }}>
-            {/* Feed Up */}
-            <div style={{
-              backgroundColor: 'rgba(0,123,255,0.1)',
-              border: '1px solid rgba(0,123,255,0.3)',
-              borderRadius: '10px',
-              padding: '1.5rem'
-            }}>
-              <h3 style={{ color: '#007BFF', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                🎯 나는 어디로 가고 있는가? (Feed Up)
-              </h3>
-              <p style={{ margin: 0, lineHeight: '1.6', color: '#e9ecef' }}>
-                {feedback.feedback.feedUp}
+            <h3 style={{ color: '#2196F3', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
+              🤖 AI 피드백
+            </h3>
+            <div style={{ marginBottom: '1rem' }}>
+              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>피드백</p>
+              <p style={{ margin: 0, color: '#fff', fontSize: '1.1rem', lineHeight: '1.5' }}>
+                {feedback.feedback}
               </p>
             </div>
-
-            {/* Feed Back */}
-            <div style={{
-              backgroundColor: 'rgba(40,167,69,0.1)',
-              border: '1px solid rgba(40,167,69,0.3)',
-              borderRadius: '10px',
-              padding: '1.5rem'
-            }}>
-              <h3 style={{ color: '#28a745', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                📈 나는 지금 잘하고 있는가? (Feed Back)
-              </h3>
-              <p style={{ margin: 0, lineHeight: '1.6', color: '#e9ecef' }}>
-                {feedback.feedback.feedBack}
-              </p>
-            </div>
-
-            {/* Feed Forward */}
-            <div style={{
-              backgroundColor: 'rgba(255,193,7,0.1)',
-              border: '1px solid rgba(255,193,7,0.3)',
-              borderRadius: '10px',
-              padding: '1.5rem'
-            }}>
-              <h3 style={{ color: '#ffc107', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                🚀 다음에는 무엇을 해야 하는가? (Feed Forward)
-              </h3>
-              <p style={{ margin: 0, lineHeight: '1.6', color: '#e9ecef' }}>
-                {feedback.feedback.feedForward}
+            <div>
+              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>학습 팁</p>
+              <p style={{ margin: 0, color: '#4CAF50', fontSize: '1.1rem', lineHeight: '1.5' }}>
+                {feedback.tip}
               </p>
             </div>
           </div>
