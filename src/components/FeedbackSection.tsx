@@ -61,6 +61,8 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
     setError(null);
 
     try {
+      console.log('피드백 생성 요청:', { testType, sessionId });
+      
       const response = await fetch('/api/feedback', {
         method: 'POST',
         headers: {
@@ -72,12 +74,16 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
         }),
       });
 
+      console.log('API 응답 상태:', response.status, response.statusText);
+
       if (!response.ok) {
         const errorData = await response.json();
+        console.error('API 오류 응답:', errorData);
         throw new Error(errorData.error || '피드백 생성에 실패했습니다.');
       }
 
       const data = await response.json();
+      console.log('피드백 생성 성공:', data);
       setFeedback(data);
     } catch (err) {
       console.error('피드백 생성 에러:', err);
