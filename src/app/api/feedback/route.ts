@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     
     if (sessionId && testType) {
       // sessionId를 통해 데이터베이스에서 해당 세션의 결과 조회
-      const supabase = createClient();
+      const supabase = await createClient();
       
       const { data: results, error } = await supabase
         .from('test_results')
