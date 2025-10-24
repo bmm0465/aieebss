@@ -57,8 +57,8 @@ export default async function StudentDetailPage({ params }: Props) {
     
     assignment = data;
     assignmentError = error;
-  } catch (error) {
-    console.log('[StudentDetail] ⚠️ teacher_student_assignments 테이블이 없거나 관계가 설정되지 않음. 임시로 우회합니다.');
+  } catch (dbError) {
+    console.log('[StudentDetail] ⚠️ teacher_student_assignments 테이블이 없거나 관계가 설정되지 않음. 임시로 우회합니다.', dbError);
     // 임시로 모든 교사가 모든 학생을 볼 수 있도록 허용
     assignment = { class_name: '임시 반' };
   }
