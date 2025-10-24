@@ -205,7 +205,7 @@ export default async function StudentDetailPage({ params }: Props) {
           }}>
             <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>📋 상세 평가 결과</h3>
             <div style={{ display: 'grid', gap: '1rem' }}>
-              {testResults.map((result, index) => (
+              {testResults.map((result) => (
                 <div key={result.id} style={{
                   backgroundColor: 'rgba(255,255,255,0.1)',
                   padding: '1rem',
