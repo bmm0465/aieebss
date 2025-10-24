@@ -17,11 +17,24 @@ export async function POST(request: Request) {
       // sessionId를 통해 데이터베이스에서 해당 세션의 결과 조회
       const supabase = await createClient();
       
+      // sessionId에서 날짜 추출 (예: "2024-01-15_123456" -> "2024-01-15")
+      const [dateStr] = sessionId.split('_');
+      const sessionDate = new Date(dateStr);
+      
+      // 현재 사용자 인증 확인
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error('사용자 인증 오류:', userError);
+        return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+      }
+      
       const { data: results, error } = await supabase
         .from('test_results')
         .select('*')
-        .eq('session_id', sessionId)
+        .eq('user_id', user.id)
         .eq('test_type', testType)
+        .gte('created_at', sessionDate.toISOString().split('T')[0])
+        .lt('created_at', new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
         .order('created_at', { ascending: false })
         .limit(1);
 
@@ -37,7 +50,7 @@ export async function POST(request: Request) {
       const result = results[0];
       feedbackData = {
         testType,
-        question: result.question || '테스트 문항',
+        question: result.question || result.question_word || result.question_passage || '테스트 문항',
         studentAnswer: result.student_answer || '학생 답변',
         isCorrect: result.is_correct || false,
         errorType: result.error_type || null
