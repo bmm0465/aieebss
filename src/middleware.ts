@@ -10,9 +10,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
-  // 추가 보안: teacher 경로는 절대 인증 체크하지 않음
-  if (pathname.includes('/teacher/')) {
-    console.log('[Middleware] Teacher path detected, skipping auth:', pathname);
+  // 정적 파일들도 middleware를 건너뜀
+  if (pathname.match(/\.(jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)$/)) {
+    console.log('[Middleware] Skipping static file:', pathname);
     return NextResponse.next();
   }
 
@@ -87,8 +87,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * teacher 경로는 제외하고 나머지 경로에서만 middleware 실행
+     * 정적 파일들과 teacher 경로는 제외하고 나머지 경로에서만 middleware 실행
      */
-    '/((?!_next/static|_next/image|favicon.ico|teacher).*)',
+    '/((?!_next/static|_next/image|favicon.ico|teacher|.*\\.(?:jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)).*)',
   ],
 }
