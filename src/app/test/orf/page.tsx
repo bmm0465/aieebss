@@ -173,10 +173,10 @@ export default function OrfTestPage() {
   const submitRecording = async (audioBlob: Blob, timeTaken: number) => {
     if (!user) return;
     
-    // 사용자 세션에서 access token 가져오기
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      setFeedback("인증 토큰을 가져올 수 없습니다.");
+    // 사용자 인증 확인
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+    if (userError || !authUser) {
+      setFeedback("인증이 필요합니다.");
       return;
     }
     
@@ -188,7 +188,7 @@ export default function OrfTestPage() {
     formData.append('question', passage);
     formData.append('userId', user.id);
     formData.append('timeTaken', String(timeTaken)); // 소요 시간 추가
-    formData.append('authToken', session.access_token);
+    formData.append('authToken', authUser.id);
 
     try {
       const response = await fetch('/api/submit-orf', { method: 'POST', body: formData });

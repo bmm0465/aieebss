@@ -56,14 +56,14 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 
       if (sessionId) {
         // 세션별 결과 조회
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('인증이 필요합니다.');
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) throw new Error('인증이 필요합니다.');
         
         const [dateStr] = sessionId.split('_');
         const sessionDate = new Date(dateStr);
         
         query = query
-          .eq('user_id', session.user.id)
+          .eq('user_id', user.id)
           .gte('created_at', sessionDate.toISOString().split('T')[0])
           .lt('created_at', new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
       } else if (studentId) {
@@ -71,9 +71,9 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         query = query.eq('user_id', studentId);
       } else {
         // 현재 로그인한 사용자의 결과 조회
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) throw new Error('인증이 필요합니다.');
-        query = query.eq('user_id', session.user.id);
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) throw new Error('인증이 필요합니다.');
+        query = query.eq('user_id', user.id);
       }
 
       const { data, error: fetchError } = await query;

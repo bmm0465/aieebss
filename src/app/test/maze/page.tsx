@@ -80,10 +80,10 @@ export default function MazeTestPage() {
     if (!user || phase === 'submitting') return;
     setPhase('submitting');
 
-    // 사용자 세션에서 access token 가져오기
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      console.error("인증 토큰을 가져올 수 없습니다.");
+    // 사용자 인증 확인
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+    if (userError || !authUser) {
+      console.error("인증이 필요합니다.");
       setPhase('testing');
       return;
     }

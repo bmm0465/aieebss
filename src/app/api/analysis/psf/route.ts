@@ -10,9 +10,9 @@ export async function GET(request: NextRequest) {
     const studentId = searchParams.get('studentId');
     const className = searchParams.get('className');
 
-    // 세션 확인
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
+    // 사용자 인증 확인
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user) {
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
