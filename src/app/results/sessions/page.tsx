@@ -108,7 +108,7 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
       totalTests,
       completionRate
     };
-  }).sort((a, b) => new Date(b.id).getTime() - new Date(a.id).getTime()); // 최신순 정렬
+  }).sort((a, b) => new Date(a.id).getTime() - new Date(b.id).getTime()); // 시간순 정렬
 }
 
 export default async function SessionsPage() {

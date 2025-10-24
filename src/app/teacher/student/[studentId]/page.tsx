@@ -1,3 +1,5 @@
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 interface Props {
@@ -5,12 +7,112 @@ interface Props {
 }
 
 export default async function StudentDetailPage({ params }: Props) {
-  console.log('[StudentDetail] 🚀 PAGE STARTED - NO AUTH CHECK');
+  console.log('[StudentDetail] 🚀 PAGE STARTED');
   
   const { studentId } = await params;
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
 
-  // 인증 체크 없이 즉시 반환
+  const supabase = await createClient();
+
+  // 교사 인증 체크
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  console.log('[StudentDetail] Auth check:', {
+    hasUser: !!user,
+    userId: user?.id,
+    userEmail: user?.email,
+    error: userError?.message,
+    studentId,
+    timestamp: new Date().toISOString()
+  });
+  
+  if (userError || !user) {
+    console.error('[StudentDetail] ❌ Authentication FAILED:', userError);
+    redirect('/');
+  }
+
+  // 교사 프로필 확인
+  const { data: profile, error: profileError } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+
+  if (profileError || !profile || profile.role !== 'teacher') {
+    console.error('[StudentDetail] ❌ Teacher profile not found:', profileError);
+    redirect('/lobby');
+  }
+
+  // 담당 학생인지 확인
+  const { data: assignment, error: assignmentError } = await supabase
+    .from('teacher_student_assignments')
+    .select('*')
+    .eq('teacher_id', user.id)
+    .eq('student_id', studentId)
+    .single();
+
+  if (assignmentError || !assignment) {
+    console.error('[StudentDetail] ❌ Student assignment not found:', assignmentError);
+    return (
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh', 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        color: 'white'
+      }}>
+        <div style={{
+          textAlign: 'center', 
+          backgroundColor: 'rgba(0,0,0,0.7)', 
+          padding: '2rem', 
+          borderRadius: '15px',
+          maxWidth: '600px'
+        }}>
+          <h1 style={{ color: '#FFD700', marginBottom: '1rem' }}>⚠️ 접근 권한 없음</h1>
+          <p style={{ marginBottom: '1rem' }}>해당 학생의 담당 교사가 아닙니다.</p>
+          <Link 
+            href="/teacher/dashboard" 
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#FFD700',
+              color: 'black',
+              padding: '0.8rem 1.5rem',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            대시보드로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  // 학생 프로필 정보 가져오기
+  let studentUser = null;
+  try {
+    const { data } = await supabase.auth.admin.getUserById(studentId);
+    studentUser = data.user;
+  } catch (error) {
+    console.error('학생 이메일 조회 에러:', error);
+  }
+
+  // 학생의 테스트 결과 가져오기
+  const { data: testResults, error: resultsError } = await supabase
+    .from('test_results')
+    .select('*')
+    .eq('user_id', studentId)
+    .order('created_at', { ascending: false });
+
+  if (resultsError) {
+    console.error('테스트 결과 조회 에러:', resultsError);
+  }
+
+  console.log('[StudentDetail] ✅ Data loaded successfully');
+
   return (
     <div style={{ 
       backgroundImage: `url('/background.jpg')`, 
@@ -20,12 +122,8 @@ export default async function StudentDetailPage({ params }: Props) {
       color: 'white'
     }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-        <h1 style={{ color: '#FFD700' }}>🔧 디버그 모드 - 인증 없음</h1>
-        <p>StudentId: {studentId}</p>
-        <p>이 페이지가 보인다면 라우팅과 렌더링은 정상입니다.</p>
-        <p>인증 체크를 제거했습니다.</p>
-        
-        <div style={{ marginTop: '2rem' }}>
+        {/* 헤더 */}
+        <div style={{ marginBottom: '2rem' }}>
           <Link 
             href="/teacher/dashboard"
             style={{
@@ -37,12 +135,111 @@ export default async function StudentDetailPage({ params }: Props) {
               borderRadius: '8px',
               textDecoration: 'none',
               border: '2px solid rgba(255,215,0,0.5)',
-              fontWeight: 'bold'
+              fontWeight: 'bold',
+              marginBottom: '1rem'
             }}
           >
             ← 대시보드로 돌아가기
           </Link>
+          
+          <h1 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>
+            📊 학생 상세 평가 결과
+          </h1>
+          <h2 style={{ color: '#fff', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+            {studentUser?.email || '학생 정보'}
+          </h2>
+          <p style={{ opacity: 0.8, fontSize: '1rem' }}>
+            담당 반: {assignment.class_name} | 총 {testResults?.length || 0}개 평가 완료
+          </p>
         </div>
+
+        {/* 평가 결과 요약 */}
+        {testResults && testResults.length > 0 ? (
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            padding: '2rem',
+            borderRadius: '15px',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>📈 평가 결과 요약</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#4CAF50' }}>
+                  {testResults.length}
+                </div>
+                <div style={{ color: '#ccc' }}>총 평가 수</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#2196F3' }}>
+                  {testResults.filter(r => r.is_correct).length}
+                </div>
+                <div style={{ color: '#ccc' }}>정답 수</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#FF9800' }}>
+                  {testResults.length > 0 ? Math.round((testResults.filter(r => r.is_correct).length / testResults.length) * 100) : 0}%
+                </div>
+                <div style={{ color: '#ccc' }}>정확도</div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            padding: '2rem',
+            borderRadius: '15px',
+            marginBottom: '2rem',
+            textAlign: 'center'
+          }}>
+            <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>📝 평가 결과 없음</h3>
+            <p style={{ opacity: 0.8 }}>아직 완료된 평가가 없습니다.</p>
+          </div>
+        )}
+
+        {/* 상세 결과 목록 */}
+        {testResults && testResults.length > 0 && (
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            padding: '2rem',
+            borderRadius: '15px'
+          }}>
+            <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>📋 상세 평가 결과</h3>
+            <div style={{ display: 'grid', gap: '1rem' }}>
+              {testResults.map((result, index) => (
+                <div key={result.id} style={{
+                  backgroundColor: 'rgba(255,255,255,0.1)',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  border: `2px solid ${result.is_correct ? 'rgba(76, 175, 80, 0.5)' : 'rgba(244, 67, 54, 0.5)'}`
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                    <span style={{ fontWeight: 'bold', color: result.is_correct ? '#4CAF50' : '#F44336' }}>
+                      {result.test_type} - {result.is_correct ? '정답' : '오답'}
+                    </span>
+                    <span style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+                      {new Date(result.created_at || 0).toLocaleString('ko-KR')}
+                    </span>
+                  </div>
+                  {result.question && (
+                    <p style={{ margin: '0.3rem 0', color: '#fff' }}>
+                      <strong>문제:</strong> {result.question}
+                    </p>
+                  )}
+                  {result.student_answer && (
+                    <p style={{ margin: '0.3rem 0', color: result.is_correct ? '#4CAF50' : '#F44336' }}>
+                      <strong>학생 답변:</strong> {result.student_answer}
+                    </p>
+                  )}
+                  {result.error_type && (
+                    <p style={{ margin: '0.3rem 0', color: '#FF9800' }}>
+                      <strong>오류 유형:</strong> {result.error_type}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
