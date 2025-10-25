@@ -106,10 +106,20 @@ export default async function StudentDetailPage({ params }: Props) {
   // 학생 프로필 정보 가져오기
   let studentUser = null;
   try {
-    const { data } = await supabase.auth.admin.getUserById(studentId);
-    studentUser = data.user;
+    const { data: studentProfile } = await supabase
+      .from('user_profiles')
+      .select('*')
+      .eq('id', studentId)
+      .single();
+    
+    if (studentProfile) {
+      studentUser = { 
+        email: studentProfile.email || `학생 ID: ${studentId.substring(0, 8)}...`,
+        full_name: studentProfile.full_name 
+      };
+    }
   } catch (error) {
-    console.error('학생 이메일 조회 에러:', error);
+    console.error('학생 프로필 조회 에러:', error);
   }
 
   // 학생의 테스트 결과 가져오기
