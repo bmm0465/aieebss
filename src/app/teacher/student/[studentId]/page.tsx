@@ -13,6 +13,7 @@ export default async function StudentDetailPage({ params }: Props) {
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
 
   const supabase = await createClient();
+  console.log('[StudentDetail] ✅ Supabase client created');
 
   // 교사 인증 체크
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -27,7 +28,12 @@ export default async function StudentDetailPage({ params }: Props) {
   });
   
   if (userError || !user) {
-    console.error('[StudentDetail] ❌ Authentication FAILED:', userError);
+    console.error('[StudentDetail] ❌ Authentication FAILED:', {
+      userError,
+      hasUser: !!user,
+      userId: user?.id,
+      errorMessage: userError?.message
+    });
     redirect('/');
   }
 
