@@ -99,9 +99,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * 모든 경로에서 middleware 실행하되, 정적 파일과 API는 제외
-     * teacher 경로도 포함하여 인증 체크 수행
+     * teacher 경로는 제외하고 나머지 경로에서만 middleware 실행
+     * teacher 경로는 각 페이지에서 자체적으로 인증 처리
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)).*)',
+    '/((?!_next/static|_next/image|favicon.ico|teacher|.*\\.(?:jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)).*)',
   ],
 }

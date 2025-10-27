@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import ClientWrapper from './ClientWrapper';
 
 interface Props {
   params: Promise<{ studentId: string }>;
@@ -155,14 +156,15 @@ export default async function StudentDetailPage({ params }: Props) {
   console.log('[StudentDetail] ✅ Data loaded successfully');
 
   return (
-    <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
-      backgroundSize: 'cover', 
-      minHeight: '100vh',
-      padding: '2rem',
-      color: 'white'
-    }}>
-      <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
+    <ClientWrapper studentId={studentId}>
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: 'white'
+      }}>
+        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         <div style={{ marginBottom: '2rem' }}>
           <Link 
             href="/teacher/dashboard"
@@ -285,7 +287,8 @@ export default async function StudentDetailPage({ params }: Props) {
             </div>
           </div>
         )}
+        </div>
       </div>
-    </div>
+    </ClientWrapper>
   );
 }
