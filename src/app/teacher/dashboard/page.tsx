@@ -333,6 +333,24 @@ export default async function TeacherDashboard() {
           >
             🎵 음성 파일 진단
           </Link>
+          <Link
+            href="/teacher/debug-student-access"
+            style={{
+              flex: 1,
+              backgroundColor: 'rgba(255, 87, 34, 0.2)',
+              color: '#FF5722',
+              padding: '1rem',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              border: '2px solid rgba(255, 87, 34, 0.5)',
+              fontWeight: 'bold',
+              textAlign: 'center',
+              transition: 'all 0.3s ease'
+            }}
+            className="quick-link"
+          >
+            🔍 학생 접근 디버그
+          </Link>
         </div>
 
         {/* 통계 요약 */}
