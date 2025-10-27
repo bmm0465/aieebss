@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import Image from 'next/image';
 
 interface Props {
   params: Promise<{ studentId: string }>;
@@ -14,19 +13,10 @@ type TestResult = {
   accuracy: number | null;
   response_time: number | null;
   created_at: string;
-  test_data: any;
+  test_data: Record<string, unknown>;
   question?: string;
   student_answer?: string;
   error_type?: string;
-};
-
-type StudentProfile = {
-  id: string;
-  full_name: string | null;
-  class_name: string | null;
-  student_number: string | null;
-  grade_level: string | null;
-  email?: string;
 };
 
 export default async function StudentDetailPage({ params }: Props) {
@@ -156,7 +146,7 @@ export default async function StudentDetailPage({ params }: Props) {
     .from('test_results')
     .select('*')
     .eq('user_id', studentId)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false }) as { data: TestResult[] | null; error: Error | null };
 
   if (resultsError) {
     console.error('테스트 결과 조회 에러:', resultsError);
