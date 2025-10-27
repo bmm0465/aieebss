@@ -4,15 +4,13 @@ import { NextResponse, type NextRequest } from 'next/server'
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   
-  // teacher 경로는 middleware를 완전히 건너뜀 (각 페이지에서 자체적으로 인증 처리)
-  if (pathname.startsWith('/teacher')) {
-    console.log('[Middleware] Skipping teacher path:', pathname);
+  // 정적 파일이나 API 경로는 건너뛰기
+  if (pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
     return NextResponse.next();
   }
   
-  // 추가 보안: teacher 경로는 절대 인증 체크하지 않음
-  if (pathname.includes('/teacher/')) {
-    console.log('[Middleware] Teacher path detected, skipping auth:', pathname);
+  // 로그인 페이지나 로비는 인증 체크하지 않음
+  if (pathname === '/' || pathname === '/lobby') {
     return NextResponse.next();
   }
 
@@ -72,13 +70,21 @@ export async function middleware(request: NextRequest) {
     // IMPORTANT: Avoid writing any logic between createServerClient and
     // await supabase.auth.getUser(). A simple mistake could make
     // it so that your user session is not refreshed.
-    const { error } = await supabase.auth.getUser()
+    const { data: { user }, error } = await supabase.auth.getUser()
     
-    if (error) {
-      console.error('[Middleware] Auth error:', pathname, error.message)
+    if (error || !user) {
+      console.error('[Middleware] Auth error:', pathname, error?.message || 'No user found')
+      // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+      const loginUrl = new URL('/', request.url)
+      return NextResponse.redirect(loginUrl)
     }
+    
+    console.log('[Middleware] ✅ Auth success for:', pathname, user.email)
   } catch (error) {
     console.error('[Middleware] Catch error:', pathname, error)
+    // 에러 발생 시에도 로그인 페이지로 리다이렉트
+    const loginUrl = new URL('/', request.url)
+    return NextResponse.redirect(loginUrl)
   }
 
   return response
@@ -87,9 +93,8 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * middleware를 완전히 비활성화
-     * 모든 경로에서 middleware 실행 안함
+     * 모든 경로에서 middleware 실행하되, 정적 파일과 API는 제외
      */
-    '/((?!.*).*)', // 이렇게 하면 아무 경로도 매치되지 않음
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 }

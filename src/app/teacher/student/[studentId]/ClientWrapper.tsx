@@ -24,8 +24,8 @@ export default function ClientWrapper({ children, studentId }: { children: React
       })
 
       if (sessionError || !session) {
-        console.error('[ClientWrapper] ❌ No valid session - redirecting to lobby')
-        router.replace('/lobby')
+        console.error('[ClientWrapper] ❌ No valid session - redirecting to login')
+        router.replace('/')
         return
       }
 
