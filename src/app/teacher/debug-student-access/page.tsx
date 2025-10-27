@@ -31,15 +31,15 @@ export default async function DebugStudentAccessPage() {
 
   // 데이터베이스 상태 체크
   const checks = {
-    userProfiles: { exists: false, count: 0, error: null as any },
-    teacherAssignments: { exists: false, count: 0, error: null as any },
-    testResults: { exists: false, count: 0, error: null as any },
-    assignedStudents: { count: 0, students: [] as any[], error: null as any }
+    userProfiles: { exists: false, count: 0, error: null as Error | null },
+    teacherAssignments: { exists: false, count: 0, error: null as Error | null },
+    testResults: { exists: false, count: 0, error: null as Error | null },
+    assignedStudents: { count: 0, students: [] as Array<{ id: string; full_name: string | null; class_name: string | null }>, error: null as Error | null }
   };
 
   // 1. user_profiles 테이블 체크
   try {
-    const { data, error, count } = await supabase
+    const { error, count } = await supabase
       .from('user_profiles')
       .select('*', { count: 'exact' });
     
@@ -49,12 +49,12 @@ export default async function DebugStudentAccessPage() {
       error
     };
   } catch (e) {
-    checks.userProfiles.error = e;
+    checks.userProfiles.error = e as Error;
   }
 
   // 2. teacher_student_assignments 테이블 체크
   try {
-    const { data, error, count } = await supabase
+    const { error, count } = await supabase
       .from('teacher_student_assignments')
       .select('*', { count: 'exact' });
     
@@ -64,12 +64,12 @@ export default async function DebugStudentAccessPage() {
       error
     };
   } catch (e) {
-    checks.teacherAssignments.error = e;
+    checks.teacherAssignments.error = e as Error;
   }
 
   // 3. test_results 테이블 체크
   try {
-    const { data, error, count } = await supabase
+    const { error, count } = await supabase
       .from('test_results')
       .select('*', { count: 'exact' });
     
@@ -79,7 +79,7 @@ export default async function DebugStudentAccessPage() {
       error
     };
   } catch (e) {
-    checks.testResults.error = e;
+    checks.testResults.error = e as Error;
   }
 
   // 4. 담당 학생 목록 체크
@@ -104,7 +104,7 @@ export default async function DebugStudentAccessPage() {
       };
     }
   } catch (e) {
-    checks.assignedStudents.error = e;
+    checks.assignedStudents.error = e as Error;
   }
 
   return (
@@ -166,7 +166,7 @@ export default async function DebugStudentAccessPage() {
             <div>
               <h4>학생 목록:</h4>
               <ul>
-                {checks.assignedStudents.students.map((student: any) => (
+                {checks.assignedStudents.students.map((student) => (
                   <li key={student.id}>
                     {student.full_name || student.id} ({student.class_name || '반 미지정'})
                   </li>
@@ -225,7 +225,7 @@ VALUES ('${user.id}', '학생-UUID', '1학년 1반');`}
             <div>
               <p>담당 학생이 있습니다. 다음 링크로 테스트해보세요:</p>
               <ul>
-                {checks.assignedStudents.students.slice(0, 3).map((student: any) => (
+                {checks.assignedStudents.students.slice(0, 3).map((student) => (
                   <li key={student.id}>
                     <a href={`/teacher/student/${student.id}`} target="_blank">
                       {student.full_name || student.id} 상세 페이지
