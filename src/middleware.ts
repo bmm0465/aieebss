@@ -9,6 +9,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
   
+  // 정적 파일들도 middleware를 건너뜀
+  if (pathname.match(/\.(jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)$/)) {
+    console.log('[Middleware] Skipping static file:', pathname);
+    return NextResponse.next();
+  }
+  
   // 로그인 페이지나 로비는 인증 체크하지 않음
   if (pathname === '/' || pathname === '/lobby') {
     return NextResponse.next();
@@ -94,7 +100,8 @@ export const config = {
   matcher: [
     /*
      * 모든 경로에서 middleware 실행하되, 정적 파일과 API는 제외
+     * teacher 경로도 포함하여 인증 체크 수행
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)).*)',
   ],
 }

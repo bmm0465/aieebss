@@ -108,7 +108,20 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
       totalTests,
       completionRate
     };
-  }).sort((a, b) => new Date(b.id).getTime() - new Date(a.id).getTime()); // 최신순 정렬
+  }).sort((a, b) => {
+    // 세션의 첫 번째 결과의 시간을 기준으로 정렬
+    const aTime = new Date(a.id.split('_')[0]).getTime();
+    const bTime = new Date(b.id.split('_')[0]).getTime();
+    
+    // 같은 날짜라면 세션 번호로 정렬
+    if (aTime === bTime) {
+      const aSessionNum = parseInt(a.id.split('_')[1] || '0');
+      const bSessionNum = parseInt(b.id.split('_')[1] || '0');
+      return aSessionNum - bSessionNum;
+    }
+    
+    return aTime - bTime;
+  }); // 시간순 정렬
 }
 
 export default async function SessionsPage() {

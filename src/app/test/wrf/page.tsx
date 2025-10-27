@@ -187,10 +187,10 @@ export default function WrfTestPage() {
       return;
     }
 
-    // 사용자 세션에서 access token 가져오기
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session?.access_token) {
-      setFeedback("인증 토큰을 가져올 수 없습니다.");
+    // 사용자 인증 확인
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+    if (userError || !authUser) {
+      setFeedback("인증이 필요합니다.");
       setIsSubmitting(false);
       return;
     }
@@ -199,7 +199,7 @@ export default function WrfTestPage() {
     formData.append('audio', audioBlob);
     formData.append('question', currentWord);
     formData.append('userId', user.id);
-    formData.append('authToken', session.access_token);
+    formData.append('authToken', authUser.id);
     
     try {
       // [핵심 수정] API 호출 후 결과를 기다리지 않음
