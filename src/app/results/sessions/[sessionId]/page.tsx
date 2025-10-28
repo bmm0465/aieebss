@@ -138,7 +138,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
   const { sessionId } = await params;
   console.log("SessionDetailPage - sessionId:", sessionId);
   
-  const supabase = createClient();
+  const supabase = await createClient();
 
   // 세션 체크 - 보안을 위해 getUser() 사용
   const { data: { user }, error: userError } = await supabase.auth.getUser();
