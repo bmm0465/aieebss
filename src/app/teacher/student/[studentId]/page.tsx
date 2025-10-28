@@ -170,7 +170,32 @@ export default async function StudentDetailPage({ params }: Props) {
     .order('created_at', { ascending: false });
 
   // 테스트 유형별 통계 계산
-  const testTypeStats = testStats?.reduce((acc: any, result: any) => {
+  const testTypeStats = testStats?.reduce((acc: Record<string, {
+    total: number;
+    correct: number;
+    totalAccuracy: number;
+    totalWcpm: number;
+    totalTime: number;
+    avgAccuracy: number;
+    avgWcpm: number;
+    avgTime: number;
+    correctRate: number;
+    recentResults: Array<{
+      test_type: string;
+      is_correct: boolean | null;
+      accuracy: number | null;
+      wcpm: number | null;
+      time_taken: number | null;
+      created_at: string;
+    }>;
+  }>, result: {
+    test_type: string;
+    is_correct: boolean | null;
+    accuracy: number | null;
+    wcpm: number | null;
+    time_taken: number | null;
+    created_at: string;
+  }) => {
     const testType = result.test_type;
     if (!acc[testType]) {
       acc[testType] = {
@@ -179,6 +204,10 @@ export default async function StudentDetailPage({ params }: Props) {
         totalAccuracy: 0,
         totalWcpm: 0,
         totalTime: 0,
+        avgAccuracy: 0,
+        avgWcpm: 0,
+        avgTime: 0,
+        correctRate: 0,
         recentResults: []
       };
     }

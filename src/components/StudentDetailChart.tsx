@@ -2,14 +2,26 @@
 
 import React from 'react';
 
+interface TestResult {
+  test_type: string;
+  is_correct: boolean | null;
+  accuracy: number | null;
+  wcpm: number | null;
+  time_taken: number | null;
+  created_at: string;
+}
+
 interface TestTypeStats {
   total: number;
   correct: number;
+  totalAccuracy: number;
+  totalWcpm: number;
+  totalTime: number;
   avgAccuracy: number;
   avgWcpm: number;
   avgTime: number;
   correctRate: number;
-  recentResults: any[];
+  recentResults: TestResult[];
 }
 
 interface StudentDetailChartProps {

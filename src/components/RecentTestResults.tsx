@@ -13,7 +13,7 @@ interface TestResult {
   time_taken: number | null;
   audio_url: string | null;
   created_at: string;
-  error_details?: any;
+  error_details?: Record<string, unknown>;
 }
 
 interface RecentTestResultsProps {
