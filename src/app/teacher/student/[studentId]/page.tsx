@@ -1,9 +1,20 @@
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+
+// 디버그 정보 타입 정의
+interface DebugInfo {
+  timestamp: string;
+  studentId: string;
+  step: string;
+  error?: string;
+  userId?: string;
+  userEmail?: string;
+  role?: string;
+  teacherId?: string;
+}
 
 // 디버그 페이지 컴포넌트
-function DebugPage({ debugInfo }: { debugInfo: any }) {
+function DebugPage({ debugInfo }: { debugInfo: DebugInfo }) {
   return (
     <div style={{ 
       backgroundImage: `url('/background.jpg')`, 
@@ -104,7 +115,7 @@ export default async function StudentDetailPage({ params }: Props) {
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
   
   // 임시: 클라이언트에서도 확인할 수 있도록 에러 페이지 추가
-  const debugInfo = {
+  const debugInfo: DebugInfo = {
     timestamp: new Date().toISOString(),
     studentId: studentId,
     step: 'page_started'
