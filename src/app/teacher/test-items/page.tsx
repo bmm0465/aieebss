@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 
 export default async function TestItemsPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // 세션 확인 - getUser()로 변경 (더 안정적)
   const { data: { user }, error: userError } = await supabase.auth.getUser();

@@ -30,7 +30,7 @@ type TestResult = {
 export default async function TeacherDashboard() {
   console.log('[TeacherDashboard] Page started');
   
-  const supabase = await createClient();
+  const supabase = createClient();
   console.log('[TeacherDashboard] Supabase client created');
 
   // 세션 확인 - getUser()로 변경 (더 안정적)

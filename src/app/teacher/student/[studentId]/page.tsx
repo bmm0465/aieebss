@@ -12,7 +12,7 @@ export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
 
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // 간단한 인증 체크
   const { data: { user }, error: userError } = await supabase.auth.getUser();

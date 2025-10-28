@@ -1,27 +1,35 @@
-import { createServerClient } from '@supabase/ssr';
+import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 
 // 사용자 세션이 필요한 페이지용 클라이언트 (예: results 페이지, teacher 페이지)
-export const createClient = async () => {
-  const cookieStore = await cookies();
+export const createClient = () => {
+  const cookieStore = cookies();
   
   return createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return cookieStore.getAll();
+        get(name: string) {
+          return cookieStore.get(name)?.value;
         },
-        setAll(cookiesToSet) {
+        set(name: string, value: string, options: CookieOptions) {
           try {
-            cookiesToSet.forEach(({ name, value, options }) =>
-              cookieStore.set(name, value, options)
-            );
+            cookieStore.set({ name, value, ...options });
           } catch (error) {
-            console.error('[Supabase Cookie] SetAll error:', error);
-            // Server Component에서는 set이 실패할 수 있음
+            // The `set` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
+          }
+        },
+        remove(name: string, options: CookieOptions) {
+          try {
+            cookieStore.set({ name, value: '', ...options });
+          } catch (error) {
+            // The `remove` method was called from a Server Component.
+            // This can be ignored if you have middleware refreshing
+            // user sessions.
           }
         },
       },

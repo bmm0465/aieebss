@@ -127,7 +127,7 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
 export default async function SessionsPage() {
   console.log("SessionsPage - 시작");
   
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // 세션 체크를 더 관대하게 처리
   let user = null;

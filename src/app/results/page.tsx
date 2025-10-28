@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 
 
 export default async function ResultsPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 
 export default async function DebugAssignmentsPage() {
-  const supabase = await createClient();
+  const supabase = createClient();
 
   // 인증 확인
   const { data: { user } } = await supabase.auth.getUser();

@@ -1,5 +1,5 @@
-import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { createClient } from '@/lib/supabase/middleware'
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
@@ -11,97 +11,46 @@ export async function middleware(request: NextRequest) {
   
   // 정적 파일들도 middleware를 건너뜀
   if (pathname.match(/\.(jpg|jpeg|gif|png|svg|ico|mp3|wav|mp4|webm|css|js|woff|woff2|ttf|eot)$/)) {
-    console.log('[Middleware] Skipping static file:', pathname);
     return NextResponse.next();
   }
   
-  // 로그인 페이지나 로비는 인증 체크하지 않음
-  if (pathname === '/' || pathname === '/lobby') {
+  // 로그인 페이지는 인증 체크하지 않음
+  if (pathname === '/') {
     return NextResponse.next();
   }
 
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
-    },
-  })
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value,
-            ...options,
-          })
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          })
-          response.cookies.set({
-            name,
-            value: '',
-            ...options,
-          })
-        },
-      },
-    }
-  )
-
   try {
-    // IMPORTANT: Avoid writing any logic between createServerClient and
-    // await supabase.auth.getUser(). A simple mistake could make
-    // it so that your user session is not refreshed.
-    const { data: { user }, error } = await supabase.auth.getUser()
+    const { supabase, response } = createClient(request);
+
+    // 세션을 갱신합니다.
+    const { data: { user }, error } = await supabase.auth.getUser();
     
     if (error || !user) {
-      console.error('[Middleware] Auth error:', pathname, error?.message || 'No user found')
+      console.error('[Middleware] Auth error:', pathname, error?.message || 'No user found');
       // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
-      const loginUrl = new URL('/', request.url)
-      return NextResponse.redirect(loginUrl)
+      const loginUrl = new URL('/', request.url);
+      return NextResponse.redirect(loginUrl);
     }
     
-    console.log('[Middleware] ✅ Auth success for:', pathname, user.email)
-  } catch (error) {
-    console.error('[Middleware] Catch error:', pathname, error)
+    console.log('[Middleware] ✅ Auth success for:', pathname, user.email);
+    return response;
+  } catch (e) {
+    console.error('[Middleware] Catch error:', pathname, e);
     // 에러 발생 시에도 로그인 페이지로 리다이렉트
-    const loginUrl = new URL('/', request.url)
-    return NextResponse.redirect(loginUrl)
+    const loginUrl = new URL('/', request.url);
+    return NextResponse.redirect(loginUrl);
   }
-
-  return response
 }
 
 export const config = {
   matcher: [
     /*
-     * 미들웨어를 완전히 비활성화
-     * 모든 경로에서 middleware 실행 안함
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * Feel free to modify this pattern to include more paths.
      */
-    '/((?!.*).*)', // 이렇게 하면 아무 경로도 매치되지 않음
+    '/((?!_next/static|_next/image|favicon.ico).*)',
   ],
 }
