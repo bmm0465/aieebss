@@ -22,17 +22,43 @@ export async function middleware(request: NextRequest) {
   try {
     const { supabase, response } = createClient(request);
 
+    // 쿠키 정보 로깅 (디버깅용)
+    const authCookies = request.cookies.getAll().filter(cookie => 
+      cookie.name.includes('supabase') || cookie.name.includes('auth')
+    );
+    console.log('[Middleware] Auth cookies found:', authCookies.length);
+
     // 세션을 갱신합니다.
     const { data: { user }, error } = await supabase.auth.getUser();
     
-    if (error || !user) {
-      console.error('[Middleware] Auth error:', pathname, error?.message || 'No user found');
-      // 인증되지 않은 사용자는 로그인 페이지로 리다이렉트
+    if (error) {
+      console.error('[Middleware] Auth error:', pathname, error.message, error.code);
+      // 인증 에러가 발생한 경우 로그인 페이지로 리다이렉트
       const loginUrl = new URL('/', request.url);
       return NextResponse.redirect(loginUrl);
     }
     
-    console.log('[Middleware] ✅ Auth success for:', pathname, user.email);
+    if (!user) {
+      console.log('[Middleware] No user found for:', pathname);
+      // 사용자가 없는 경우 로그인 페이지로 리다이렉트
+      const loginUrl = new URL('/', request.url);
+      return NextResponse.redirect(loginUrl);
+    }
+    
+    // 세션 갱신 시도
+    try {
+      const { data: sessionData, error: refreshError } = await supabase.auth.refreshSession();
+      if (refreshError) {
+        console.warn('[Middleware] Session refresh failed:', refreshError.message);
+      } else {
+        console.log('[Middleware] Session refreshed successfully');
+      }
+    } catch (refreshError) {
+      console.warn('[Middleware] Session refresh exception:', refreshError);
+      // 세션 갱신 실패는 무시하고 계속 진행
+    }
+    
+    console.log('[Middleware] ✅ Auth success for:', pathname, user.email, user.id);
     return response;
   } catch (e) {
     console.error('[Middleware] Catch error:', pathname, e);

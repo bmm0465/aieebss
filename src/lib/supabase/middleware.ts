@@ -53,6 +53,13 @@ export const createClient = (request: NextRequest) => {
           });
         },
       },
+      auth: {
+        // 세션 자동 갱신 활성화
+        autoRefreshToken: true,
+        persistSession: true,
+        // 세션 감지 활성화
+        detectSessionInUrl: true,
+      },
     }
   );
 

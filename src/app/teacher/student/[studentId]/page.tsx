@@ -9,19 +9,32 @@ interface Props {
 
 export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
-  const supabase = await createClient();
-
-  // 인증 확인
-  const { data: { user } } = await supabase.auth.getUser();
   
-  if (!user) {
-    return (
-      <div style={{ padding: '2rem', textAlign: 'center' }}>
-        <h1>로그인이 필요합니다</h1>
-        <Link href="/">로그인 페이지로</Link>
-      </div>
-    );
-  }
+  try {
+    const supabase = await createClient();
+
+    // 인증 확인
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      console.error('Auth error in student detail page:', authError);
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h1>인증 오류가 발생했습니다</h1>
+          <p>다시 로그인해 주세요.</p>
+          <Link href="/">로그인 페이지로</Link>
+        </div>
+      );
+    }
+    
+    if (!user) {
+      return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+          <h1>로그인이 필요합니다</h1>
+          <Link href="/">로그인 페이지로</Link>
+        </div>
+      );
+    }
 
   // 교사 권한 확인
   const { data: profile } = await supabase
@@ -397,4 +410,43 @@ export default async function StudentDetailPage({ params }: Props) {
       </div>
     </div>
   );
+  } catch (error) {
+    console.error('Error in StudentDetailPage:', error);
+    return (
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: 'white'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            padding: '2rem',
+            borderRadius: '15px',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 215, 0, 0.3)'
+          }}>
+            <h1 style={{ color: '#F44336', marginBottom: '1rem' }}>❌ 오류 발생</h1>
+            <p style={{ marginBottom: '2rem' }}>페이지를 불러오는 중 오류가 발생했습니다.</p>
+            <Link 
+              href="/teacher/dashboard"
+              style={{
+                backgroundColor: 'rgba(255,215,0,0.2)',
+                color: '#FFD700',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                border: '2px solid rgba(255,215,0,0.5)',
+                fontWeight: 'bold'
+              }}
+            >
+              ← 대시보드로 돌아가기
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }
