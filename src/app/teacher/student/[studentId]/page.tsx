@@ -25,18 +25,65 @@ export default async function StudentDetailPage({ params }: Props) {
   console.log('[StudentDetail] ✅ User authenticated:', user.email);
 
   // 교사 권한 체크 (간단하게)
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
-    .select('role')
+    .select('role, full_name, class_name')
     .eq('id', user.id)
     .single();
 
-  if (!profile || profile.role !== 'teacher') {
-    console.error('[StudentDetail] ❌ Not a teacher');
+  console.log('[StudentDetail] 🔍 Profile check:', {
+    userId: user.id,
+    userEmail: user.email,
+    profile: profile,
+    profileError: profileError?.message,
+    hasProfile: !!profile,
+    role: profile?.role
+  });
+
+  if (profileError) {
+    console.error('[StudentDetail] ❌ Profile query error:', profileError.message);
+    redirect('/lobby');
+  }
+
+  if (!profile) {
+    console.error('[StudentDetail] ❌ No profile found for user');
+    redirect('/lobby');
+  }
+
+  if (profile.role !== 'teacher') {
+    console.error('[StudentDetail] ❌ Not a teacher, role:', profile.role);
     redirect('/lobby');
   }
 
   console.log('[StudentDetail] ✅ Teacher verified');
+
+  // 교사가 해당 학생을 담당하는지 확인
+  const { data: assignment, error: assignmentError } = await supabase
+    .from('teacher_student_assignments')
+    .select('*')
+    .eq('teacher_id', user.id)
+    .eq('student_id', studentId)
+    .single();
+
+  console.log('[StudentDetail] 🔍 Assignment check:', {
+    teacherId: user.id,
+    studentId: studentId,
+    assignment: assignment,
+    assignmentError: assignmentError?.message,
+    hasAssignment: !!assignment
+  });
+
+  if (assignmentError && assignmentError.code !== 'PGRST116') { // PGRST116은 "no rows returned" 에러
+    console.error('[StudentDetail] ❌ Assignment query error:', assignmentError.message);
+    redirect('/teacher/dashboard');
+  }
+
+  if (!assignment) {
+    console.error('[StudentDetail] ❌ No assignment found - teacher not assigned to this student');
+    redirect('/teacher/dashboard');
+  }
+
+  console.log('[StudentDetail] ✅ Assignment verified');
 
   // 학생 정보 가져오기 (간단하게)
   const studentInfo = {
