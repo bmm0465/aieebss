@@ -2,6 +2,97 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
+// 디버그 페이지 컴포넌트
+function DebugPage({ debugInfo }: { debugInfo: any }) {
+  return (
+    <div style={{ 
+      backgroundImage: `url('/background.jpg')`, 
+      backgroundSize: 'cover', 
+      minHeight: '100vh',
+      padding: '2rem',
+      color: 'white'
+    }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+        <div style={{
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          padding: '2rem',
+          borderRadius: '15px',
+          border: '2px solid #ff6b6b'
+        }}>
+          <h1 style={{ color: '#ff6b6b', marginBottom: '1rem' }}>🚨 디버그 정보</h1>
+          <p style={{ marginBottom: '1rem' }}>
+            학생 상세 페이지에서 문제가 발생했습니다. 아래 정보를 확인해주세요.
+          </p>
+          
+          <div style={{
+            backgroundColor: 'rgba(255, 255, 255, 0.1)',
+            padding: '1rem',
+            borderRadius: '8px',
+            marginBottom: '1rem',
+            fontFamily: 'monospace',
+            fontSize: '0.9rem'
+          }}>
+            <pre>{JSON.stringify(debugInfo, null, 2)}</pre>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <h3 style={{ color: '#FFD700' }}>문제 해결 방법:</h3>
+            <ul style={{ paddingLeft: '1.5rem' }}>
+              {debugInfo.step === 'auth_failed' && (
+                <li>인증에 실패했습니다. 다시 로그인해주세요.</li>
+              )}
+              {debugInfo.step === 'profile_error' && (
+                <li>사용자 프로필 조회 중 오류가 발생했습니다.</li>
+              )}
+              {debugInfo.step === 'no_profile' && (
+                <li>사용자 프로필이 없습니다. 관리자에게 문의하세요.</li>
+              )}
+              {debugInfo.step === 'not_teacher' && (
+                <li>교사 권한이 없습니다. 현재 역할: {debugInfo.role}</li>
+              )}
+              {debugInfo.step === 'assignment_error' && (
+                <li>교사-학생 할당 조회 중 오류가 발생했습니다.</li>
+              )}
+              {debugInfo.step === 'no_assignment' && (
+                <li>해당 학생을 담당하지 않는 교사입니다.</li>
+              )}
+            </ul>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1rem' }}>
+            <Link 
+              href="/teacher/dashboard"
+              style={{
+                backgroundColor: '#FFD700',
+                color: 'black',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              대시보드로 돌아가기
+            </Link>
+            <Link 
+              href="/lobby"
+              style={{
+                backgroundColor: 'rgba(255, 255, 255, 0.2)',
+                color: 'white',
+                padding: '0.8rem 1.5rem',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: 'bold'
+              }}
+            >
+              로비로 돌아가기
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface Props {
   params: Promise<{ studentId: string }>;
 }
@@ -11,6 +102,13 @@ export default async function StudentDetailPage({ params }: Props) {
   
   const { studentId } = await params;
   console.log('[StudentDetail] 🔍 StudentId:', studentId);
+  
+  // 임시: 클라이언트에서도 확인할 수 있도록 에러 페이지 추가
+  const debugInfo = {
+    timestamp: new Date().toISOString(),
+    studentId: studentId,
+    step: 'page_started'
+  };
 
   const supabase = await createClient();
 
@@ -19,7 +117,9 @@ export default async function StudentDetailPage({ params }: Props) {
   
   if (userError || !user) {
     console.error('[StudentDetail] ❌ Authentication FAILED');
-    redirect('/');
+    debugInfo.step = 'auth_failed';
+    debugInfo.error = userError?.message || 'No user found';
+    return <DebugPage debugInfo={debugInfo} />;
   }
 
   console.log('[StudentDetail] ✅ User authenticated:', user.email);
@@ -42,17 +142,28 @@ export default async function StudentDetailPage({ params }: Props) {
 
   if (profileError) {
     console.error('[StudentDetail] ❌ Profile query error:', profileError.message);
-    redirect('/lobby');
+    debugInfo.step = 'profile_error';
+    debugInfo.error = profileError.message;
+    debugInfo.userId = user.id;
+    debugInfo.userEmail = user.email;
+    return <DebugPage debugInfo={debugInfo} />;
   }
 
   if (!profile) {
     console.error('[StudentDetail] ❌ No profile found for user');
-    redirect('/lobby');
+    debugInfo.step = 'no_profile';
+    debugInfo.userId = user.id;
+    debugInfo.userEmail = user.email;
+    return <DebugPage debugInfo={debugInfo} />;
   }
 
   if (profile.role !== 'teacher') {
     console.error('[StudentDetail] ❌ Not a teacher, role:', profile.role);
-    redirect('/lobby');
+    debugInfo.step = 'not_teacher';
+    debugInfo.userId = user.id;
+    debugInfo.userEmail = user.email;
+    debugInfo.role = profile.role;
+    return <DebugPage debugInfo={debugInfo} />;
   }
 
   console.log('[StudentDetail] ✅ Teacher verified');
@@ -75,12 +186,19 @@ export default async function StudentDetailPage({ params }: Props) {
 
   if (assignmentError && assignmentError.code !== 'PGRST116') { // PGRST116은 "no rows returned" 에러
     console.error('[StudentDetail] ❌ Assignment query error:', assignmentError.message);
-    redirect('/teacher/dashboard');
+    debugInfo.step = 'assignment_error';
+    debugInfo.error = assignmentError.message;
+    debugInfo.teacherId = user.id;
+    debugInfo.studentId = studentId;
+    return <DebugPage debugInfo={debugInfo} />;
   }
 
   if (!assignment) {
     console.error('[StudentDetail] ❌ No assignment found - teacher not assigned to this student');
-    redirect('/teacher/dashboard');
+    debugInfo.step = 'no_assignment';
+    debugInfo.teacherId = user.id;
+    debugInfo.studentId = studentId;
+    return <DebugPage debugInfo={debugInfo} />;
   }
 
   console.log('[StudentDetail] ✅ Assignment verified');
