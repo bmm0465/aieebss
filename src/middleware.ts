@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
     
     // 세션 갱신 시도
     try {
-      const { data: sessionData, error: refreshError } = await supabase.auth.refreshSession();
+      const { error: refreshError } = await supabase.auth.refreshSession();
       if (refreshError) {
         console.warn('[Middleware] Session refresh failed:', refreshError.message);
       } else {
