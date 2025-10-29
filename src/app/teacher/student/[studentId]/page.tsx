@@ -7,11 +7,30 @@ export default function StudentDetailPage() {
   const params = useParams();
   const studentId = params.studentId as string;
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   useEffect(() => {
     console.log('🎯 StudentDetailPage started:', { studentId });
     console.log('🚨 FORCE LOG - PAGE IS LOADING!', new Date().toISOString());
-    setIsLoaded(true);
+    
+    // API를 통해 데이터 가져오기 시도
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`/api/student/${studentId}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('📊 Student data fetched:', data);
+        setIsLoaded(true);
+      } catch (err) {
+        console.error('❌ Error fetching student data:', err);
+        setError(err instanceof Error ? err.message : 'Unknown error');
+        setIsLoaded(true);
+      }
+    };
+    
+    fetchData();
   }, [studentId]);
   
   if (!isLoaded) {
@@ -39,7 +58,33 @@ export default function StudentDetailPage() {
     );
   }
 
-  // 디버깅용 - Supabase 호출 없이 단순한 페이지 반환
+  if (error) {
+    return (
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: 'white'
+      }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{
+            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            padding: '2rem',
+            borderRadius: '15px',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 215, 0, 0.3)'
+          }}>
+            <h1 style={{ color: '#F44336', marginBottom: '1rem' }}>❌ 오류 발생</h1>
+            <p style={{ marginBottom: '1rem' }}>Student ID: {studentId}</p>
+            <p style={{ marginBottom: '1rem' }}>오류: {error}</p>
+            <p style={{ color: '#FFD700' }}>하지만 페이지는 정상적으로 로드되었습니다!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ 
       backgroundImage: `url('/background.jpg')`, 
