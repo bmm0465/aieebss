@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { isAdmin } from '@/lib/utils/auth';
 
 interface LNFResult {
   id: number;

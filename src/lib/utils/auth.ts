@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/client';
-import { createServiceClient } from '@/lib/supabase/server';
 
 export async function isAdmin(): Promise<boolean> {
   try {
