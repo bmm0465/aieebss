@@ -54,8 +54,8 @@ export const createClient = (request: NextRequest) => {
         },
       },
       auth: {
-        // 세션 자동 갱신 활성화
-        autoRefreshToken: true,
+        // 미들웨어에서는 세션 갱신 비활성화 (클라이언트에서 처리)
+        autoRefreshToken: false,
         persistSession: true,
         // 세션 감지 활성화
         detectSessionInUrl: true,

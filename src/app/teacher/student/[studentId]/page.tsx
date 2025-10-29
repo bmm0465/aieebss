@@ -13,25 +13,92 @@ export default async function StudentDetailPage({ params }: Props) {
   try {
     const supabase = await createClient();
 
-    // 인증 확인
+    // 인증 확인 - 더 강력한 세션 확인
     const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    console.log('Student detail page - Auth check:', { 
+      hasUser: !!user, 
+      userEmail: user?.email, 
+      error: authError?.message,
+      studentId 
+    });
     
     if (authError) {
       console.error('Auth error in student detail page:', authError);
       return (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h1>인증 오류가 발생했습니다</h1>
-          <p>다시 로그인해 주세요.</p>
-          <Link href="/">로그인 페이지로</Link>
+        <div style={{ 
+          backgroundImage: `url('/background.jpg')`, 
+          backgroundSize: 'cover', 
+          minHeight: '100vh',
+          padding: '2rem',
+          color: 'white'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              padding: '2rem',
+              borderRadius: '15px',
+              textAlign: 'center',
+              border: '1px solid rgba(255, 215, 0, 0.3)'
+            }}>
+              <h1 style={{ color: '#F44336', marginBottom: '1rem' }}>❌ 인증 오류</h1>
+              <p style={{ marginBottom: '2rem' }}>인증 오류가 발생했습니다. 다시 로그인해 주세요.</p>
+              <Link 
+                href="/"
+                style={{
+                  backgroundColor: 'rgba(255,215,0,0.2)',
+                  color: '#FFD700',
+                  padding: '0.8rem 1.5rem',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  border: '2px solid rgba(255,215,0,0.5)',
+                  fontWeight: 'bold'
+                }}
+              >
+                로그인 페이지로
+              </Link>
+            </div>
+          </div>
         </div>
       );
     }
     
     if (!user) {
+      console.log('No user found, redirecting to login');
       return (
-        <div style={{ padding: '2rem', textAlign: 'center' }}>
-          <h1>로그인이 필요합니다</h1>
-          <Link href="/">로그인 페이지로</Link>
+        <div style={{ 
+          backgroundImage: `url('/background.jpg')`, 
+          backgroundSize: 'cover', 
+          minHeight: '100vh',
+          padding: '2rem',
+          color: 'white'
+        }}>
+          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{
+              backgroundColor: 'rgba(0, 0, 0, 0.7)',
+              padding: '2rem',
+              borderRadius: '15px',
+              textAlign: 'center',
+              border: '1px solid rgba(255, 215, 0, 0.3)'
+            }}>
+              <h1 style={{ color: '#F44336', marginBottom: '1rem' }}>🔒 로그인 필요</h1>
+              <p style={{ marginBottom: '2rem' }}>이 페이지에 접근하려면 로그인이 필요합니다.</p>
+              <Link 
+                href="/"
+                style={{
+                  backgroundColor: 'rgba(255,215,0,0.2)',
+                  color: '#FFD700',
+                  padding: '0.8rem 1.5rem',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  border: '2px solid rgba(255,215,0,0.5)',
+                  fontWeight: 'bold'
+                }}
+              >
+                로그인 페이지로
+              </Link>
+            </div>
+          </div>
         </div>
       );
     }

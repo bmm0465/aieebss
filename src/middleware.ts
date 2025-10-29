@@ -26,7 +26,7 @@ export async function middleware(request: NextRequest) {
     const authCookies = request.cookies.getAll().filter(cookie => 
       cookie.name.includes('supabase') || cookie.name.includes('auth')
     );
-    console.log('[Middleware] Auth cookies found:', authCookies.length);
+    console.log('[Middleware] Processing:', pathname, 'Auth cookies:', authCookies.length);
 
     // 세션을 갱신합니다.
     const { data: { user }, error } = await supabase.auth.getUser();
@@ -45,18 +45,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
     
-    // 세션 갱신 시도
-    try {
-      const { error: refreshError } = await supabase.auth.refreshSession();
-      if (refreshError) {
-        console.warn('[Middleware] Session refresh failed:', refreshError.message);
-      } else {
-        console.log('[Middleware] Session refreshed successfully');
-      }
-    } catch (refreshError) {
-      console.warn('[Middleware] Session refresh exception:', refreshError);
-      // 세션 갱신 실패는 무시하고 계속 진행
-    }
+    // 미들웨어에서는 세션 갱신을 하지 않음 (클라이언트에서 처리)
+    // 단순히 현재 세션의 유효성만 확인
     
     console.log('[Middleware] ✅ Auth success for:', pathname, user.email, user.id);
     return response;
@@ -71,12 +61,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
+     * 임시로 미들웨어 비활성화 - 페이지 레벨에서 인증 처리
+     * 문제 해결 후 다시 활성화 예정
      */
-    '/((?!_next/static|_next/image|favicon.ico).*)',
+    // '/((?!_next/static|_next/image|favicon.ico|api|.*\\.).*)',
   ],
 }
