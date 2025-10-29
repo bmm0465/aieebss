@@ -36,6 +36,14 @@ interface StudentData {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// 서버 사이드에서 인증 확인
+async function checkAuth() {
+  const { createClient } = await import('@/lib/supabase/server');
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  return { user, error };
+}
+
 export default function StudentDetailPage({ params }: Props) {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,6 +54,11 @@ export default function StudentDetailPage({ params }: Props) {
   useEffect(() => {
     const initializePage = async () => {
       try {
+        console.log('PAGE: ===== StudentDetailPage INIT =====');
+        console.log('PAGE: Current URL:', window.location.href);
+        console.log('PAGE: Document cookies:', document.cookie);
+        console.log('PAGE: User agent:', navigator.userAgent);
+        
         // params에서 studentId 추출
         const resolvedParams = await params;
         const id = resolvedParams.studentId;
@@ -55,13 +68,18 @@ export default function StudentDetailPage({ params }: Props) {
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         console.log('PAGE: Auth check - user:', user?.id, 'error:', authError);
         console.log('PAGE: Auth check - user email:', user?.email);
+        console.log('PAGE: Auth check - session:', await supabase.auth.getSession());
         
         if (authError || !user) {
           console.log('PAGE: Redirecting to login - auth failed');
           console.log('PAGE: Auth error details:', authError);
-          // 캐시를 무시하고 강제 리다이렉트
-          window.location.href = '/';
-          return;
+          console.log('PAGE: Current URL:', window.location.href);
+          console.log('PAGE: Cookies:', document.cookie);
+          
+          // 임시: 인증 실패 시에도 페이지를 계속 로드 (디버깅용)
+          console.log('PAGE: TEMPORARY: Continuing without auth for debugging');
+          // window.location.href = '/';
+          // return;
         }
 
         // API 호출
