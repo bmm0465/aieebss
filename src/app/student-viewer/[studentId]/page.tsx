@@ -8,7 +8,15 @@ export default function StudentViewerPage() {
   const studentId = params.studentId as string;
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [studentData, setStudentData] = useState<any>(null);
+  const [studentData, setStudentData] = useState<{
+    success: boolean;
+    student: {
+      id: string;
+      full_name: string;
+      class_name: string;
+    };
+    message: string;
+  } | null>(null);
   
   useEffect(() => {
     console.log('🎯 StudentViewerPage started:', { studentId });
