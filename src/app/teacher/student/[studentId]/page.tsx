@@ -1,7 +1,9 @@
-import { createClient } from '@/lib/supabase/server';
-import { redirect } from 'next/navigation';
+'use client'
+
+import { createClient } from '@/lib/supabase/client';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 interface Props {
   params: Promise<{ studentId: string }>;
@@ -16,63 +18,145 @@ interface TestResultRow {
   created_at: string;
 }
 
-export default async function StudentDetailPage({ params }: Props) {
-  const { studentId } = await params;
-  console.log('PAGE: StudentDetailPage loaded for studentId:', studentId);
-  
-  const supabase = await createClient();
-
-  // 인증 확인
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  console.log('PAGE: Auth check - user:', user?.id, 'error:', authError);
-  
-  if (authError || !user) {
-    console.log('PAGE: Redirecting to login - auth failed');
-    redirect('/');
-  }
-
-  // 이후 데이터는 서버 API를 통해 안전하게 조회 (서비스 롤 + 권한 검증)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
-
-  console.log('PAGE: Making API call to:', `${baseUrl}/api/teacher/students/${studentId}/results`);
-
-  const apiRes = await fetch(`${baseUrl}/api/teacher/students/${studentId}/results`, {
-    method: 'GET',
-    cache: 'no-store',
-    headers: { 'Content-Type': 'application/json' },
-  });
-
-  console.log('PAGE: API response status:', apiRes.status);
-
-  if (apiRes.status === 401) {
-    console.log('PAGE: Redirecting to login - API returned 401');
-    redirect('/');
-  }
-  if (apiRes.status === 403) {
-    console.log('PAGE: Not found - API returned 403');
-    notFound();
-  }
-  if (!apiRes.ok) {
-    console.log('PAGE: Not found - API not ok:', apiRes.status);
-    notFound();
-  }
-
-  const { student, assignment, results: testResults } = await apiRes.json() as {
-    student: {
-      id: string;
-      full_name: string;
-      class_name: string;
-      grade_level: number;
-      student_number: string;
-    },
-    assignment: {
-      class_name: string;
-    },
-    results: TestResultRow[],
+interface StudentData {
+  student: {
+    id: string;
+    full_name: string;
+    class_name: string;
+    grade_level: number;
+    student_number: string;
   };
+  assignment: {
+    class_name: string;
+  };
+  results: TestResultRow[];
+}
 
-  console.log('PAGE: Successfully fetched data - student:', student?.full_name, 'results count:', testResults?.length || 0);
+export default function StudentDetailPage({ params }: Props) {
+  const [studentId, setStudentId] = useState<string>('');
+  const [studentData, setStudentData] = useState<StudentData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const router = useRouter();
+  const supabase = createClient();
+
+  useEffect(() => {
+    const initializePage = async () => {
+      try {
+        // params에서 studentId 추출
+        const resolvedParams = await params;
+        const id = resolvedParams.studentId;
+        setStudentId(id);
+        console.log('PAGE: StudentDetailPage loaded for studentId:', id);
+
+        // 인증 확인
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        console.log('PAGE: Auth check - user:', user?.id, 'error:', authError);
+        
+        if (authError || !user) {
+          console.log('PAGE: Redirecting to login - auth failed');
+          router.push('/');
+          return;
+        }
+
+        // API 호출
+        const baseUrl = window.location.origin;
+        console.log('PAGE: Making API call to:', `${baseUrl}/api/teacher/students/${id}/results`);
+
+        const apiRes = await fetch(`${baseUrl}/api/teacher/students/${id}/results`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: { 'Content-Type': 'application/json' },
+        });
+
+        console.log('PAGE: API response status:', apiRes.status);
+
+        if (apiRes.status === 401) {
+          console.log('PAGE: Redirecting to login - API returned 401');
+          router.push('/');
+          return;
+        }
+        if (apiRes.status === 403) {
+          console.log('PAGE: Not found - API returned 403');
+          setError('접근 권한이 없습니다.');
+          setLoading(false);
+          return;
+        }
+        if (!apiRes.ok) {
+          console.log('PAGE: Not found - API not ok:', apiRes.status);
+          setError('학생 정보를 찾을 수 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        const data = await apiRes.json() as StudentData;
+        console.log('PAGE: Successfully fetched data - student:', data.student?.full_name, 'results count:', data.results?.length || 0);
+        
+        setStudentData(data);
+        setLoading(false);
+      } catch (err) {
+        console.error('PAGE: Error loading student data:', err);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
+    };
+
+    initializePage();
+  }, [params, router, supabase]);
+
+  if (loading) {
+    return (
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ color: '#FFD700' }}>📚 학생 정보를 불러오는 중...</h1>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !studentData) {
+    return (
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ color: '#F44336' }}>❌ 오류 발생</h1>
+          <p style={{ marginBottom: '2rem' }}>{error || '학생 정보를 불러올 수 없습니다.'}</p>
+          <Link 
+            href="/teacher/dashboard"
+            style={{
+              backgroundColor: '#FFD700',
+              color: 'black',
+              padding: '0.8rem 1.5rem',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 'bold'
+            }}
+          >
+            ← 대시보드로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const { student, assignment, results: testResults } = studentData;
 
   // 테스트별 통계 계산
   const statistics = {
