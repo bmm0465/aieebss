@@ -1,5 +1,12 @@
+'use client';
+
+import { useEffect } from 'react';
+
 export default function TestDebugPage() {
-  console.log('🚨 TEST DEBUG PAGE LOADED!', new Date().toISOString());
+  useEffect(() => {
+    console.log('🚨 TEST DEBUG PAGE LOADED!', new Date().toISOString());
+    console.log('🎯 This is a client component - logs should appear in browser console!');
+  }, []);
   
   return (
     <div style={{ 
