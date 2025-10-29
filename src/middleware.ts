@@ -22,37 +22,19 @@ export async function middleware(request: NextRequest) {
   try {
     const { supabase, response } = createClient(request);
 
-    // 쿠키 정보 로깅 (디버깅용)
-    const authCookies = request.cookies.getAll().filter(cookie => 
-      cookie.name.includes('supabase') || cookie.name.includes('auth')
-    );
-    console.log('[Middleware] Processing:', pathname, 'Auth cookies:', authCookies.length);
-
-    // 세션을 갱신합니다.
+    // 간단한 인증 확인
     const { data: { user }, error } = await supabase.auth.getUser();
     
-    if (error) {
-      console.error('[Middleware] Auth error:', pathname, error.message, error.code);
-      // 인증 에러가 발생한 경우 로그인 페이지로 리다이렉트
+    if (error || !user) {
+      console.log('[Middleware] Auth failed for:', pathname, error?.message || 'No user');
       const loginUrl = new URL('/', request.url);
       return NextResponse.redirect(loginUrl);
     }
     
-    if (!user) {
-      console.log('[Middleware] No user found for:', pathname);
-      // 사용자가 없는 경우 로그인 페이지로 리다이렉트
-      const loginUrl = new URL('/', request.url);
-      return NextResponse.redirect(loginUrl);
-    }
-    
-    // 미들웨어에서는 세션 갱신을 하지 않음 (클라이언트에서 처리)
-    // 단순히 현재 세션의 유효성만 확인
-    
-    console.log('[Middleware] ✅ Auth success for:', pathname, user.email, user.id);
+    console.log('[Middleware] ✅ Auth success for:', pathname, user.email);
     return response;
   } catch (e) {
-    console.error('[Middleware] Catch error:', pathname, e);
-    // 에러 발생 시에도 로그인 페이지로 리다이렉트
+    console.error('[Middleware] Error:', pathname, e);
     const loginUrl = new URL('/', request.url);
     return NextResponse.redirect(loginUrl);
   }
@@ -61,9 +43,9 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * 임시로 미들웨어 비활성화 - 페이지 레벨에서 인증 처리
-     * 문제 해결 후 다시 활성화 예정
+     * 교사 관련 페이지만 미들웨어 적용
      */
-    // '/((?!_next/static|_next/image|favicon.ico|api|.*\\.).*)',
+    '/teacher/:path*',
+    '/results/:path*',
   ],
 }
