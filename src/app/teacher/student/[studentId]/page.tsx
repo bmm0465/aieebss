@@ -18,13 +18,16 @@ interface TestResultRow {
 
 export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
+  console.log('PAGE: StudentDetailPage loaded for studentId:', studentId);
   
   const supabase = await createClient();
 
   // 인증 확인
   const { data: { user }, error: authError } = await supabase.auth.getUser();
+  console.log('PAGE: Auth check - user:', user?.id, 'error:', authError);
   
   if (authError || !user) {
+    console.log('PAGE: Redirecting to login - auth failed');
     redirect('/');
   }
 
@@ -32,15 +35,28 @@ export default async function StudentDetailPage({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
     || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
+  console.log('PAGE: Making API call to:', `${baseUrl}/api/teacher/students/${studentId}/results`);
+
   const apiRes = await fetch(`${baseUrl}/api/teacher/students/${studentId}/results`, {
     method: 'GET',
     cache: 'no-store',
     headers: { 'Content-Type': 'application/json' },
   });
 
-  if (apiRes.status === 401) redirect('/');
-  if (apiRes.status === 403) notFound();
-  if (!apiRes.ok) notFound();
+  console.log('PAGE: API response status:', apiRes.status);
+
+  if (apiRes.status === 401) {
+    console.log('PAGE: Redirecting to login - API returned 401');
+    redirect('/');
+  }
+  if (apiRes.status === 403) {
+    console.log('PAGE: Not found - API returned 403');
+    notFound();
+  }
+  if (!apiRes.ok) {
+    console.log('PAGE: Not found - API not ok:', apiRes.status);
+    notFound();
+  }
 
   const { student, assignment, results: testResults } = await apiRes.json() as {
     student: {
@@ -55,6 +71,8 @@ export default async function StudentDetailPage({ params }: Props) {
     },
     results: TestResultRow[],
   };
+
+  console.log('PAGE: Successfully fetched data - student:', student?.full_name, 'results count:', testResults?.length || 0);
 
   // 테스트별 통계 계산
   const statistics = {
