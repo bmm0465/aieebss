@@ -39,10 +39,6 @@ export const createClient = async () => {
         persistSession: false,
         detectSessionInUrl: false,
         flowType: 'implicit',
-        // 자동 리다이렉트 완전 비활성화
-        redirectTo: undefined,
-        // 세션 확인 비활성화
-        skipBrowserRedirect: true,
       },
     }
   );
