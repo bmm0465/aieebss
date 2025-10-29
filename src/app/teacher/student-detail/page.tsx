@@ -1,9 +1,9 @@
 'use client'
 
 import { useSearchParams } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 
-export default function StudentDetailPage() {
+function StudentDetailContent() {
   const searchParams = useSearchParams()
   const studentId = searchParams.get('id')
   const [loading, setLoading] = useState(true)
@@ -83,5 +83,28 @@ export default function StudentDetailPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function StudentDetailPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        backgroundImage: `url('/background.jpg')`, 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: 'white',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ color: '#FFD700' }}>📚 로딩 중...</h1>
+        </div>
+      </div>
+    }>
+      <StudentDetailContent />
+    </Suspense>
   )
 }
