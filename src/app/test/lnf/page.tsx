@@ -35,10 +35,7 @@ export default function LnfTestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [progress, setProgress] = useState(0);
-  const [recentResults, setRecentResults] = useState<Array<{letter: string, result: string, timestamp: number}>>([]);
   const [showProgress, setShowProgress] = useState(false);
-  const [realTimeFeedback, setRealTimeFeedback] = useState<{feedback: string, tip: string} | null>(null);
-  const [showFeedback, setShowFeedback] = useState(false);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
@@ -133,42 +130,7 @@ export default function LnfTestPage() {
       // 피드백을 일반적인 긍정 메시지로 변경
       setFeedback("좋아요! 다음 룬 문자를 해독해 보세요!");
       
-      // 최근 결과에 추가 (시뮬레이션)
-      const result = Math.random() > 0.3 ? "정답" : "오답";
-      setRecentResults(prev => [...prev.slice(-4), {
-        letter: currentLetter,
-        result: result,
-        timestamp: Date.now()
-      }]);
       
-      // 실시간 피드백 요청
-      try {
-        const feedbackResponse = await fetch('/api/feedback', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            testType: 'LNF',
-            question: currentLetter,
-            studentAnswer: '시뮬레이션 답변',
-            isCorrect: result === "정답",
-            errorType: result === "오답" ? "incorrect" : null
-          })
-        });
-        
-        if (feedbackResponse.ok) {
-          const feedbackData = await feedbackResponse.json();
-          setRealTimeFeedback(feedbackData);
-          setShowFeedback(true);
-          
-          // 3초 후 피드백 숨기기
-          setTimeout(() => {
-            setShowFeedback(false);
-            setRealTimeFeedback(null);
-          }, 3000);
-        }
-      } catch (error) {
-        console.error('피드백 요청 실패:', error);
-      }
       
       // 즉시 다음 문제로 이동
       goToNextLetter();
@@ -283,14 +245,6 @@ export default function LnfTestPage() {
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [phase, isRecording, isSubmitting, startRecording, stopRecording]);
 
-  // [개선] 자동 제출 기능 - 시간 만료 알림 추가
-  useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
-      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
-    }
-  }, [timeLeft, phase]);
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: 'white', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
@@ -347,29 +301,6 @@ export default function LnfTestPage() {
                 </div>
               </div>
             )}
-            {recentResults.length > 0 && (
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                gap: '0.5rem',
-                marginBottom: '1rem',
-                flexWrap: 'wrap'
-              }}>
-                {recentResults.slice(-5).map((result, index) => (
-                  <div key={index} style={{
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '12px',
-                    fontSize: '0.8rem',
-                    backgroundColor: result.result === '정답' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
-                    color: result.result === '정답' ? '#22c55e' : '#ef4444',
-                    border: `1px solid ${result.result === '정답' ? '#22c55e' : '#ef4444'}`,
-                    opacity: 0.8
-                  }}>
-                    {result.letter}: {result.result}
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         )}
 
@@ -390,26 +321,6 @@ export default function LnfTestPage() {
             <div style={letterBoxStyle}>{currentLetter}</div>
             <p style={feedbackStyle}>{feedback}</p>
             
-            {/* 실시간 피드백 표시 */}
-            {showFeedback && realTimeFeedback && (
-              <div style={{
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                border: '2px solid #22c55e',
-                borderRadius: '12px',
-                padding: '1rem',
-                margin: '1rem 0',
-                animation: 'fadeIn 0.5s ease-in'
-              }}>
-                <div style={{color: '#22c55e', fontWeight: 'bold', marginBottom: '0.5rem'}}>
-                  💡 {realTimeFeedback.feedback}
-                </div>
-                {realTimeFeedback.tip && (
-                  <div style={{color: 'rgba(255, 255, 255, 0.8)', fontSize: '0.9rem'}}>
-                    💡 {realTimeFeedback.tip}
-                  </div>
-                )}
-              </div>
-            )}
             {!isRecording ? (
               <button 
                 onClick={startRecording} 
