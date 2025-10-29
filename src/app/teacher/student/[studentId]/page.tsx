@@ -7,6 +7,15 @@ interface Props {
   params: Promise<{ studentId: string }>;
 }
 
+interface TestResultRow {
+  id: number;
+  test_type: string;
+  question: string | null;
+  student_answer: string | null;
+  is_correct: boolean | null;
+  created_at: string;
+}
+
 export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
   
@@ -19,77 +28,56 @@ export default async function StudentDetailPage({ params }: Props) {
     redirect('/');
   }
 
-  // 교사 권한 확인
-  const { data: teacherProfile } = await supabase
-    .from('user_profiles')
-    .select('role, full_name')
-    .eq('id', user.id)
-    .single();
+  // 이후 데이터는 서버 API를 통해 안전하게 조회 (서비스 롤 + 권한 검증)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+    || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
-  if (!teacherProfile || teacherProfile.role !== 'teacher') {
-    redirect('/lobby');
-  }
+  const apiRes = await fetch(`${baseUrl}/api/teacher/students/${studentId}/results`, {
+    method: 'GET',
+    cache: 'no-store',
+    headers: { 'Content-Type': 'application/json' },
+  });
 
-  // 교사-학생 할당 관계 확인
-  const { data: assignment } = await supabase
-    .from('teacher_student_assignments')
-    .select('*')
-    .eq('teacher_id', user.id)
-    .eq('student_id', studentId)
-    .single();
+  if (apiRes.status === 401) redirect('/');
+  if (apiRes.status === 403) notFound();
+  if (!apiRes.ok) notFound();
 
-  if (!assignment) {
-    notFound();
-  }
-
-  // 학생 프로필 정보
-  const { data: student } = await supabase
-    .from('user_profiles')
-    .select('*')
-    .eq('id', studentId)
-    .single();
-
-  if (!student) {
-    notFound();
-  }
-
-  // 학생의 테스트 결과 통계
-  const { data: testResults } = await supabase
-    .from('test_results')
-    .select('*')
-    .eq('user_id', studentId)
-    .order('created_at', { ascending: false });
+  const { student, assignment, results: testResults } = await apiRes.json() as {
+    student: any,
+    assignment: any,
+    results: TestResultRow[],
+  };
 
   // 테스트별 통계 계산
   const statistics = {
     LNF: {
-      total: testResults?.filter(r => r.test_type === 'LNF').length || 0,
-      correct: testResults?.filter(r => r.test_type === 'LNF' && r.is_correct).length || 0,
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'LNF').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'LNF' && !!r.is_correct).length || 0,
       accuracy: 0
     },
     PSF: {
-      total: testResults?.filter(r => r.test_type === 'PSF').length || 0,
-      correct: testResults?.filter(r => r.test_type === 'PSF' && r.is_correct).length || 0,
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'PSF').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'PSF' && !!r.is_correct).length || 0,
       accuracy: 0
     },
     NWF: {
-      total: testResults?.filter(r => r.test_type === 'NWF').length || 0,
-      correct: testResults?.filter(r => r.test_type === 'NWF' && r.is_correct).length || 0,
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'NWF').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'NWF' && !!r.is_correct).length || 0,
       accuracy: 0
     },
     WRF: {
-      total: testResults?.filter(r => r.test_type === 'WRF').length || 0,
-      correct: testResults?.filter(r => r.test_type === 'WRF' && r.is_correct).length || 0,
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'WRF').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'WRF' && !!r.is_correct).length || 0,
       accuracy: 0
     },
     ORF: {
-      total: testResults?.filter(r => r.test_type === 'ORF').length || 0,
-      correct: testResults?.filter(r => r.test_type === 'ORF' && r.is_correct).length || 0,
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'ORF').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'ORF' && !!r.is_correct).length || 0,
       accuracy: 0
     },
     MAZE: {
-      total: testResults?.filter(r => r.test_type === 'MAZE').length || 0,
-      correct: testResults?.filter(r => r.test_type === 'MAZE' && r.is_correct).length || 0,
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'MAZE').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'MAZE' && !!r.is_correct).length || 0,
       accuracy: 0
     }
   };
@@ -186,22 +174,22 @@ export default async function StudentDetailPage({ params }: Props) {
                 </p>
                 <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4CAF50' }}>
                   {stats.accuracy}%
-                </div>
+            </div>
                 <div style={{ fontSize: '0.9rem', opacity: 0.7 }}>
                   {stats.correct}/{stats.total} 정답
-                </div>
-              </div>
+            </div>
+            </div>
             ))}
           </div>
         </div>
 
         {/* 최근 테스트 결과 */}
-        <div style={{
+          <div style={{
           backgroundColor: 'rgba(0, 0, 0, 0.7)',
-          padding: '2rem',
-          borderRadius: '15px',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
-        }}>
+            padding: '2rem',
+            borderRadius: '15px',
+            border: '1px solid rgba(255, 215, 0, 0.3)'
+          }}>
           <h2 style={{ color: '#FFD700', marginBottom: '1.5rem' }}>📋 최근 테스트 결과</h2>
           
           {testResults && testResults.length > 0 ? (
@@ -223,7 +211,7 @@ export default async function StudentDetailPage({ params }: Props) {
                   </tr>
                 </thead>
                 <tbody>
-                  {testResults.slice(0, 20).map((result) => (
+                  {testResults.slice(0, 20).map((result: TestResultRow) => (
                     <tr key={result.id} style={{ 
                       borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
                       backgroundColor: result.is_correct ? 'rgba(34, 197, 94, 0.1)' : 'rgba(239, 68, 68, 0.1)'
@@ -251,12 +239,12 @@ export default async function StudentDetailPage({ params }: Props) {
                   ))}
                 </tbody>
               </table>
-            </div>
-          ) : (
+          </div>
+        ) : (
             <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.7 }}>
               <p>아직 완료된 평가가 없습니다.</p>
-            </div>
-          )}
+          </div>
+        )}
         </div>
       </div>
     </div>
