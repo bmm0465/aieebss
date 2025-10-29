@@ -43,6 +43,21 @@ export default function StudentDetailPage({ params }: Props) {
   const router = useRouter();
   const supabase = createClient();
 
+  // 임시: 정적 테스트 데이터
+  const testStudentData: StudentData = {
+    student: {
+      id: 'test-id',
+      full_name: '테스트 학생',
+      class_name: '테스트 반',
+      grade_level: 3,
+      student_number: '1'
+    },
+    assignment: {
+      class_name: '테스트 반'
+    },
+    results: []
+  };
+
   useEffect(() => {
     const initializePage = async () => {
       try {
@@ -55,6 +70,9 @@ export default function StudentDetailPage({ params }: Props) {
         const resolvedParams = await params;
         const id = resolvedParams.studentId;
         console.log('PAGE: StudentDetailPage loaded for studentId:', id);
+        console.log('PAGE: Resolved params:', resolvedParams);
+        console.log('PAGE: StudentId type:', typeof id);
+        console.log('PAGE: StudentId length:', id?.length);
 
         // 인증 확인 - 여러 방법으로 시도
         console.log('PAGE: Starting auth check...');
@@ -97,7 +115,15 @@ export default function StudentDetailPage({ params }: Props) {
           console.log('PAGE: User authenticated:', user.email);
         }
 
-        // API 호출
+        // 임시: API 호출 대신 테스트 데이터 사용
+        console.log('PAGE: Using test data instead of API call');
+        console.log('PAGE: Test student data:', testStudentData);
+        
+        setStudentData(testStudentData);
+        setLoading(false);
+
+        // 원래 API 호출 코드 (주석 처리)
+        /*
         const baseUrl = window.location.origin;
         console.log('PAGE: Making API call to:', `${baseUrl}/api/teacher/students/${id}/results`);
 
@@ -138,6 +164,7 @@ export default function StudentDetailPage({ params }: Props) {
         
         setStudentData(data);
         setLoading(false);
+        */
       } catch (err) {
         console.error('PAGE: Error loading student data:', err);
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
@@ -162,6 +189,9 @@ export default function StudentDetailPage({ params }: Props) {
       }}>
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ color: '#FFD700' }}>📚 학생 정보를 불러오는 중...</h1>
+          <p style={{ marginTop: '1rem', opacity: 0.8 }}>
+            디버깅 모드: 인증 우회 중...
+          </p>
         </div>
       </div>
     );
