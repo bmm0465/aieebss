@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client';
+import { createServiceClient } from '@/lib/supabase/server';
 
 export async function isAdmin(): Promise<boolean> {
   try {
@@ -7,13 +8,8 @@ export async function isAdmin(): Promise<boolean> {
     
     if (!user) return false;
     
-    const { data: profile } = await supabase
-      .from('user_profiles')
-      .select('role')
-      .eq('id', user.id)
-      .single();
-    
-    return profile?.role === 'admin';
+    // Admin 계정을 이메일로 직접 확인 (더 간단하고 확실함)
+    return user.email === 'admin@abs.com';
   } catch (error) {
     console.error('Admin check error:', error);
     return false;

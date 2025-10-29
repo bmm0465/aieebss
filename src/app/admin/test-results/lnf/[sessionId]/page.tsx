@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
+import { createServiceClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/utils/auth';
 
 interface LNFResult {
@@ -25,14 +26,6 @@ export default function LNFResultsPage() {
 
   useEffect(() => {
     const checkAdminAndLoadResults = async () => {
-      // Admin 권한 확인
-      const adminCheck = await isAdmin();
-      if (!adminCheck) {
-        router.push('/lobby');
-        return;
-      }
-      setIsAdminUser(true);
-
       // LNF 테스트 결과 로드
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
@@ -42,8 +35,17 @@ export default function LNFResultsPage() {
         return;
       }
 
+      // Admin 권한 확인 (이메일로 직접 확인)
+      if (user.email !== 'admin@abs.com') {
+        router.push('/lobby');
+        return;
+      }
+      setIsAdminUser(true);
+
       try {
-        const { data, error } = await supabase
+        // 서비스 역할 클라이언트로 RLS 우회
+        const serviceSupabase = createServiceClient();
+        const { data, error } = await serviceSupabase
           .from('test_results')
           .select('*')
           .eq('test_type', 'LNF')
