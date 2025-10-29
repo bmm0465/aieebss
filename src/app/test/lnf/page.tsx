@@ -34,7 +34,6 @@ export default function LnfTestPage() {
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
-  const [progress, setProgress] = useState(0);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
@@ -80,8 +79,6 @@ export default function LnfTestPage() {
   const goToNextLetter = useCallback(() => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = letterIndex + 1;
-    const newProgress = Math.round(((nextIndex) / shuffledAlphabet.length) * 100);
-    setProgress(newProgress);
     
     if (nextIndex >= shuffledAlphabet.length) {
       setPhase('finished');
