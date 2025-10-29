@@ -32,6 +32,10 @@ interface StudentData {
   results: TestResultRow[];
 }
 
+// 서버 측 캐싱 방지
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export default function StudentDetailPage({ params }: Props) {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -50,10 +54,13 @@ export default function StudentDetailPage({ params }: Props) {
         // 인증 확인
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         console.log('PAGE: Auth check - user:', user?.id, 'error:', authError);
+        console.log('PAGE: Auth check - user email:', user?.email);
         
         if (authError || !user) {
           console.log('PAGE: Redirecting to login - auth failed');
-          router.push('/');
+          console.log('PAGE: Auth error details:', authError);
+          // 캐시를 무시하고 강제 리다이렉트
+          window.location.href = '/';
           return;
         }
 
@@ -64,7 +71,12 @@ export default function StudentDetailPage({ params }: Props) {
         const apiRes = await fetch(`${baseUrl}/api/teacher/students/${id}/results`, {
           method: 'GET',
           cache: 'no-store',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
         });
 
         console.log('PAGE: API response status:', apiRes.status);

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
+// 캐싱 방지
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
   try {
     const { studentId } = await params
@@ -14,7 +18,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     
     if (authError || !user) {
       console.log('API: Unauthorized access')
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Unauthorized' }, { 
+        status: 401,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
     }
 
     const service = createServiceClient()
@@ -30,7 +41,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     
     if (!profile || profile.role !== 'teacher') {
       console.log('API: Not a teacher')
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return NextResponse.json({ error: 'Forbidden' }, { 
+        status: 403,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
     }
 
     // Verify teacher-student assignment
@@ -45,7 +63,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     
     if (!assignment) {
       console.log('API: Student not assigned to teacher')
-      return NextResponse.json({ error: 'Not assigned' }, { status: 403 })
+      return NextResponse.json({ error: 'Not assigned' }, { 
+        status: 403,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
     }
 
     // Student profile
@@ -59,7 +84,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     
     if (!student) {
       console.log('API: Student not found')
-      return NextResponse.json({ error: 'Student not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Student not found' }, { 
+        status: 404,
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        }
+      })
     }
 
     // Results
@@ -90,9 +122,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       assignment,
       results: results || [],
       stats,
+    }, {
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
     })
   } catch (e) {
     console.error('Teacher fetch results error:', e)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json({ error: 'Internal Server Error' }, { 
+      status: 500,
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      }
+    })
   }
 }
