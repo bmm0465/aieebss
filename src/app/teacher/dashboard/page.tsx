@@ -389,7 +389,7 @@ export default async function TeacherDashboard() {
                 {students.map(student => (
                   <Link
                     key={student.id}
-                    href={`/student-viewer/${student.id}`}
+                    href={`/student-info/${student.id}`}
                     style={{ textDecoration: 'none', color: 'inherit' }}
                   >
                     <div 
