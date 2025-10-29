@@ -89,6 +89,7 @@ export default function StudentDetailPage({ params }: Props) {
 
         const data = await apiRes.json() as StudentData;
         console.log('PAGE: Successfully fetched data - student:', data.student?.full_name, 'results count:', data.results?.length || 0);
+        console.log('PAGE: Full API response data:', data);
         
         setStudentData(data);
         setLoading(false);
@@ -265,30 +266,46 @@ export default function StudentDetailPage({ params }: Props) {
           border: '1px solid rgba(255, 215, 0, 0.3)'
         }}>
           <h2 style={{ color: '#FFD700', marginBottom: '1.5rem' }}>📊 전체 평가 현황</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-            {Object.entries(statistics).map(([testType, stats]) => (
-              <div key={testType} style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                padding: '1.5rem',
-                borderRadius: '10px',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
-                textAlign: 'center'
-              }}>
-                <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>
-                  {testInfo[testType as keyof typeof testInfo].title}
-                </h3>
-                <p style={{ marginBottom: '0.5rem', opacity: 0.8 }}>
-                  {testInfo[testType as keyof typeof testInfo].description}
-                </p>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4CAF50' }}>
-                  {stats.accuracy}%
+          {testResults && testResults.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              {Object.entries(statistics).map(([testType, stats]) => (
+                <div key={testType} style={{
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  padding: '1.5rem',
+                  borderRadius: '10px',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
+                  textAlign: 'center'
+                }}>
+                  <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>
+                    {testInfo[testType as keyof typeof testInfo].title}
+                  </h3>
+                  <p style={{ marginBottom: '0.5rem', opacity: 0.8 }}>
+                    {testInfo[testType as keyof typeof testInfo].description}
+                  </p>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#4CAF50' }}>
+                    {stats.accuracy}%
+              </div>
+                  <div style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+                    {stats.correct}/{stats.total} 정답
+              </div>
+              </div>
+              ))}
             </div>
-                <div style={{ fontSize: '0.9rem', opacity: 0.7 }}>
-                  {stats.correct}/{stats.total} 정답
+          ) : (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '2rem',
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
+              <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>평가 통계</h3>
+              <p style={{ opacity: 0.8 }}>
+                테스트를 완료하면 여기에 상세한 통계가 표시됩니다.
+              </p>
             </div>
-            </div>
-            ))}
-          </div>
+          )}
         </div>
 
         {/* 최근 테스트 결과 */}
@@ -349,8 +366,21 @@ export default function StudentDetailPage({ params }: Props) {
               </table>
           </div>
         ) : (
-            <div style={{ textAlign: 'center', padding: '2rem', opacity: 0.7 }}>
-              <p>아직 완료된 평가가 없습니다.</p>
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '3rem 2rem', 
+              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              borderRadius: '10px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📝</div>
+              <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>아직 완료된 평가가 없습니다</h3>
+              <p style={{ opacity: 0.8, marginBottom: '1.5rem' }}>
+                {student.full_name} 학생이 아직 어떤 테스트도 완료하지 않았습니다.
+              </p>
+              <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>
+                학생이 테스트를 완료하면 여기에 결과가 표시됩니다.
+              </p>
           </div>
         )}
         </div>
