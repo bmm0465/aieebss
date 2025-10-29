@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient, createServiceClient } from '@/lib/supabase/server'
 
-export async function GET(request: NextRequest, { params }: { params: { studentId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
   try {
-    const { studentId } = params
+    const { studentId } = await params
     const supabase = await createClient()
 
     // Authenticate user
