@@ -34,11 +34,12 @@ export const createClient = async () => {
         },
       },
       auth: {
-        // 세션 자동 갱신 활성화
-        autoRefreshToken: true,
-        persistSession: true,
-        // 세션 감지 활성화
-        detectSessionInUrl: true,
+        // 디버깅용 - 자동 리다이렉트 비활성화
+        autoRefreshToken: false,
+        persistSession: false,
+        detectSessionInUrl: false,
+        // 자동 리다이렉트 완전 비활성화
+        flowType: 'implicit',
       },
     }
   );
