@@ -426,10 +426,38 @@ export default async function StudentDetailPage({ params }: Props) {
         )}
 
         {/* 테스트 유형별 성과 차트 */}
-        <StudentDetailChart testTypeStats={statistics.testTypeStats} />
+        {statistics.totalTests > 0 ? (
+          <StudentDetailChart testTypeStats={statistics.testTypeStats} />
+        ) : (
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            padding: '2rem',
+            borderRadius: '15px',
+            marginBottom: '2rem',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 215, 0, 0.3)'
+          }}>
+            <h2 style={{ color: '#FFD700', marginBottom: '1rem' }}>📊 성과 차트</h2>
+            <p style={{ opacity: 0.8 }}>평가 결과가 있어야 차트를 표시할 수 있습니다.</p>
+          </div>
+        )}
 
         {/* 최근 평가 결과 */}
-        <RecentTestResults results={recentResults || []} />
+        {statistics.totalTests > 0 ? (
+          <RecentTestResults results={recentResults || []} />
+        ) : (
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.7)',
+            padding: '2rem',
+            borderRadius: '15px',
+            marginBottom: '2rem',
+            textAlign: 'center',
+            border: '1px solid rgba(255, 215, 0, 0.3)'
+          }}>
+            <h2 style={{ color: '#FFD700', marginBottom: '1rem' }}>📋 최근 평가 결과</h2>
+            <p style={{ opacity: 0.8 }}>아직 완료된 평가가 없어 결과를 표시할 수 없습니다.</p>
+          </div>
+        )}
 
       </div>
     </div>
