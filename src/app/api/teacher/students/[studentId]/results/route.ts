@@ -4,11 +4,16 @@ import { createClient, createServiceClient } from '@/lib/supabase/server'
 export async function GET(request: NextRequest, { params }: { params: Promise<{ studentId: string }> }) {
   try {
     const { studentId } = await params
+    console.log('API: Fetching results for student:', studentId)
+    
     const supabase = await createClient()
 
     // Authenticate user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('API: Auth check - user:', user?.id, 'error:', authError)
+    
     if (authError || !user) {
+      console.log('API: Unauthorized access')
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -21,7 +26,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq('id', user.id)
       .single()
 
+    console.log('API: Profile check - profile:', profile)
+    
     if (!profile || profile.role !== 'teacher') {
+      console.log('API: Not a teacher')
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -33,7 +41,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq('student_id', studentId)
       .single()
 
+    console.log('API: Assignment check - assignment:', assignment)
+    
     if (!assignment) {
+      console.log('API: Student not assigned to teacher')
       return NextResponse.json({ error: 'Not assigned' }, { status: 403 })
     }
 
@@ -44,7 +55,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq('id', studentId)
       .single()
 
+    console.log('API: Student profile - student:', student)
+    
     if (!student) {
+      console.log('API: Student not found')
       return NextResponse.json({ error: 'Student not found' }, { status: 404 })
     }
 
@@ -54,6 +68,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .select('id, test_type, question, student_answer, is_correct, created_at')
       .eq('user_id', studentId)
       .order('created_at', { ascending: false })
+
+    console.log('API: Test results - count:', results?.length || 0)
 
     // Build simple stats
     const stats: Record<string, { total: number, correct: number, accuracy: number }> = {}
@@ -68,6 +84,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       s.accuracy = s.total > 0 ? Math.round((s.correct / s.total) * 100) : 0
     }
 
+    console.log('API: Returning data successfully')
     return NextResponse.json({
       student,
       assignment,
