@@ -43,8 +43,16 @@ export default async function StudentDetailPage({ params }: Props) {
   if (!apiRes.ok) notFound();
 
   const { student, assignment, results: testResults } = await apiRes.json() as {
-    student: any,
-    assignment: any,
+    student: {
+      id: string;
+      full_name: string;
+      class_name: string;
+      grade_level: number;
+      student_number: string;
+    },
+    assignment: {
+      class_name: string;
+    },
     results: TestResultRow[],
   };
 
