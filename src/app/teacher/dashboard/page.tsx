@@ -387,9 +387,10 @@ export default async function TeacherDashboard() {
               
               <div style={{ display: 'grid', gap: '1rem' }}>
                 {students.map(student => (
-                  <div
+                  <Link
                     key={student.id}
-                    style={{ textDecoration: 'none', color: 'inherit', cursor: 'default' }}
+                    href={`/teacher/student/${student.id}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
                   >
                     <div 
                       style={{
@@ -462,7 +463,7 @@ export default async function TeacherDashboard() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

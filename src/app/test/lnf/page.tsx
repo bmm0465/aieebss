@@ -4,7 +4,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client'; // [수정] 새로운 클라이언트 경로
 import type { User } from '@supabase/supabase-js';
-import { isAdmin } from '@/lib/utils/auth';
 
 // [수정] LNF 표준 규격에 맞는 100개 고정된 알파벳 문항
 const getFixedAlphabet = () => {
@@ -36,21 +35,11 @@ export default function LnfTestPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [progress, setProgress] = useState(0);
-  const [showProgress, setShowProgress] = useState(false);
-  const [isAdminUser, setIsAdminUser] = useState(false);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
   const [isMediaReady, setIsMediaReady] = useState(false);
 
-  // Admin 권한 확인
-  useEffect(() => {
-    const checkAdmin = async () => {
-      const adminCheck = await isAdmin();
-      setIsAdminUser(adminCheck);
-    };
-    checkAdmin();
-  }, []);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -99,7 +88,6 @@ export default function LnfTestPage() {
     } else {
       setLetterIndex(nextIndex);
       setCurrentLetter(shuffledAlphabet[nextIndex]);
-      setShowProgress(true);
     }
   }, [letterIndex, shuffledAlphabet]);
 
@@ -290,28 +278,6 @@ export default function LnfTestPage() {
         {phase === 'testing' && (
           <div>
             <div style={timerStyle}>남은 시간: {timeLeft}초</div>
-            {showProgress && (
-              <div style={{marginBottom: '1rem'}}>
-                <div style={{fontSize: '1rem', color: '#FFD700', marginBottom: '0.5rem'}}>
-                  진행률: {progress}% ({letterIndex + 1}/{shuffledAlphabet.length})
-                </div>
-                <div style={{
-                  width: '100%',
-                  height: '8px',
-                  backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                  borderRadius: '4px',
-                  overflow: 'hidden'
-                }}>
-                  <div style={{
-                    width: `${progress}%`,
-                    height: '100%',
-                    backgroundColor: '#FFD700',
-                    transition: 'width 0.3s ease',
-                    borderRadius: '4px'
-                  }} />
-                </div>
-              </div>
-            )}
           </div>
         )}
 
@@ -360,20 +326,8 @@ export default function LnfTestPage() {
                 <h1 style={titleStyle}>시험 종료!</h1>
                 <p style={paragraphStyle}>{feedback || "1교시 '고대 룬 문자 해독 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
-                  <button 
-                    style={{...buttonStyle, maxWidth: '250px'}} 
-                    onClick={async () => {
-                      const adminCheck = await isAdmin();
-                      if (adminCheck) {
-                        // Admin 계정이면 LNF 결과 페이지로 이동
-                        router.push(`/admin/test-results/lnf/${user?.id}`);
-                      } else {
-                        // 일반 사용자는 다음 시험으로 이동
-                        router.push('/test/psf');
-                      }
-                    }}
-                  >
-                    {isAdminUser ? '📊 결과 확인하기' : '다음 시험으로 이동'}
+                  <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/psf')}>
+                    다음 시험으로 이동
                   </button>
                   <button 
                     style={{
