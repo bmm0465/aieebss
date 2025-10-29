@@ -10,14 +10,31 @@ interface Props {
 export default async function StudentDetailPage({ params }: Props) {
   const { studentId } = await params;
   
+  // 강제 로그 - 페이지가 실행되는지 확인
+  console.log('🎯 StudentDetailPage started:', { studentId });
+  console.log('🚨 FORCE LOG - PAGE IS LOADING!', new Date().toISOString());
+  
+  // 브라우저 알림도 시도 (개발 환경에서만)
+  if (typeof window !== 'undefined') {
+    alert('페이지가 로드되었습니다!');
+  }
+  
   try {
     const supabase = await createClient();
 
     // 인증 확인 (미들웨어에서 이미 확인했지만 이중 체크)
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
+    console.log('🔐 Auth check result:', { 
+      hasUser: !!user, 
+      userEmail: user?.email,
+      userId: user?.id,
+      error: authError?.message,
+      studentId 
+    });
+    
     if (authError || !user) {
-      console.log('Student detail page - Auth failed:', { 
+      console.log('❌ Student detail page - Auth failed:', { 
         hasUser: !!user, 
         error: authError?.message,
         studentId 
@@ -61,11 +78,18 @@ export default async function StudentDetailPage({ params }: Props) {
     }
 
   // 교사 권한 확인
-  const { data: profile } = await supabase
+  console.log('👨‍🏫 Checking teacher role for user:', user.id);
+  const { data: profile, error: profileError } = await supabase
     .from('user_profiles')
     .select('role')
     .eq('id', user.id)
     .single();
+
+  console.log('👨‍🏫 Profile check result:', { 
+    profile, 
+    profileError: profileError?.message,
+    isTeacher: profile?.role === 'teacher'
+  });
 
   if (!profile || profile.role !== 'teacher') {
     return (
@@ -107,12 +131,22 @@ export default async function StudentDetailPage({ params }: Props) {
   }
 
   // 교사-학생 할당 관계 확인
-  const { data: assignment } = await supabase
+  console.log('🔗 Checking teacher-student assignment:', { 
+    teacherId: user.id, 
+    studentId 
+  });
+  const { data: assignment, error: assignmentError } = await supabase
     .from('teacher_student_assignments')
     .select('*')
     .eq('teacher_id', user.id)
     .eq('student_id', studentId)
     .single();
+
+  console.log('🔗 Assignment check result:', { 
+    assignment, 
+    assignmentError: assignmentError?.message,
+    hasAssignment: !!assignment
+  });
 
   if (!assignment) {
     return (
@@ -154,11 +188,18 @@ export default async function StudentDetailPage({ params }: Props) {
   }
 
   // 학생 프로필 정보
-  const { data: student } = await supabase
+  console.log('👤 Fetching student profile:', { studentId });
+  const { data: student, error: studentError } = await supabase
     .from('user_profiles')
     .select('*')
     .eq('id', studentId)
     .single();
+
+  console.log('👤 Student profile result:', { 
+    student, 
+    studentError: studentError?.message,
+    hasStudent: !!student
+  });
 
   if (!student) {
     return (
