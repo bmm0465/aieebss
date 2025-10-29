@@ -33,7 +33,6 @@ interface StudentData {
 }
 
 export default function StudentDetailPage({ params }: Props) {
-  const [studentId, setStudentId] = useState<string>('');
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +45,6 @@ export default function StudentDetailPage({ params }: Props) {
         // params에서 studentId 추출
         const resolvedParams = await params;
         const id = resolvedParams.studentId;
-        setStudentId(id);
         console.log('PAGE: StudentDetailPage loaded for studentId:', id);
 
         // 인증 확인
