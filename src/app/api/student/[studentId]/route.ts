@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
@@ -11,6 +12,7 @@ export async function GET(
     console.log('🔍 API: Student data request for:', studentId);
     
     const supabase = await createClient();
+    const serviceSupabase = createServiceClient();
     
     // 인증 확인
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -22,8 +24,8 @@ export async function GET(
     
     console.log('✅ API: Auth success for user:', user.email);
     
-    // 교사 권한 확인
-    const { data: profile } = await supabase
+    // 교사 권한 확인 (서비스 역할로 RLS 우회)
+    const { data: profile } = await serviceSupabase
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
@@ -36,8 +38,8 @@ export async function GET(
     
     console.log('✅ API: Teacher role confirmed');
     
-    // 교사-학생 할당 관계 확인
-    const { data: assignment } = await supabase
+    // 교사-학생 할당 관계 확인 (서비스 역할로 RLS 우회)
+    const { data: assignment } = await serviceSupabase
       .from('teacher_student_assignments')
       .select('*')
       .eq('teacher_id', user.id)
@@ -51,8 +53,8 @@ export async function GET(
     
     console.log('✅ API: Assignment confirmed');
     
-    // 학생 프로필 정보
-    const { data: student } = await supabase
+    // 학생 프로필 정보 (서비스 역할로 RLS 우회)
+    const { data: student } = await serviceSupabase
       .from('user_profiles')
       .select('*')
       .eq('id', studentId)
