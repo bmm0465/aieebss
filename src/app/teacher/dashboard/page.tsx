@@ -391,6 +391,9 @@ export default async function TeacherDashboard() {
                     key={student.id}
                     href={`/teacher/student/${student.id}`}
                     style={{ textDecoration: 'none', color: 'inherit' }}
+                    onClick={() => {
+                      console.log('DASHBOARD: Clicking student:', student.full_name, 'ID:', student.id);
+                    }}
                   >
                     <div 
                       style={{
