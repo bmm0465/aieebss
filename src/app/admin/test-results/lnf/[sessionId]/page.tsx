@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { createServiceClient } from '@/lib/supabase/server';
 import { isAdmin } from '@/lib/utils/auth';
 
 interface LNFResult {
@@ -43,21 +42,16 @@ export default function LNFResultsPage() {
       setIsAdminUser(true);
 
       try {
-        // 서비스 역할 클라이언트로 RLS 우회
-        const serviceSupabase = createServiceClient();
-        const { data, error } = await serviceSupabase
-          .from('test_results')
-          .select('*')
-          .eq('test_type', 'LNF')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: true });
-
-        if (error) {
-          console.error('Error loading results:', error);
+        // API를 통해 LNF 결과 가져오기
+        const response = await fetch('/api/admin/lnf-results');
+        
+        if (!response.ok) {
+          console.error('Failed to fetch results:', response.status);
           return;
         }
-
-        setResults(data || []);
+        
+        const data = await response.json();
+        setResults(data.results || []);
       } catch (error) {
         console.error('Error:', error);
       } finally {
