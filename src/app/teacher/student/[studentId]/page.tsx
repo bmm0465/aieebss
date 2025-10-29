@@ -36,14 +36,6 @@ interface StudentData {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// 서버 사이드에서 인증 확인
-async function checkAuth() {
-  const { createClient } = await import('@/lib/supabase/server');
-  const supabase = await createClient();
-  const { data: { user }, error } = await supabase.auth.getUser();
-  return { user, error };
-}
-
 export default function StudentDetailPage({ params }: Props) {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -64,22 +56,45 @@ export default function StudentDetailPage({ params }: Props) {
         const id = resolvedParams.studentId;
         console.log('PAGE: StudentDetailPage loaded for studentId:', id);
 
-        // 인증 확인
+        // 인증 확인 - 여러 방법으로 시도
+        console.log('PAGE: Starting auth check...');
+        
+        // 방법 1: getUser()
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-        console.log('PAGE: Auth check - user:', user?.id, 'error:', authError);
-        console.log('PAGE: Auth check - user email:', user?.email);
-        console.log('PAGE: Auth check - session:', await supabase.auth.getSession());
+        console.log('PAGE: Auth check (getUser) - user:', user?.id, 'error:', authError);
+        console.log('PAGE: Auth check (getUser) - user email:', user?.email);
+        
+        // 방법 2: getSession()
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        console.log('PAGE: Auth check (getSession) - session:', sessionData?.session?.user?.id, 'error:', sessionError);
+        
+        // 방법 3: onAuthStateChange 이벤트 리스너
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log('PAGE: Auth state change:', event, session?.user?.id);
+        });
+        
+        // 정리
+        setTimeout(() => {
+          subscription.unsubscribe();
+        }, 1000);
         
         if (authError || !user) {
-          console.log('PAGE: Redirecting to login - auth failed');
+          console.log('PAGE: ===== AUTH FAILED =====');
           console.log('PAGE: Auth error details:', authError);
+          console.log('PAGE: Session error details:', sessionError);
           console.log('PAGE: Current URL:', window.location.href);
-          console.log('PAGE: Cookies:', document.cookie);
+          console.log('PAGE: All cookies:', document.cookie);
+          console.log('PAGE: Supabase cookies:', document.cookie.split(';').filter(c => c.includes('supabase')));
+          console.log('PAGE: Local storage:', Object.keys(localStorage));
+          console.log('PAGE: Session storage:', Object.keys(sessionStorage));
           
           // 임시: 인증 실패 시에도 페이지를 계속 로드 (디버깅용)
           console.log('PAGE: TEMPORARY: Continuing without auth for debugging');
           // window.location.href = '/';
           // return;
+        } else {
+          console.log('PAGE: ===== AUTH SUCCESS =====');
+          console.log('PAGE: User authenticated:', user.email);
         }
 
         // API 호출
