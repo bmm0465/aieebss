@@ -222,7 +222,7 @@ export default async function TeacherDashboard() {
                   🎓 교사 관리 대시보드
                 </h1>
                 <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
-                  {profile.full_name || user.email} 선생님
+                  {profile.full_name?.replace(' 선생님', '') || user.email} 선생님
                 </p>
               </div>
             </div>

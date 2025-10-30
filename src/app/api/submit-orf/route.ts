@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { createClient as createClientSide } from '@/lib/supabase/client';
 import { generateStoragePath } from '@/lib/storage-path';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -220,27 +219,28 @@ export async function POST(request: Request) {
     const questionPassage = formData.get('question') as string;
     const userId = formData.get('userId') as string;
     const timeTaken = parseInt(formData.get('timeTaken') as string, 10);
-    const authToken = formData.get('authToken') as string;
 
-    if (!audioBlob || !questionPassage || !userId || isNaN(timeTaken) || !authToken) {
+    if (!audioBlob || !questionPassage || !userId || isNaN(timeTaken)) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
-    // 클라이언트 사이드 클라이언트로 사용자 인증 확인
-    const supabaseClient = createClientSide();
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    // 서버 사이드 클라이언트로 사용자 인증 확인
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user || user.id !== userId) {
+      console.log('API: Auth failed - user:', user?.id, 'userId:', userId, 'error:', userError);
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
     // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
-    const supabase = createServiceClient();
+    const serviceClient = createServiceClient();
 
     const arrayBuffer = await audioBlob.arrayBuffer();
 
     // [핵심 4] 오래 걸리는 작업을 백그라운드에서 실행하되, 스토리지 저장은 먼저 완료
-    await processOrfInBackground(supabase, userId, questionPassage, arrayBuffer, timeTaken);
+    await processOrfInBackground(serviceClient, userId, questionPassage, arrayBuffer, timeTaken);
 
     // 스토리지 저장이 완료된 후 응답 반환
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });

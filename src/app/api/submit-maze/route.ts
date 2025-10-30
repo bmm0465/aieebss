@@ -1,25 +1,26 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
-import { createClient as createClientSide } from '@/lib/supabase/client';
 
 export async function POST(request: Request) {
   try {
-    const { submissions, userId, authToken } = await request.json();
+    const { submissions, userId } = await request.json();
 
-    if (!submissions || !Array.isArray(submissions) || !userId || !authToken) {
+    if (!submissions || !Array.isArray(submissions) || !userId) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
-    // 클라이언트 사이드 클라이언트로 사용자 인증 확인 (한 번만)
-    const supabaseClient = createClientSide();
-    const { data: { user }, error: userError } = await supabaseClient.auth.getUser(authToken);
+    // 서버 사이드 클라이언트로 사용자 인증 확인
+    const { createClient } = await import('@/lib/supabase/server');
+    const supabase = await createClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     
     if (userError || !user || user.id !== userId) {
+      console.log('API: Auth failed - user:', user?.id, 'userId:', userId, 'error:', userError);
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
     // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
-    const supabase = createServiceClient();
+    const serviceClient = createServiceClient();
 
     // 배치로 데이터베이스에 저장
     const insertData = submissions.map(({ question, studentAnswer, correctAnswer }) => ({
@@ -30,7 +31,7 @@ export async function POST(request: Request) {
       is_correct: studentAnswer === correctAnswer,
     }));
 
-    const { error: dbError } = await supabase.from('test_results').insert(insertData);
+    const { error: dbError } = await serviceClient.from('test_results').insert(insertData);
 
     if (dbError) {
       console.error('Supabase DB 배치 저장 실패:', dbError.message);
