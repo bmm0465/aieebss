@@ -49,7 +49,7 @@ export function getSessionDate(): string {
 
 /**
  * 새로운 스토리지 경로를 생성하는 함수
- * 형식: {studentEmailPrefix}/{sessionDate}/{testType}/{timestamp}.webm
+ * 형식: {학교이름}/{학생이름}/{날짜}/{testType}/{timestamp}.webm
  */
 export async function generateStoragePath(
   userId: string, 
@@ -60,27 +60,55 @@ export async function generateStoragePath(
   const sessionDate = getSessionDate();
   const fileTimestamp = timestamp || Date.now();
   
-  // 이메일 기반 안전한 이름 생성
-  let safeUserName = '';
+  // 학교 이름과 학생 이름 가져오기
+  let schoolName = '';
+  let studentName = '';
   
   try {
-    // Auth 테이블에서 이메일 가져오기
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
-    if (!userError && userData?.user?.email) {
-      // 이메일에서 @ 앞부분 추출 및 URL-safe 문자로 변환
-      const emailPrefix = userData.user.email.split('@')[0];
-      safeUserName = emailPrefix.replace(/[^a-zA-Z0-9-_.]/g, '_');
-    } else {
-      // 이메일을 가져올 수 없으면 user_id 사용
-      safeUserName = userId.replace(/[^a-zA-Z0-9-_.]/g, '_');
+    // user_profiles 테이블에서 학생 정보 조회
+    const { data: profile, error: profileError } = await supabase
+      .from('user_profiles')
+      .select('full_name, class_name')
+      .eq('id', userId)
+      .single();
+
+    if (!profileError && profile) {
+      // 학생 이름
+      if (profile.full_name) {
+        // 한글은 그대로 유지, 특수문자만 치환
+        studentName = profile.full_name.replace(/[^가-힣a-zA-Z0-9-_.]/g, '_');
+      }
+      
+      // 학교 이름 (class_name에서 추출)
+      if (profile.class_name) {
+        // 예: "1학년 3반" → "1학년 3반"으로 그대로 사용
+        schoolName = profile.class_name.replace(/[^가-힣a-zA-Z0-9-_. ]/g, '_');
+      }
+    }
+    
+    // 만약 정보를 가져오지 못했다면 Auth에서 이메일 사용
+    if (!studentName) {
+      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+      if (!userError && userData?.user?.email) {
+        const emailPrefix = userData.user.email.split('@')[0];
+        studentName = emailPrefix.replace(/[^a-zA-Z0-9-_.]/g, '_');
+      } else {
+        studentName = `student_${userId.slice(0, 8)}`;
+      }
+    }
+    
+    // 학교 이름이 없으면 기본값 설정
+    if (!schoolName) {
+      schoolName = 'default_school';
     }
   } catch (error) {
     console.error('[Storage Path] 사용자 정보 조회 실패:', error);
     // 폴백: user_id 사용
-    safeUserName = userId.replace(/[^a-zA-Z0-9-_.]/g, '_');
+    studentName = `student_${userId.slice(0, 8)}`;
+    schoolName = 'default_school';
   }
   
-  return `${safeUserName}/${sessionDate}/${testType.toLowerCase()}/${fileTimestamp}.webm`;
+  return `${schoolName}/${studentName}/${sessionDate}/${testType.toLowerCase()}/${fileTimestamp}.webm`;
 }
 
 /**
