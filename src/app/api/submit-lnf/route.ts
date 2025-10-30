@@ -27,6 +27,14 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
   const startTime = Date.now();
   
   try {
+    // 스토리지 경로 생성 (오류가 발생해도 계속 진행)
+    let storagePath;
+    try {
+      storagePath = await generateStoragePath(userId, 'LNF');
+    } catch (storagePathError) {
+      console.error('[LNF] 스토리지 경로 생성 실패:', storagePathError);
+      storagePath = `lnf/${userId}/${Date.now()}.webm`; // 대체 경로 사용
+    }
     // 빈 오디오 파일 처리
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
@@ -59,7 +67,6 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
       return;
     }
 
-    const storagePath = await generateStoragePath(userId, 'LNF');
     
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
@@ -127,7 +134,7 @@ CRITICAL INSTRUCTIONS:
 
     const processingTime = Date.now() - startTime;
     
-    await supabase.from('test_results').insert({
+    const { error: insertError } = await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'LNF',
       question: questionLetter,
@@ -138,6 +145,11 @@ CRITICAL INSTRUCTIONS:
       confidence_level: confidence,
       processing_time_ms: processingTime,
     });
+
+    if (insertError) {
+      console.error(`[LNF 데이터베이스 저장 실패] 사용자: ${userId}, 문제: ${questionLetter}, 에러:`, insertError);
+      throw insertError;
+    }
 
     console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${evaluation}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
 

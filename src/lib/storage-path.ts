@@ -10,11 +10,11 @@ export async function getStudentName(userId: string): Promise<string> {
     // user_profiles 테이블에서 학생 이름 조회
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('name')
+      .select('full_name')
       .eq('id', userId)
       .single();
 
-    if (profileError || !profile?.name) {
+    if (profileError || !profile?.full_name) {
       console.warn(`[Storage Path] 사용자 이름을 찾을 수 없음: ${userId}, 에러: ${profileError?.message}`);
       
       // Auth 테이블에서 이메일을 이름으로 사용
@@ -32,7 +32,7 @@ export async function getStudentName(userId: string): Promise<string> {
       return `student_${userId.slice(0, 8)}`;
     }
 
-    return profile.name;
+    return profile.full_name;
   } catch (error) {
     console.error('[Storage Path] 학생 이름 조회 중 오류:', error);
     return `student_${userId.slice(0, 8)}`;
