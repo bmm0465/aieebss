@@ -39,8 +39,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'LNF', question: questionLetter,
-          is_correct: false, error_type: 'hesitation',
-          processing_time_ms: Date.now() - startTime
+          is_correct: false, error_type: 'hesitation'
       });
       console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
       return;
@@ -50,8 +49,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength < 1024) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'LNF', question: questionLetter,
-          is_correct: false, error_type: 'insufficient_audio',
-          processing_time_ms: Date.now() - startTime
+          is_correct: false, error_type: 'insufficient_audio'
       });
       console.log(`[LNF 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
       return;
@@ -60,8 +58,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'LNF', question: questionLetter,
-          is_correct: false, error_type: 'audio_too_large',
-          processing_time_ms: Date.now() - startTime
+          is_correct: false, error_type: 'audio_too_large'
       });
       console.log(`[LNF 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
       return;
@@ -142,8 +139,6 @@ CRITICAL INSTRUCTIONS:
       is_correct: isCorrect,
       error_type: errorType,
       audio_url: audioUrl,
-      confidence_level: confidence,
-      processing_time_ms: processingTime,
     });
 
     if (insertError) {
@@ -164,9 +159,7 @@ CRITICAL INSTRUCTIONS:
         test_type: 'LNF',
         question: questionLetter,
         is_correct: false,
-        error_type: 'processing_error',
-        processing_time_ms: processingTime,
-        error_details: error instanceof Error ? error.message : 'Unknown error'
+        error_type: 'processing_error'
       });
     } catch (dbError) {
       console.error(`[LNF 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
