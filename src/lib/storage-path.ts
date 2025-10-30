@@ -49,21 +49,38 @@ export function getSessionDate(): string {
 
 /**
  * 새로운 스토리지 경로를 생성하는 함수
- * 형식: {studentName}/{sessionDate}/{testType}/{timestamp}.webm
+ * 형식: {studentEmailPrefix}/{sessionDate}/{testType}/{timestamp}.webm
  */
 export async function generateStoragePath(
   userId: string, 
   testType: string, 
   timestamp?: number
 ): Promise<string> {
-  const studentName = await getStudentName(userId);
+  const supabase = createServiceClient();
   const sessionDate = getSessionDate();
   const fileTimestamp = timestamp || Date.now();
   
-  // 파일명에 안전하지 않은 문자 정리
-  const safeStudentName = studentName.replace(/[^가-힣a-zA-Z0-9]/g, '_');
+  // 이메일 기반 안전한 이름 생성
+  let safeUserName = '';
   
-  return `${safeStudentName}/${sessionDate}/${testType.toLowerCase()}/${fileTimestamp}.webm`;
+  try {
+    // Auth 테이블에서 이메일 가져오기
+    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
+    if (!userError && userData?.user?.email) {
+      // 이메일에서 @ 앞부분 추출 및 URL-safe 문자로 변환
+      const emailPrefix = userData.user.email.split('@')[0];
+      safeUserName = emailPrefix.replace(/[^a-zA-Z0-9-_.]/g, '_');
+    } else {
+      // 이메일을 가져올 수 없으면 user_id 사용
+      safeUserName = userId.replace(/[^a-zA-Z0-9-_.]/g, '_');
+    }
+  } catch (error) {
+    console.error('[Storage Path] 사용자 정보 조회 실패:', error);
+    // 폴백: user_id 사용
+    safeUserName = userId.replace(/[^a-zA-Z0-9-_.]/g, '_');
+  }
+  
+  return `${safeUserName}/${sessionDate}/${testType.toLowerCase()}/${fileTimestamp}.webm`;
 }
 
 /**
