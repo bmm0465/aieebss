@@ -57,7 +57,7 @@ async function processWrfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         response_format: 'json',
-        prompt: `This is a DIBELS 8th Word Reading Fluency (WRF) test for Korean EFL students. The student will read English sight words.
+        prompt: `This is a DIBELS 8th edition Word Reading Fluency (WRF) test for Korean EFL students. The student will read English sight words.
 
 TARGET WORD: "${questionWord}"
 
@@ -119,7 +119,7 @@ CRITICAL INSTRUCTIONS:
       messages: [
         {
           role: 'system',
-          content: `You are a DIBELS 8 WRF test evaluator for EFL students. Analyze sight word reading with cultural flexibility.
+          content: `You are a DIBELS 8th edition WRF test evaluator for EFL students. Analyze sight word reading with cultural flexibility.
 
           TARGET WORD: "${questionWord}"
           STUDENT RESPONSE: "${studentAnswer}"

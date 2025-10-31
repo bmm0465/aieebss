@@ -60,7 +60,7 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         response_format: 'json', 
-        prompt: `This is a DIBELS 8th Phonemic Segmentation Fluency (PSF) test for Korean EFL students. The student will break words into individual phonemes (sounds).
+        prompt: `This is a DIBELS 8th edition Phonemic Segmentation Fluency (PSF) test for Korean EFL students. The student will break words into individual phonemes (sounds).
 
 TARGET WORD: "${questionWord}"
 
@@ -137,30 +137,40 @@ CRITICAL INSTRUCTIONS:
       messages: [
         {
           role: 'system',
-          content: `You are a DIBELS 8 PSF test evaluator for EFL (English as a Foreign Language) students. Analyze the student's phonemic segmentation attempt with cultural and linguistic flexibility.
+          content: `You are a DIBELS 8th edition PSF test evaluator for EFL (English as a Foreign Language) students. Analyze the student's phonemic segmentation attempt with cultural and linguistic flexibility.
 
           TARGET WORD: "${questionWord}"
           STUDENT RESPONSE: "${studentAnswer}"
 
-          EVALUATION GUIDELINES:
-          1. Count total phonemes in the target word
-          2. Accept various response formats:
-             - English phonemes: "m-a-p", "b-e-e", "m a p", "b e e"
-             - Korean pronunciation: "엠-에이-피", "비-이"
-             - Mixed responses: "엠-에이-피"
-             - Letter names: "em-ay-pee", "bee-ee-ee"
-             - Partial attempts: "m...p" or "엠...피"
-             - Space-separated: "s e p", "d o g"
-             - Hyphen-separated: "m-a-p", "d-o-g"
-          3. Be flexible with pronunciation variations common in EFL contexts
-          4. Credit partial attempts and close approximations
-          5. Consider cultural differences in sound production
-          6. IMPORTANT: If student provides correct phoneme segmentation (even in different format), count as correct
+          CRITICAL RULES FOR PSF (Phoneme Segmentation Fluency):
+          1. ONLY PHONEMES (letter sounds) are correct - NOT letter names
+          2. Letter names like "em-ay-pee" for "map" are INCORRECT - use "letter_name_error"
+          3. Target word phonemes for "${questionWord}": Calculate the correct phoneme sequence
+
+          ACCEPT PHONEME FORMATS (CORRECT):
+          - English phonemes: "/m/ /a/ /p/" or "m-a-p" or "m a p" for "map"
+          - Korean phoneme approximations: "음-아-프" for "map" (sounds like /m/ /a/ /p/)
+          - Hyphen-separated: "b-e-e", "d-o-g"
+          - Space-separated: "s e p", "t a p"
+          - Slash notation: "/m/ /a/ /p/"
+          
+          REJECT (INCORRECT):
+          - Letter names: "em-ay-pee" for "map" → INCORRECT (letter_name_error)
+          - Korean letter names: "엠-에이-피" for "map" → INCORRECT (letter_name_error)
+          - Whole word: "map" without segmentation → INCORRECT (whole_word)
+
+          EVALUATION PROCESS:
+          1. Count total phonemes in target word "${questionWord}"
+          2. Check if student provided PHONEMES (sounds), not letter names
+          3. Count correct phonemes identified by student
+          4. Be flexible with pronunciation variations common in EFL contexts
+          5. Accept partial attempts if at least 1 phoneme is correct
 
           CATEGORIES:
-          - "correct": All phonemes correctly identified in any valid format
-          - "partial": Some phonemes correctly identified (1+ correct)
-          - "whole_word": Student said the complete word instead of segments
+          - "correct": All phonemes correctly identified as SOUNDS (not names) in any valid format
+          - "partial": Some phonemes correctly identified as SOUNDS (1+ correct, but not all)
+          - "letter_name_error": Student used letter NAMES instead of phonemes (e.g., "em-ay-pee" for "map")
+          - "whole_word": Student said the complete word without segmentation
           - "no_response": No clear segmentation attempt or empty response
           - "unclear": Response too unclear to evaluate
 

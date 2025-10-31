@@ -18,8 +18,16 @@ const letterNames: { [key: string]: string[] } = {
   U: ['u', 'you'], V: ['v', 'vee'], W: ['w', 'double u', 'doubleu'], X: ['x', 'ex'], Y: ['y', 'why'],
   Z: ['z', 'zee', 'zed']
 };
+// 알파벳 발음 (letterSounds) - LNF에서는 발음은 오답 처리
+// 참고: 모든 알파벳에 대해 정의하여 발음으로 답변한 경우 일관되게 감지
 const letterSounds: { [key: string]: string[] } = {
-  A: ['a', 'ah'], B: ['b', 'buh'], C: ['k', 'kuh'], D: ['d', 'duh'], E: ['e', 'eh'], F: ['f', 'fuh'],
+  A: ['ah', 'a', '애'], B: ['buh', 'b', '브'], C: ['kuh', 'k', '크', '쓰'], D: ['duh', 'd', '드'], 
+  E: ['eh', 'e', '에'], F: ['fuh', 'f', '프'], G: ['guh', 'g', '그'], H: ['huh', 'h', '흐'],
+  I: ['ih', 'i', '이'], J: ['juh', 'j', '즈'], K: ['kuh', 'k', '크'], L: ['luh', 'l', '을'],
+  M: ['muh', 'm', '음'], N: ['nuh', 'n', '은'], O: ['oh', 'o', '오'], P: ['puh', 'p', '프'],
+  Q: ['kwuh', 'qu', '쿠'], R: ['ruh', 'r', '르'], S: ['suh', 's', '스'], T: ['tuh', 't', '트'],
+  U: ['uh', 'u', '어'], V: ['vuh', 'v', '브'], W: ['wuh', 'w', '우'], X: ['ks', 'x', '엑스'],
+  Y: ['yuh', 'y', '이'], Z: ['zuh', 'z', '즈']
 };
 
 // [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
@@ -77,15 +85,14 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         response_format: 'json',
-        prompt: `This is a DIBELS 8th Letter Naming Fluency (LNF) test for Korean EFL students. The student will name individual English letters.
+        prompt: `This is a DIBELS 8th editionLetter Naming Fluency (LNF) test for Korean EFL students. The student will name individual English letters.
 
 CRITICAL INSTRUCTIONS:
 1. Target letter: "${questionLetter}"
 2. Accept Korean pronunciations: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' for Z
 3. Accept English letter names: 'ay' for A, 'bee' for B, 'cee' for C, 'dee' for D, 'ee' for E, 'eff' for F, 'gee' for G, 'aitch' for H, 'eye' for I, 'jay' for J, 'kay' for K, 'ell' for L, 'em' for M, 'en' for N, 'oh' for O, 'pee' for P, 'cue' for Q, 'ar' for R, 'ess' for S, 'tee' for T, 'you' for U, 'vee' for V, 'double-u' for W, 'ex' for X, 'why' for Y, 'zee' for Z
-4. Accept letter sounds: 'ah' for A, 'buh' for B, 'kuh' for C, 'duh' for D, 'eh' for E, 'fuh' for F, 'guh' for G, 'huh' for H, 'ih' for I, 'juh' for J, 'kuh' for K, 'luh' for L, 'muh' for M, 'nuh' for N, 'oh' for O, 'puh' for P, 'qu' for Q, 'ruh' for R, 'suh' for S, 'tuh' for T, 'uh' for U, 'vuh' for V, 'wuh' for W, 'ks' for X, 'yuh' for Y, 'zuh' for Z
-5. Be flexible with hesitations, repetitions, and partial attempts
-6. Return JSON: {"text": "exact transcription", "confidence": "high/medium/low"}`,
+4. Be flexible with hesitations, repetitions, and partial attempts
+5. Return JSON: {"text": "exact transcription", "confidence": "high/medium/low"}`,
       })
     ]);
 
@@ -117,8 +124,26 @@ CRITICAL INSTRUCTIONS:
       const scoringResponse = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [ 
-          { role: 'system', content: `You are a DIBELS 8 LNF test evaluator. Please respond with a JSON object containing the evaluation result.` },
-          { role: 'user', content: `Evaluate this student's pronunciation of letter "${questionLetter}": "${studentAnswer}". Return JSON with "evaluation" field.` }
+          { 
+            role: 'system', 
+            content: `You are a DIBELS 8th edition LNF (Letter Naming Fluency) test evaluator for Korean EFL students.
+
+CRITICAL RULES:
+1. ONLY letter NAMES are considered correct (not letter sounds)
+2. Accept Korean pronunciations of letter names: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' for Z
+3. Accept English letter name variations: 'ay', 'aye', 'ei' for A; 'bee', 'be' for B; etc.
+4. Letter SOUNDS (phonemes like 'ah', 'buh', 'kuh') are INCORRECT - use "letter_sound"
+5. If the response is a valid letter name (in any language/variation), respond with "correct"
+6. If the response is unclear or unintelligible, respond with "unintelligible"
+7. If the response is a hesitation or no response, respond with "hesitation"
+8. Return JSON: {"evaluation": "correct" | "letter_sound" | "unintelligible" | "hesitation" | "other_error"}`
+          },
+          { 
+            role: 'user', 
+            content: `Target letter: "${questionLetter}"
+Student response: "${studentAnswer}"
+Evaluate if this is a correct letter NAME (not sound). Return JSON with "evaluation" field.`
+          }
         ],
         response_format: { type: 'json_object' },
       });

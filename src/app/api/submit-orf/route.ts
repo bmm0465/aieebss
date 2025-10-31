@@ -60,7 +60,7 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         response_format: 'json',
-        prompt: `This is a DIBELS 8th Oral Reading Fluency (ORF) test for Korean EFL students. The student will read a passage aloud.
+        prompt: `This is a DIBELS 8th edition Oral Reading Fluency (ORF) test for Korean EFL students. The student will read a passage aloud.
 
 ORIGINAL PASSAGE: "${questionPassage}"
 
@@ -127,7 +127,7 @@ CRITICAL INSTRUCTIONS:
       messages: [
         {
           role: 'system',
-          content: `You are an expert DIBELS 8 ORF test evaluator for EFL students. Analyze oral reading fluency with cultural flexibility.
+          content: `You are an expert DIBELS 8th edition ORF test evaluator for EFL students. Analyze oral reading fluency with cultural flexibility.
 
           ORIGINAL PASSAGE: "${questionPassage}"
           STUDENT READING: "${studentAnswer}"

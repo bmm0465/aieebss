@@ -60,7 +60,7 @@ async function processNwfInBackground(supabase: SupabaseClient, userId: string, 
         file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
         language: 'en',
         response_format: 'json',
-        prompt: `This is a DIBELS 8th Nonsense Word Fluency (NWF) test for Korean EFL students. The student will read made-up words or segment their sounds.
+        prompt: `This is a DIBELS 8th edition Nonsense Word Fluency (NWF) test for Korean EFL students. The student will read made-up words or segment their sounds.
 
 TARGET WORD: "${questionWord}"
 
@@ -118,14 +118,14 @@ CRITICAL INSTRUCTIONS:
       messages: [
         {
           role: 'system',
-          content: `You are a DIBELS 8 NWF test evaluator for EFL students. Analyze the student's nonsense word reading with cultural flexibility.
+          content: `You are a DIBELS 8th edition NWF test evaluator for EFL students. Analyze the student's nonsense word reading with cultural flexibility.
 
           TARGET WORD: "${questionWord}"
           STUDENT RESPONSE: "${studentAnswer}"
 
           EVALUATION GUIDELINES (DIBELS 8th Edition Official):
           
-          According to the official DIBELS 8 administration guide, students can respond in multiple ways:
+          According to the official DIBELS 8th edition administration guide, students can respond in multiple ways:
           1. Individual letter sounds: "/h/ /a/ /p/" (each sound separately)
           2. Whole word reading: "hap" (blended as one word)
           3. Both combined: "/h/ /a/ /p/, hap" (sounds then whole word)
@@ -137,7 +137,7 @@ CRITICAL INSTRUCTIONS:
           - Mixed responses: "/h/ /a/ /p/, 합" or "합-에이-피"
           - Letter names: "aitch-ay-pee"
           
-          SCORING RULES (DIBELS 8 NWF Standard):
+          SCORING RULES (DIBELS 8th edition NWF Standard):
           
           1. CLS (Correct Letter Sounds): Count individual letter sounds produced correctly
              - Give 1 point for each accurate letter sound, regardless of blending
