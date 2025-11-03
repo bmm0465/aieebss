@@ -54,6 +54,7 @@ export default function PsfTestPage() {
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isInitialMount = useRef(true);
+  const submitRecordingRef = useRef<((audioBlob: Blob) => void) | null>(null);
 
   useEffect(() => {
     const setup = async () => {
@@ -230,7 +231,9 @@ export default function PsfTestPage() {
           setIsSubmitting(false);
           return;
         }
-        submitRecordingInBackground(audioBlob);
+        if (submitRecordingRef.current) {
+          submitRecordingRef.current(audioBlob);
+        }
       };
       
       mediaRecorder.start();
@@ -290,6 +293,10 @@ export default function PsfTestPage() {
       setIsSubmitting(false);
     }
   }, [user, currentWord, supabase, goToNextWord]);
+
+  useEffect(() => {
+    submitRecordingRef.current = submitRecordingInBackground;
+  }, [submitRecordingInBackground]);
 
   const handleStartTest = () => {
     setPhase('testing');
