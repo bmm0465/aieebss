@@ -84,29 +84,6 @@ export default function PsfTestPage() {
     }
   };
 
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false;
-      return;
-    }
-    if (phase === 'testing' && currentWord) {
-      playWordAudio(currentWord);
-    }
-  }, [currentWord, phase, playWordAudio]);
-
-  useEffect(() => {
-    if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
-    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timerId);
-  }, [phase, timeLeft, isSubmitting]);
-
-  useEffect(() => {
-    if (timeLeft <= 0 && phase === 'testing') {
-      if (isRecording) stopRecording();
-      setPhase('finished');
-    }
-  }, [timeLeft, phase, isRecording, stopRecording]);
-
   const goToNextWord = useCallback(() => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
@@ -297,6 +274,29 @@ export default function PsfTestPage() {
   useEffect(() => {
     submitRecordingRef.current = submitRecordingInBackground;
   }, [submitRecordingInBackground]);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    if (phase === 'testing' && currentWord) {
+      playWordAudio(currentWord);
+    }
+  }, [currentWord, phase, playWordAudio]);
+
+  useEffect(() => {
+    if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
+    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timerId);
+  }, [phase, timeLeft, isSubmitting]);
+
+  useEffect(() => {
+    if (timeLeft <= 0 && phase === 'testing') {
+      if (isRecording) stopRecording();
+      setPhase('finished');
+    }
+  }, [timeLeft, phase, isRecording, stopRecording]);
 
   const handleStartTest = () => {
     setPhase('testing');
