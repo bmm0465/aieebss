@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -91,7 +91,7 @@ export default function PsfTestPage() {
     if (phase === 'testing' && currentWord) {
       playWordAudio(currentWord);
     }
-  }, [currentWord, phase]);
+  }, [currentWord, phase, playWordAudio]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -104,9 +104,9 @@ export default function PsfTestPage() {
       if (isRecording) stopRecording();
       setPhase('finished');
     }
-  }, [timeLeft, phase, isRecording]);
+  }, [timeLeft, phase, isRecording, stopRecording]);
 
-  const goToNextWord = () => {
+  const goToNextWord = useCallback(() => {
     // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
     const nextIndex = wordIndex + 1;
     
@@ -121,9 +121,35 @@ export default function PsfTestPage() {
       setCurrentWord(shuffledWords[nextIndex]);
       setFeedback('');
     }
-  };
+  }, [wordIndex, shuffledWords]);
 
-  const playWordAudio = async (word: string) => {
+  const fetchTtsAudio = useCallback(async (word: string) => {
+    try {
+      const response = await fetch('/api/tts', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: word }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json(); 
+        throw new Error(errorData.error || '음성 생성 실패');
+      }
+      const audioBlob = await response.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audio.play();
+      audio.onended = () => {
+        setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");
+        setIsAudioLoading(false);
+      };
+    } catch (error) {
+      console.error("TTS API 에러:", error);
+      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
+      setFeedback(`소리를 재생하는 데 문제가 생겼어요: ${errorMessage}`);
+      setIsAudioLoading(false);
+    }
+  }, []);
+
+  const playWordAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     setFeedback("마법 물약의 재료 이름을 들어보세요...");
     
@@ -154,35 +180,20 @@ export default function PsfTestPage() {
       console.warn(`오디오 파일 확인 실패, TTS API 사용:`, error);
       fetchTtsAudio(word);
     }
-  };
+  }, [fetchTtsAudio]);
   
-  const fetchTtsAudio = async (word: string) => {
-    try {
-      const response = await fetch('/api/tts', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: word }),
-      });
-      if (!response.ok) {
-        const errorData = await response.json(); 
-        throw new Error(errorData.error || '음성 생성 실패');
-      }
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
-      audio.play();
-      audio.onended = () => {
-        setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");
-        setIsAudioLoading(false);
-      };
-    } catch (error) {
-      console.error("TTS API 에러:", error);
-      const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
-      setFeedback(`소리를 재생하는 데 문제가 생겼어요: ${errorMessage}`);
-      setIsAudioLoading(false);
+  const stopRecording = useCallback(() => {
+    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      // 스트림을 정리하지 않음 - 재사용을 위해 유지
+      setIsRecording(false);
+      setIsSubmitting(true);
+      setFeedback('🎵 녹음 완료! 처리 중...');
     }
-  };
-  
-  const startRecording = async () => {
+  }, []);
+
+  const startRecording = useCallback(async () => {
     setFeedback('');
     
     try {
@@ -236,20 +247,9 @@ export default function PsfTestPage() {
       console.error("마이크 접근 에러:", err);
       setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
-  };
+  }, [stopRecording]);
 
-  const stopRecording = () => {
-    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-      // 스트림을 정리하지 않음 - 재사용을 위해 유지
-      setIsRecording(false);
-      setIsSubmitting(true);
-      setFeedback('🎵 녹음 완료! 처리 중...');
-    }
-  };
-
-  const submitRecordingInBackground = async (audioBlob: Blob) => {
+  const submitRecordingInBackground = useCallback(async (audioBlob: Blob) => {
     if (!user || !currentWord) {
       setIsSubmitting(false);
       return;
@@ -289,7 +289,7 @@ export default function PsfTestPage() {
       setFeedback("요청 전송 중 오류가 발생했습니다.");
       setIsSubmitting(false);
     }
-  };
+  }, [user, currentWord, supabase, goToNextWord]);
 
   const handleStartTest = () => {
     setPhase('testing');
