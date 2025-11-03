@@ -49,7 +49,7 @@ export function getSessionDate(): string {
 
 /**
  * 새로운 스토리지 경로를 생성하는 함수
- * 형식: {학교이름}/{학생이름}/{날짜}/{testType}/{timestamp}.webm
+ * 형식: {학생이름}/{날짜}/{testType}/{timestamp}.webm
  */
 export async function generateStoragePath(
   userId: string, 
@@ -60,30 +60,20 @@ export async function generateStoragePath(
   const sessionDate = getSessionDate();
   const fileTimestamp = timestamp || Date.now();
   
-  // 학교 이름과 학생 이름 가져오기
-  let schoolName = '';
+  // 학생 이름 가져오기
   let studentName = '';
   
   try {
     // user_profiles 테이블에서 학생 정보 조회
     const { data: profile, error: profileError } = await supabase
       .from('user_profiles')
-      .select('full_name, class_name')
+      .select('full_name')
       .eq('id', userId)
       .single();
 
-    if (!profileError && profile) {
-      // 학생 이름
-      if (profile.full_name) {
-        // 한글은 그대로 유지, 특수문자만 치환
-        studentName = profile.full_name.replace(/[^가-힣a-zA-Z0-9-_.]/g, '_');
-      }
-      
-      // 학교 이름 (class_name에서 추출)
-      if (profile.class_name) {
-        // 예: "1학년 3반" → "1학년 3반"으로 그대로 사용
-        schoolName = profile.class_name.replace(/[^가-힣a-zA-Z0-9-_. ]/g, '_');
-      }
+    if (!profileError && profile?.full_name) {
+      // 한글은 그대로 유지, 특수문자만 치환
+      studentName = profile.full_name.replace(/[^가-힣a-zA-Z0-9-_.]/g, '_');
     }
     
     // 만약 정보를 가져오지 못했다면 Auth에서 이메일 사용
@@ -96,19 +86,71 @@ export async function generateStoragePath(
         studentName = `student_${userId.slice(0, 8)}`;
       }
     }
-    
-    // 학교 이름이 없으면 기본값 설정
-    if (!schoolName) {
-      schoolName = 'default_school';
-    }
   } catch (error) {
     console.error('[Storage Path] 사용자 정보 조회 실패:', error);
     // 폴백: user_id 사용
     studentName = `student_${userId.slice(0, 8)}`;
-    schoolName = 'default_school';
   }
   
-  return `${schoolName}/${studentName}/${sessionDate}/${testType.toLowerCase()}/${fileTimestamp}.webm`;
+  // 한글을 로마자로 변환하는 함수
+  const koreanToRoman = (text: string): string => {
+    const initials = ['g', 'kk', 'n', 'd', 'tt', 'r', 'm', 'b', 'pp', 's', 'ss', '', 'j', 'jj', 'ch', 'k', 't', 'p', 'h'];
+    const vowels = ['a', 'ae', 'ya', 'yae', 'eo', 'e', 'yeo', 'ye', 'o', 'wa', 'wae', 'oe', 'yo', 'u', 'weo', 'we', 'wi', 'yu', 'eu', 'yi', 'i'];
+    const finals = ['', 'k', 'kk', 'ks', 'n', 'nj', 'nh', 't', 'l', 'lg', 'lm', 'lb', 'ls', 'lt', 'lp', 'lh', 'm', 'p', 'bs', 's', 'ss', 'ng', 'j', 'ch', 'k', 't', 'p', 'h'];
+    
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      const char = text.charCodeAt(i);
+      if (char >= 0xAC00 && char <= 0xD7A3) {
+        const base = char - 0xAC00;
+        const initialIndex = Math.floor(base / (21 * 28));
+        const vowelIndex = Math.floor((base % (21 * 28)) / 28);
+        const finalIndex = base % 28;
+        
+        const initial = initials[initialIndex] || '';
+        const vowel = vowels[vowelIndex] || '';
+        const final = finals[finalIndex] || '';
+        
+        if (result === '' || result.endsWith('_')) {
+          result += (initial + vowel + final).charAt(0).toUpperCase() + (initial + vowel + final).slice(1);
+        } else {
+          result += initial + vowel + final;
+        }
+      } else if ((char >= 0x0041 && char <= 0x005A) || (char >= 0x0061 && char <= 0x007A) || (char >= 0x0030 && char <= 0x0039)) {
+        result += text[i];
+      } else {
+        result += '_';
+      }
+    }
+    return result.replace(/_+/g, '_').replace(/^_|_$/g, '');
+  };
+  
+  // Supabase Storage 경로는 한글을 지원하지 않으므로 안전한 ASCII 문자만 사용
+  const userIdShort = userId.slice(0, 8);
+  let safeStudentName = '';
+  
+  // 영문/숫자만 있는 경우
+  if (!/[가-힣]/.test(studentName)) {
+    safeStudentName = studentName
+      .replace(/[^a-zA-Z0-9-_.]/g, '_')
+      .toLowerCase()
+      .slice(0, 30);
+    if (safeStudentName) {
+      safeStudentName = `${safeStudentName}_${userIdShort}`;
+    }
+  }
+  
+  // 한글이 포함된 경우 로마자로 변환
+  if (!safeStudentName) {
+    const romanName = koreanToRoman(studentName);
+    if (romanName && romanName.length > 0) {
+      safeStudentName = `${romanName}_${userIdShort}`;
+    } else {
+      safeStudentName = `user_${userIdShort}`;
+    }
+  }
+  
+  return `${safeStudentName}/${sessionDate}/${testType.toLowerCase()}/${fileTimestamp}.webm`;
 }
 
 /**

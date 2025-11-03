@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate-storage": "npx tsx scripts/migrate-storage.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.7.0",
