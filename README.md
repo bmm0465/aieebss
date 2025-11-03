@@ -48,7 +48,27 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 OPENAI_API_KEY=your_openai_api_key
 ```
 
-### 3. Supabase 데이터베이스 설정
+### 3. PSF 오디오 파일 생성 (선택사항, 권장)
+
+성능 향상과 비용 절감을 위해 PSF 테스트에서 사용할 오디오 파일을 미리 생성할 수 있습니다:
+
+```bash
+# tsx 설치 (처음 한 번만)
+npm install -D tsx
+
+# 오디오 파일 생성
+npx tsx scripts/generate-psf-audio.ts
+```
+
+이 스크립트는 `public/audio/psf/` 디렉토리에 110개 단어의 MP3 파일을 생성합니다.
+
+**📦 Git에 커밋**: 생성된 오디오 파일을 Git에 커밋하면 Vercel 배포 시 자동으로 포함됩니다.
+
+**⚠️ 없어도 동작**: 오디오 파일이 없어도 TTS API를 사용하여 동적으로 생성됩니다 (OpenAI API 비용 발생).
+
+> 📖 **상세 가이드**: [GENERATE_PSF_AUDIO.md](docs/GENERATE_PSF_AUDIO.md) 참조
+
+### 4. Supabase 데이터베이스 설정
 
 데이터베이스 테이블 및 RLS 정책을 설정하세요. 자세한 내용은 `TEACHER_SETUP_GUIDE.md`를 참조하세요.
 
@@ -57,7 +77,7 @@ OPENAI_API_KEY=your_openai_api_key
 - `user_profiles` (사용자 프로필 및 역할)
 - `teacher_student_assignments` (교사-학생 관계)
 
-### 4. 개발 서버 실행
+### 5. 개발 서버 실행
 
 ```bash
 npm run dev

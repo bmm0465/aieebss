@@ -25,7 +25,7 @@ const mazePassage = {
     " sky. At the park, Max ",
     { choices: ["makes", "throws", "happy"], correctAnswer: "throws" },
     " the red ball. Sam runs ",
-    { choices: ["for", "very", "and"], correctAnswer: "for" },
+    { choices: ["for", "very", "and"], correctAnswer: "and" },
     " catches it. They play for ",
     { choices: ["see", "a", "it"], correctAnswer: "a" },
     " long time. Max and Sam ",

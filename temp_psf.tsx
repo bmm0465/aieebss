@@ -132,37 +132,6 @@ export default function PsfTestPage() {
   const playWordAudio = async (word: string) => {
     setIsAudioLoading(true);
     setFeedback("마법 물약의 재료 이름을 들어보세요...");
-    
-    // 먼저 미리 생성된 오디오 파일 존재 확인
-    const audioUrl = `/audio/psf/${word}.mp3`;
-    
-    try {
-      const response = await fetch(audioUrl, { method: 'HEAD' });
-      
-      if (response.ok) {
-        // 미리 생성된 파일 사용
-        const audio = new Audio(audioUrl);
-        audio.onended = () => {
-          setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");
-          setIsAudioLoading(false);
-        };
-        audio.onerror = () => {
-          console.error(`오디오 재생 실패: ${word}`);
-          setIsAudioLoading(false);
-        };
-        audio.play();
-      } else {
-        // 파일이 없으면 TTS API 사용
-        fetchTtsAudio(word);
-      }
-    } catch (error) {
-      // 네트워크 오류 시 TTS API 사용
-      console.warn(`오디오 파일 확인 실패, TTS API 사용:`, error);
-      fetchTtsAudio(word);
-    }
-  };
-  
-  const fetchTtsAudio = async (word: string) => {
     try {
       const response = await fetch('/api/tts', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -177,11 +146,11 @@ export default function PsfTestPage() {
       const audio = new Audio(audioUrl);
       audio.play();
       audio.onended = () => {
-        setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");
-        setIsAudioLoading(false);
+          setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");
+          setIsAudioLoading(false);
       };
     } catch (error) {
-      console.error("TTS API 에러:", error);
+      console.error("음성 재생 에러 상세 원인:", error);
       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';
       setFeedback(`소리를 재생하는 데 문제가 생겼어요: ${errorMessage}`);
       setIsAudioLoading(false);

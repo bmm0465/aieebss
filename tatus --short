@@ -1,0 +1,57 @@
+[1mdiff --git a/src/app/test/psf/page.tsx b/src/app/test/psf/page.tsx[m
+[1mindex beff00d..c436584 100644[m
+[1m--- a/src/app/test/psf/page.tsx[m
+[1m+++ b/src/app/test/psf/page.tsx[m
+[36m@@ -132,6 +132,37 @@[m [mexport default function PsfTestPage() {[m
+   const playWordAudio = async (word: string) => {[m
+     setIsAudioLoading(true);[m
+     setFeedback("마법 물약의 재료 이름을 들어보세요...");[m
+[32m+[m[41m    [m
+[32m+[m[32m    // 먼저 미리 생성된 오디오 파일 존재 확인[m
+[32m+[m[32m    const audioUrl = `/audio/psf/${word}.mp3`;[m
+[32m+[m[41m    [m
+[32m+[m[32m    try {[m
+[32m+[m[32m      const response = await fetch(audioUrl, { method: 'HEAD' });[m
+[32m+[m[41m      [m
+[32m+[m[32m      if (response.ok) {[m
+[32m+[m[32m        // 미리 생성된 파일 사용[m
+[32m+[m[32m        const audio = new Audio(audioUrl);[m
+[32m+[m[32m        audio.onended = () => {[m
+[32m+[m[32m          setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");[m
+[32m+[m[32m          setIsAudioLoading(false);[m
+[32m+[m[32m        };[m
+[32m+[m[32m        audio.onerror = () => {[m
+[32m+[m[32m          console.error(`오디오 재생 실패: ${word}`);[m
+[32m+[m[32m          setIsAudioLoading(false);[m
+[32m+[m[32m        };[m
+[32m+[m[32m        audio.play();[m
+[32m+[m[32m      } else {[m
+[32m+[m[32m        // 파일이 없으면 TTS API 사용[m
+[32m+[m[32m        fetchTtsAudio(word);[m
+[32m+[m[32m      }[m
+[32m+[m[32m    } catch (error) {[m
+[32m+[m[32m      // 네트워크 오류 시 TTS API 사용[m
+[32m+[m[32m      console.warn(`오디오 파일 확인 실패, TTS API 사용:`, error);[m
+[32m+[m[32m      fetchTtsAudio(word);[m
+[32m+[m[32m    }[m
+[32m+[m[32m  };[m
+[32m+[m[41m  [m
+[32m+[m[32m  const fetchTtsAudio = async (word: string) => {[m
+     try {[m
+       const response = await fetch('/api/tts', {[m
+         method: 'POST', headers: { 'Content-Type': 'application/json' },[m
+[36m@@ -146,11 +177,11 @@[m [mexport default function PsfTestPage() {[m
+       const audio = new Audio(audioUrl);[m
+       audio.play();[m
+       audio.onended = () => {[m
+[31m-          setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");[m
+[31m-          setIsAudioLoading(false);[m
+[32m+[m[32m        setFeedback("들은 소리를 원소 단위로 분리해서 말해주세요.");[m
+[32m+[m[32m        setIsAudioLoading(false);[m
+       };[m
+     } catch (error) {[m
+[31m-      console.error("음성 재생 에러 상세 원인:", error);[m
+[32m+[m[32m      console.error("TTS API 에러:", error);[m
+       const errorMessage = error instanceof Error ? error.message : '알 수 없는 오류';[m
+       setFeedback(`소리를 재생하는 데 문제가 생겼어요: ${errorMessage}`);[m
+       setIsAudioLoading(false);[m

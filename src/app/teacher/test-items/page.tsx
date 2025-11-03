@@ -156,7 +156,7 @@ Kim: Yes, it is. It is my new pencil.`,
         { num: 5, sentence: "The _______ is big and yellow in", choices: ["see", "bed", "sun"], answer: "sun" },
         { num: 6, sentence: "big and yellow in _______ sky.", choices: ["the", "sad", "she"], answer: "the" },
         { num: 7, sentence: "At the park, Max _______ the red ball.", choices: ["makes", "throws", "happy"], answer: "throws" },
-        { num: 8, sentence: "Sam runs _______ catches it.", choices: ["for", "very", "and"], answer: "for" },
+        { num: 8, sentence: "Sam runs _______ catches it.", choices: ["for", "very", "and"], answer: "and" },
         { num: 9, sentence: "They play for _______ long time.", choices: ["see", "a", "it"], answer: "a" },
         { num: 10, sentence: "Max and Sam _______ very happy together.", choices: ["on", "eat", "are"], answer: "are" }
       ],
