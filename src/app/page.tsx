@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client'; // [수정] 새로운 클라이언트 경로
 import React from 'react';
@@ -10,33 +10,6 @@ export default function Home() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-
-  useEffect(() => {
-    audioRef.current = new Audio('/bgm.mp3');
-    audioRef.current.loop = true;
-    audioRef.current.volume = 0.3;
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
-    };
-  }, []);
-
-  const togglePlay = () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-      } else {
-        audioRef.current.play().catch(error => console.error("Audio play failed:", error));
-      }
-      setIsPlaying(!isPlaying);
-    }
-  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,29 +90,8 @@ export default function Home() {
     fontSize: '1rem',
   };
 
-  const musicButtonStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    background: 'rgba(0, 0, 0, 0.5)',
-    border: '1px solid #FFD700',
-    color: '#FFD700',
-    width: '50px',
-    height: '50px',
-    borderRadius: '50%',
-    fontSize: '1.5rem',
-    cursor: 'pointer',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
-  };
-
   return (
     <div style={pageStyle}>
-      <button style={musicButtonStyle} onClick={togglePlay}>
-        {isPlaying ? '🔊' : '🔇'}
-      </button>
-
       <div style={formContainerStyle}>
         <h1 style={titleStyle}>달빛 마법학교 입학처</h1>
         <form onSubmit={handleLogin}>
