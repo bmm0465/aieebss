@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -177,7 +177,7 @@ export default function WrfTestPage() {
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
@@ -186,7 +186,7 @@ export default function WrfTestPage() {
       setIsSubmitting(true);
       setFeedback('🎵 녹음 완료! 처리 중...');
     }
-  };
+  }, []);
 
   const submitRecordingInBackground = async (audioBlob: Blob) => {
     if (!user || !currentWord) {
