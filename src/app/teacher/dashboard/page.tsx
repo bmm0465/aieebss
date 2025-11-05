@@ -76,7 +76,7 @@ export default async function TeacherDashboard() {
           borderRadius: '15px',
           maxWidth: '600px'
         }}>
-          <h1 style={{ color: '#FFD700', marginBottom: '1rem' }}>⚠️ 접근 권한 없음</h1>
+          <h1 style={{ background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', marginBottom: '1rem', fontWeight: 'bold' }}>⚠️ 접근 권한 없음</h1>
           <p style={{ marginBottom: '1rem' }}>교사 계정으로만 접근 가능합니다.</p>
           <p style={{ marginBottom: '1.5rem', fontSize: '0.9rem', opacity: 0.8 }}>
             교사 프로필 설정이 필요합니다. 관리자에게 문의하세요.
@@ -85,12 +85,14 @@ export default async function TeacherDashboard() {
             href="/lobby" 
             style={{
               display: 'inline-block',
-              backgroundColor: '#FFD700',
-              color: 'black',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              color: 'white',
               padding: '0.8rem 1.5rem',
-              borderRadius: '8px',
+              borderRadius: '10px',
               textDecoration: 'none',
-              fontWeight: 'bold'
+              fontWeight: '600',
+              boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+              transition: 'all 0.3s ease'
             }}
           >
             로비로 돌아가기
@@ -217,8 +219,11 @@ export default async function TeacherDashboard() {
                   fontSize: '2.5rem', 
                   margin: 0,
                   fontFamily: 'var(--font-nanum-pen)',
-                  color: '#FFD700',
-                  textShadow: '0 0 10px #FFD700'
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 'bold'
                 }}>
                   🎓 교사 관리 대시보드
                 </h1>
@@ -231,13 +236,15 @@ export default async function TeacherDashboard() {
               <Link 
                 href="/lobby"
                 style={{
-                  backgroundColor: 'rgba(255,215,0,0.2)',
-                  color: '#FFD700',
-                  padding: '0.8rem 1.5rem',
-                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  color: 'white',
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '10px',
                   textDecoration: 'none',
-                  border: '2px solid rgba(255,215,0,0.5)',
-                  fontWeight: 'bold'
+                  fontWeight: '600',
+                  fontSize: '0.95rem',
+                  boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+                  transition: 'all 0.3s ease'
                 }}
               >
                 🏠 로비로
@@ -257,15 +264,15 @@ export default async function TeacherDashboard() {
             href="/teacher/test-items"
             style={{
               flex: 1,
-              backgroundColor: 'rgba(33, 150, 243, 0.2)',
-              color: '#2196F3',
-              padding: '1rem',
-              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              color: 'white',
+              padding: '1.25rem',
+              borderRadius: '12px',
               textDecoration: 'none',
-              border: '2px solid rgba(33, 150, 243, 0.5)',
-              fontWeight: 'bold',
+              fontWeight: '600',
               textAlign: 'center',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 6px -1px rgba(59, 130, 246, 0.3)'
             }}
             className="quick-link"
           >
@@ -275,15 +282,15 @@ export default async function TeacherDashboard() {
             href="/teacher/generate-items"
             style={{
               flex: 1,
-              backgroundColor: 'rgba(156, 39, 176, 0.2)',
-              color: '#9C27B0',
-              padding: '1rem',
-              borderRadius: '10px',
+              background: 'linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)',
+              color: 'white',
+              padding: '1.25rem',
+              borderRadius: '12px',
               textDecoration: 'none',
-              border: '2px solid rgba(156, 39, 176, 0.5)',
-              fontWeight: 'bold',
+              fontWeight: '600',
               textAlign: 'center',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 6px -1px rgba(139, 92, 246, 0.3)'
             }}
             className="quick-link"
           >
@@ -360,7 +367,7 @@ export default async function TeacherDashboard() {
             borderRadius: '15px',
             textAlign: 'center'
           }}>
-            <h2 style={{ color: '#FFD700' }}>📚 아직 배정된 학생이 없습니다</h2>
+            <h2 style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 'bold' }}>📚 아직 배정된 학생이 없습니다</h2>
             <p style={{ opacity: 0.8, marginTop: '1rem' }}>
               관리자에게 학생 배정을 요청하세요.
             </p>
@@ -378,7 +385,11 @@ export default async function TeacherDashboard() {
               }}
             >
               <h2 style={{ 
-                color: '#FFD700', 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontWeight: 'bold', 
                 marginBottom: '1.5rem',
                 fontSize: '1.8rem',
                 borderBottom: '2px solid rgba(255, 215, 0, 0.3)',

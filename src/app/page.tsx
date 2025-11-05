@@ -50,48 +50,85 @@ export default function Home() {
 
   const formContainerStyle: React.CSSProperties = {
     backgroundColor: '#ffffff',
-    padding: '2rem 3rem',
-    borderRadius: '15px',
-    border: '1px solid rgba(0, 0, 0, 0.1)',
-    width: '380px',
-    color: '#171717',
-    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
+    padding: '2.5rem 3rem',
+    borderRadius: '20px',
+    border: '1px solid rgba(99, 102, 241, 0.1)',
+    width: '420px',
+    color: '#1f2937',
+    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
   };
 
   const titleStyle: React.CSSProperties = {
     textAlign: 'center',
     fontFamily: 'var(--font-nanum-pen)',
-    fontSize: '2.5rem',
+    fontSize: '2.8rem',
     marginBottom: '2rem',
-    color: '#FFD700',
+    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    fontWeight: 'bold',
+    letterSpacing: '-0.02em',
   };
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
-    padding: '12px',
-    marginTop: '6px',
+    padding: '14px 16px',
+    marginTop: '8px',
     boxSizing: 'border-box',
-    backgroundColor: '#ffffff',
-    border: '1px solid rgba(0, 0, 0, 0.2)',
-    borderRadius: '4px',
-    color: '#171717',
+    backgroundColor: '#f9fafb',
+    border: '2px solid #e5e7eb',
+    borderRadius: '10px',
+    color: '#1f2937',
+    fontSize: '0.95rem',
+    transition: 'all 0.2s ease',
   };
+  
+  const inputFocusStyle = `
+    input:focus {
+      outline: none;
+      border-color: #6366f1;
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    }
+    label {
+      color: #4b5563;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+  `;
 
   const buttonStyle: React.CSSProperties = {
     width: '100%',
-    padding: '12px',
+    padding: '14px 24px',
     marginTop: '1.5rem',
-    backgroundColor: loading ? '#BDB76B' : '#FFD700',
-    color: 'black',
+    background: loading ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+    color: 'white',
     border: 'none',
-    borderRadius: '4px',
-    cursor: 'pointer',
-    fontWeight: 'bold',
+    borderRadius: '12px',
+    cursor: loading ? 'not-allowed' : 'pointer',
+    fontWeight: '600',
     fontSize: '1rem',
+    boxShadow: loading ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
+    transition: 'all 0.3s ease',
+    transform: loading ? 'none' : 'translateY(0)',
   };
+  
+  const buttonHoverStyle = `
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 20px 25px -5px rgba(99, 102, 241, 0.4);
+    }
+    button:active:not(:disabled) {
+      transform: translateY(0);
+    }
+  `;
 
   return (
     <div style={pageStyle}>
+      <style>{inputFocusStyle}{buttonHoverStyle}</style>
       <div style={formContainerStyle}>
         <h1 style={titleStyle}>달빛 마법학교 입학처</h1>
         <form onSubmit={handleLogin}>
@@ -106,7 +143,7 @@ export default function Home() {
               required
             />
           </div>
-          <div style={{ marginTop: '1rem' }}>
+          <div style={{ marginTop: '1.25rem' }}>
             <label htmlFor="password">마법사 등록 암호</label>
             <input
               id="password"

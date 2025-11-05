@@ -163,7 +163,7 @@ export default function MazeTestPage() {
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundColor: '#ffffff', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: '#171717', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
   const containerStyle: React.CSSProperties = { maxWidth: '800px', width: '100%', margin: '0 auto', backgroundColor: '#ffffff', padding: '3rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)', textAlign: 'center' };
-  const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', color: '#FFD700', textShadow: '0 0 10px #FFD700' };
+  const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 'bold' };
   const paragraphStyle: React.CSSProperties = { fontSize: '1.1rem', lineHeight: 1.7, color: '#171717', marginBottom: '2.5rem' };
   const passageContainerStyle: React.CSSProperties = { textAlign: 'left', fontSize: '1.5rem', lineHeight: '3.5rem', backgroundColor: 'rgba(0,0,0,0.05)', padding: '2rem', borderRadius: '10px', maxHeight: '60vh', overflowY: 'auto', color: '#171717' };
   const choiceGroupStyle: React.CSSProperties = { 
@@ -185,8 +185,8 @@ export default function MazeTestPage() {
       background: isSelected ? 'rgba(255, 215, 0, 0.3)' : 'rgba(255, 255, 255, 0.1)',
       color: 'white', fontSize: '1.2rem', minWidth: '80px',
   });
-  const timerStyle: React.CSSProperties = { fontSize: '1.5rem', color: '#FFD700', marginBottom: '1rem', fontFamily: 'monospace' };
-  const finishButtonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '15px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center', transition: 'background-color 0.3s', display: 'block', margin: '2rem auto 0' };
+  const timerStyle: React.CSSProperties = { fontSize: '1.75rem', color: '#6366f1', marginBottom: '1rem', fontFamily: 'monospace', fontWeight: '600' };
+  const finishButtonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '16px 24px', background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '1.1rem', textAlign: 'center', transition: 'all 0.3s ease', display: 'block', margin: '2rem auto 0', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)' };
 
   if (!user) { return (<div style={pageStyle}><h2 style={{color: '#171717'}}>사용자 정보를 불러오는 중...</h2></div>); }
 
@@ -245,7 +245,7 @@ export default function MazeTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>미로의 갈림길마다 나타나는 문장의 빈칸에 가장 알맞은 단어를 선택해야 올바른 길로 나아갈 수 있습니다.<br/>제한 시간 내에 미로를 탈출하여 최종 관문을 통과하세요!</p>
-            <button onClick={handleStartTest} style={{...finishButtonStyle, backgroundColor: '#FFD700', color: 'black'}}>미로 입장하기</button>
+            <button onClick={handleStartTest} style={{...finishButtonStyle, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)'}}>미로 입장하기</button>
           </div>
         )}
 

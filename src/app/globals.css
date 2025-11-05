@@ -2,7 +2,29 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #1f2937;
+  
+  /* 모던한 색상 팔레트 */
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --primary-light: #818cf8;
+  --accent: #f59e0b;
+  --accent-gold: #fbbf24;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+  
+  /* 그라데이션 */
+  --gradient-primary: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --gradient-accent: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  
+  /* 그림자 */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
 }
 
 @theme inline {
@@ -14,44 +36,83 @@
 
 body {
   background: #ffffff;
-  color: #171717;
-  font-family: Arial, Helvetica, sans-serif;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* 세션 카드 호버 효과 */
 .session-card:hover {
-  border-color: #FFD700 !important;
-  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: var(--primary) !important;
+  background-color: rgba(255, 255, 255, 0.98) !important;
+  box-shadow: var(--shadow-lg) !important;
+  transform: translateY(-2px);
+  transition: all 0.3s ease;
 }
 
 /* 로비 버튼 호버 효과 */
 .lobby-button:hover {
-  background-color: rgba(255,215,0,0.3) !important;
-  border-color: #FFD700 !important;
+  background: var(--gradient-primary) !important;
+  border-color: var(--primary) !important;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg) !important;
+  transition: all 0.3s ease;
 }
 
 /* 결과 확인 버튼 호버 효과 */
 .results-button:hover {
-  background-color: rgba(76, 175, 80, 0.3) !important;
-  border-color: #4CAF50 !important;
+  background: var(--gradient-success) !important;
+  border-color: var(--success) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3) !important;
+  box-shadow: var(--shadow-lg) !important;
+  transition: all 0.3s ease;
 }
 
 /* 테스트 아이템 호버 효과 */
 .test-item:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
+  background-color: rgba(99, 102, 241, 0.05) !important;
+  border-left-color: var(--primary) !important;
+  transform: translateX(4px);
+  transition: all 0.2s ease;
 }
 
 /* 교사 대시보드 학생 카드 호버 효과 */
 .student-card:hover {
-  background-color: rgba(0, 0, 0, 0.05) !important;
-  border-color: rgba(255, 215, 0, 0.5) !important;
-  transform: translateY(-2px);
+  background-color: rgba(99, 102, 241, 0.05) !important;
+  border-color: var(--primary-light) !important;
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  transition: all 0.3s ease;
 }
 
 /* 교사 대시보드 빠른 링크 호버 효과 */
 .quick-link:hover {
-  background-color: rgba(33, 150, 243, 0.4) !important;
+  background: var(--gradient-primary) !important;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg) !important;
+  transition: all 0.3s ease;
+}
+
+/* 모던한 버튼 기본 스타일 */
+.btn-primary {
+  background: var(--gradient-primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
   transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-sm);
 }

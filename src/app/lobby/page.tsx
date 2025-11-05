@@ -139,26 +139,29 @@ export default function LobbyPage() {
   };
 
   const owlMessageStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-    padding: '1rem',
-    borderRadius: '10px',
+    backgroundColor: '#f9fafb',
+    padding: '1.25rem',
+    borderRadius: '12px',
     marginLeft: '1rem',
     flex: 1,
+    border: '1px solid #e5e7eb',
   };
 
 
   const buttonStyle: React.CSSProperties = {
     width: '100%',
-    padding: '15px',
+    padding: '16px 24px',
     marginTop: '2rem',
-    backgroundColor: '#FFD700',
-    color: 'black',
+    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+    color: 'white',
     border: 'none',
-    borderRadius: '8px',
+    borderRadius: '12px',
     cursor: 'pointer',
-    fontWeight: 'bold',
-    fontSize: '1.2rem',
-    textAlign: 'center'
+    fontWeight: '600',
+    fontSize: '1.1rem',
+    textAlign: 'center',
+    boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
+    transition: 'all 0.3s ease',
   };
 
   if (loading) {
@@ -179,27 +182,29 @@ export default function LobbyPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1rem',
-          padding: '0.8rem',
-          backgroundColor: 'rgba(0, 0, 0, 0.05)',
-          borderRadius: '8px'
+          marginBottom: '1.5rem',
+          padding: '1rem 1.25rem',
+          backgroundColor: '#f9fafb',
+          borderRadius: '12px',
+          border: '1px solid #e5e7eb'
         }}>
-          <div style={{ fontSize: '0.9rem', opacity: 0.8, color: '#171717' }}>
-            로그인: <strong>{userEmail}</strong>
+          <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
+            로그인: <strong style={{ color: '#1f2937' }}>{userEmail}</strong>
           </div>
           <button
             onClick={handleLogout}
             disabled={loggingOut}
             style={{
-              backgroundColor: loggingOut ? 'rgba(244, 67, 54, 0.5)' : 'rgba(244, 67, 54, 0.2)',
-              color: '#F44336',
-              border: '2px solid rgba(244, 67, 54, 0.5)',
+              background: loggingOut ? 'linear-gradient(135deg, #9ca3af 0%, #6b7280 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+              color: 'white',
+              border: 'none',
               padding: '0.5rem 1rem',
-              borderRadius: '6px',
+              borderRadius: '8px',
               cursor: loggingOut ? 'not-allowed' : 'pointer',
-              fontWeight: 'bold',
-              fontSize: '0.9rem',
-              transition: 'all 0.3s ease'
+              fontWeight: '600',
+              fontSize: '0.875rem',
+              transition: 'all 0.3s ease',
+              boxShadow: loggingOut ? 'none' : '0 4px 6px -1px rgba(239, 68, 68, 0.3)'
             }}
             className="logout-button"
           >
@@ -241,11 +246,9 @@ export default function LobbyPage() {
             <button
               style={{
                 ...buttonStyle,
-                backgroundColor: 'rgba(156, 39, 176, 0.2)',
-                border: '2px solid rgba(156, 39, 176, 0.5)',
-                color: '#9C27B0',
-                fontSize: '1.1rem',
-                fontWeight: 'bold'
+                background: 'linear-gradient(135deg, #8b5cf6 0%, #a855f7 100%)',
+                fontSize: '1rem',
+                boxShadow: '0 10px 15px -3px rgba(139, 92, 246, 0.3)',
               }}
               onClick={() => router.push('/teacher/dashboard')}
               className="teacher-button"
@@ -259,11 +262,9 @@ export default function LobbyPage() {
             <button
               style={{
                 ...buttonStyle,
-                backgroundColor: 'rgba(76, 175, 80, 0.2)',
-                border: '2px solid rgba(76, 175, 80, 0.5)',
-                color: '#4CAF50',
-                fontSize: '1.1rem',
-                fontWeight: 'bold'
+                background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+                fontSize: '1rem',
+                boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
               }}
             onClick={() => router.push('/results')}
             className="results-button"
@@ -276,8 +277,8 @@ export default function LobbyPage() {
           <button
             style={{
               ...buttonStyle,
-              fontSize: '1.2rem',
-              fontWeight: 'bold'
+              fontSize: '1.15rem',
+              padding: '18px 24px',
             }}
             onClick={() => router.push(tests[0].path)} // 1교시 시험으로 연결
           >
@@ -311,11 +312,14 @@ interface TestItemProps {
 const TestItem: React.FC<TestItemProps> = ({ test, onClick }) => {
   const testItemStyle: React.CSSProperties = {
     marginBottom: '1.5rem',
-    borderLeft: '3px solid #FFD700',
-    paddingLeft: '1rem',
+    borderLeft: '4px solid #6366f1',
+    paddingLeft: '1.25rem',
+    padding: '1.25rem',
     cursor: 'pointer',
-    transition: 'background-color 0.2s',
+    transition: 'all 0.2s ease',
     backgroundColor: 'transparent',
+    borderRadius: '8px',
+    border: '1px solid #e5e7eb',
   };
 
   return (
@@ -324,8 +328,8 @@ const TestItem: React.FC<TestItemProps> = ({ test, onClick }) => {
       onClick={onClick}
       className="test-item"
     >
-      <h3 style={{ margin: 0, color: '#FFD700' }}>{test.period}교시: {test.title}</h3>
-      <p style={{ marginTop: '0.5rem', lineHeight: 1.6, color: '#171717' }}>
+      <h3 style={{ margin: 0, color: '#6366f1', fontSize: '1.25rem', fontWeight: '600', marginBottom: '0.5rem' }}>{test.period}교시: {test.title}</h3>
+      <p style={{ marginTop: '0.5rem', lineHeight: 1.7, color: '#4b5563', fontSize: '0.95rem' }}>
         {test.description}
       </p>
     </div>
