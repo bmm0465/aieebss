@@ -164,7 +164,6 @@ function StudentDetailContent() {
         {/* 헤더 */}
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',

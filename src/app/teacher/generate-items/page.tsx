@@ -128,7 +128,6 @@ export default function GenerateItemsPage() {
         {/* 헤더 */}
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -172,7 +171,6 @@ export default function GenerateItemsPage() {
         {/* 설정 패널 */}
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -350,7 +348,6 @@ export default function GenerateItemsPage() {
         {generatedItems && (
           <div style={{
             backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
             padding: '2rem',
             borderRadius: '15px',
             border: '1px solid rgba(76, 175, 80, 0.5)'
