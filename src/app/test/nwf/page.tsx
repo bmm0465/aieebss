@@ -76,12 +76,32 @@ export default function NwfTestPage() {
     return () => clearInterval(timerId);
   }, [phase, timeLeft, isSubmitting]);
 
+  const stopRecording = useCallback(() => {
+    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+      setIsRecording(false);
+      setIsSubmitting(true);
+    }
+  }, []);
+
   useEffect(() => {
     if (timeLeft <= 0 && phase === 'testing') {
-      if (isRecording) stopRecording();
-      setPhase('finished');
+      if (isRecording) {
+        stopRecording();
+        // 녹음이 완료되고 제출될 때까지 기다리기 위해 약간의 딜레이
+        setTimeout(() => {
+          setPhase('finished');
+        }, 2000);
+      } else {
+        setPhase('finished');
+      }
     }
-  }, [timeLeft, phase, isRecording]);
+  }, [timeLeft, phase, isRecording, stopRecording]);
 
   // [개선] 자동 제출 기능 - 시간 만료 알림 추가
   useEffect(() => {
@@ -133,18 +153,6 @@ export default function NwfTestPage() {
     }
   };
 
-  const stopRecording = () => {
-    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => track.stop());
-        streamRef.current = null;
-      }
-      setIsRecording(false);
-      setIsSubmitting(true);
-    }
-  };
 
   const submitRecordingInBackground = async (audioBlob: Blob) => {
     if (!user || !currentWord) {

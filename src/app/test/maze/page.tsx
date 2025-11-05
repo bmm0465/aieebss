@@ -58,19 +58,16 @@ export default function MazeTestPage() {
     
     const answeredCount = answers.filter(answer => answer !== null).length;
     const totalQuestions = totalItems;
+    const unansweredCount = totalQuestions - answeredCount;
     
-    if (answeredCount === 0) {
-      if (!confirm('아직 답을 선택하지 않았습니다. 정말로 시험을 종료하시겠습니까?')) {
-        return;
-      }
-    } else if (answeredCount < totalQuestions) {
-      if (!confirm(`${totalQuestions}개 문제 중 ${answeredCount}개만 답했습니다. 정말로 시험을 완료하시겠습니까?`)) {
-        return;
-      }
-    } else {
-      if (!confirm('모든 문제에 답했습니다. 시험을 완료하시겠습니까?')) {
-        return;
-      }
+    let confirmMessage = '시험을 완료하시겠습니까?';
+    
+    if (unansweredCount > 0) {
+      confirmMessage = `아직 ${unansweredCount}개 문제에 답을 선택하지 않았습니다.\n그대로 시험을 완료하시겠습니까?`;
+    }
+    
+    if (!confirm(confirmMessage)) {
+      return;
     }
     
     finishTest();

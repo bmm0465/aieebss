@@ -293,10 +293,26 @@ export default function PsfTestPage() {
 
   useEffect(() => {
     if (timeLeft <= 0 && phase === 'testing') {
-      if (isRecording) stopRecording();
-      setPhase('finished');
+      if (isRecording) {
+        stopRecording();
+        // 녹음이 완료되고 제출될 때까지 기다리기 위해 약간의 딜레이
+        setTimeout(() => {
+          setPhase('finished');
+        }, 2000);
+      } else {
+        setPhase('finished');
+      }
     }
   }, [timeLeft, phase, isRecording, stopRecording]);
+
+  // [개선] 자동 제출 기능 - 시간 만료 10초 전 알림
+  useEffect(() => {
+    if (timeLeft === 10 && phase === 'testing') {
+      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
+    }
+  }, [timeLeft, phase]);
 
   const handleStartTest = () => {
     setPhase('testing');

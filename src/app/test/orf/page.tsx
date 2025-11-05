@@ -121,6 +121,26 @@ export default function OrfTestPage() {
     checkUser();
   }, [router, supabase.auth]);
   
+  // stopRecording 함수를 먼저 정의
+  const stopRecording = useCallback(() => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      // 자동 종료인 경우 바로 제출
+      if (isAutoStop) {
+        mediaRecorderRef.current.stop();
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        setIsRecording(false);
+        setIsAutoStop(false);
+        return;
+      }
+      
+      // 수동 종료인 경우 확인 대화상자 표시
+      setShowConfirmDialog(true);
+    }
+  }, [isAutoStop]);
+  
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0) return;
     const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
@@ -209,25 +229,6 @@ export default function OrfTestPage() {
       }
     }
   };
-
-  const stopRecording = useCallback(() => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      // 자동 종료인 경우 바로 제출
-      if (isAutoStop) {
-        mediaRecorderRef.current.stop();
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-          streamRef.current = null;
-        }
-        setIsRecording(false);
-        setIsAutoStop(false);
-        return;
-      }
-      
-      // 수동 종료인 경우 확인 대화상자 표시
-      setShowConfirmDialog(true);
-    }
-  }, [isAutoStop]);
 
   // 확인 대화상자에서 제출하기
   const handleConfirmSubmit = () => {
