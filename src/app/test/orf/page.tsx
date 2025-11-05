@@ -37,7 +37,7 @@ Kim: It is a book.
 Max: Is this your pencil?
 Kim: Yes, it is. It is my new pencil.`;
 
-// [개선] 대화문 가독성을 위한 화자별 줄바꿈 처리
+// [개선] 대화문 가독성을 위한 화자별 줄바꿈 처리 및 스타일링
 const formatPassage = (rawText: string) => {
   return rawText
     .split('\n')
@@ -53,6 +53,47 @@ const formatPassage = (rawText: string) => {
 
 const passage = formatPassage(rawPassage);
 
+// 텍스트를 스타일링된 JSX로 변환하는 함수
+const renderStyledPassage = (text: string) => {
+  const lines = text.split('\n');
+  return lines.map((line, index) => {
+    // 빈 줄 처리
+    if (line.trim() === '') {
+      return <br key={index} />;
+    }
+    
+    // Passage 제목 처리 (예: "Passage 1: Drawing a Picture")
+    if (line.match(/^Passage \d+:/)) {
+      return (
+        <div key={index} style={{ color: '#9ca3af', opacity: 0.6, fontSize: '1.2rem', marginTop: '1rem', marginBottom: '0.5rem' }}>
+          {line}
+        </div>
+      );
+    }
+    
+    // 화자 이름 처리 (예: "Leo:", "Mia:")
+    if (line.match(/^[A-Za-z]+:/)) {
+      const [speaker, ...dialogueParts] = line.split(':');
+      const dialogue = dialogueParts.join(':').trim();
+      
+      return (
+        <div key={index} style={{ marginBottom: '0.5rem' }}>
+          <span style={{ color: '#9ca3af', opacity: 0.6, fontSize: '1.2rem' }}>{speaker}:</span>
+          {' '}
+          <span style={{ fontWeight: 'bold', fontSize: '1.5rem', color: '#1f2937' }}>{dialogue}</span>
+        </div>
+      );
+    }
+    
+    // 일반 텍스트 (볼드체로 표시)
+    return (
+      <div key={index} style={{ fontWeight: 'bold', fontSize: '1.5rem', color: '#1f2937', marginBottom: '0.5rem' }}>
+        {line}
+      </div>
+    );
+  });
+};
+
 export default function OrfTestPage() {
   const supabase = createClient();
   const router = useRouter();
@@ -62,6 +103,9 @@ export default function OrfTestPage() {
   const [feedback, setFeedback] = useState('');
   const [timeLeft, setTimeLeft] = useState(60);
   const [countdown, setCountdown] = useState(0); // 3초 카운트다운용
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isAutoStop, setIsAutoStop] = useState(false); // 자동 종료인지 수동 종료인지 구분
+  const shouldSubmitRef = useRef(true); // 제출 여부를 제어하는 ref
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -84,10 +128,11 @@ export default function OrfTestPage() {
   }, [phase, timeLeft]);
 
   useEffect(() => {
-    if (timeLeft <= 0 && phase === 'testing') {
+    if (timeLeft <= 0 && phase === 'testing' && isRecording) {
+      setIsAutoStop(true); // 자동 종료 표시
       stopRecording();
     }
-  }, [timeLeft, phase]);
+  }, [timeLeft, phase, isRecording]);
 
   // [개선] 자동 제출 기능 - 시간 만료 10초 전 알림
   useEffect(() => {
@@ -135,6 +180,12 @@ export default function OrfTestPage() {
         };
 
         mediaRecorder.onstop = () => {
+          // 제출하지 않기로 결정한 경우 아무것도 하지 않음
+          if (!shouldSubmitRef.current) {
+            shouldSubmitRef.current = true; // 다음을 위해 초기화
+            return;
+          }
+          
           const readingEndTime = Date.now();
           // [핵심 수정] 실제 읽기 소요 시간 계산 (초 단위)
           const timeTaken = Math.round((readingEndTime - readingStartTimeRef.current) / 1000);
@@ -149,6 +200,7 @@ export default function OrfTestPage() {
         
         mediaRecorder.start();
         readingStartTimeRef.current = Date.now(); // [핵심 수정] 녹음 시작 시간 기록
+        shouldSubmitRef.current = true; // 새 녹음 시작 시 제출 플래그 초기화
         setIsRecording(true);
         setTimeLeft(60);
       } catch (err) {
@@ -160,13 +212,70 @@ export default function OrfTestPage() {
 
   const stopRecording = () => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      // 자동 종료인 경우 바로 제출
+      if (isAutoStop) {
+        mediaRecorderRef.current.stop();
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => track.stop());
+          streamRef.current = null;
+        }
+        setIsRecording(false);
+        setIsAutoStop(false);
+        return;
+      }
+      
+      // 수동 종료인 경우 확인 대화상자 표시
+      setShowConfirmDialog(true);
+    }
+  };
+
+  // 확인 대화상자에서 제출하기
+  const handleConfirmSubmit = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       mediaRecorderRef.current.stop();
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
         streamRef.current = null;
       }
       setIsRecording(false);
+      setShowConfirmDialog(false);
     }
+  };
+
+  // 확인 대화상자에서 취소하기
+  const handleCancelSubmit = () => {
+    setShowConfirmDialog(false);
+    setFeedback('녹음을 계속할 수 있습니다. 원하시면 다시 녹음할 수 있습니다.');
+    // 녹음은 계속 진행 중이므로 별도 처리 불필요
+  };
+  
+  // 녹음 재시작
+  const handleRestartRecording = async () => {
+    // 제출하지 않기로 결정
+    shouldSubmitRef.current = false;
+    
+    // 현재 녹음 중지 (onstop 콜백은 실행되지만 제출하지 않음)
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+    }
+    
+    // 스트림 정리
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    // 오디오 청크 초기화
+    audioChunksRef.current = [];
+    
+    setIsRecording(false);
+    setShowConfirmDialog(false);
+    
+    // 잠시 후 다시 녹음 시작
+    setFeedback('녹음을 다시 시작합니다...');
+    setTimeout(() => {
+      startRecording();
+    }, 500);
   };
 
   // [핵심 수정] timeTaken 값을 함께 전송
@@ -228,24 +337,105 @@ export default function OrfTestPage() {
         {phase === 'countdown' && (
           <div>
             <div style={timerStyle}>준비 시간: {countdown}초</div>
-            <div style={passageBoxStyle}><pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit'}}>{passage}</pre></div>
+            <div style={passageBoxStyle}>
+              {renderStyledPassage(passage)}
+            </div>
             <p style={feedbackStyle}>{feedback}</p>
           </div>
         )}
         {(phase === 'testing' || phase === 'submitting') && (
           <div>
             <div style={timerStyle}>남은 시간: {timeLeft}초</div>
-            <div style={passageBoxStyle}><pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit'}}>{passage}</pre></div>
+            <div style={passageBoxStyle}>
+              {renderStyledPassage(passage)}
+            </div>
             <p style={feedbackStyle}>{feedback}</p>
             {!isRecording ? (
               <button onClick={startRecording} style={buttonStyle} disabled={timeLeft <= 0}>
                 {timeLeft <= 0 ? '시간 초과' : '녹음하기'}
               </button>
             ) : (
-              <button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>
+              <button onClick={stopRecording} style={{...buttonStyle, background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', color: 'white'}}>
                 읽기 끝내기
               </button>
             )}
+          </div>
+        )}
+        
+        {/* 확인 대화상자 */}
+        {showConfirmDialog && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: '#ffffff',
+              padding: '2.5rem',
+              borderRadius: '20px',
+              border: '2px solid #e5e7eb',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              maxWidth: '400px',
+              textAlign: 'center'
+            }}>
+              <h2 style={{
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                marginBottom: '1rem'
+              }}>
+                녹음을 종료하시겠습니까?
+              </h2>
+              <p style={{ color: '#4b5563', marginBottom: '2rem', lineHeight: 1.6 }}>
+                지금까지 녹음한 내용을 제출하시겠습니까?<br/>
+                제출하지 않으면 다시 녹음할 수 있습니다.
+              </p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button
+                  onClick={handleConfirmSubmit}
+                  style={{
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    color: 'white',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '12px',
+                    border: 'none',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  그대로 제출하기
+                </button>
+                <button
+                  onClick={handleRestartRecording}
+                  style={{
+                    backgroundColor: '#f3f4f6',
+                    color: '#4b5563',
+                    padding: '0.75rem 1.5rem',
+                    borderRadius: '12px',
+                    border: '2px solid #e5e7eb',
+                    fontWeight: '600',
+                    fontSize: '1rem',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                >
+                  다시 녹음하기
+                </button>
+              </div>
+            </div>
           </div>
         )}
         {phase === 'finished' && (

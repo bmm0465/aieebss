@@ -162,10 +162,10 @@ export default function MazeTestPage() {
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundColor: '#ffffff', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: '#171717', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
-  const containerStyle: React.CSSProperties = { maxWidth: '800px', width: '100%', margin: '0 auto', backgroundColor: '#ffffff', padding: '3rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)', textAlign: 'center' };
+  const containerStyle: React.CSSProperties = { maxWidth: '800px', width: '100%', margin: '0 auto', backgroundColor: '#ffffff', padding: '3rem', borderRadius: '20px', border: '2px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)', textAlign: 'center' };
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 'bold' };
-  const paragraphStyle: React.CSSProperties = { fontSize: '1.1rem', lineHeight: 1.7, color: '#171717', marginBottom: '2.5rem' };
-  const passageContainerStyle: React.CSSProperties = { textAlign: 'left', fontSize: '1.5rem', lineHeight: '3.5rem', backgroundColor: 'rgba(0,0,0,0.05)', padding: '2rem', borderRadius: '10px', maxHeight: '60vh', overflowY: 'auto', color: '#171717' };
+  const paragraphStyle: React.CSSProperties = { fontSize: '1.05rem', lineHeight: 1.8, color: '#4b5563', marginBottom: '2.5rem' };
+  const passageContainerStyle: React.CSSProperties = { textAlign: 'left', fontSize: '1.5rem', lineHeight: '3.5rem', backgroundColor: '#f9fafb', padding: '2rem', borderRadius: '12px', maxHeight: '60vh', overflowY: 'auto', color: '#1f2937', border: '2px solid #e5e7eb' };
   const choiceGroupStyle: React.CSSProperties = { 
     display: 'inline-flex', 
     flexDirection: 'column', 
@@ -173,17 +173,27 @@ export default function MazeTestPage() {
     margin: '0 0.5rem', 
     transform: 'translateY(10px)', 
     verticalAlign: 'middle',
-    border: '1px solid rgba(255, 215, 0, 0.3)',
-    borderRadius: '8px',
-    padding: '0.5rem',
-    backgroundColor: 'rgba(255, 215, 0, 0.1)',
-    minWidth: '120px'
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    padding: '0.75rem',
+    backgroundColor: '#ffffff',
+    minWidth: '130px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    transition: 'all 0.3s ease'
   };
   const choiceButtonStyle = (isSelected: boolean): React.CSSProperties => ({
-      border: isSelected ? '2px solid #FFD700' : '1px solid #ccc',
-      borderRadius: '5px', padding: '0.2rem 0.5rem', margin: '0.1rem 0', cursor: 'pointer',
-      background: isSelected ? 'rgba(255, 215, 0, 0.3)' : 'rgba(255, 255, 255, 0.1)',
-      color: 'white', fontSize: '1.2rem', minWidth: '80px',
+      border: isSelected ? '2px solid #6366f1' : '2px solid #e5e7eb',
+      borderRadius: '8px', 
+      padding: '0.5rem 1rem', 
+      margin: '0.25rem 0', 
+      cursor: 'pointer',
+      background: isSelected ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : '#ffffff',
+      color: isSelected ? 'white' : '#1f2937', 
+      fontSize: '1.2rem', 
+      fontWeight: isSelected ? '600' : '500',
+      minWidth: '100px',
+      transition: 'all 0.3s ease',
+      boxShadow: isSelected ? '0 4px 6px -1px rgba(99, 102, 241, 0.3)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
   });
   const timerStyle: React.CSSProperties = { fontSize: '1.75rem', color: '#6366f1', marginBottom: '1rem', fontFamily: 'monospace', fontWeight: '600' };
   const finishButtonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '16px 24px', background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '1.1rem', textAlign: 'center', transition: 'all 0.3s ease', display: 'block', margin: '2rem auto 0', boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)' };
@@ -208,12 +218,30 @@ export default function MazeTestPage() {
                 choiceCounter++;
                 const currentChoiceIndex = choiceCounter;
                 return (
-                  <div key={index} style={choiceGroupStyle}>
+                  <div 
+                    key={index} 
+                    style={choiceGroupStyle}
+                    className="maze-choice-group"
+                  >
                     {item.choices.map(word => (
-                      <button key={word} 
+                      <button 
+                        key={word} 
                         style={choiceButtonStyle(answers[currentChoiceIndex] === word)} 
-                        onClick={() => handleAnswerSelect(currentChoiceIndex, word)}>
-                          {word}
+                        onClick={() => handleAnswerSelect(currentChoiceIndex, word)}
+                        onMouseEnter={(e) => {
+                          if (answers[currentChoiceIndex] !== word) {
+                            e.currentTarget.style.borderColor = '#6366f1';
+                            e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.05)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (answers[currentChoiceIndex] !== word) {
+                            e.currentTarget.style.borderColor = '#e5e7eb';
+                            e.currentTarget.style.backgroundColor = '#ffffff';
+                          }
+                        }}
+                      >
+                        {word}
                       </button>
                     ))}
                   </div>
@@ -226,13 +254,15 @@ export default function MazeTestPage() {
             <div style={{marginTop: '1rem'}}>
               <button 
                 style={{
-                  backgroundColor: 'rgba(108, 117, 125, 0.5)',
-                  color: 'white',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  backgroundColor: '#f3f4f6',
+                  color: '#4b5563',
+                  border: '2px solid #e5e7eb',
                   padding: '0.7rem 1.5rem',
-                  borderRadius: '6px',
+                  borderRadius: '12px',
                   cursor: 'pointer',
-                  fontSize: '0.9rem'
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease'
                 }}
                 onClick={() => router.push('/lobby')}
               >
@@ -251,7 +281,15 @@ export default function MazeTestPage() {
 
         {phase === 'submitting' && (
           <div>
-            <h2 style={{color: '#171717', fontFamily: 'var(--font-nanum-pen)', fontSize: '2rem'}}>결과를 저장하는 중...</h2>
+            <h2 style={{
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontFamily: 'var(--font-nanum-pen)', 
+              fontSize: '2rem',
+              fontWeight: 'bold'
+            }}>결과를 저장하는 중...</h2>
             <p style={paragraphStyle}>잠시만 기다려주세요. 마법 두루마리가 당신의 여정을 기록하고 있습니다.</p>
           </div>
         )}
