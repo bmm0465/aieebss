@@ -160,11 +160,11 @@ export default async function SessionsPage() {
   if (error) {
     console.error("결과 조회 에러:", error);
     return (
-      <div style={{ backgroundColor: '#ffffff', backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#171717' }}>
-        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)'}}>
-          <h1>데이터베이스 연결 오류</h1>
-          <p>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
-          <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
+      <div style={{ backgroundColor: '#ffffff', backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#1f2937' }}>
+        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2.5rem 3rem', borderRadius: '20px', border: '2px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}}>
+          <h1 style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontSize: '2rem', marginBottom: '1rem', fontWeight: 'bold' }}>데이터베이스 연결 오류</h1>
+          <p style={{ color: '#4b5563', marginBottom: '1.5rem' }}>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+          <Link href="/lobby" style={{display: 'inline-block', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '12px', textDecoration: 'none', fontWeight: '600', fontSize: '1rem', boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)', transition: 'all 0.3s ease'}}>로비로 돌아가기</Link>
         </div>
       </div>
     );
@@ -179,12 +179,12 @@ export default async function SessionsPage() {
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center', 
-        color: '#171717' 
+        color: '#1f2937' 
       }}>
-        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)'}}>
-          <h1>아직 치른 시험이 없습니다</h1>
-          <p>시험을 먼저 완료하고 다시 확인해주세요.</p>
-          <Link href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</Link>
+        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2.5rem 3rem', borderRadius: '20px', border: '2px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}}>
+          <h1 style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontSize: '2rem', marginBottom: '1rem', fontWeight: 'bold' }}>아직 치른 시험이 없습니다</h1>
+          <p style={{ color: '#4b5563', marginBottom: '1.5rem' }}>시험을 먼저 완료하고 다시 확인해주세요.</p>
+          <Link href="/lobby" style={{display: 'inline-block', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '12px', textDecoration: 'none', fontWeight: '600', fontSize: '1rem', boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)', transition: 'all 0.3s ease'}}>로비로 돌아가기</Link>
         </div>
       </div>
     );
@@ -198,14 +198,23 @@ export default async function SessionsPage() {
       backgroundSize: 'cover', 
       minHeight: '100vh', 
       padding: '2rem',
-      color: '#171717'
+      color: '#1f2937'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <h1 style={{ 
+            fontSize: '2.8rem', 
+            marginBottom: '1rem', 
+            fontFamily: 'var(--font-nanum-pen)',
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontWeight: 'bold'
+          }}>
             📊 평가 세션 목록
           </h1>
-          <p style={{ fontSize: '1.2rem', opacity: 0.9 }}>
+          <p style={{ fontSize: '1.1rem', color: '#4b5563', fontWeight: '500' }}>
             각 평가 세션을 클릭하여 상세 결과를 확인하세요
           </p>
         </div>
@@ -218,39 +227,50 @@ export default async function SessionsPage() {
               style={{ textDecoration: 'none' }}
             >
               <div style={{
-                backgroundColor: 'rgba(0,0,0,0.7)',
-                padding: '1.5rem',
-                borderRadius: '15px',
-                border: '2px solid rgba(255,215,0,0.3)',
+                backgroundColor: '#ffffff',
+                padding: '1.75rem',
+                borderRadius: '16px',
+                border: '2px solid #e5e7eb',
                 transition: 'all 0.3s ease',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}
               className="session-card"
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <h2 style={{ margin: 0, color: '#FFD700' }}>{sessionInfo.date}</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+                  <h2 style={{ 
+                    margin: 0, 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontSize: '1.5rem',
+                    fontWeight: '600'
+                  }}>{sessionInfo.date}</h2>
                   <div style={{ 
-                    backgroundColor: sessionInfo.completionRate >= 80 ? '#4CAF50' : sessionInfo.completionRate >= 60 ? '#FF9800' : '#F44336',
+                    background: sessionInfo.completionRate >= 80 ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)' : sessionInfo.completionRate >= 60 ? 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                    color: 'white',
                     padding: '0.5rem 1rem',
-                    borderRadius: '20px',
-                    fontSize: '0.9rem',
-                    fontWeight: 'bold'
+                    borderRadius: '12px',
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                   }}>
                     {sessionInfo.completionRate}% 완료
                   </div>
                 </div>
                 
-                <div style={{ marginBottom: '1rem' }}>
-                  <p style={{ margin: '0.5rem 0', opacity: 0.9 }}>
-                    <strong>시간:</strong> {sessionInfo.time}
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <p style={{ margin: '0.5rem 0', color: '#4b5563', fontSize: '0.95rem' }}>
+                    <strong style={{ color: '#1f2937' }}>시간:</strong> {sessionInfo.time}
                   </p>
-                  <p style={{ margin: '0.5rem 0', opacity: 0.9 }}>
-                    <strong>총 문제 수:</strong> {sessionInfo.totalTests}개
+                  <p style={{ margin: '0.5rem 0', color: '#4b5563', fontSize: '0.95rem' }}>
+                    <strong style={{ color: '#1f2937' }}>총 문제 수:</strong> {sessionInfo.totalTests}개
                   </p>
                 </div>
                 
                 <div>
-                  <p style={{ margin: '0.5rem 0', opacity: 0.9 }}>
+                  <p style={{ margin: '0.5rem 0 0.75rem 0', color: '#1f2937', fontWeight: '500', fontSize: '0.95rem' }}>
                     <strong>완료된 테스트:</strong>
                   </p>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -258,12 +278,13 @@ export default async function SessionsPage() {
                       <span 
                         key={testType}
                         style={{
-                          backgroundColor: 'rgba(255,215,0,0.2)',
-                          color: '#FFD700',
-                          padding: '0.3rem 0.8rem',
-                          borderRadius: '15px',
-                          fontSize: '0.9rem',
-                          border: '1px solid rgba(255,215,0,0.5)'
+                          backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                          color: '#6366f1',
+                          padding: '0.375rem 0.875rem',
+                          borderRadius: '8px',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          border: '1.5px solid rgba(99, 102, 241, 0.3)'
                         }}
                       >
                         {testType}
@@ -281,15 +302,16 @@ export default async function SessionsPage() {
             href="/lobby" 
             style={{
               display: 'inline-block',
-              backgroundColor: 'rgba(255,215,0,0.2)',
-              color: '#FFD700',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              color: 'white',
               padding: '1rem 2rem',
-              borderRadius: '25px',
+              borderRadius: '12px',
               textDecoration: 'none',
-              border: '2px solid rgba(255,215,0,0.5)',
+              border: 'none',
               transition: 'all 0.3s ease',
               fontSize: '1.1rem',
-              fontWeight: 'bold'
+              fontWeight: '600',
+              boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)'
             }}
             className="lobby-button"
           >

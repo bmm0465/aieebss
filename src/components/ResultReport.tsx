@@ -42,10 +42,20 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
   };
 
   // --- 스타일 정의 ---
-  const pageStyle: React.CSSProperties = { backgroundColor: '#ffffff', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: '#171717', fontFamily: 'sans-serif' };
-  const containerStyle: React.CSSProperties = { maxWidth: '900px', margin: '2rem auto', backgroundColor: '#ffffff', padding: '3rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)', boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)' };
-  const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '1rem', color: '#FFD700', textShadow: '0 0 10px #FFD700' };
-  const introStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', marginBottom: '2rem', backgroundColor: 'rgba(0, 0, 0, 0.05)', padding: '1rem', borderRadius: '10px' };
+  const pageStyle: React.CSSProperties = { backgroundColor: '#ffffff', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: '#1f2937', fontFamily: 'sans-serif' };
+  const containerStyle: React.CSSProperties = { maxWidth: '900px', margin: '2rem auto', backgroundColor: '#ffffff', padding: '3rem', borderRadius: '20px', border: '2px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' };
+  const titleStyle: React.CSSProperties = { 
+    textAlign: 'center', 
+    fontFamily: 'var(--font-nanum-pen)', 
+    fontSize: '2.8rem', 
+    marginBottom: '1rem', 
+    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+    fontWeight: 'bold'
+  };
+  const introStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', marginBottom: '2rem', backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: '12px', border: '2px solid #e5e7eb' };
   const resultGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' };
   
   const getCardStyle = (testType: string): React.CSSProperties => {
@@ -53,17 +63,33 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
     const isClickable = !!sessionId;
     
     return {
-      backgroundColor: isSelected ? 'rgba(255, 215, 0, 0.1)' : 'rgba(255, 255, 255, 0.05)',
+      backgroundColor: isSelected ? 'rgba(99, 102, 241, 0.1)' : '#ffffff',
       padding: '1.5rem',
-      borderRadius: '10px',
-      borderLeft: '3px solid #FFD700',
+      borderRadius: '12px',
+      border: isSelected ? '2px solid #6366f1' : '2px solid #e5e7eb',
       cursor: isClickable ? 'pointer' : 'default',
       transition: 'all 0.3s ease',
       transform: isSelected ? 'translateY(-2px)' : 'none',
-      boxShadow: isSelected ? '0 4px 20px rgba(255, 215, 0, 0.3)' : 'none'
+      boxShadow: isSelected ? '0 10px 15px -3px rgba(99, 102, 241, 0.3)' : '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
     };
   };
-  const buttonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '15px', backgroundColor: '#FFD700', color: 'black', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1.2rem', textAlign: 'center', transition: 'background-color 0.3s', display: 'block', margin: '3rem auto 0' };
+  const buttonStyle: React.CSSProperties = { 
+    width: '100%', 
+    maxWidth: '300px', 
+    padding: '16px 24px', 
+    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', 
+    color: 'white', 
+    border: 'none', 
+    borderRadius: '12px', 
+    cursor: 'pointer', 
+    fontWeight: '600', 
+    fontSize: '1.1rem', 
+    textAlign: 'center', 
+    transition: 'all 0.3s ease', 
+    display: 'block', 
+    margin: '3rem auto 0',
+    boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)'
+  };
 
   return (
     <div style={pageStyle}>
@@ -85,7 +111,7 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
             >
                 <h3>{testInfo.LNF.title}</h3>
                 <p>{testInfo.LNF.description}: <strong>{results.LNF.accuracy.toFixed(1)}%</strong> ({results.LNF.correct}/{results.LNF.total})</p>
-                {sessionId && <small style={{ color: '#ccc', fontSize: '0.8rem' }}>💡 클릭하여 음성 결과 확인</small>}
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
             {/* PSF */}
             <div 
@@ -95,7 +121,7 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
             >
                 <h3>{testInfo.PSF.title}</h3>
                 <p>{testInfo.PSF.description}: <strong>{results.PSF.accuracy.toFixed(1)}%</strong> ({results.PSF.correct_segments}/{results.PSF.target_segments})</p>
-                {sessionId && <small style={{ color: '#ccc', fontSize: '0.8rem' }}>💡 클릭하여 음성 결과 확인</small>}
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
             {/* NWF */}
             <div 
@@ -106,7 +132,7 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
                 <h3>{testInfo.NWF.title}</h3>
                 <p>CLS (Correct Letter Sounds): <strong>{results.NWF.phoneme_accuracy.toFixed(0)}점</strong></p>
                 <p>WRC (Words Read Correctly): <strong>{results.NWF.whole_word_accuracy.toFixed(1)}%</strong> ({results.NWF.whole_word_correct}/{results.NWF.total})</p>
-                {sessionId && <small style={{ color: '#ccc', fontSize: '0.8rem' }}>💡 클릭하여 음성 결과 확인</small>}
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
             {/* WRF */}
             <div 
@@ -116,7 +142,7 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
             >
                 <h3>{testInfo.WRF.title}</h3>
                 <p>{testInfo.WRF.description}: <strong>{results.WRF.accuracy.toFixed(1)}%</strong> ({results.WRF.correct}/{results.WRF.total})</p>
-                {sessionId && <small style={{ color: '#ccc', fontSize: '0.8rem' }}>💡 클릭하여 음성 결과 확인</small>}
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
             {/* ORF */}
             <div 
@@ -127,7 +153,7 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
                 <h3>{testInfo.ORF.title}</h3>
                 <p>평균 WCPM: <strong>{results.ORF.avg_wcpm.toFixed(0)}</strong></p>
                 <p>평균 정확도: <strong>{results.ORF.avg_accuracy.toFixed(1)}%</strong></p>
-                {sessionId && <small style={{ color: '#ccc', fontSize: '0.8rem' }}>💡 클릭하여 음성 결과 확인</small>}
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
             {/* MAZE */}
             <div 
@@ -152,20 +178,34 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
               />
             ) : selectedTestType === 'MAZE' ? (
               <div style={{ 
-                backgroundColor: 'rgba(0,0,0,0.7)', 
+                backgroundColor: '#f9fafb', 
                 padding: '2rem', 
-                borderRadius: '15px', 
+                borderRadius: '16px', 
                 textAlign: 'center',
-                border: '1px solid rgba(255, 215, 0, 0.3)'
+                border: '2px solid #e5e7eb',
+                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
               }}>
-                <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>
+                <h3 style={{ 
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  marginBottom: '1rem',
+                  fontSize: '1.5rem',
+                  fontWeight: '600'
+                }}>
                   {testInfo.MAZE.title}
                 </h3>
-                <p style={{ color: '#ccc' }}>
+                <p style={{ color: '#4b5563', marginBottom: '1rem' }}>
                   지혜의 미로 탈출 테스트는 선택형 문제로 음성 파일이 없습니다.
                 </p>
-                <p style={{ color: '#ccc', marginTop: '1rem' }}>
-                  최종 점수: <strong style={{ color: '#FFD700' }}>{results.MAZE.score.toFixed(1)}점</strong>
+                <p style={{ color: '#1f2937', marginTop: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>
+                  최종 점수: <strong style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>{results.MAZE.score.toFixed(1)}점</strong>
                 </p>
               </div>
             ) : null}
@@ -177,3 +217,4 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
     </div>
   );
 }
+

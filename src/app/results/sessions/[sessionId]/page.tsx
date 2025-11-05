@@ -160,11 +160,11 @@ export default async function SessionDetailPage({ params }: PageProps) {
   if (error) {
     console.error("결과 조회 에러:", error);
     return (
-      <div style={{ backgroundColor: '#ffffff', backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#171717' }}>
-        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)'}}>
-          <h1>데이터베이스 연결 오류</h1>
-          <p>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
-          <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
+      <div style={{ backgroundColor: '#ffffff', backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#1f2937' }}>
+        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2.5rem 3rem', borderRadius: '20px', border: '2px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}}>
+          <h1 style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontSize: '2rem', marginBottom: '1rem', fontWeight: 'bold' }}>데이터베이스 연결 오류</h1>
+          <p style={{ color: '#4b5563', marginBottom: '1.5rem' }}>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
+          <Link href="/lobby" style={{display: 'inline-block', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '12px', textDecoration: 'none', fontWeight: '600', fontSize: '1rem', boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)', transition: 'all 0.3s ease'}}>로비로 돌아가기</Link>
         </div>
       </div>
     );
@@ -195,44 +195,86 @@ export default async function SessionDetailPage({ params }: PageProps) {
       backgroundSize: 'cover', 
       minHeight: '100vh', 
       padding: '2rem',
-      color: '#171717'
+      color: '#1f2937'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* 세션 헤더 */}
         <div style={{ 
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)', 
-          padding: '2rem', 
-          borderRadius: '15px', 
+          border: '2px solid #e5e7eb', 
+          padding: '2.5rem', 
+          borderRadius: '20px', 
           marginBottom: '2rem',
-          textAlign: 'center'
+          textAlign: 'center',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
-          <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#FFD700', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+          <h1 style={{ 
+            fontSize: '2.8rem', 
+            marginBottom: '1.5rem', 
+            fontFamily: 'var(--font-nanum-pen)',
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontWeight: 'bold'
+          }}>
             📊 평가 세션 결과
           </h1>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginTop: '1rem' }}>
-            <div>
-              <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>📅 평가 날짜</h3>
-              <p style={{ fontSize: '1.1rem' }}>{sessionDate.toLocaleDateString('ko-KR', { 
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+            <div style={{ padding: '1.25rem', backgroundColor: '#f9fafb', borderRadius: '12px', border: '2px solid #e5e7eb' }}>
+              <h3 style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                marginBottom: '0.75rem',
+                fontSize: '1.1rem',
+                fontWeight: '600'
+              }}>📅 평가 날짜</h3>
+              <p style={{ fontSize: '1rem', color: '#4b5563', fontWeight: '500' }}>{sessionDate.toLocaleDateString('ko-KR', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric',
                 weekday: 'long'
               })}</p>
             </div>
-            <div>
-              <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>⏰ 평가 시간</h3>
-              <p style={{ fontSize: '1.1rem' }}>
+            <div style={{ padding: '1.25rem', backgroundColor: '#f9fafb', borderRadius: '12px', border: '2px solid #e5e7eb' }}>
+              <h3 style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                marginBottom: '0.75rem',
+                fontSize: '1.1rem',
+                fontWeight: '600'
+              }}>⏰ 평가 시간</h3>
+              <p style={{ fontSize: '1rem', color: '#4b5563', fontWeight: '500' }}>
                 {sessionDate.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~ {new Date(lastResult.created_at || 0).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
               </p>
             </div>
-            <div>
-              <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>📝 완료된 테스트</h3>
-              <p style={{ fontSize: '1.1rem' }}>{testTypes.join(', ')}</p>
+            <div style={{ padding: '1.25rem', backgroundColor: '#f9fafb', borderRadius: '12px', border: '2px solid #e5e7eb' }}>
+              <h3 style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                marginBottom: '0.75rem',
+                fontSize: '1.1rem',
+                fontWeight: '600'
+              }}>📝 완료된 테스트</h3>
+              <p style={{ fontSize: '1rem', color: '#4b5563', fontWeight: '500' }}>{testTypes.join(', ')}</p>
             </div>
-            <div>
-              <h3 style={{ color: '#FFD700', marginBottom: '0.5rem' }}>📊 총 문제 수</h3>
-              <p style={{ fontSize: '1.1rem' }}>{sessionResults.length}개</p>
+            <div style={{ padding: '1.25rem', backgroundColor: '#f9fafb', borderRadius: '12px', border: '2px solid #e5e7eb' }}>
+              <h3 style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                marginBottom: '0.75rem',
+                fontSize: '1.1rem',
+                fontWeight: '600'
+              }}>📊 총 문제 수</h3>
+              <p style={{ fontSize: '1rem', color: '#4b5563', fontWeight: '500' }}>{sessionResults.length}개</p>
             </div>
           </div>
         </div>
@@ -264,15 +306,16 @@ export default async function SessionDetailPage({ params }: PageProps) {
             href="/results/sessions" 
             style={{
               display: 'inline-block',
-              backgroundColor: 'rgba(255,215,0,0.2)',
-              color: '#FFD700',
+              background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+              color: 'white',
               padding: '1rem 2rem',
-              borderRadius: '25px',
+              borderRadius: '12px',
               textDecoration: 'none',
-              border: '2px solid rgba(255,215,0,0.5)',
+              border: 'none',
               transition: 'all 0.3s ease',
               fontSize: '1.1rem',
-              fontWeight: 'bold'
+              fontWeight: '600',
+              boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.3)'
             }}
           >
             📋 세션 목록으로
@@ -281,15 +324,16 @@ export default async function SessionDetailPage({ params }: PageProps) {
             href="/lobby" 
             style={{
               display: 'inline-block',
-              backgroundColor: 'rgba(0,123,255,0.2)',
-              color: '#007BFF',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              color: 'white',
               padding: '1rem 2rem',
-              borderRadius: '25px',
+              borderRadius: '12px',
               textDecoration: 'none',
-              border: '2px solid rgba(0,123,255,0.5)',
+              border: 'none',
               transition: 'all 0.3s ease',
               fontSize: '1.1rem',
-              fontWeight: 'bold'
+              fontWeight: '600',
+              boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)'
             }}
           >
             🏠 로비로 돌아가기
