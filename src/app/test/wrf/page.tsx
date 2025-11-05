@@ -79,6 +79,17 @@ export default function WrfTestPage() {
       }
     }
   };
+
+  const stopRecording = useCallback(() => {
+    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      // 스트림을 정리하지 않음 - 재사용을 위해 유지
+      setIsRecording(false);
+      setIsSubmitting(true);
+      setFeedback('🎵 녹음 완료! 처리 중...');
+    }
+  }, []);
   
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -176,17 +187,6 @@ export default function WrfTestPage() {
       setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
   };
-
-  const stopRecording = useCallback(() => {
-    if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-      // 스트림을 정리하지 않음 - 재사용을 위해 유지
-      setIsRecording(false);
-      setIsSubmitting(true);
-      setFeedback('🎵 녹음 완료! 처리 중...');
-    }
-  }, []);
 
   const submitRecordingInBackground = async (audioBlob: Blob) => {
     if (!user || !currentWord) {
