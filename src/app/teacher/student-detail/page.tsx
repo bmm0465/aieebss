@@ -204,7 +204,6 @@ function StudentDetailContent() {
         {/* 전체 통계 */}
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -256,7 +255,6 @@ function StudentDetailContent() {
         {/* 최근 테스트 결과 */}
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           border: '1px solid rgba(255, 215, 0, 0.3)'
