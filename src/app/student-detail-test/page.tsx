@@ -25,7 +25,6 @@ export default function StudentDetailTestPage() {
       }}>
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           textAlign: 'center',
@@ -48,7 +47,6 @@ export default function StudentDetailTestPage() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{
           backgroundColor: '#ffffff',
-          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           textAlign: 'center',
