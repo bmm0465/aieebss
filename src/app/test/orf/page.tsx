@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
@@ -132,7 +132,7 @@ export default function OrfTestPage() {
       setIsAutoStop(true); // 자동 종료 표시
       stopRecording();
     }
-  }, [timeLeft, phase, isRecording]);
+  }, [timeLeft, phase, isRecording, stopRecording]);
 
   // [개선] 자동 제출 기능 - 시간 만료 10초 전 알림
   useEffect(() => {
@@ -210,7 +210,7 @@ export default function OrfTestPage() {
     }
   };
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
       // 자동 종료인 경우 바로 제출
       if (isAutoStop) {
@@ -227,7 +227,7 @@ export default function OrfTestPage() {
       // 수동 종료인 경우 확인 대화상자 표시
       setShowConfirmDialog(true);
     }
-  };
+  }, [isAutoStop]);
 
   // 확인 대화상자에서 제출하기
   const handleConfirmSubmit = () => {
@@ -242,13 +242,6 @@ export default function OrfTestPage() {
     }
   };
 
-  // 확인 대화상자에서 취소하기
-  const handleCancelSubmit = () => {
-    setShowConfirmDialog(false);
-    setFeedback('녹음을 계속할 수 있습니다. 원하시면 다시 녹음할 수 있습니다.');
-    // 녹음은 계속 진행 중이므로 별도 처리 불필요
-  };
-  
   // 녹음 재시작
   const handleRestartRecording = async () => {
     // 제출하지 않기로 결정
