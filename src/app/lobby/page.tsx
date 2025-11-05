@@ -114,22 +114,22 @@ export default function LobbyPage() {
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = {
-    backgroundImage: `url('/background.jpg')`,
+    backgroundColor: '#ffffff',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     minHeight: '100vh',
     padding: '2rem',
-    color: 'white',
+    color: '#171717',
     fontFamily: 'sans-serif',
   };
 
   const containerStyle: React.CSSProperties = {
     maxWidth: '800px',
     margin: '0 auto',
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: '#ffffff',
     padding: '2rem',
     borderRadius: '15px',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(0, 0, 0, 0.1)',
   };
 
   const introStyle: React.CSSProperties = {
@@ -139,7 +139,7 @@ export default function LobbyPage() {
   };
 
   const owlMessageStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(0, 0, 0, 0.05)',
     padding: '1rem',
     borderRadius: '10px',
     marginLeft: '1rem',
@@ -181,10 +181,10 @@ export default function LobbyPage() {
           alignItems: 'center',
           marginBottom: '1rem',
           padding: '0.8rem',
-          backgroundColor: 'rgba(255, 255, 255, 0.05)',
+          backgroundColor: 'rgba(0, 0, 0, 0.05)',
           borderRadius: '8px'
         }}>
-          <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+          <div style={{ fontSize: '0.9rem', opacity: 0.8, color: '#171717' }}>
             로그인: <strong>{userEmail}</strong>
           </div>
           <button
@@ -325,7 +325,7 @@ const TestItem: React.FC<TestItemProps> = ({ test, onClick }) => {
       className="test-item"
     >
       <h3 style={{ margin: 0, color: '#FFD700' }}>{test.period}교시: {test.title}</h3>
-      <p style={{ marginTop: '0.5rem', lineHeight: 1.6, color: 'rgba(255, 255, 255, 0.9)' }}>
+      <p style={{ marginTop: '0.5rem', lineHeight: 1.6, color: '#171717' }}>
         {test.description}
       </p>
     </div>

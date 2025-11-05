@@ -38,7 +38,7 @@ export default function Home() {
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = {
-    backgroundImage: `url('/background.jpg')`,
+    backgroundColor: '#ffffff',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',
@@ -49,13 +49,13 @@ export default function Home() {
   };
 
   const formContainerStyle: React.CSSProperties = {
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: '#ffffff',
     padding: '2rem 3rem',
     borderRadius: '15px',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    border: '1px solid rgba(0, 0, 0, 0.1)',
     width: '380px',
-    color: 'white',
-    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
+    color: '#171717',
+    boxShadow: '0 8px 32px 0 rgba(0, 0, 0, 0.1)',
   };
 
   const titleStyle: React.CSSProperties = {
@@ -71,10 +71,10 @@ export default function Home() {
     padding: '12px',
     marginTop: '6px',
     boxSizing: 'border-box',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.3)',
+    backgroundColor: '#ffffff',
+    border: '1px solid rgba(0, 0, 0, 0.2)',
     borderRadius: '4px',
-    color: 'white',
+    color: '#171717',
   };
 
   const buttonStyle: React.CSSProperties = {

@@ -14,17 +14,18 @@ export default function StudentDetailTestPage() {
   if (!isLoaded) {
     return (
       <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
+        backgroundColor: '#ffffff', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
-        color: 'white',
+        color: '#171717',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           textAlign: 'center',
@@ -38,15 +39,16 @@ export default function StudentDetailTestPage() {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
-      color: 'white'
+      color: '#171717'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           textAlign: 'center',

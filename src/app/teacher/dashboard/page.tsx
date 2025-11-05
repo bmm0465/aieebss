@@ -60,17 +60,18 @@ export default async function TeacherDashboard() {
   if (profileError || !profile || profile.role !== 'teacher') {
     return (
       <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
+        backgroundColor: '#ffffff', 
         backgroundSize: 'cover', 
         minHeight: '100vh', 
         display: 'flex', 
         justifyContent: 'center', 
         alignItems: 'center',
-        color: 'white'
+        color: '#171717'
       }}>
         <div style={{
           textAlign: 'center', 
-          backgroundColor: 'rgba(0,0,0,0.7)', 
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)', 
           padding: '2rem', 
           borderRadius: '15px',
           maxWidth: '600px'
@@ -193,16 +194,17 @@ export default async function TeacherDashboard() {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
-      color: 'white'
+      color: '#171717'
     }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* 헤더 */}
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -353,7 +355,8 @@ export default async function TeacherDashboard() {
         {/* 학생 목록 (반별) */}
         {studentsWithStats.length === 0 ? (
           <div style={{
-            backgroundColor: 'rgba(0,0,0,0.7)',
+            backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
             padding: '3rem',
             borderRadius: '15px',
             textAlign: 'center'
@@ -368,7 +371,8 @@ export default async function TeacherDashboard() {
             <div 
               key={className}
               style={{
-                backgroundColor: 'rgba(0,0,0,0.7)',
+                backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
                 padding: '2rem',
                 borderRadius: '15px',
                 marginBottom: '2rem',

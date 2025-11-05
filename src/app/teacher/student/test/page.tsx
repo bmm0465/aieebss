@@ -3,11 +3,11 @@
 export default function TestStudentPage() {
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
-      color: 'white',
+      color: '#171717',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center'

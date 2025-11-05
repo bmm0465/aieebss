@@ -118,16 +118,17 @@ export default function GenerateItemsPage() {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
-      color: 'white'
+      color: '#171717'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* 헤더 */}
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -170,7 +171,8 @@ export default function GenerateItemsPage() {
 
         {/* 설정 패널 */}
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -347,7 +349,8 @@ export default function GenerateItemsPage() {
         {/* 생성 결과 */}
         {generatedItems && (
           <div style={{
-            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+            backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
             padding: '2rem',
             borderRadius: '15px',
             border: '1px solid rgba(76, 175, 80, 0.5)'

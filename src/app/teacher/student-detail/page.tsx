@@ -92,11 +92,11 @@ function StudentDetailContent() {
   if (loading) {
     return (
       <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
+        backgroundColor: '#ffffff', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
-        color: 'white',
+        color: '#171717',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -111,11 +111,11 @@ function StudentDetailContent() {
   if (error || !studentData) {
     return (
       <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
+        backgroundColor: '#ffffff', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
-        color: 'white',
+        color: '#171717',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'
@@ -154,16 +154,17 @@ function StudentDetailContent() {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
-      color: 'white'
+      color: '#171717'
     }}>
       <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
         {/* 헤더 */}
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -203,7 +204,8 @@ function StudentDetailContent() {
 
         {/* 전체 통계 */}
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -254,7 +256,8 @@ function StudentDetailContent() {
 
         {/* 최근 테스트 결과 */}
         <div style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.7)',
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
           padding: '2rem',
           borderRadius: '15px',
           border: '1px solid rgba(255, 215, 0, 0.3)'
@@ -337,11 +340,11 @@ export default function StudentDetailPage() {
   return (
     <Suspense fallback={
       <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
+        backgroundColor: '#ffffff', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
-        color: 'white',
+        color: '#171717',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center'

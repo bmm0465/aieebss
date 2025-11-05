@@ -29,7 +29,7 @@ export default function TeacherDashboardWrapper({
   if (isLoading || isClientLoading) {
     return (
       <div style={{ 
-        backgroundImage: `url('/background.jpg')`, 
+        backgroundColor: '#ffffff', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem'

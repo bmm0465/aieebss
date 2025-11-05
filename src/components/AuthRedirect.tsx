@@ -20,23 +20,24 @@ export default function AuthRedirect({ to, message }: AuthRedirectProps) {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       display: 'flex',
       justifyContent: 'center',
       alignItems: 'center',
-      color: 'white'
+      color: '#171717'
     }}>
       <div style={{
         textAlign: 'center', 
-        backgroundColor: 'rgba(0,0,0,0.7)', 
+        backgroundColor: '#ffffff', 
         padding: '2rem', 
         borderRadius: '15px',
-        maxWidth: '600px'
+        maxWidth: '600px',
+        border: '1px solid rgba(0, 0, 0, 0.1)'
       }}>
         <h1 style={{ color: '#FFD700', marginBottom: '1rem' }}>⚠️ {message}</h1>
-        <p style={{ marginBottom: '1.5rem', opacity: 0.8 }}>
+        <p style={{ marginBottom: '1.5rem', opacity: 0.8, color: '#171717' }}>
           페이지를 이동하는 중입니다...
         </p>
         <div style={{ 

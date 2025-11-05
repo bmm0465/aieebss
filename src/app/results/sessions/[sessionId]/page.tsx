@@ -160,8 +160,8 @@ export default async function SessionDetailPage({ params }: PageProps) {
   if (error) {
     console.error("결과 조회 에러:", error);
     return (
-      <div style={{ backgroundImage: `url('/background.jpg')`, backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: 'white' }}>
-        <div style={{textAlign: 'center', backgroundColor: 'rgba(0,0,0,0.7)', padding: '2rem', borderRadius: '15px'}}>
+      <div style={{ backgroundColor: '#ffffff', backgroundSize: 'cover', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center', color: '#171717' }}>
+        <div style={{textAlign: 'center', backgroundColor: '#ffffff', padding: '2rem', borderRadius: '15px', border: '1px solid rgba(0, 0, 0, 0.1)'}}>
           <h1>데이터베이스 연결 오류</h1>
           <p>결과를 불러오는 중 문제가 발생했습니다. 잠시 후 다시 시도해주세요.</p>
           <a href="/lobby" style={{color: '#FFD700', textDecoration: 'none'}}>로비로 돌아가기</a>
@@ -191,16 +191,17 @@ export default async function SessionDetailPage({ params }: PageProps) {
 
   return (
     <div style={{ 
-      backgroundImage: `url('/background.jpg')`, 
+      backgroundColor: '#ffffff', 
       backgroundSize: 'cover', 
       minHeight: '100vh', 
       padding: '2rem',
-      color: 'white'
+      color: '#171717'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* 세션 헤더 */}
         <div style={{ 
-          backgroundColor: 'rgba(0,0,0,0.7)', 
+          backgroundColor: '#ffffff',
+          border: '1px solid rgba(0, 0, 0, 0.1)', 
           padding: '2rem', 
           borderRadius: '15px', 
           marginBottom: '2rem',
