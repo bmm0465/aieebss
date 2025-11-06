@@ -8,6 +8,7 @@ import { ApprovalWorkflowAgent } from './ApprovalWorkflowAgent';
 import type {
   ItemGenerationRequest,
   ItemGenerationResult,
+  GeneratedItems,
   TestType
 } from './types';
 
