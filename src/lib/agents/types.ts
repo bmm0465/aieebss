@@ -28,7 +28,7 @@ export interface PDFChunk {
   chunk_index: number;
   page_number: number | null;
   content: string;
-  metadata: Record<string, any> | null;
+  metadata: Record<string, unknown> | null;
 }
 
 export interface PDFReference {

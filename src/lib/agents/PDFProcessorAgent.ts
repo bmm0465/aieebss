@@ -3,6 +3,7 @@
 
 import { createClient } from '@/lib/supabase/server';
 // @ts-expect-error - pdf-parse는 타입 정의가 불완전할 수 있음
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfParse = require('pdf-parse');
 
 export class PDFProcessorAgent {

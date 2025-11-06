@@ -87,8 +87,8 @@ export class OrchestratorAgent {
         .from('generated_test_items')
         .insert({
           ...itemData,
-          items: items as any,
-          pdf_references: pdfReferences as any,
+          items: items as unknown as Record<string, unknown>,
+          pdf_references: (pdfReferences || []) as unknown as Record<string, unknown>[],
           curriculum_alignment: null
         })
         .select()

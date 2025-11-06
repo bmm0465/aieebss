@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     const orchestrator = new OrchestratorAgent();
     await orchestrator.initialize();
 
-    const request: ItemGenerationRequest = {
+    const itemRequest: ItemGenerationRequest = {
       testTypes,
       gradeLevel,
       pdfIds: pdfIds || [],
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
       customInstructions
     };
 
-    const result = await orchestrator.generateItems(request, user.id);
+    const result = await orchestrator.generateItems(itemRequest, user.id);
 
     if (!result.success) {
       return NextResponse.json(
