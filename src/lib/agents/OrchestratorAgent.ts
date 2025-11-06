@@ -73,23 +73,17 @@ export class OrchestratorAgent {
       console.log('데이터베이스에 저장...');
       if (!this.supabase) await this.initialize();
 
-      const itemData: Omit<GeneratedTestItem, 'id' | 'created_at'> = {
-        test_type: request.testTypes[0], // 첫 번째 테스트 유형을 메인으로
-        grade_level: request.gradeLevel,
-        items,
-        pdf_references: pdfReferences,
-        quality_score: overallScore,
-        status: 'pending',
-        generated_by: userId
-      };
-
       const { data: insertedItem, error: insertError } = await this.supabase!
         .from('generated_test_items')
         .insert({
-          ...itemData,
+          test_type: request.testTypes[0], // 첫 번째 테스트 유형을 메인으로
+          grade_level: request.gradeLevel,
           items: items as unknown as Record<string, unknown>,
           pdf_references: (pdfReferences || []) as unknown as Record<string, unknown>[],
-          curriculum_alignment: null
+          curriculum_alignment: null,
+          quality_score: overallScore, // 숫자로 저장 (데이터베이스 NUMERIC 타입)
+          status: 'pending',
+          generated_by: userId
         })
         .select()
         .single();
