@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/server';
 const pdfParse = require('pdf-parse');
 
 export class PDFProcessorAgent {
-  private supabase: ReturnType<typeof createClient> | null = null;
+  private supabase: Awaited<ReturnType<typeof createClient>> | null = null;
 
   async initialize() {
     this.supabase = await createClient();

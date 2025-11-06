@@ -16,7 +16,7 @@ export class OrchestratorAgent {
   private itemGenerator: ItemGeneratorAgent;
   private qualityValidator: QualityValidatorAgent;
   private approvalWorkflow: ApprovalWorkflowAgent;
-  private supabase: ReturnType<typeof createClient> | null = null;
+  private supabase: Awaited<ReturnType<typeof createClient>> | null = null;
 
   constructor() {
     this.itemGenerator = new ItemGeneratorAgent();

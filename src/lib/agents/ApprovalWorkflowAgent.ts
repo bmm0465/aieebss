@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/server';
 import type { WorkflowAction, WorkflowHistoryEntry } from './types';
 
 export class ApprovalWorkflowAgent {
-  private supabase: ReturnType<typeof createClient> | null = null;
+  private supabase: Awaited<ReturnType<typeof createClient>> | null = null;
 
   async initialize() {
     this.supabase = await createClient();
