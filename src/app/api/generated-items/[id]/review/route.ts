@@ -4,9 +4,10 @@ import { ApprovalWorkflowAgent } from '@/lib/agents/ApprovalWorkflowAgent';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -24,7 +25,7 @@ export async function POST(
     await agent.initialize();
 
     const result = await agent.reviewItem(
-      params.id,
+      id,
       user.id,
       notes,
       qualityScore

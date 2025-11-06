@@ -3,9 +3,10 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -19,7 +20,7 @@ export async function GET(
     const { data: item, error: itemError } = await supabase
       .from('generated_test_items')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('generated_by', user.id)
       .single();
 
@@ -34,7 +35,7 @@ export async function GET(
     const { data: workflow } = await supabase
       .from('item_approval_workflow')
       .select('*')
-      .eq('item_id', params.id)
+      .eq('item_id', id)
       .order('created_at', { ascending: true });
 
     return NextResponse.json({

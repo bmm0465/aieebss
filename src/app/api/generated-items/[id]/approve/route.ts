@@ -4,9 +4,10 @@ import { ApprovalWorkflowAgent } from '@/lib/agents/ApprovalWorkflowAgent';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const supabase = await createClient();
     const { data: { user }, error: userError } = await supabase.auth.getUser();
 
@@ -23,7 +24,7 @@ export async function POST(
     const agent = new ApprovalWorkflowAgent();
     await agent.initialize();
 
-    const result = await agent.approveItem(params.id, user.id, notes);
+    const result = await agent.approveItem(id, user.id, notes);
 
     if (!result.success) {
       return NextResponse.json(
