@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -22,8 +22,12 @@ export default function GenerateItemsPage() {
   const [testTypes, setTestTypes] = useState<string[]>([]);
   const [gradeLevel, setGradeLevel] = useState('초등 3학년');
   const [referenceDocument, setReferenceDocument] = useState('');
+  const [selectedPDFs, setSelectedPDFs] = useState<string[]>([]);
+  const [availablePDFs, setAvailablePDFs] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedItems | null>(null);
+  const [qualityScore, setQualityScore] = useState<any>(null);
+  const [itemId, setItemId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const testTypeOptions = [
@@ -34,6 +38,22 @@ export default function GenerateItemsPage() {
     { value: 'ORF', label: 'ORF - 읽기 유창성 지문 (150단어)' },
     { value: 'MAZE', label: 'MAZE - 독해력 평가 (20문항)' }
   ];
+
+  // PDF 목록 로드
+  useEffect(() => {
+    const loadPDFs = async () => {
+      try {
+        const response = await fetch('/api/curriculum/pdfs');
+        const data = await response.json();
+        if (data.success) {
+          setAvailablePDFs(data.pdfs.filter((pdf: any) => pdf.status === 'completed') || []);
+        }
+      } catch (err) {
+        console.error('PDF 목록 로드 오류:', err);
+      }
+    };
+    loadPDFs();
+  }, []);
 
   const handleTestTypeToggle = (type: string) => {
     setTestTypes(prev => 
@@ -52,14 +72,18 @@ export default function GenerateItemsPage() {
     setIsGenerating(true);
     setError('');
     setGeneratedItems(null);
+    setQualityScore(null);
+    setItemId(null);
 
     try {
-      const response = await fetch('/api/generate-items', {
+      // Agent 기반 API 사용
+      const response = await fetch('/api/agents/generate-items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           testTypes,
           gradeLevel,
+          pdfIds: selectedPDFs.length > 0 ? selectedPDFs : undefined,
           referenceDocument: referenceDocument.trim() || undefined
         })
       });
@@ -71,6 +95,8 @@ export default function GenerateItemsPage() {
       }
 
       setGeneratedItems(data.items);
+      setQualityScore(data.qualityScore);
+      setItemId(data.itemId);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : '문항 생성 중 오류가 발생했습니다.');
@@ -260,6 +286,80 @@ export default function GenerateItemsPage() {
             </div>
           </div>
 
+          {/* PDF 선택 */}
+          {availablePDFs.length > 0 && (
+            <div style={{ marginBottom: '2rem' }}>
+              <label style={{ 
+                display: 'block', 
+                marginBottom: '0.5rem', 
+                fontWeight: 'bold',
+                color: '#FFD700'
+              }}>
+                📚 참고할 교육과정 PDF (선택사항)
+              </label>
+              <p style={{ 
+                fontSize: '0.9rem', 
+                opacity: 0.7, 
+                marginBottom: '0.5rem' 
+              }}>
+                업로드된 PDF를 선택하면 해당 내용을 참고하여 문항을 생성합니다
+              </p>
+              <div style={{
+                display: 'grid',
+                gap: '0.5rem',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                padding: '1rem',
+                border: '2px solid rgba(255, 215, 0, 0.3)',
+                borderRadius: '8px',
+                backgroundColor: 'rgba(255, 255, 255, 0.05)'
+              }}>
+                {availablePDFs.map((pdf) => (
+                  <label
+                    key={pdf.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      padding: '0.5rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedPDFs.includes(pdf.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedPDFs([...selectedPDFs, pdf.id]);
+                        } else {
+                          setSelectedPDFs(selectedPDFs.filter(id => id !== pdf.id));
+                        }
+                      }}
+                      style={{ marginRight: '0.5rem' }}
+                    />
+                    <span>{pdf.filename}</span>
+                    {pdf.grade_level && (
+                      <span style={{ marginLeft: '0.5rem', opacity: 0.7, fontSize: '0.9rem' }}>
+                        ({pdf.grade_level})
+                      </span>
+                    )}
+                  </label>
+                ))}
+              </div>
+              <Link
+                href="/teacher/curriculum/pdfs"
+                style={{
+                  display: 'inline-block',
+                  marginTop: '0.5rem',
+                  color: '#FFD700',
+                  textDecoration: 'underline',
+                  fontSize: '0.9rem'
+                }}
+              >
+                PDF 관리 페이지로 이동 →
+              </Link>
+            </div>
+          )}
+
           {/* 참고 문서 */}
           <div style={{ marginBottom: '2rem' }}>
             <label style={{ 
@@ -361,31 +461,91 @@ export default function GenerateItemsPage() {
               <h2 style={{ color: '#4CAF50', margin: 0, fontSize: '1.8rem' }}>
                 ✅ 문항 생성 완료!
               </h2>
-              <button
-                onClick={handleDownloadPDF}
-                style={{
-                  padding: '0.8rem 1.5rem',
-                  fontSize: '1rem',
-                  fontWeight: 'bold',
-                  borderRadius: '8px',
-                  border: 'none',
-                  backgroundColor: '#e74c3c',
-                  color: 'white',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#c0392b';
-                  e.currentTarget.style.transform = 'scale(1.05)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#e74c3c';
-                  e.currentTarget.style.transform = 'scale(1)';
-                }}
-              >
-                📥 PDF로 다운로드
-              </button>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                {itemId && (
+                  <Link
+                    href={`/teacher/generated-items/${itemId}`}
+                    style={{
+                      padding: '0.8rem 1.5rem',
+                      fontSize: '1rem',
+                      fontWeight: 'bold',
+                      borderRadius: '8px',
+                      border: 'none',
+                      backgroundColor: '#3498db',
+                      color: 'white',
+                      cursor: 'pointer',
+                      textDecoration: 'none',
+                      transition: 'all 0.3s ease'
+                    }}
+                  >
+                    📋 상세 보기
+                  </Link>
+                )}
+                <button
+                  onClick={handleDownloadPDF}
+                  style={{
+                    padding: '0.8rem 1.5rem',
+                    fontSize: '1rem',
+                    fontWeight: 'bold',
+                    borderRadius: '8px',
+                    border: 'none',
+                    backgroundColor: '#e74c3c',
+                    color: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#c0392b';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#e74c3c';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  📥 PDF로 다운로드
+                </button>
+              </div>
             </div>
+
+            {/* 품질 점수 표시 */}
+            {qualityScore && (
+              <div style={{
+                padding: '1rem',
+                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                borderRadius: '8px',
+                marginBottom: '1.5rem'
+              }}>
+                <h3 style={{ color: '#4CAF50', marginBottom: '0.5rem' }}>품질 점수: {qualityScore.overall}점</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem', fontSize: '0.9rem' }}>
+                  <div>DIBELS 준수도: {qualityScore.dibels_compliance}점</div>
+                  <div>학년 수준 적합성: {qualityScore.grade_level_appropriateness}점</div>
+                  <div>교육과정 부합도: {qualityScore.curriculum_alignment}점</div>
+                  <div>난이도 적절성: {qualityScore.difficulty_appropriateness}점</div>
+                  <div>문법 정확성: {qualityScore.grammar_accuracy}점</div>
+                </div>
+                {qualityScore.issues && qualityScore.issues.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <strong>⚠️ 이슈:</strong>
+                    <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                      {qualityScore.issues.map((issue: string, idx: number) => (
+                        <li key={idx}>{issue}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {qualityScore.suggestions && qualityScore.suggestions.length > 0 && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <strong>💡 제안:</strong>
+                    <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                      {qualityScore.suggestions.map((suggestion: string, idx: number) => (
+                        <li key={idx}>{suggestion}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* 생성된 문항 미리보기 */}
             <div style={{ 
