@@ -63,7 +63,7 @@ export interface GeneratedTestItem {
   grade_level: GradeLevel;
   items: GeneratedItems;
   pdf_references?: PDFReference[];
-  curriculum_alignment?: CurriculumAlignment;
+  curriculum_alignment?: CurriculumAlignment | null;
   quality_score?: QualityScore;
   status: ItemStatus;
   generated_by?: string;

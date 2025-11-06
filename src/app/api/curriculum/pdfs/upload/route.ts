@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     const filename = `${timestamp}_${file.name}`;
     const storagePath = `curriculum-pdfs/${user.id}/${filename}`;
 
-    const { data: uploadData, error: uploadError } = await serviceClient.storage
+    const { error: uploadError } = await serviceClient.storage
       .from('curriculum-pdfs')
       .upload(storagePath, fileBuffer, {
         contentType: 'application/pdf',

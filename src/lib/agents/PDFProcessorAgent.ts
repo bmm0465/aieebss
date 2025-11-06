@@ -2,8 +2,8 @@
 // PDF 파일을 업로드하고 텍스트를 추출하여 청크로 분할
 
 import { createClient } from '@/lib/supabase/server';
-// @ts-ignore - pdf-parse는 타입 정의가 불완전할 수 있음
-import pdfParse from 'pdf-parse';
+// @ts-expect-error - pdf-parse는 타입 정의가 불완전할 수 있음
+const pdfParse = require('pdf-parse');
 
 export class PDFProcessorAgent {
   private supabase: ReturnType<typeof createClient> | null = null;
@@ -29,14 +29,13 @@ export class PDFProcessorAgent {
       // PDF 텍스트 추출
       const pdfData = await pdfParse(fileBuffer);
       const text = pdfData.text;
-      const numPages = pdfData.numpages;
 
       if (!text || text.trim().length === 0) {
         throw new Error('PDF에서 텍스트를 추출할 수 없습니다.');
       }
 
       // 텍스트를 청크로 분할 (페이지 단위 또는 문단 단위)
-      const chunks = this.chunkText(text, numPages);
+      const chunks = this.chunkText(text);
 
       // 데이터베이스에 청크 저장
       const chunksToInsert = chunks.map((chunk, index) => ({
@@ -96,7 +95,7 @@ export class PDFProcessorAgent {
    * 텍스트를 청크로 분할
    * 페이지 단위로 분할하되, 너무 긴 페이지는 문단 단위로 추가 분할
    */
-  private chunkText(text: string, numPages: number): Array<{
+  private chunkText(text: string): Array<{
     text: string;
     pageNumber: number;
   }> {

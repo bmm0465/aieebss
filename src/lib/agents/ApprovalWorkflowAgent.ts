@@ -2,7 +2,7 @@
 // 문항 승인 프로세스 관리
 
 import { createClient } from '@/lib/supabase/server';
-import type { ItemStatus, WorkflowAction, WorkflowHistoryEntry } from './types';
+import type { WorkflowAction, WorkflowHistoryEntry } from './types';
 
 export class ApprovalWorkflowAgent {
   private supabase: ReturnType<typeof createClient> | null = null;

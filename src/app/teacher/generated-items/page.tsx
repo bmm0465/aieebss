@@ -23,6 +23,7 @@ export default function GeneratedItemsPage() {
 
   useEffect(() => {
     loadItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, gradeFilter]);
 
   const loadItems = async () => {

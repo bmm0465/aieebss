@@ -9,7 +9,7 @@ interface GeneratedItemDetail {
   id: string;
   test_type: string;
   grade_level: string;
-  items: any;
+  items: Record<string, unknown>;
   status: string;
   quality_score: number | null;
   review_notes: string | null;
@@ -33,6 +33,7 @@ export default function GeneratedItemDetailPage() {
 
   useEffect(() => {
     loadItem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
 
   const loadItem = async () => {

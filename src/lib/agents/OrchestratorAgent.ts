@@ -9,8 +9,7 @@ import type {
   ItemGenerationRequest,
   ItemGenerationResult,
   GeneratedTestItem,
-  TestType,
-  GradeLevel
+  TestType
 } from './types';
 
 export class OrchestratorAgent {
@@ -44,7 +43,16 @@ export class OrchestratorAgent {
 
       // 2. 각 테스트 유형별 품질 검증
       console.log('품질 검증 시작...');
-      const qualityScores: Record<string, any> = {};
+      const qualityScores: Record<string, {
+        overall: number;
+        dibels_compliance: number;
+        grade_level_appropriateness: number;
+        curriculum_alignment: number;
+        difficulty_appropriateness: number;
+        grammar_accuracy: number;
+        issues?: string[];
+        suggestions?: string[];
+      }> = {};
       
       for (const testType of request.testTypes) {
         const testItems = this.extractItemsForTestType(items, testType);
@@ -119,9 +127,9 @@ export class OrchestratorAgent {
    * 특정 테스트 유형의 문항 추출
    */
   private extractItemsForTestType(
-    items: any,
+    items: GeneratedItems,
     testType: TestType
-  ): any {
+  ): string[] | string | Array<{ num: number; sentence: string; choices: string[]; answer: string }> | undefined {
     return items[testType];
   }
 
@@ -129,11 +137,20 @@ export class OrchestratorAgent {
    * 전체 품질 점수 계산
    */
   private calculateOverallQualityScore(
-    qualityScores: Record<string, any>
+    qualityScores: Record<string, {
+      overall: number;
+      dibels_compliance: number;
+      grade_level_appropriateness: number;
+      curriculum_alignment: number;
+      difficulty_appropriateness: number;
+      grammar_accuracy: number;
+      issues?: string[];
+      suggestions?: string[];
+    }>
   ): number {
     if (Object.keys(qualityScores).length === 0) return 0;
 
-    const scores = Object.values(qualityScores).map((score: any) => score.overall || 0);
+    const scores = Object.values(qualityScores).map((score) => score.overall || 0);
     const sum = scores.reduce((a, b) => a + b, 0);
     return Math.round(sum / scores.length);
   }
@@ -142,11 +159,20 @@ export class OrchestratorAgent {
    * 평균 점수 계산
    */
   private getAverageScore(
-    qualityScores: Record<string, any>,
-    key: string
+    qualityScores: Record<string, {
+      overall: number;
+      dibels_compliance: number;
+      grade_level_appropriateness: number;
+      curriculum_alignment: number;
+      difficulty_appropriateness: number;
+      grammar_accuracy: number;
+      issues?: string[];
+      suggestions?: string[];
+    }>,
+    key: 'dibels_compliance' | 'grade_level_appropriateness' | 'curriculum_alignment' | 'difficulty_appropriateness' | 'grammar_accuracy'
   ): number {
     const scores = Object.values(qualityScores)
-      .map((score: any) => score[key] || 0)
+      .map((score) => score[key] || 0)
       .filter((score: number) => score > 0);
 
     if (scores.length === 0) return 0;
@@ -158,7 +184,16 @@ export class OrchestratorAgent {
   /**
    * 모든 이슈 수집
    */
-  private collectIssues(qualityScores: Record<string, any>): string[] {
+  private collectIssues(qualityScores: Record<string, {
+    overall: number;
+    dibels_compliance: number;
+    grade_level_appropriateness: number;
+    curriculum_alignment: number;
+    difficulty_appropriateness: number;
+    grammar_accuracy: number;
+    issues?: string[];
+    suggestions?: string[];
+  }>): string[] {
     const issues: string[] = [];
     for (const [testType, score] of Object.entries(qualityScores)) {
       if (score.issues && Array.isArray(score.issues)) {
@@ -171,7 +206,16 @@ export class OrchestratorAgent {
   /**
    * 모든 제안 수집
    */
-  private collectSuggestions(qualityScores: Record<string, any>): string[] {
+  private collectSuggestions(qualityScores: Record<string, {
+    overall: number;
+    dibels_compliance: number;
+    grade_level_appropriateness: number;
+    curriculum_alignment: number;
+    difficulty_appropriateness: number;
+    grammar_accuracy: number;
+    issues?: string[];
+    suggestions?: string[];
+  }>): string[] {
     const suggestions: string[] = [];
     for (const [testType, score] of Object.entries(qualityScores)) {
       if (score.suggestions && Array.isArray(score.suggestions)) {

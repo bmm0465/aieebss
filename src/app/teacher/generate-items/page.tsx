@@ -23,10 +23,19 @@ export default function GenerateItemsPage() {
   const [gradeLevel, setGradeLevel] = useState('초등 3학년');
   const [referenceDocument, setReferenceDocument] = useState('');
   const [selectedPDFs, setSelectedPDFs] = useState<string[]>([]);
-  const [availablePDFs, setAvailablePDFs] = useState<any[]>([]);
+  const [availablePDFs, setAvailablePDFs] = useState<Array<{ id: string; filename: string; grade_level: string | null }>>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedItems | null>(null);
-  const [qualityScore, setQualityScore] = useState<any>(null);
+  const [qualityScore, setQualityScore] = useState<{
+    overall: number;
+    dibels_compliance: number;
+    grade_level_appropriateness: number;
+    curriculum_alignment: number;
+    difficulty_appropriateness: number;
+    grammar_accuracy: number;
+    issues?: string[];
+    suggestions?: string[];
+  } | null>(null);
   const [itemId, setItemId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
@@ -46,7 +55,10 @@ export default function GenerateItemsPage() {
         const response = await fetch('/api/curriculum/pdfs');
         const data = await response.json();
         if (data.success) {
-          setAvailablePDFs(data.pdfs.filter((pdf: any) => pdf.status === 'completed') || []);
+          setAvailablePDFs(
+            (data.pdfs as Array<{ id: string; filename: string; grade_level: string | null; status: string }>)
+              .filter((pdf) => pdf.status === 'completed')
+          );
         }
       } catch (err) {
         console.error('PDF 목록 로드 오류:', err);

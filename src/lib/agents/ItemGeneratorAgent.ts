@@ -2,7 +2,7 @@
 // DIBELS 8th Edition 기준으로 문항을 생성하고, PDF 내용을 참조하여 교육과정 기반 문항 생성
 
 import OpenAI from 'openai';
-import type { TestType, GradeLevel, GeneratedItems, ItemGenerationRequest } from './types';
+import type { GeneratedItems, ItemGenerationRequest } from './types';
 import { RAGAgent } from './RAGAgent';
 
 const openai = new OpenAI({
@@ -23,11 +23,11 @@ export class ItemGeneratorAgent {
     request: ItemGenerationRequest
   ): Promise<{
     items: GeneratedItems;
-    pdfReferences?: any[];
+    pdfReferences?: Array<{ pdf_id: string; pdf_filename: string; chunk_ids: string[] }>;
   }> {
     // PDF 참조 컨텍스트 추출
     let pdfContext = '';
-    const pdfReferences: any[] = [];
+    const pdfReferences: Array<{ pdf_id: string; pdf_filename: string; chunk_ids: string[] }> = [];
 
     if (request.pdfIds && request.pdfIds.length > 0) {
       await this.ragAgent.initialize();
