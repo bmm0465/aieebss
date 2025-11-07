@@ -3,34 +3,82 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { generateStoragePath } from '@/lib/storage-path';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  hasHesitation,
+  parseTranscriptionResult,
+  timelineToPrompt,
+} from '@/lib/utils/dibelsTranscription';
 
-// OpenAI 클라이언트 초기화
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// [핵심 2] 오래 걸리는 모든 작업을 처리하는 별도의 비동기 함수
-async function processOrfInBackground(supabase: SupabaseClient, userId: string, questionPassage: string, arrayBuffer: ArrayBuffer, timeTaken: number) {
+const HESITATION_THRESHOLD_SECONDS = 5;
+
+type OrfErrorCategory =
+  | 'Mispronounced words'
+  | 'Sounded out words'
+  | 'Word order'
+  | 'Omissions'
+  | 'Hesitation'
+  | 'Other'
+  | null;
+
+type OrfReadingFluency = 'fluent' | 'hesitant' | 'choppy' | 'other';
+
+interface OrfEvaluation {
+  words_correct: number;
+  error_breakdown: Array<{
+    word: string;
+    error_category: Exclude<OrfErrorCategory, null> | 'Other';
+    notes?: string;
+  }>;
+  overall_error_category: OrfErrorCategory;
+  reading_fluency: OrfReadingFluency;
+  used_self_correction: boolean;
+  self_correction_within_seconds: number | null;
+  notes?: string;
+}
+
+async function processOrfInBackground(
+  supabase: SupabaseClient,
+  userId: string,
+  questionPassage: string,
+  arrayBuffer: ArrayBuffer,
+  timeTaken: number,
+) {
   const startTime = Date.now();
-  
+
   try {
-    // 빈 오디오 파일 처리
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
-        user_id: userId, test_type: 'ORF', question: questionPassage, is_correct: false,
-        error_type: 'hesitation', wcpm: 0, accuracy: 0, time_taken: timeTaken,
-        processing_time_ms: Date.now() - startTime
+        user_id: userId,
+        test_type: 'ORF',
+        question: questionPassage,
+        is_correct: false,
+        error_type: 'Hesitation',
+        wcpm: 0,
+        accuracy: 0,
+        time_taken: timeTaken,
+        processing_time_ms: Date.now() - startTime,
       });
-      console.log(`[ORF 비동기 처리 완료] 사용자: ${userId}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
+      console.log(
+        `[ORF 비동기 처리 완료] 사용자: ${userId}, 결과: Hesitation (빈 오디오), 처리시간: ${Date.now() - startTime}ms`,
+      );
       return;
     }
 
-    // 오디오 파일 크기 검증 (최소 1KB, 최대 10MB)
     if (arrayBuffer.byteLength < 1024) {
       await supabase.from('test_results').insert({
-        user_id: userId, test_type: 'ORF', question: questionPassage, is_correct: false,
-        error_type: 'insufficient_audio', wcpm: 0, accuracy: 0, time_taken: timeTaken,
-        processing_time_ms: Date.now() - startTime
+        user_id: userId,
+        test_type: 'ORF',
+        question: questionPassage,
+        is_correct: false,
+        error_type: 'insufficient_audio',
+        wcpm: 0,
+        accuracy: 0,
+        time_taken: timeTaken,
+        processing_time_ms: Date.now() - startTime,
       });
       console.log(`[ORF 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
       return;
@@ -38,161 +86,207 @@ async function processOrfInBackground(supabase: SupabaseClient, userId: string, 
 
     if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
       await supabase.from('test_results').insert({
-        user_id: userId, test_type: 'ORF', question: questionPassage, is_correct: false,
-        error_type: 'audio_too_large', wcpm: 0, accuracy: 0, time_taken: timeTaken,
-        processing_time_ms: Date.now() - startTime
+        user_id: userId,
+        test_type: 'ORF',
+        question: questionPassage,
+        is_correct: false,
+        error_type: 'audio_too_large',
+        wcpm: 0,
+        accuracy: 0,
+        time_taken: timeTaken,
+        processing_time_ms: Date.now() - startTime,
       });
       console.log(`[ORF 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
       return;
     }
 
     const storagePath = await generateStoragePath(userId, 'ORF');
-    
+
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(storagePath, arrayBuffer, { 
+        .upload(storagePath, arrayBuffer, {
           contentType: 'audio/webm',
-          upsert: false
+          upsert: false,
         }),
       openai.audio.transcriptions.create({
         model: 'gpt-4o-transcribe',
-        file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
+        file: new File([arrayBuffer], 'audio.webm', { type: 'audio/webm' }),
         language: 'en',
-        response_format: 'json',
+        response_format: 'verbose_json',
+        temperature: 0,
         prompt: `This is a DIBELS 8th edition Oral Reading Fluency (ORF) test for Korean EFL students. The student will read a passage aloud.
 
-ORIGINAL PASSAGE: "${questionPassage}"
-
 CRITICAL INSTRUCTIONS:
-1. Accept Korean pronunciations for common English words:
-   - "the" → "더", "디", "드"
-   - "cat" → "캣", "캣", "캣"
-   - "sat" → "샛", "샛", "샛"
-   - "on" → "온", "온", "온"
-   - "mat" → "맷", "맷", "맷"
-   - "dog" → "독", "독", "독"
-   - "big" → "빅", "빅", "빅"
-   - "red" → "레드", "레드", "레드"
-   - "blue" → "블루", "블루", "블루"
-   - "green" → "그린", "그린", "그린"
-
-2. Accept various response formats:
-   - Correct English: "The cat sat on the mat."
-   - Korean pronunciation: "더 캣 샛 온 더 맷"
-   - Mixed responses: "더 cat sat on 더 mat"
-   - Mispronunciations: "The cat sit on the mat"
-   - Partial attempts: "더 캣... 샛... 온..."
-   - Hesitations: "더 캣, 음, 샛 온 더 맷"
-   - Word substitutions: "더 독 샛 온 더 맷" (for "cat")
-   - Word omissions: "더 캣 샛 더 맷" (missing "on")
-   - Word additions: "더 캣 샛 다운 온 더 맷"
-   - Repetitions: "더 캣, 더 캣 샛 온 더 맷"
-
-3. Be extremely flexible with pronunciation variations
-4. Preserve all reading attempts, hesitations, and natural reading patterns
-5. Return JSON: {"text": "exact transcription", "confidence": "high/medium/low", "reading_fluency": "fluent/hesitant/choppy"}`
-      })
+1. Accept Korean pronunciations and mixed language readings.
+2. Preserve hesitations, repetitions, and substitutions.
+3. Provide accurate timestamps for each utterance`,
+      }),
     ]);
 
     const { data: storageData, error: storageError } = storageResult;
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    // JSON 응답 파싱
-    let transcriptionData;
-    try {
-      transcriptionData = JSON.parse(transcription.text);
-    } catch {
-      // JSON 파싱 실패 시 기본 텍스트 사용
-      transcriptionData = { text: transcription.text, confidence: "medium", reading_fluency: "hesitant" };
-    }
-    
-    let studentAnswer = "";
-    const confidence = transcriptionData.confidence || "medium";
-    const readingFluency = transcriptionData.reading_fluency || "hesitant";
-    
-    if (transcriptionData.text && transcriptionData.text.trim()) {
-        studentAnswer = transcriptionData.text;
-        console.log(`[ORF 음성 인식] 내용: "${studentAnswer}", 신뢰도: ${confidence}, 읽기 유창성: ${readingFluency}`);
-    } else {
-        console.warn(`[ORF 경고] 음성 인식 실패 - 내용: "${transcriptionData.text}"`);
-        studentAnswer = "no_response";
-    }
-    
+    const transcriptionData = parseTranscriptionResult(transcription);
+    const timeline = transcriptionData.timeline;
+    const confidence = transcriptionData.confidence ?? 'medium';
+    const aggregatedTranscript = transcriptionData.text ?? '';
+    const studentAnswer = aggregatedTranscript || 'no_response';
+
+    const hesitationDetected = hasHesitation(timeline, HESITATION_THRESHOLD_SECONDS);
     const passageWords = questionPassage.split(/\s+/);
 
-    const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: `You are an expert DIBELS 8th edition ORF test evaluator for EFL students. Analyze oral reading fluency with cultural flexibility.
+    let evaluation: OrfEvaluation = {
+      words_correct: 0,
+      error_breakdown: [],
+      overall_error_category: hesitationDetected ? 'Hesitation' : null,
+      reading_fluency: 'other',
+      used_self_correction: false,
+      self_correction_within_seconds: null,
+      notes: hesitationDetected ? 'No response within 5 seconds' : undefined,
+    };
 
-          ORIGINAL PASSAGE: "${questionPassage}"
-          STUDENT READING: "${studentAnswer}"
-          TIME TAKEN: ${timeTaken} seconds
+    if (!hesitationDetected) {
+      try {
+        const scoringResponse = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `You are an expert DIBELS 8th edition ORF scorer for Korean EFL students.
 
-          EVALUATION GUIDELINES:
-          1. Accept various response formats:
-             - Correct English reading: "The cat sat on the mat."
-             - Korean pronunciation: "더 캣 샛 온 더 맷"
-             - Mixed responses: "더 cat sat on 더 mat"
-             - Mispronunciations: "The cat sit on the mat"
-             - Hesitations: "The cat, um, sat on the mat"
-          2. Be flexible with pronunciation variations in EFL contexts
-          3. Credit partial attempts and close approximations
-          4. Consider cultural differences in reading fluency
+Scoring instructions:
+- Count words read correctly (WCPM) and evaluate accuracy.
+- Ignore repetitions and insertions.
+- Use error categories: "Mispronounced words", "Sounded out words", "Word order", "Omissions", "Hesitation", "Other".
+- Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to the first meaningful attempt.
+- Self-corrections resolving an error within ${HESITATION_THRESHOLD_SECONDS} seconds should be credited and mark used_self_correction true.
+- Provide an error_breakdown array describing notable errors.
+- Determine reading_fluency as "fluent", "hesitant", "choppy", or "other".
 
-          DIBELS ORF RULES:
-          - Count words read correctly
-          - Apply discontinue rule if needed
-          - Analyze error patterns
+Return strict JSON:
+{
+  "words_correct": number,
+  "error_breakdown": [
+    {"word": string, "error_category": "Mispronounced words" | "Sounded out words" | "Word order" | "Omissions" | "Other", "notes": string | null}
+  ],
+  "overall_error_category": null | "Mispronounced words" | "Sounded out words" | "Word order" | "Omissions" | "Hesitation" | "Other",
+  "reading_fluency": "fluent" | "hesitant" | "choppy" | "other",
+  "used_self_correction": boolean,
+  "self_correction_within_seconds": number | null,
+  "notes": string | null
+}`,
+            },
+            {
+              role: 'user',
+              content: `Original passage: ${questionPassage}
+Student transcript: ${aggregatedTranscript}
+Timeline JSON: ${timelineToPrompt(timeline)}
+Time taken seconds: ${timeTaken}
+Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
+            },
+          ],
+          response_format: { type: 'json_object' },
+        });
 
-          Respond with JSON:
-          {
-            "words_correct": integer,
-            "discontinue_rule_met": boolean,
-            "error_details": { ... },
-            "notes": "brief explanation"
-          }`,
-        },
-      ],
-      response_format: { type: 'json_object' },
-    });
-    
-    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{}');
-    const wordsCorrect = scoringResult.words_correct || 0;
-    const errorDetails = scoringResult.error_details || {};
-    
+        const parsedEvaluation = JSON.parse(
+          scoringResponse.choices[0].message.content ||
+            '{"words_correct":0,"error_breakdown":[],"overall_error_category":null,"reading_fluency":"other","used_self_correction":false,"self_correction_within_seconds":null}',
+        );
+
+        evaluation = {
+          words_correct: Number.isFinite(parsedEvaluation.words_correct)
+            ? Number(parsedEvaluation.words_correct)
+            : 0,
+          error_breakdown: Array.isArray(parsedEvaluation.error_breakdown)
+            ? parsedEvaluation.error_breakdown.map((entry: any) => ({
+                word: typeof entry?.word === 'string' ? entry.word : '',
+                error_category: (['Mispronounced words', 'Sounded out words', 'Word order', 'Omissions', 'Other'].includes(
+                  entry?.error_category,
+                )
+                  ? entry.error_category
+                  : 'Other') as Exclude<OrfErrorCategory, null> | 'Other',
+                notes:
+                  typeof entry?.notes === 'string' && entry.notes.trim().length > 0
+                    ? entry.notes.trim()
+                    : undefined,
+              }))
+            : [],
+          overall_error_category:
+            ['Mispronounced words', 'Sounded out words', 'Word order', 'Omissions', 'Hesitation', 'Other'].includes(
+              parsedEvaluation.overall_error_category,
+            )
+              ? (parsedEvaluation.overall_error_category as OrfErrorCategory)
+              : null,
+          reading_fluency:
+            parsedEvaluation.reading_fluency === 'fluent' ||
+            parsedEvaluation.reading_fluency === 'hesitant' ||
+            parsedEvaluation.reading_fluency === 'choppy'
+              ? parsedEvaluation.reading_fluency
+              : 'other',
+          used_self_correction: Boolean(parsedEvaluation.used_self_correction),
+          self_correction_within_seconds:
+            typeof parsedEvaluation.self_correction_within_seconds === 'number'
+              ? parsedEvaluation.self_correction_within_seconds
+              : null,
+          notes:
+            typeof parsedEvaluation.notes === 'string' && parsedEvaluation.notes.trim().length > 0
+              ? parsedEvaluation.notes.trim()
+              : undefined,
+        };
+      } catch (scoringError) {
+        console.warn('[ORF 평가 경고]', scoringError);
+      }
+    }
+
+    const wordsCorrect = Math.max(0, evaluation.words_correct);
     const wcpm = timeTaken > 0 ? Math.round((wordsCorrect / timeTaken) * 60) : 0;
     const accuracy = passageWords.length > 0 ? wordsCorrect / passageWords.length : 0;
+    const readingFluency: OrfReadingFluency =
+      evaluation.reading_fluency === 'fluent' ||
+      evaluation.reading_fluency === 'hesitant' ||
+      evaluation.reading_fluency === 'choppy'
+        ? evaluation.reading_fluency
+        : 'other';
+    const errorType: OrfErrorCategory = evaluation.overall_error_category;
 
     const processingTime = Date.now() - startTime;
-    
+
+    const errorDetails = {
+      ...evaluation,
+      hesitation_detected: hesitationDetected,
+      passage_word_count: passageWords.length,
+    };
+
     await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'ORF',
       question: questionPassage,
       student_answer: studentAnswer,
-      wcpm: wcpm,
-      accuracy: accuracy,
+      wcpm,
+      accuracy,
       time_taken: timeTaken,
       error_details: errorDetails,
+      error_type: errorType,
       audio_url: audioUrl,
       confidence_level: confidence,
       reading_fluency: readingFluency,
       processing_time_ms: processingTime,
     });
 
-    const accuracyPercent = Math.round((wordsCorrect / passageWords.length) * 100);
-    console.log(`[ORF 비동기 처리 완료] 사용자: ${userId}, 결과: ${wordsCorrect}개 단어 정확 (WCPM: ${wcpm}, 정확도: ${accuracyPercent}%), 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
-
+    const accuracyPercent = passageWords.length > 0 ? Math.round(accuracy * 100) : 0;
+    const resultLabel = errorType ? `${wordsCorrect}개 단어 정확 (오류: ${errorType})` : `${wordsCorrect}개 단어 정확`;
+    console.log(
+      `[ORF 비동기 처리 완료] 사용자: ${userId}, 결과: ${resultLabel} (WCPM: ${wcpm}, 정확도: ${accuracyPercent}%), Self-correction: ${evaluation.used_self_correction}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`,
+    );
+    if (evaluation.notes) {
+      console.log(`[ORF 채점 노트] ${evaluation.notes}`);
+    }
   } catch (error) {
     const processingTime = Date.now() - startTime;
     console.error(`[ORF 비동기 처리 에러] 사용자: ${userId}, 처리시간: ${processingTime}ms`, error);
-    
-    // 오류 발생 시에도 데이터베이스에 기록
+
     try {
       await supabase.from('test_results').insert({
         user_id: userId,
@@ -204,7 +298,7 @@ CRITICAL INSTRUCTIONS:
         accuracy: 0,
         time_taken: timeTaken,
         processing_time_ms: processingTime,
-        error_details: error instanceof Error ? error.message : 'Unknown error'
+        error_details: error instanceof Error ? error.message : 'Unknown error',
       });
     } catch (dbError) {
       console.error(`[ORF 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
@@ -220,31 +314,29 @@ export async function POST(request: Request) {
     const userId = formData.get('userId') as string;
     const timeTaken = parseInt(formData.get('timeTaken') as string, 10);
 
-    if (!audioBlob || !questionPassage || !userId || isNaN(timeTaken)) {
+    if (!audioBlob || !questionPassage || !userId || Number.isNaN(timeTaken)) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
-    // 서버 사이드 클라이언트로 사용자 인증 확인
     const { createClient } = await import('@/lib/supabase/server');
     const supabase = await createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user || user.id !== userId) {
       console.log('API: Auth failed - user:', user?.id, 'userId:', userId, 'error:', userError);
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
-    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
     const serviceClient = createServiceClient();
 
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // [핵심 4] 오래 걸리는 작업을 백그라운드에서 실행하되, 스토리지 저장은 먼저 완료
     await processOrfInBackground(serviceClient, userId, questionPassage, arrayBuffer, timeTaken);
 
-    // 스토리지 저장이 완료된 후 응답 반환
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
-
   } catch (error) {
     console.error('ORF API 요청 접수 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';

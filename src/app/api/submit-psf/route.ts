@@ -3,34 +3,77 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { generateStoragePath } from '@/lib/storage-path';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import {
+  hasHesitation,
+  parseTranscriptionResult,
+  timelineToPrompt,
+} from '@/lib/utils/dibelsTranscription';
 
-// OpenAI 클라이언트 초기화
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
-async function processPsfInBackground(supabase: SupabaseClient, userId: string, questionWord: string, arrayBuffer: ArrayBuffer) {
+const HESITATION_THRESHOLD_SECONDS = 5;
+
+type PsfOverall = 'correct' | 'partial' | 'incorrect';
+
+type PsfErrorCategory =
+  | 'Mispronounced segment'
+  | 'No segmentation'
+  | 'Spelling'
+  | 'Omissions'
+  | 'Hesitation'
+  | 'Other'
+  | null;
+
+type PsfNotes = string | undefined;
+
+interface PsfEvaluation {
+  overall: PsfOverall;
+  correct_segments: number;
+  target_segments: number;
+  error_category: PsfErrorCategory;
+  used_self_correction: boolean;
+  self_correction_within_seconds: number | null;
+  notes?: string;
+}
+
+async function processPsfInBackground(
+  supabase: SupabaseClient,
+  userId: string,
+  questionWord: string,
+  arrayBuffer: ArrayBuffer,
+) {
   const startTime = Date.now();
-  
+
   try {
-    // 빈 오디오 파일 처리
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
-          user_id: userId, test_type: 'PSF', question: questionWord, is_correct: false,
-          error_type: 'hesitation', correct_segments: 0, target_segments: null,
-          processing_time_ms: Date.now() - startTime
+        user_id: userId,
+        test_type: 'PSF',
+        question: questionWord,
+        is_correct: false,
+        error_type: 'Hesitation',
+        correct_segments: 0,
+        target_segments: null,
+        processing_time_ms: Date.now() - startTime,
       });
-      console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
+      console.log(
+        `[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: Hesitation (빈 오디오), 처리시간: ${Date.now() - startTime}ms`,
+      );
       return;
     }
 
-    // 오디오 파일 크기 검증 (최소 1KB, 최대 10MB)
     if (arrayBuffer.byteLength < 1024) {
       await supabase.from('test_results').insert({
-          user_id: userId, test_type: 'PSF', question: questionWord, is_correct: false,
-          error_type: 'insufficient_audio', correct_segments: 0, target_segments: null,
-          processing_time_ms: Date.now() - startTime
+        user_id: userId,
+        test_type: 'PSF',
+        question: questionWord,
+        is_correct: false,
+        error_type: 'insufficient_audio',
+        correct_segments: 0,
+        target_segments: null,
+        processing_time_ms: Date.now() - startTime,
       });
       console.log(`[PSF 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
       return;
@@ -38,28 +81,34 @@ async function processPsfInBackground(supabase: SupabaseClient, userId: string, 
 
     if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
       await supabase.from('test_results').insert({
-          user_id: userId, test_type: 'PSF', question: questionWord, is_correct: false,
-          error_type: 'audio_too_large', correct_segments: 0, target_segments: null,
-          processing_time_ms: Date.now() - startTime
+        user_id: userId,
+        test_type: 'PSF',
+        question: questionWord,
+        is_correct: false,
+        error_type: 'audio_too_large',
+        correct_segments: 0,
+        target_segments: null,
+        processing_time_ms: Date.now() - startTime,
       });
       console.log(`[PSF 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
       return;
     }
 
     const storagePath = await generateStoragePath(userId, 'PSF');
-    
+
     const [storageResult, transcription] = await Promise.all([
       supabase.storage
         .from('student-recordings')
-        .upload(storagePath, arrayBuffer, { 
+        .upload(storagePath, arrayBuffer, {
           contentType: 'audio/webm',
-          upsert: false
+          upsert: false,
         }),
       openai.audio.transcriptions.create({
         model: 'gpt-4o-transcribe',
-        file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
+        file: new File([arrayBuffer], 'audio.webm', { type: 'audio/webm' }),
         language: 'en',
-        response_format: 'json', 
+        response_format: 'json',
+        temperature: 0,
         prompt: `This is a DIBELS 8th edition Phonemic Segmentation Fluency (PSF) test for Korean EFL students. The student will break words into individual phonemes (sounds).
 
 TARGET WORD: "${questionWord}"
@@ -103,93 +152,148 @@ CRITICAL INSTRUCTIONS:
 
 3. Be extremely flexible with pronunciation variations
 4. Preserve all segmentation attempts, hesitations, and repetitions
-5. Return JSON: {"text": "exact transcription", "confidence": "high/medium/low", "phoneme_count": number}`,
-      })
+5. Return strict JSON with keys: "text" (string), "confidence" (string), and "segments" (array of {"start": number, "end": number, "text": string}) where times are in seconds from audio start. Always include the segments array (empty if no speech).`,
+      }),
     ]);
 
     const { data: storageData, error: storageError } = storageResult;
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    // JSON 응답 파싱
-    let transcriptionData;
-    try {
-      transcriptionData = JSON.parse(transcription.text);
-    } catch {
-      // JSON 파싱 실패 시 기본 텍스트 사용
-      transcriptionData = { text: transcription.text, confidence: "medium", phoneme_count: 0 };
+    const transcriptionData = parseTranscriptionResult(transcription);
+    const timeline = transcriptionData.timeline;
+    const confidence = transcriptionData.confidence ?? 'medium';
+    const aggregatedTranscript = transcriptionData.text?.trim() ?? '';
+    const studentAnswer = aggregatedTranscript || 'no_response';
+    const detectedPhonemeCount = timeline.length;
+
+    const hesitationDetected = hasHesitation(timeline, HESITATION_THRESHOLD_SECONDS);
+
+    let evaluation: PsfEvaluation = {
+      overall: hesitationDetected ? 'incorrect' : 'incorrect',
+      correct_segments: 0,
+      target_segments: 0,
+      error_category: hesitationDetected ? 'Hesitation' : 'Other',
+      used_self_correction: false,
+      self_correction_within_seconds: null,
+      notes: hesitationDetected ? 'No response within 5 seconds' : undefined,
+    };
+
+    if (!hesitationDetected) {
+      try {
+        const scoringResponse = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a DIBELS 8th edition Phonemic Segmentation Fluency (PSF) scorer for Korean EFL students.
+
+Scoring instructions:
+- Classify overall as "correct" when all phonemes are segmented correctly, "partial" when at least one phoneme is correct but the response is incomplete, and "incorrect" when no phonemes are accurate.
+- Treat "partial" as acceptable for credit; leave error_category null and set notes to "Partial segmentation".
+- Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to the first meaningful attempt.
+- Count self-corrections that arrive at a correct segmentation within ${HESITATION_THRESHOLD_SECONDS} seconds as correct and set "used_self_correction" to true.
+- Ignore minor schwa sounds and harmless additions.
+
+Choose an error_category ONLY when overall is "incorrect" using these labels:
+- "Mispronounced segment"
+- "No segmentation"
+- "Spelling"
+- "Omissions"
+- "Hesitation"
+- "Other"
+
+Return strict JSON:
+{
+  "overall": "correct" | "partial" | "incorrect",
+  "correct_segments": number,
+  "target_segments": number,
+  "error_category": null | "Mispronounced segment" | "No segmentation" | "Spelling" | "Omissions" | "Hesitation" | "Other",
+  "used_self_correction": boolean,
+  "self_correction_within_seconds": number | null,
+  "notes": string | null
+}`,
+            },
+            {
+              role: 'user',
+              content: `Target word: ${questionWord}
+Aggregated transcript: ${aggregatedTranscript}
+Timeline JSON: ${timelineToPrompt(timeline)}
+Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
+            },
+          ],
+          response_format: { type: 'json_object' },
+        });
+
+        const parsedEvaluation = JSON.parse(
+          scoringResponse.choices[0].message.content ||
+            '{"overall":"incorrect","correct_segments":0,"target_segments":0,"error_category":"Other","used_self_correction":false,"self_correction_within_seconds":null}',
+        );
+
+        const overall: PsfOverall =
+          parsedEvaluation.overall === 'correct' || parsedEvaluation.overall === 'partial'
+            ? parsedEvaluation.overall
+            : 'incorrect';
+
+        const allowedErrorCategories = new Set<PsfErrorCategory>([
+          'Mispronounced segment',
+          'No segmentation',
+          'Spelling',
+          'Omissions',
+          'Hesitation',
+          'Other',
+          null,
+        ]);
+
+        evaluation = {
+          overall,
+          correct_segments: Number.isFinite(parsedEvaluation.correct_segments)
+            ? Number(parsedEvaluation.correct_segments)
+            : 0,
+          target_segments: Number.isFinite(parsedEvaluation.target_segments)
+            ? Number(parsedEvaluation.target_segments)
+            : 0,
+          error_category:
+            overall === 'incorrect'
+              ? allowedErrorCategories.has(parsedEvaluation.error_category)
+                ? (parsedEvaluation.error_category as PsfErrorCategory)
+                : 'Other'
+              : null,
+          used_self_correction: Boolean(parsedEvaluation.used_self_correction),
+          self_correction_within_seconds:
+            typeof parsedEvaluation.self_correction_within_seconds === 'number'
+              ? parsedEvaluation.self_correction_within_seconds
+              : null,
+          notes:
+            typeof parsedEvaluation.notes === 'string' && parsedEvaluation.notes.trim().length > 0
+              ? parsedEvaluation.notes.trim()
+              : undefined,
+        };
+
+        if (evaluation.overall !== 'incorrect') {
+          evaluation.error_category = null;
+        }
+      } catch (scoringError) {
+        console.warn('[PSF 평가 경고]', scoringError);
+      }
     }
-    
-    let studentAnswer = "";
-    const confidence = transcriptionData.confidence || "medium";
-    const phonemeCount = transcriptionData.phoneme_count || 0;
-    
-    if (transcriptionData.text && transcriptionData.text.trim()) {
-        studentAnswer = transcriptionData.text.trim();
-        console.log(`[PSF 음성 인식] 내용: "${studentAnswer}", 신뢰도: ${confidence}, 음소 수: ${phonemeCount}`);
-    } else {
-        console.warn(`[PSF 경고] 음성 인식 실패 - 내용: "${transcriptionData.text}"`);
-        studentAnswer = "no_response";
-    }
 
-    const scoringResponse = await openai.chat.completions.create({
-      model: 'gpt-4o',
-      messages: [
-        {
-          role: 'system',
-          content: `You are a DIBELS 8th edition PSF test evaluator for EFL (English as a Foreign Language) students. Analyze the student's phonemic segmentation attempt with cultural and linguistic flexibility.
-
-          TARGET WORD: "${questionWord}"
-          STUDENT RESPONSE: "${studentAnswer}"
-
-          CRITICAL RULES FOR PSF (Phoneme Segmentation Fluency):
-          1. ONLY PHONEMES (letter sounds) are correct - NOT letter names
-          2. Letter names like "em-ay-pee" for "map" are INCORRECT - use "letter_name_error"
-          3. Target word phonemes for "${questionWord}": Calculate the correct phoneme sequence
-
-          ACCEPT PHONEME FORMATS (CORRECT):
-          - English phonemes: "/m/ /a/ /p/" or "m-a-p" or "m a p" for "map"
-          - Korean phoneme approximations: "음-아-프" for "map" (sounds like /m/ /a/ /p/)
-          - Hyphen-separated: "b-e-e", "d-o-g"
-          - Space-separated: "s e p", "t a p"
-          - Slash notation: "/m/ /a/ /p/"
-          
-          REJECT (INCORRECT):
-          - Letter names: "em-ay-pee" for "map" → INCORRECT (letter_name_error)
-          - Korean letter names: "엠-에이-피" for "map" → INCORRECT (letter_name_error)
-          - Whole word: "map" without segmentation → INCORRECT (whole_word)
-
-          EVALUATION PROCESS:
-          1. Count total phonemes in target word "${questionWord}"
-          2. Check if student provided PHONEMES (sounds), not letter names
-          3. Count correct phonemes identified by student
-          4. Be flexible with pronunciation variations common in EFL contexts
-          5. Accept partial attempts if at least 1 phoneme is correct
-
-          CATEGORIES:
-          - "correct": All phonemes correctly identified as SOUNDS (not names) in any valid format
-          - "partial": Some phonemes correctly identified as SOUNDS (1+ correct, but not all)
-          - "letter_name_error": Student used letter NAMES instead of phonemes (e.g., "em-ay-pee" for "map")
-          - "whole_word": Student said the complete word without segmentation
-          - "no_response": No clear segmentation attempt or empty response
-          - "unclear": Response too unclear to evaluate
-
-          Respond with JSON: {"evaluation": "category", "target_segments": number, "correct_segments": number, "notes": "brief explanation"}`
-        },
-      ],
-      response_format: { type: 'json_object' },
-    });
-    
-    const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{}');
-    const { evaluation, target_segments, correct_segments, notes } = scoringResult;
-    
-    // EFL 환경에 맞는 채점 기준
-    const isCorrect = correct_segments > 0; // 1개 이상의 음소를 맞추면 부분 점수
-    const isFullyCorrect = correct_segments === target_segments; // 모든 음소를 맞추면 완전 정답
-    const errorType = !isCorrect ? evaluation : null;
+    const isCorrect = evaluation.overall !== 'incorrect';
+    const isFullyCorrect = evaluation.overall === 'correct';
+    const correctSegments = Math.max(0, evaluation.correct_segments);
+    const rawTargetSegments = evaluation.target_segments;
+    const lettersOnly = questionWord ? questionWord.replace(/[^a-z]/gi, '') : '';
+    const fallbackTargetSegments = Math.max(lettersOnly.length, correctSegments);
+    const targetSegments =
+      rawTargetSegments && rawTargetSegments > 0
+        ? rawTargetSegments
+        : fallbackTargetSegments > 0
+          ? fallbackTargetSegments
+          : null;
+    const errorType = isCorrect ? null : evaluation.error_category;
 
     const processingTime = Date.now() - startTime;
-    
+
     await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'PSF',
@@ -197,29 +301,31 @@ CRITICAL INSTRUCTIONS:
       student_answer: studentAnswer,
       is_correct: isCorrect,
       error_type: errorType,
-      correct_segments: correct_segments,
-      target_segments: target_segments,
+      correct_segments: correctSegments,
+      target_segments: targetSegments,
       audio_url: audioUrl,
       confidence_level: confidence,
-      detected_phoneme_count: phonemeCount,
+      detected_phoneme_count: detectedPhonemeCount,
       processing_time_ms: processingTime,
     });
 
-    // 더 상세한 로깅
-    const resultMessage = isFullyCorrect ? '완전 정답' : 
-                         isCorrect ? `부분 정답 (${correct_segments}/${target_segments})` : 
-                         `오답 (${evaluation})`;
-    
-    console.log(`[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
-    if (notes) {
-      console.log(`[PSF 채점 노트] ${notes}`);
-    }
+    const ratioLabel = targetSegments ? `${correctSegments}/${targetSegments}` : `${correctSegments}`;
+    const resultMessage = isFullyCorrect
+      ? `완전 정답 (${ratioLabel})`
+      : isCorrect
+        ? `부분 정답 (${ratioLabel})`
+        : `오답 (${errorType ?? 'Other'})`;
 
+    console.log(
+      `[PSF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionWord}, 결과: ${resultMessage}, Self-correction: ${evaluation.used_self_correction}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`,
+    );
+    if (evaluation.notes) {
+      console.log(`[PSF 채점 노트] ${evaluation.notes}`);
+    }
   } catch (error) {
     const processingTime = Date.now() - startTime;
     console.error(`[PSF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionWord}, 처리시간: ${processingTime}ms`, error);
-    
-    // 오류 발생 시에도 데이터베이스에 기록
+
     try {
       await supabase.from('test_results').insert({
         user_id: userId,
@@ -230,7 +336,7 @@ CRITICAL INSTRUCTIONS:
         correct_segments: 0,
         target_segments: null,
         processing_time_ms: processingTime,
-        error_details: error instanceof Error ? error.message : 'Unknown error'
+        error_details: error instanceof Error ? error.message : 'Unknown error',
       });
     } catch (dbError) {
       console.error(`[PSF 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
@@ -249,27 +355,25 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
-    // 서버 사이드 클라이언트로 사용자 인증 확인
     const { createClient } = await import('@/lib/supabase/server');
     const supabase = await createClient();
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
     if (userError || !user || user.id !== userId) {
       console.log('API: Auth failed - user:', user?.id, 'userId:', userId, 'error:', userError);
       return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
     }
 
-    // 서버 클라이언트 생성 (관리자 권한으로 Storage 접근)
     const serviceClient = createServiceClient();
-    
+
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달하고, 작업이 끝날 때까지 기다립니다.
     await processPsfInBackground(serviceClient, userId, questionWord, arrayBuffer);
 
-    // 백그라운드 작업이 성공적으로 완료된 후 응답을 반환합니다.
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
-
   } catch (error) {
     console.error('PSF API 요청 접수 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';

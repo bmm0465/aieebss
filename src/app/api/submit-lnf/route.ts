@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { generateStoragePath } from '@/lib/storage-path';
+import {
+  hasHesitation,
+  parseTranscriptionResult,
+  timelineToPrompt,
+} from '@/lib/utils/dibelsTranscription';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
@@ -30,6 +35,8 @@ const letterSounds: { [key: string]: string[] } = {
   Y: ['yuh', 'y', '이'], Z: ['zuh', 'z', '즈']
 };
 
+const HESITATION_THRESHOLD_SECONDS = 5;
+
 // [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
 async function processLnfInBackground(supabase: SupabaseClient, userId: string, questionLetter: string, arrayBuffer: ArrayBuffer) {
   const startTime = Date.now();
@@ -47,7 +54,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'LNF', question: questionLetter,
-          is_correct: false, error_type: 'hesitation'
+          is_correct: false, error_type: 'Hesitation'
       });
       console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
       return;
@@ -82,17 +89,18 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
         }),
       openai.audio.transcriptions.create({
         model: 'gpt-4o-transcribe',
-        file: new File([arrayBuffer], "audio.webm", { type: "audio/webm" }),
+        file: new File([arrayBuffer], 'audio.webm', { type: 'audio/webm' }),
         language: 'en',
         response_format: 'json',
-        prompt: `This is a DIBELS 8th editionLetter Naming Fluency (LNF) test for Korean EFL students. The student will name individual English letters.
+        temperature: 0,
+        prompt: `This is a DIBELS 8th edition Letter Naming Fluency (LNF) test for Korean EFL students. The student will name individual English letters.
 
 CRITICAL INSTRUCTIONS:
 1. Target letter: "${questionLetter}"
-2. Accept Korean pronunciations: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' for Z
-3. Accept English letter names: 'ay' for A, 'bee' for B, 'cee' for C, 'dee' for D, 'ee' for E, 'eff' for F, 'gee' for G, 'aitch' for H, 'eye' for I, 'jay' for J, 'kay' for K, 'ell' for L, 'em' for M, 'en' for N, 'oh' for O, 'pee' for P, 'cue' for Q, 'ar' for R, 'ess' for S, 'tee' for T, 'you' for U, 'vee' for V, 'double-u' for W, 'ex' for X, 'why' for Y, 'zee' for Z
-4. Be flexible with hesitations, repetitions, and partial attempts
-5. Return JSON: {"text": "exact transcription", "confidence": "high/medium/low"}`,
+2. Accept Korean pronunciations: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' for Z.
+3. Accept English letter names: 'ay', 'bee', 'cee', 'dee', 'ee', 'eff', 'gee', 'aitch', 'eye', 'jay', 'kay', 'ell', 'em', 'en', 'oh', 'pee', 'cue', 'ar', 'ess', 'tee', 'you', 'vee', 'double-u', 'ex', 'why', 'zee'.
+4. Be flexible with hesitations, repetitions, and partial attempts.
+5. Return strict JSON with keys: "text" (string), "confidence" (string), and "segments" (array of {"start": number, "end": number, "text": string}) where start/end are seconds from audio start. Always include the segments array (empty if no speech).`,
       })
     ]);
 
@@ -100,59 +108,108 @@ CRITICAL INSTRUCTIONS:
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    // JSON 응답 파싱
-    let transcriptionData;
-    try {
-      transcriptionData = JSON.parse(transcription.text);
-    } catch {
-      // JSON 파싱 실패 시 기본 텍스트 사용
-      transcriptionData = { text: transcription.text, confidence: "medium" };
-    }
-    
-    const studentAnswerRaw = transcriptionData.text?.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,"") || "";
-    const studentAnswer = studentAnswerRaw.toLowerCase();
-    const confidence = transcriptionData.confidence || "medium";
+    const transcriptionData = parseTranscriptionResult(transcription);
+    const timeline = transcriptionData.timeline;
+    const confidence = transcriptionData.confidence ?? 'medium';
+    const aggregatedTranscript = transcriptionData.text || '';
 
-    let evaluation: string;
+    const cleanedAnswer = aggregatedTranscript
+      ? aggregatedTranscript.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+      : '';
+    const studentAnswerRaw = cleanedAnswer || 'no_response';
+
     const upperCaseQuestion = questionLetter.toUpperCase();
+    const hesitationDetected = hasHesitation(timeline, HESITATION_THRESHOLD_SECONDS);
 
-    if (letterNames[upperCaseQuestion]?.includes(studentAnswer)) {
-      evaluation = 'correct';
-    } else if (letterSounds[upperCaseQuestion]?.includes(studentAnswer)) {
-      evaluation = 'letter_sound';
-    } else {
-      const scoringResponse = await openai.chat.completions.create({
-        model: 'gpt-4o',
-        messages: [ 
-          { 
-            role: 'system', 
-            content: `You are a DIBELS 8th edition LNF (Letter Naming Fluency) test evaluator for Korean EFL students.
+    type LnfEvaluation = {
+      final_score: 'correct' | 'incorrect';
+      error_category: 'Letter reversals' | 'Letter sounds' | 'Omissions' | 'Hesitation' | 'Other' | null;
+      used_self_correction: boolean;
+      self_correction_within_seconds: number | null;
+      recognized_form?: string | null;
+      notes?: string;
+    };
 
-CRITICAL RULES:
-1. ONLY letter NAMES are considered correct (not letter sounds)
-2. Accept Korean pronunciations of letter names: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' for Z
-3. Accept English letter name variations: 'ay', 'aye', 'ei' for A; 'bee', 'be' for B; etc.
-4. Letter SOUNDS (phonemes like 'ah', 'buh', 'kuh') are INCORRECT - use "letter_sound"
-5. If the response is a valid letter name (in any language/variation), respond with "correct"
-6. If the response is unclear or unintelligible, respond with "unintelligible"
-7. If the response is a hesitation or no response, respond with "hesitation"
-8. Return JSON: {"evaluation": "correct" | "letter_sound" | "unintelligible" | "hesitation" | "other_error"}`
-          },
-          { 
-            role: 'user', 
-            content: `Target letter: "${questionLetter}"
-Student response: "${studentAnswer}"
-Evaluate if this is a correct letter NAME (not sound). Return JSON with "evaluation" field.`
-          }
-        ],
-        response_format: { type: 'json_object' },
-      });
-      const scoringResult = JSON.parse(scoringResponse.choices[0].message.content || '{"evaluation": "unintelligible"}');
-      evaluation = scoringResult.evaluation;
+    let evaluation: LnfEvaluation = {
+      final_score: 'incorrect',
+      error_category: hesitationDetected ? 'Hesitation' : 'Other',
+      used_self_correction: false,
+      self_correction_within_seconds: null,
+      recognized_form: null,
+      notes: hesitationDetected ? 'No response within 5 seconds' : undefined,
+    };
+
+    if (!hesitationDetected) {
+      try {
+        const scoringResponse = await openai.chat.completions.create({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a DIBELS 8th edition Letter Naming Fluency (LNF) scorer for Korean EFL students.
+
+Scoring rules:
+- ONLY letter NAMES are correct. Letter sounds must be categorised as "Letter sounds".
+- Accept Korean pronunciations of letter names (예: '에이', '비', '씨', ...).
+- Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to first meaningful attempt.
+- If a student self-corrects to the correct letter name within ${HESITATION_THRESHOLD_SECONDS} seconds of their first incorrect attempt, mark the response correct and set "used_self_correction" to true.
+- If the first meaningful attempt occurs after ${HESITATION_THRESHOLD_SECONDS} seconds, the correct response is overridden by "Hesitation".
+- Error categories must be one of: "Letter reversals", "Letter sounds", "Omissions", "Hesitation", "Other". Use "Other" only when no other category fits.
+
+Return strict JSON: {
+  "final_score": "correct" | "incorrect",
+  "error_category": null | "Letter reversals" | "Letter sounds" | "Omissions" | "Hesitation" | "Other",
+  "used_self_correction": boolean,
+  "self_correction_within_seconds": number | null,
+  "recognized_form": string | null,
+  "notes": string | null
+}`,
+            },
+            {
+              role: 'user',
+              content: `Target letter: ${upperCaseQuestion}
+Acceptable letter names: ${JSON.stringify(letterNames[upperCaseQuestion] ?? [])}
+Letter sounds (incorrect category): ${JSON.stringify(letterSounds[upperCaseQuestion] ?? [])}
+Aggregated transcript: ${aggregatedTranscript}
+Timeline JSON: ${timelineToPrompt(timeline)}
+Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
+            },
+          ],
+          response_format: { type: 'json_object' },
+        });
+
+        const parsedEvaluation = JSON.parse(
+          scoringResponse.choices[0].message.content ||
+            '{"final_score":"incorrect","error_category":"Other","used_self_correction":false,"self_correction_within_seconds":null}'
+        );
+
+        evaluation = {
+          final_score: parsedEvaluation.final_score === 'correct' ? 'correct' : 'incorrect',
+          error_category:
+            parsedEvaluation.final_score === 'correct'
+              ? null
+              : (parsedEvaluation.error_category as LnfEvaluation['error_category']) ?? 'Other',
+          used_self_correction: Boolean(parsedEvaluation.used_self_correction),
+          self_correction_within_seconds:
+            typeof parsedEvaluation.self_correction_within_seconds === 'number'
+              ? parsedEvaluation.self_correction_within_seconds
+              : null,
+          recognized_form:
+            typeof parsedEvaluation.recognized_form === 'string'
+              ? parsedEvaluation.recognized_form
+              : null,
+          notes:
+            typeof parsedEvaluation.notes === 'string' && parsedEvaluation.notes.length > 0
+              ? parsedEvaluation.notes
+              : undefined,
+        };
+      } catch (scoringError) {
+        console.warn('[LNF 평가 경고]', scoringError);
+      }
     }
-    
-    const isCorrect = evaluation === 'correct';
-    const errorType = isCorrect ? null : evaluation;
+
+    const isCorrect = evaluation.final_score === 'correct';
+    const errorType = isCorrect ? null : evaluation.error_category;
 
     const processingTime = Date.now() - startTime;
     
@@ -171,7 +228,11 @@ Evaluate if this is a correct letter NAME (not sound). Return JSON with "evaluat
       throw insertError;
     }
 
-    console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${evaluation}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
+    const logLabel = evaluation.error_category ? `${evaluation.final_score} (${evaluation.error_category})` : evaluation.final_score;
+    console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${logLabel}, Self-correction: ${evaluation.used_self_correction}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
+    if (evaluation.notes) {
+      console.log(`[LNF 채점 노트] ${evaluation.notes}`);
+    }
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
