@@ -209,7 +209,7 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
             ? Number(parsedEvaluation.words_correct)
             : 0,
           error_breakdown: Array.isArray(parsedEvaluation.error_breakdown)
-            ? parsedEvaluation.error_breakdown.map((entry) => {
+            ? parsedEvaluation.error_breakdown.map((entry: unknown) => {
                 const record = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : {};
                 const rawWord = record.word;
                 const rawCategory = record.error_category;
