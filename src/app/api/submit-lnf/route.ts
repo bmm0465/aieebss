@@ -18,7 +18,7 @@ const openai = new OpenAI({
 const letterNames: { [key: string]: string[] } = {
   A: ['a', 'ay'], B: ['b', 'bee'], C: ['c', 'cee', 'see'], D: ['d', 'dee'], E: ['e', 'ee'],
   F: ['f', 'eff'], G: ['g', 'gee'], H: ['h', 'aitch', 'haitch'], I: ['i'], J: ['j', 'jay'],
-  K: ['k', 'kay'], L: ['l', 'ell'], M: ['m', 'em'], N: ['n', 'en'], O: ['o'],
+  K: ['k', 'kay'], L: ['l', 'ell'], M: ['m', 'em'], N: ['n', 'en'], O: ['o', 'oh', '오', '오우'],
   P: ['p', 'pee'], Q: ['q', 'cue', 'que'], R: ['r', 'ar'], S: ['s', 'ess'], T: ['t', 'tee'],
   U: ['u', 'you'], V: ['v', 'vee'], W: ['w', 'double u', 'doubleu'], X: ['x', 'ex'], Y: ['y', 'why'],
   Z: ['z', 'zee', 'zed']
@@ -29,11 +29,14 @@ const letterSounds: { [key: string]: string[] } = {
   A: ['ah', 'a', '애'], B: ['buh', 'b', '브'], C: ['kuh', 'k', '크', '쓰'], D: ['duh', 'd', '드'], 
   E: ['eh', 'e', '에'], F: ['fuh', 'f', '프'], G: ['guh', 'g', '그'], H: ['huh', 'h', '흐'],
   I: ['ih', 'i', '이'], J: ['juh', 'j', '즈'], K: ['kuh', 'k', '크'], L: ['luh', 'l', '을'],
-  M: ['muh', 'm', '음'], N: ['nuh', 'n', '은'], O: ['oh', 'o', '오'], P: ['puh', 'p', '프'],
+  M: ['muh', 'm', '음'], N: ['nuh', 'n', '은'], O: ['ah', 'aw', 'uh', '아', '어', '으'], P: ['puh', 'p', '프'],
   Q: ['kwuh', 'qu', '쿠'], R: ['ruh', 'r', '르'], S: ['suh', 's', '스'], T: ['tuh', 't', '트'],
   U: ['uh', 'u', '어'], V: ['vuh', 'v', '브'], W: ['wuh', 'w', '우'], X: ['ks', 'x', '엑스'],
   Y: ['yuh', 'y', '이'], Z: ['zuh', 'z', '즈']
 };
+
+const normalizeResponse = (value: string | null | undefined) =>
+  value ? value.trim().toLowerCase().replace(/[\s-]/g, '') : '';
 
 const HESITATION_THRESHOLD_SECONDS = 5;
 
@@ -206,6 +209,23 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
       } catch (scoringError) {
         console.warn('[LNF 평가 경고]', scoringError);
       }
+    }
+
+    const acceptedNamesNormalized = (letterNames[upperCaseQuestion] ?? []).map(normalizeResponse);
+    const normalizedStudentAnswer = normalizeResponse(studentAnswerRaw);
+    const normalizedRecognizedForm = normalizeResponse(evaluation.recognized_form);
+    const shouldOverrideToCorrect =
+      evaluation.final_score !== 'correct' &&
+      ((normalizedStudentAnswer && acceptedNamesNormalized.includes(normalizedStudentAnswer)) ||
+        (normalizedRecognizedForm && acceptedNamesNormalized.includes(normalizedRecognizedForm)));
+
+    if (shouldOverrideToCorrect) {
+      evaluation = {
+        ...evaluation,
+        final_score: 'correct',
+        error_category: null,
+        notes: evaluation.notes ?? '자동 보정: 허용된 문자 이름과 일치하는 응답',
+      };
     }
 
     const isCorrect = evaluation.final_score === 'correct';
