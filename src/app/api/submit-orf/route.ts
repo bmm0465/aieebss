@@ -15,6 +15,15 @@ const openai = new OpenAI({
 
 const HESITATION_THRESHOLD_SECONDS = 5;
 
+const ORF_ALLOWED_ERROR_CATEGORIES = new Set<Exclude<OrfErrorCategory, null> | 'Other'>([
+  'Mispronounced words',
+  'Sounded out words',
+  'Word order',
+  'Omissions',
+  'Hesitation',
+  'Other',
+]);
+
 type OrfErrorCategory =
   | 'Mispronounced words'
   | 'Sounded out words'
@@ -200,25 +209,34 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
             ? Number(parsedEvaluation.words_correct)
             : 0,
           error_breakdown: Array.isArray(parsedEvaluation.error_breakdown)
-            ? parsedEvaluation.error_breakdown.map((entry: any) => ({
-                word: typeof entry?.word === 'string' ? entry.word : '',
-                error_category: (['Mispronounced words', 'Sounded out words', 'Word order', 'Omissions', 'Other'].includes(
-                  entry?.error_category,
+            ? parsedEvaluation.error_breakdown.map((entry) => {
+                const record = entry && typeof entry === 'object' ? (entry as Record<string, unknown>) : {};
+                const rawWord = record.word;
+                const rawCategory = record.error_category;
+                const rawNotes = record.notes;
+
+                const word = typeof rawWord === 'string' ? rawWord : '';
+                const categoryCandidate = typeof rawCategory === 'string' ? rawCategory : 'Other';
+                const errorCategory = ORF_ALLOWED_ERROR_CATEGORIES.has(
+                  categoryCandidate as Exclude<OrfErrorCategory, null> | 'Other',
                 )
-                  ? entry.error_category
-                  : 'Other') as Exclude<OrfErrorCategory, null> | 'Other',
-                notes:
-                  typeof entry?.notes === 'string' && entry.notes.trim().length > 0
-                    ? entry.notes.trim()
-                    : undefined,
-              }))
+                  ? (categoryCandidate as Exclude<OrfErrorCategory, null> | 'Other')
+                  : 'Other';
+                const notes =
+                  typeof rawNotes === 'string' && rawNotes.trim().length > 0 ? rawNotes.trim() : undefined;
+
+                return {
+                  word,
+                  error_category: errorCategory,
+                  notes,
+                };
+              })
             : [],
-          overall_error_category:
-            ['Mispronounced words', 'Sounded out words', 'Word order', 'Omissions', 'Hesitation', 'Other'].includes(
-              parsedEvaluation.overall_error_category,
-            )
-              ? (parsedEvaluation.overall_error_category as OrfErrorCategory)
-              : null,
+          overall_error_category: ORF_ALLOWED_ERROR_CATEGORIES.has(
+            parsedEvaluation.overall_error_category as Exclude<OrfErrorCategory, null> | 'Other',
+          )
+            ? (parsedEvaluation.overall_error_category as OrfErrorCategory)
+            : null,
           reading_fluency:
             parsedEvaluation.reading_fluency === 'fluent' ||
             parsedEvaluation.reading_fluency === 'hesitant' ||
