@@ -26,8 +26,6 @@ type PsfErrorCategory =
   | 'Other'
   | null;
 
-type PsfNotes = string | undefined;
-
 interface PsfEvaluation {
   overall: PsfOverall;
   correct_segments: number;
