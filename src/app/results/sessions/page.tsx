@@ -103,7 +103,7 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
     return {
       id: sessionId,
       date: date.toLocaleDateString('ko-KR'),
-      time: `${date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~ ${new Date(lastResult.created_at || 0).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}`,
+      time: `${date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })} ~ ${new Date(lastResult.created_at || 0).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })}`,
       testTypes,
       totalTests,
       completionRate

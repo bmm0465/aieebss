@@ -249,7 +249,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
                 fontWeight: '600'
               }}>⏰ 평가 시간</h3>
               <p style={{ fontSize: '1rem', color: '#4b5563', fontWeight: '500' }}>
-                {sessionDate.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} ~ {new Date(lastResult.created_at || 0).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                {sessionDate.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })} ~ {new Date(lastResult.created_at || 0).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })}
               </p>
             </div>
             <div style={{ padding: '1.25rem', backgroundColor: '#f9fafb', borderRadius: '12px', border: '2px solid #e5e7eb' }}>
