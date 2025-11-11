@@ -1,0 +1,2854 @@
+{
+  "metadata": {
+    "source": "vocabulary_level.json",
+    "generated": "2025-11-11",
+    "description": "출판사별 단원 어휘의 중복 분포 분석 결과"
+  },
+  "all_publishers_overlap": {
+    "count": 53,
+    "words": [
+      "I",
+      "apple",
+      "blue",
+      "book",
+      "can",
+      "cat",
+      "close",
+      "color",
+      "come",
+      "dad",
+      "do",
+      "dog",
+      "door",
+      "down",
+      "eight",
+      "eraser",
+      "five",
+      "four",
+      "go",
+      "good",
+      "green",
+      "hat",
+      "have",
+      "here",
+      "it",
+      "jump",
+      "like",
+      "look",
+      "many",
+      "nine",
+      "okay",
+      "one",
+      "open",
+      "orange",
+      "pen",
+      "pencil",
+      "pig",
+      "please",
+      "red",
+      "seven",
+      "sit",
+      "six",
+      "stand",
+      "swim",
+      "thank",
+      "that",
+      "this",
+      "three",
+      "two",
+      "what",
+      "yellow",
+      "yes",
+      "you"
+    ]
+  },
+  "word_publishers": [
+    {
+      "word": "I",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "T-shirt",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "a",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "about",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "alphabet",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "am",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "and",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "angry",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "any",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "apple",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "at",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "baby",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "bag",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "ball",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "banana",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "be",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "bean",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "bear",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "beautiful",
+      "publisher_count": 2,
+      "publishers": [
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "bee",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "beef",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "big",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "bike",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "bird",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "birthday",
+      "publisher_count": 3,
+      "publishers": [
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "black",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "block",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "blue",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "boat",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "book",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "box",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "bread",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "brother",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "brown",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "brush",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "bus",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "bye",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "cake",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "camera",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "can",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "candy",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "cap",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "car",
+      "publisher_count": 2,
+      "publishers": [
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "carrot",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "cat",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "catch",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "chair",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "chant",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "cheese",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "chicken",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "chip",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "climb",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "clock",
+      "publisher_count": 2,
+      "publishers": [
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "close",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "cloudy",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "coat",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "cold",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "color",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "come",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "cookie",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "cool",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "cow",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "crayon",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "cream",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "cup",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "curry",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "cute",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "dad",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "dance",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "dive",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "do",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "dog",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "doll",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "door",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "doughnut",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "down",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "drone",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "duck",
+      "publisher_count": 3,
+      "publishers": [
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "eat",
+      "publisher_count": 2,
+      "publishers": [
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "egg",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "eight",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "elephant",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "eraser",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "everyone",
+      "publisher_count": 2,
+      "publishers": [
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "eye",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "family",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "fan",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "fast",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "fig",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "fine",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "fire",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "fish",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "five",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "flower",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "fly",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "foot",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "for",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "four",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "fox",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "frog",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "fun",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "gall",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "game",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "glue",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "glue stick",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "go",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "good",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "goodbye",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "goodbye/bye",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "grandfather",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "grandma",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "grandmother",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "grandpa",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "grapes",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "great",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "green",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "hand",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "happy",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "hat",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "have",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "he",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "hello",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "hello(hi)",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "helmet",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "help",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "here",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "hi",
+      "publisher_count": 3,
+      "publishers": [
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "high",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "horse",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "hot",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_kim",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "how",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "hungry",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "ice",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "ice cream",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "igloo",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "iguana",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "in",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "ink",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "is",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "it",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "jacket",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "jam",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "juice",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "jump",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "kangaroo",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "kick",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "king",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "kite",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "kiwi",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "know",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "left",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "lemon",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "let",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "light",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "like",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "lion",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "lip",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "long",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "look",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "love",
+      "publisher_count": 2,
+      "publishers": [
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "macaron",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "many",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "map",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "meet",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "melon",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "menu",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "milk",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "mom",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "monkey",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "name",
+      "publisher_count": 3,
+      "publishers": [
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "new",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "nice",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "nine",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "no",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "nose",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "not",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "notebook",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "now",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "okay",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "old",
+      "publisher_count": 3,
+      "publishers": [
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "on",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "one",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "open",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "orange",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "out",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "outside",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "paint",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "panda",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "pen",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "pencil",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "pencil case",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "piano",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "pig",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "pink",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "pizza",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "play",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "please",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "potato",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "pretty",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "prince",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "purple",
+      "publisher_count": 2,
+      "publishers": [
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "push",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "put",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "queen",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "quiz",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "rabbit",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "raining",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "ready",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "red",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "right",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "ring",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "robot",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "ruler",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "run",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "sad",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "salad",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "say",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "scissors",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "see",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "seven",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "shark",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "she",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "show",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "sing",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "sister",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "sit",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "six",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "skate",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "ski",
+      "publisher_count": 3,
+      "publishers": [
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "slide",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "small",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "snowing",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "snowman",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "so",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "sorry",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "soup",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "stand",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "steak",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "stick",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "stop",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "strong",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "sun",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "sunny",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "swim",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "talk",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "tall",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "tape",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "ten",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "tennis",
+      "publisher_count": 1,
+      "publishers": [
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "thank",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "that",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "the",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "there",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "they",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "thirsty",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "this",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "three",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "ticket",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "tiger",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "tired",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "to",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "tomato",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "too",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "touch",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "toy",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "tree",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "two",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "umbrella",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "up",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "use",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "van",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "vase",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "vegetable",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "very",
+      "publisher_count": 3,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon"
+      ]
+    },
+    {
+      "word": "vest",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "viloin",
+      "publisher_count": 1,
+      "publishers": [
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "violin",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "wake",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_edu_lee"
+      ]
+    },
+    {
+      "word": "walk",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "wash",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_ham"
+      ]
+    },
+    {
+      "word": "watch",
+      "publisher_count": 1,
+      "publishers": [
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "water",
+      "publisher_count": 1,
+      "publishers": [
+        "chunjae_text_kim"
+      ]
+    },
+    {
+      "word": "we",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_edu_lee",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "weather",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "welcome",
+      "publisher_count": 4,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "well",
+      "publisher_count": 2,
+      "publishers": [
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "what",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "white",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi"
+      ]
+    },
+    {
+      "word": "who",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "wind",
+      "publisher_count": 2,
+      "publishers": [
+        "chunjae_text_ham",
+        "icecream_park"
+      ]
+    },
+    {
+      "word": "window",
+      "publisher_count": 2,
+      "publishers": [
+        "donga_yoon",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "windy",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "year",
+      "publisher_count": 3,
+      "publishers": [
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "yellow",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "yes",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "you",
+      "publisher_count": 7,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "zebra",
+      "publisher_count": 5,
+      "publishers": [
+        "chunjae_text_ham",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    },
+    {
+      "word": "zoo",
+      "publisher_count": 6,
+      "publishers": [
+        "chunjae_edu_lee",
+        "chunjae_text_kim",
+        "donga_yoon",
+        "icecream_park",
+        "ybm_choi",
+        "ybm_kim"
+      ]
+    }
+  ]
+}
