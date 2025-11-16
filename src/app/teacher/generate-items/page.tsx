@@ -20,7 +20,8 @@ type GeneratedItems = {
 
 export default function GenerateItemsPage() {
   const [testTypes, setTestTypes] = useState<string[]>([]);
-  const [gradeLevel, setGradeLevel] = useState('초등 3학년');
+  // 현재 버전에서는 학년 선택 UI를 숨기고, 기본 학년 값을 내부에서만 사용합니다.
+  const gradeLevel = '초등 3학년';
   const [referenceDocument, setReferenceDocument] = useState('');
   const [selectedPDFs, setSelectedPDFs] = useState<string[]>([]);
   const [availablePDFs, setAvailablePDFs] = useState<Array<{ id: string; filename: string; grade_level: string | null }>>([]);
@@ -40,12 +41,12 @@ export default function GenerateItemsPage() {
   const [error, setError] = useState('');
 
   const testTypeOptions = [
-    { value: 'LNF', label: 'LNF - 알파벳 인식 (200개)' },
-    { value: 'PSF', label: 'PSF - 음소 분리 (100개)' },
-    { value: 'NWF', label: 'NWF - 파닉스 적용 (150개)' },
-    { value: 'WRF', label: 'WRF - Sight Words (85개)' },
-    { value: 'ORF', label: 'ORF - 읽기 유창성 지문 (150단어)' },
-    { value: 'MAZE', label: 'MAZE - 독해력 평가 (20문항)' }
+    { value: 'LNF', label: 'LNF - 알파벳 이름 말하기 (100문자)' },
+    { value: 'PSF', label: 'PSF - 음소 분리 (30단어 / 2·3음소)' },
+    { value: 'NWF', label: 'NWF - 엉터리 단어 디코딩 (75개)' },
+    { value: 'WRF', label: 'WRF - 실제 단어 읽기 (85개)' },
+    { value: 'ORF', label: 'ORF - 대화문 읽기 유창성 지문 (150~200단어)' },
+    { value: 'MAZE', label: 'MAZE - 문맥 기반 읽기 이해 (20문항 이상)' }
   ];
 
   // PDF 목록 로드
@@ -156,11 +157,10 @@ export default function GenerateItemsPage() {
 
   return (
     <div style={{ 
-      backgroundColor: '#ffffff', 
-      backgroundSize: 'cover', 
+      backgroundColor: '#f3f4f6',
       minHeight: '100vh',
       padding: '2rem',
-      color: '#171717'
+      color: '#111827'
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* 헤더 */}
@@ -169,7 +169,8 @@ export default function GenerateItemsPage() {
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '1px solid rgba(15, 23, 42, 0.06)',
+          boxShadow: '0 10px 25px rgba(15, 23, 42, 0.06)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -178,27 +179,26 @@ export default function GenerateItemsPage() {
                 <h1 style={{ 
                   fontSize: '2.5rem', 
                   margin: 0,
-                  fontFamily: 'var(--font-nanum-pen)',
-                  color: '#FFD700',
-                  textShadow: '0 0 10px #FFD700'
+                  fontWeight: 700,
+                  color: '#1f2933'
                 }}>
-                  🤖 AI 문항 생성기
+                  AI 문항 생성기
                 </h1>
-                <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
-                  LLM을 활용하여 DIBELS 평가 문항을 자동 생성합니다
+                <p style={{ margin: '0.5rem 0 0 0', color: '#6b7280' }}>
+                  DIBELS 8th 기준에 맞춰 LNF·PSF·NWF·WRF·ORF·MAZE 문항을 자동 생성합니다.
                 </p>
               </div>
             </div>
             <Link 
               href="/teacher/dashboard"
               style={{
-                backgroundColor: 'rgba(255,215,0,0.2)',
-                color: '#FFD700',
+                backgroundColor: '#ffffff',
+                color: '#2563eb',
                 padding: '0.8rem 1.5rem',
                 borderRadius: '8px',
                 textDecoration: 'none',
-                border: '2px solid rgba(255,215,0,0.5)',
-                fontWeight: 'bold'
+                border: '1px solid #e5e7eb',
+                fontWeight: 500
               }}
             >
               ← 대시보드로
@@ -212,43 +212,12 @@ export default function GenerateItemsPage() {
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '1px solid rgba(15, 23, 42, 0.06)',
+          boxShadow: '0 10px 25px rgba(15, 23, 42, 0.04)'
         }}>
-          <h2 style={{ color: '#FFD700', marginBottom: '1.5rem', fontSize: '1.8rem' }}>
-            ⚙️ 문항 생성 설정
+          <h2 style={{ color: '#111827', marginBottom: '1.5rem', fontSize: '1.8rem', fontWeight: 600 }}>
+            문항 생성 설정
           </h2>
-
-          {/* 학년 선택 */}
-          <div style={{ marginBottom: '2rem' }}>
-            <label style={{ 
-              display: 'block', 
-              marginBottom: '0.5rem', 
-              fontWeight: 'bold',
-              color: '#FFD700'
-            }}>
-              📚 학년 수준
-            </label>
-            <select
-              value={gradeLevel}
-              onChange={(e) => setGradeLevel(e.target.value)}
-              style={{
-                width: '100%',
-                padding: '0.8rem',
-                fontSize: '1rem',
-                borderRadius: '8px',
-                border: '2px solid rgba(255, 215, 0, 0.3)',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                color: 'white'
-              }}
-            >
-              <option value="초등 1학년">초등 1학년</option>
-              <option value="초등 2학년">초등 2학년</option>
-              <option value="초등 3학년">초등 3학년</option>
-              <option value="초등 4학년">초등 4학년</option>
-              <option value="초등 5학년">초등 5학년</option>
-              <option value="초등 6학년">초등 6학년</option>
-            </select>
-          </div>
 
           {/* 평가 유형 선택 */}
           <div style={{ marginBottom: '2rem' }}>
@@ -256,9 +225,9 @@ export default function GenerateItemsPage() {
               display: 'block', 
               marginBottom: '0.5rem', 
               fontWeight: 'bold',
-              color: '#FFD700'
+              color: '#111827'
             }}>
-              📝 생성할 평가 유형 (다중 선택 가능)
+              생성할 평가 유형 (복수 선택 가능)
             </label>
             <div style={{ 
               display: 'grid', 
@@ -274,15 +243,16 @@ export default function GenerateItemsPage() {
                     padding: '1rem',
                     borderRadius: '8px',
                     border: testTypes.includes(option.value)
-                      ? '3px solid #FFD700'
-                      : '2px solid rgba(255, 255, 255, 0.3)',
+                      ? '2px solid #2563eb'
+                      : '1px solid #e5e7eb',
                     backgroundColor: testTypes.includes(option.value)
-                      ? 'rgba(255, 215, 0, 0.2)'
-                      : 'rgba(255, 255, 255, 0.05)',
+                      ? '#eff6ff'
+                      : '#f9fafb',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease',
                     textAlign: 'center',
-                    fontWeight: testTypes.includes(option.value) ? 'bold' : 'normal'
+                    fontWeight: testTypes.includes(option.value) ? 600 : 400,
+                    color: '#111827'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'scale(1.02)';
@@ -305,13 +275,13 @@ export default function GenerateItemsPage() {
                 display: 'block', 
                 marginBottom: '0.5rem', 
                 fontWeight: 'bold',
-                color: '#FFD700'
+                color: '#111827'
               }}>
                 📚 참고할 교육과정 PDF (선택사항)
               </label>
               <p style={{ 
                 fontSize: '0.9rem', 
-                opacity: 0.7, 
+                color: '#6b7280', 
                 marginBottom: '0.5rem' 
               }}>
                 업로드된 PDF를 선택하면 해당 내용을 참고하여 문항을 생성합니다
@@ -324,7 +294,7 @@ export default function GenerateItemsPage() {
                 padding: '1rem',
                 border: '2px solid rgba(255, 215, 0, 0.3)',
                 borderRadius: '8px',
-                backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                backgroundColor: '#f9fafb'
               }}>
                 {availablePDFs.map((pdf) => (
                   <label
@@ -378,13 +348,13 @@ export default function GenerateItemsPage() {
               display: 'block', 
               marginBottom: '0.5rem', 
               fontWeight: 'bold',
-              color: '#FFD700'
+                color: '#111827'
             }}>
               📄 참고 문서 (선택사항)
             </label>
             <p style={{ 
               fontSize: '0.9rem', 
-              opacity: 0.7, 
+                color: '#6b7280', 
               marginBottom: '0.5rem' 
             }}>
               LLM이 문항을 생성할 때 참고할 내용을 입력하세요 (예: 특정 주제, 어휘 목록, 교육과정 등)
@@ -399,9 +369,9 @@ export default function GenerateItemsPage() {
                 padding: '1rem',
                 fontSize: '1rem',
                 borderRadius: '8px',
-                border: '2px solid rgba(255, 215, 0, 0.3)',
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                color: 'white',
+                border: '1px solid #e5e7eb',
+                backgroundColor: '#f9fafb',
+                color: '#111827',
                 resize: 'vertical',
                 fontFamily: 'inherit'
               }}
@@ -420,21 +390,21 @@ export default function GenerateItemsPage() {
               borderRadius: '10px',
               border: 'none',
               backgroundColor: isGenerating || testTypes.length === 0
-                ? 'rgba(150, 150, 150, 0.5)'
-                : '#FFD700',
-              color: isGenerating || testTypes.length === 0 ? '#666' : 'black',
+                ? '#e5e7eb'
+                : '#2563eb',
+              color: isGenerating || testTypes.length === 0 ? '#9ca3af' : '#ffffff',
               cursor: isGenerating || testTypes.length === 0 ? 'not-allowed' : 'pointer',
               transition: 'all 0.3s ease'
             }}
             onMouseEnter={(e) => {
               if (!isGenerating && testTypes.length > 0) {
-                e.currentTarget.style.backgroundColor = '#FFC700';
+                e.currentTarget.style.backgroundColor = '#1d4ed8';
                 e.currentTarget.style.transform = 'scale(1.02)';
               }
             }}
             onMouseLeave={(e) => {
               if (!isGenerating && testTypes.length > 0) {
-                e.currentTarget.style.backgroundColor = '#FFD700';
+                e.currentTarget.style.backgroundColor = '#2563eb';
                 e.currentTarget.style.transform = 'scale(1)';
               }
             }}
@@ -446,12 +416,13 @@ export default function GenerateItemsPage() {
             <div style={{
               marginTop: '1rem',
               padding: '1rem',
-              backgroundColor: 'rgba(231, 76, 60, 0.2)',
-              border: '2px solid rgba(231, 76, 60, 0.5)',
+              backgroundColor: '#fef2f2',
+              border: '1px solid #fecaca',
               borderRadius: '8px',
-              color: '#ff6b6b'
+              color: '#b91c1c',
+              fontSize: '0.95rem'
             }}>
-              ⚠️ {error}
+              {error}
             </div>
           )}
         </div>
@@ -462,7 +433,8 @@ export default function GenerateItemsPage() {
             backgroundColor: '#ffffff',
             padding: '2rem',
             borderRadius: '15px',
-            border: '1px solid rgba(76, 175, 80, 0.5)'
+            border: '1px solid rgba(22, 163, 74, 0.2)',
+            boxShadow: '0 10px 25px rgba(22, 163, 74, 0.08)'
           }}>
             <div style={{ 
               display: 'flex', 
@@ -470,8 +442,8 @@ export default function GenerateItemsPage() {
               alignItems: 'center',
               marginBottom: '1.5rem'
             }}>
-              <h2 style={{ color: '#4CAF50', margin: 0, fontSize: '1.8rem' }}>
-                ✅ 문항 생성 완료!
+              <h2 style={{ color: '#166534', margin: 0, fontSize: '1.8rem', fontWeight: 600 }}>
+                문항 생성이 완료되었습니다.
               </h2>
               <div style={{ display: 'flex', gap: '1rem' }}>
                 {itemId && (
@@ -483,7 +455,7 @@ export default function GenerateItemsPage() {
                       fontWeight: 'bold',
                       borderRadius: '8px',
                       border: 'none',
-                      backgroundColor: '#3498db',
+                      backgroundColor: '#2563eb',
                       color: 'white',
                       cursor: 'pointer',
                       textDecoration: 'none',
@@ -501,17 +473,17 @@ export default function GenerateItemsPage() {
                     fontWeight: 'bold',
                     borderRadius: '8px',
                     border: 'none',
-                    backgroundColor: '#e74c3c',
+                      backgroundColor: '#f97316',
                     color: 'white',
                     cursor: 'pointer',
                     transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#c0392b';
+                    e.currentTarget.style.backgroundColor = '#ea580c';
                     e.currentTarget.style.transform = 'scale(1.05)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#e74c3c';
+                    e.currentTarget.style.backgroundColor = '#f97316';
                     e.currentTarget.style.transform = 'scale(1)';
                   }}
                 >
@@ -524,11 +496,11 @@ export default function GenerateItemsPage() {
             {qualityScore && (
               <div style={{
                 padding: '1rem',
-                backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                backgroundColor: '#f0fdf4',
                 borderRadius: '8px',
                 marginBottom: '1.5rem'
               }}>
-                <h3 style={{ color: '#4CAF50', marginBottom: '0.5rem' }}>품질 점수: {qualityScore.overall}점</h3>
+                <h3 style={{ color: '#166534', marginBottom: '0.5rem', fontWeight: 600 }}>품질 점수: {qualityScore.overall}점</h3>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '0.5rem', fontSize: '0.9rem' }}>
                   <div>DIBELS 준수도: {qualityScore.dibels_compliance}점</div>
                   <div>학년 수준 적합성: {qualityScore.grade_level_appropriateness}점</div>
@@ -564,12 +536,12 @@ export default function GenerateItemsPage() {
               maxHeight: '600px', 
               overflowY: 'auto',
               padding: '1rem',
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
+              backgroundColor: '#f9fafb',
               borderRadius: '10px'
             }}>
               {generatedItems.LNF && (
                 <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ color: '#FFD700' }}>LNF ({generatedItems.LNF.length}개)</h3>
+                  <h3 style={{ color: '#111827', fontWeight: 600 }}>LNF ({generatedItems.LNF.length}문자)</h3>
                   <div style={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(20, 1fr)', 
@@ -580,7 +552,7 @@ export default function GenerateItemsPage() {
                       <div key={idx} style={{
                         padding: '0.3rem',
                         textAlign: 'center',
-                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        backgroundColor: '#ffffff',
                         borderRadius: '3px'
                       }}>
                         {item}
@@ -592,7 +564,7 @@ export default function GenerateItemsPage() {
 
               {generatedItems.PSF && (
                 <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ color: '#FFD700' }}>PSF ({generatedItems.PSF.length}개)</h3>
+                  <h3 style={{ color: '#111827', fontWeight: 600 }}>PSF ({generatedItems.PSF.length}단어)</h3>
                   <div style={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(10, 1fr)', 
@@ -602,7 +574,7 @@ export default function GenerateItemsPage() {
                       <div key={idx} style={{
                         padding: '0.5rem',
                         textAlign: 'center',
-                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        backgroundColor: '#ffffff',
                         borderRadius: '3px'
                       }}>
                         {item}
@@ -614,7 +586,7 @@ export default function GenerateItemsPage() {
 
               {generatedItems.NWF && (
                 <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ color: '#FFD700' }}>NWF ({generatedItems.NWF.length}개)</h3>
+                  <h3 style={{ color: '#111827', fontWeight: 600 }}>NWF ({generatedItems.NWF.length}개)</h3>
                   <div style={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(10, 1fr)', 
@@ -624,7 +596,7 @@ export default function GenerateItemsPage() {
                       <div key={idx} style={{
                         padding: '0.5rem',
                         textAlign: 'center',
-                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        backgroundColor: '#ffffff',
                         borderRadius: '3px'
                       }}>
                         {item}
@@ -636,7 +608,7 @@ export default function GenerateItemsPage() {
 
               {generatedItems.WRF && (
                 <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ color: '#FFD700' }}>WRF ({generatedItems.WRF.length}개)</h3>
+                  <h3 style={{ color: '#111827', fontWeight: 600 }}>WRF ({generatedItems.WRF.length}개)</h3>
                   <div style={{ 
                     display: 'grid', 
                     gridTemplateColumns: 'repeat(10, 1fr)', 
@@ -646,7 +618,7 @@ export default function GenerateItemsPage() {
                       <div key={idx} style={{
                         padding: '0.5rem',
                         textAlign: 'center',
-                        backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                        backgroundColor: '#ffffff',
                         borderRadius: '3px'
                       }}>
                         {item}
@@ -658,7 +630,7 @@ export default function GenerateItemsPage() {
 
               {generatedItems.ORF && (
                 <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ color: '#FFD700' }}>ORF (읽기 유창성 지문)</h3>
+                  <h3 style={{ color: '#111827', fontWeight: 600 }}>ORF (읽기 유창성 지문)</h3>
                   <div style={{
                     padding: '1rem',
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -673,7 +645,7 @@ export default function GenerateItemsPage() {
 
               {generatedItems.MAZE && (
                 <div style={{ marginBottom: '2rem' }}>
-                  <h3 style={{ color: '#FFD700' }}>MAZE ({generatedItems.MAZE.length}개)</h3>
+                  <h3 style={{ color: '#111827', fontWeight: 600 }}>MAZE ({generatedItems.MAZE.length}문항)</h3>
                   {generatedItems.MAZE.map((q) => (
                     <div key={q.num} style={{
                       padding: '1rem',
