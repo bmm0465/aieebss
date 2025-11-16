@@ -23,7 +23,7 @@ export class QualityValidatorAgent {
 
     try {
       const completion = await openai.chat.completions.create({
-        model: "gpt-5",
+        model: "gpt-4o",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }

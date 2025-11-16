@@ -145,7 +145,7 @@ CRITICAL INSTRUCTIONS:
     if (!hesitationDetected) {
       try {
         const scoringResponse = await openai.chat.completions.create({
-          model: 'gpt-5',
+          model: 'gpt-4o',
           messages: [
             {
               role: 'system',

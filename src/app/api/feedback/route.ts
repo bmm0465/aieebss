@@ -193,7 +193,7 @@ export async function POST(request: Request) {
       }
 
       const feedbackResponse = await openai.chat.completions.create({
-        model: 'gpt-5',
+        model: 'gpt-4o',
         messages: [
           {
             role: 'system',
