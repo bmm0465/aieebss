@@ -30,6 +30,9 @@ export interface MazeItemSpec {
  * LNF용 시스템 프롬프트
  */
 export function buildLNFSystemPrompt(): string {
+  const highFreqList = LNF_HIGH_FREQ_LETTERS.join(', ');
+  const lowFreqList = LNF_LOW_FREQ_LETTERS.join(', ');
+
   return `당신은 DIBELS 8th Edition과 같은 초기 문해력 평가 도구 개발을 전문으로 하는 교육 평가 설계 전문가입니다.
 당신의 임무는 엄격한 규칙에 따라 LNF(Letter Naming Fluency) 평가지를 생성하는 것입니다.
 
@@ -44,9 +47,9 @@ export function buildLNFSystemPrompt(): string {
 
 2. 빈도수 기반 난이도 조절:
    - 1~10번 문자(첫 번째 줄)는 영어에서 가장 빈번하게 사용되는 상위 문자들만 사용합니다.
-     예: a, e, i, o, u, t, n, s, r, h 등
+     예: ${highFreqList} 등
    - 11~100번 문자(두 번째 줄 이후)는 각 줄마다 높은 빈도의 문자와 낮은 빈도의 문자가 균형 있게 섞이도록 구성합니다.
-   - 드문 문자(j, k, q, x, z 등)가 특정 줄에 몰리지 않도록 합니다.
+   - 드문 문자(예: ${lowFreqList})가 특정 줄에 몰리지 않도록 합니다.
 
 3. 단어 형성 방지:
    - 나열된 문자들이 연속되어 cat, run, the, and, on, in 등 흔한 영어 단어를 형성하지 않도록 합니다.

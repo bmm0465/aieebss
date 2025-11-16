@@ -72,7 +72,8 @@ export class ItemGeneratorAgent {
       }
     }
 
-    const aggregatedItems: GeneratedItems = {};
+    type AggregatedByTestType = Record<TestType, GeneratedItems[keyof GeneratedItems]>;
+    const aggregatedItems = {} as AggregatedByTestType;
 
     for (const testType of testTypes) {
       const itemsForType = await this.generateItemsForTestType(
@@ -82,8 +83,8 @@ export class ItemGeneratorAgent {
         request
       );
 
-      if (itemsForType) {
-        (aggregatedItems as any)[testType] = itemsForType;
+      if (itemsForType !== undefined) {
+        aggregatedItems[testType] = itemsForType as GeneratedItems[keyof GeneratedItems];
       }
     }
 
@@ -166,7 +167,19 @@ ${userPrompt}`;
     });
 
     const raw = completion.choices[0].message.content || '{}';
-    const parsed = JSON.parse(raw) as any;
+
+    type NwfItem = { index?: number; pattern?: string; word: string };
+    type WrfItem = { index?: number; word: string };
+    type ParsedResponse = {
+      LNF?: string[];
+      PSF?: PSFWordSpec[] | string[];
+      NWF?: NwfItem[];
+      WRF?: WrfItem[] | string[];
+      ORF?: string;
+      MAZE?: MazeItemSpec[];
+    };
+
+    const parsed = JSON.parse(raw) as ParsedResponse;
 
     switch (testType) {
       case 'LNF':
