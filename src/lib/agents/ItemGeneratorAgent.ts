@@ -74,44 +74,45 @@ export class ItemGeneratorAgent {
 
     const aggregatedItems: GeneratedItems = {};
 
-    for (const testType of testTypes) {
-      const itemsForType = await this.generateItemsForTestType(
-        testType,
-        gradeLevel,
-        pdfContext,
-        request
-      );
+    // 테스트 유형별 문항 생성을 병렬로 실행하여 전체 시간을 단축
+    const results = await Promise.all(
+      testTypes.map((testType) =>
+        this.generateItemsForTestType(testType, gradeLevel, pdfContext, request)
+      )
+    );
 
-      if (itemsForType !== undefined) {
-        switch (testType) {
-          case 'LNF':
-            aggregatedItems.LNF = itemsForType as string[];
-            break;
-          case 'PSF':
-            aggregatedItems.PSF = itemsForType as string[];
-            break;
-          case 'NWF':
-            aggregatedItems.NWF = itemsForType as string[];
-            break;
-          case 'WRF':
-            aggregatedItems.WRF = itemsForType as string[];
-            break;
-          case 'ORF':
-            aggregatedItems.ORF = itemsForType as string;
-            break;
-          case 'MAZE':
-            aggregatedItems.MAZE = itemsForType as {
-              num: number;
-              sentence: string;
-              choices: string[];
-              answer: string;
-            }[];
-            break;
-          default:
-            break;
-        }
+    results.forEach((itemsForType, index) => {
+      const testType = testTypes[index];
+      if (itemsForType === undefined) return;
+
+      switch (testType) {
+        case 'LNF':
+          aggregatedItems.LNF = itemsForType as string[];
+          break;
+        case 'PSF':
+          aggregatedItems.PSF = itemsForType as string[];
+          break;
+        case 'NWF':
+          aggregatedItems.NWF = itemsForType as string[];
+          break;
+        case 'WRF':
+          aggregatedItems.WRF = itemsForType as string[];
+          break;
+        case 'ORF':
+          aggregatedItems.ORF = itemsForType as string;
+          break;
+        case 'MAZE':
+          aggregatedItems.MAZE = itemsForType as {
+            num: number;
+            sentence: string;
+            choices: string[];
+            answer: string;
+          }[];
+          break;
+        default:
+          break;
       }
-    }
+    });
 
     return {
       items: aggregatedItems,

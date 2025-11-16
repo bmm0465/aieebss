@@ -41,7 +41,7 @@ export class OrchestratorAgent {
       console.log('문항 생성 시작...');
       const { items, pdfReferences } = await this.itemGenerator.generateItems(request);
 
-      // 2. 각 테스트 유형별 품질 검증
+      // 2. 각 테스트 유형별 품질 검증 (병렬 실행)
       console.log('품질 검증 시작...');
       const qualityScores: Record<string, {
         overall: number;
@@ -53,16 +53,24 @@ export class OrchestratorAgent {
         issues?: string[];
         suggestions?: string[];
       }> = {};
-      
-      for (const testType of request.testTypes) {
-        const testItems = this.extractItemsForTestType(items, testType);
-        if (testItems) {
+
+      const validationResults = await Promise.all(
+        request.testTypes.map(async (testType) => {
+          const testItems = this.extractItemsForTestType(items, testType);
+          if (!testItems) return null;
+
           const score = await this.qualityValidator.validateItems(
             testType,
             request.gradeLevel,
             { [testType]: testItems }
           );
-          qualityScores[testType] = score;
+          return { testType, score };
+        })
+      );
+
+      for (const result of validationResults) {
+        if (result) {
+          qualityScores[result.testType] = result.score;
         }
       }
 
