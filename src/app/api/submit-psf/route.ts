@@ -102,7 +102,7 @@ async function processPsfInBackground(
           upsert: false,
         }),
       openai.audio.transcriptions.create({
-        model: 'gpt-4o-transcribe',
+      model: 'gpt-4o-transcribe',
         file: new File([arrayBuffer], 'audio.webm', { type: 'audio/webm' }),
         language: 'en',
         response_format: 'json',
@@ -180,7 +180,7 @@ CRITICAL INSTRUCTIONS:
     if (!hesitationDetected) {
       try {
         const scoringResponse = await openai.chat.completions.create({
-          model: 'gpt-4o',
+          model: 'gpt-5',
           messages: [
             {
               role: 'system',
