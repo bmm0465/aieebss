@@ -28,8 +28,7 @@ export class QualityValidatorAgent {
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt }
         ],
-        response_format: { type: "json_object" },
-        temperature: 0.3, // 검증은 더 정확하게
+        response_format: { type: "json_object" }
       });
 
       const result = JSON.parse(

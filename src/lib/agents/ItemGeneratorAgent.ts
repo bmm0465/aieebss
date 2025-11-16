@@ -187,8 +187,7 @@ ${userPrompt}`;
         { role: 'system', content: systemPrompt },
         { role: 'user', content: fullUserPrompt }
       ],
-      response_format: { type: 'json_object' },
-      temperature: 0.7
+      response_format: { type: 'json_object' }
     });
 
     const raw = completion.choices[0].message.content || '{}';

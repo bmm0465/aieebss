@@ -75,8 +75,7 @@ ${referenceContext}`;
         { role: "system", content: systemPrompt },
         { role: "user", content: userPrompt }
       ],
-      response_format: { type: "json_object" },
-      temperature: 0.7,
+      response_format: { type: "json_object" }
     });
 
     const generatedItems = JSON.parse(completion.choices[0].message.content || '{}');
