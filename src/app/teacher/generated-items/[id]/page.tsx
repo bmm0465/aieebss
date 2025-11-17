@@ -35,8 +35,16 @@ export default function GeneratedItemDetailPage() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트에서만 마운트되도록 보장
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
+    if (!mounted) return;
+    
     const fetchItemData = async () => {
       try {
         const id = params.id as string;
@@ -93,7 +101,7 @@ export default function GeneratedItemDetailPage() {
     };
 
     fetchItemData();
-  }, [params.id, router]);
+  }, [mounted, params.id, router]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -195,7 +203,8 @@ export default function GeneratedItemDetailPage() {
     }
   };
 
-  if (loading) {
+  // 서버 사이드 렌더링 방지
+  if (!mounted || loading) {
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 
