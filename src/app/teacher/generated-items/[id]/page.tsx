@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -32,63 +32,63 @@ export default function GeneratedItemDetailPage() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    const loadItem = async () => {
-      try {
-        const id = params.id as string;
-        if (!id) {
-          setError('문항 ID가 없습니다.');
-          setLoading(false);
-          return;
-        }
-
-        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
-        
-        const response = await fetch(`/api/generated-items/${id}`, {
-          method: 'GET',
-          cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        console.log('GENERATED ITEM DETAIL: API response status:', response.status);
-
-        if (response.status === 401) {
-          router.push('/');
-          return;
-        }
-
-        if (response.status === 403) {
-          setError('접근 권한이 없습니다.');
-          setLoading(false);
-          return;
-        }
-
-        if (!response.ok) {
-          setError('문항을 찾을 수 없습니다.');
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-        console.log('GENERATED ITEM DETAIL: Data received:', data);
-        
-        if (data.success) {
-          setItem(data.item);
-        } else {
-          setError('문항을 찾을 수 없습니다.');
-        }
+  const loadItem = useCallback(async () => {
+    try {
+      const id = params.id as string;
+      if (!id) {
+        setError('문항 ID가 없습니다.');
         setLoading(false);
-      } catch (err) {
-        console.error('GENERATED ITEM DETAIL: Error fetching data:', err);
-        setError('데이터를 불러오는 중 오류가 발생했습니다.');
-        setLoading(false);
+        return;
       }
-    };
 
-    loadItem();
+      console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
+      
+      const response = await fetch(`/api/generated-items/${id}`, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('GENERATED ITEM DETAIL: API response status:', response.status);
+
+      if (response.status === 401) {
+        router.push('/');
+        return;
+      }
+
+      if (response.status === 403) {
+        setError('접근 권한이 없습니다.');
+        setLoading(false);
+        return;
+      }
+
+      if (!response.ok) {
+        setError('문항을 찾을 수 없습니다.');
+        setLoading(false);
+        return;
+      }
+
+      const data = await response.json();
+      console.log('GENERATED ITEM DETAIL: Data received:', data);
+      
+      if (data.success) {
+        setItem(data.item);
+      } else {
+        setError('문항을 찾을 수 없습니다.');
+      }
+      setLoading(false);
+    } catch (err) {
+      console.error('GENERATED ITEM DETAIL: Error fetching data:', err);
+      setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
   }, [params.id, router]);
+
+  useEffect(() => {
+    loadItem();
+  }, [loadItem]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
