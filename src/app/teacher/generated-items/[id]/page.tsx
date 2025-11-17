@@ -31,14 +31,9 @@ function GeneratedItemDetailContent() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  const loadItem = useCallback(async () => {
-    try {
+    const fetchItemData = async () => {
       const id = params.id as string;
       if (!id) {
         setError('문항 ID가 없습니다.');
@@ -46,56 +41,54 @@ function GeneratedItemDetailContent() {
         return;
       }
 
-      console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
-      
-      const response = await fetch(`/api/generated-items/${id}`, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      try {
+        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
+        
+        const response = await fetch(`/api/generated-items/${id}`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-      console.log('GENERATED ITEM DETAIL: API response status:', response.status);
+        console.log('GENERATED ITEM DETAIL: API response status:', response.status);
 
-      if (response.status === 401) {
-        router.push('/');
-        return;
-      }
+        if (response.status === 401) {
+          router.push('/');
+          return;
+        }
 
-      if (response.status === 403) {
-        setError('접근 권한이 없습니다.');
+        if (response.status === 403) {
+          setError('접근 권한이 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        if (!response.ok) {
+          setError('문항을 찾을 수 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        console.log('GENERATED ITEM DETAIL: Data received:', data);
+        
+        if (data.success) {
+          setItem(data.item);
+        } else {
+          setError('문항을 찾을 수 없습니다.');
+        }
         setLoading(false);
-        return;
-      }
-
-      if (!response.ok) {
-        setError('문항을 찾을 수 없습니다.');
+      } catch (err) {
+        console.error('GENERATED ITEM DETAIL: Error fetching data:', err);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
         setLoading(false);
-        return;
       }
+    };
 
-      const data = await response.json();
-      console.log('GENERATED ITEM DETAIL: Data received:', data);
-      
-      if (data.success) {
-        setItem(data.item);
-      } else {
-        setError('문항을 찾을 수 없습니다.');
-      }
-      setLoading(false);
-    } catch (err) {
-      console.error('GENERATED ITEM DETAIL: Error fetching data:', err);
-      setError('데이터를 불러오는 중 오류가 발생했습니다.');
-      setLoading(false);
-    }
+    fetchItemData();
   }, [params.id, router]);
-
-  useEffect(() => {
-    if (mounted) {
-      loadItem();
-    }
-  }, [mounted, loadItem]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -166,7 +159,22 @@ function GeneratedItemDetailContent() {
       const data = await response.json();
       if (data.success) {
         alert('문항 검토가 완료되었습니다.');
-        loadItem();
+        // 데이터 다시 불러오기
+        setLoading(true);
+        const refreshResponse = await fetch(`/api/generated-items/${params.id}`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+        if (refreshResponse.ok) {
+          const refreshData = await refreshResponse.json();
+          if (refreshData.success) {
+            setItem(refreshData.item);
+          }
+        }
+        setLoading(false);
       } else {
         alert('검토 실패: ' + data.error);
       }
@@ -178,7 +186,7 @@ function GeneratedItemDetailContent() {
     }
   };
 
-  if (!mounted || loading) {
+  if (loading) {
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 
