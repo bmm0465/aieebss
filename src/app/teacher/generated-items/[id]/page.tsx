@@ -35,30 +35,21 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  const [itemId, setItemId] = useState<string | null>(null);
-
   useEffect(() => {
-    const resolveParams = async () => {
-      try {
-        const resolvedParams = await params;
-        setItemId(resolvedParams.id);
-      } catch (err) {
-        console.error('GENERATED ITEM DETAIL: Error resolving params:', err);
-        setError('문항 ID를 가져오는 중 오류가 발생했습니다.');
-        setLoading(false);
-      }
-    };
-    resolveParams();
-  }, [params]);
-
-  useEffect(() => {
-    if (!itemId) return;
-
     const fetchItemData = async () => {
       try {
-        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', itemId);
+        const resolvedParams = await params;
+        const id = resolvedParams.id;
         
-        const response = await fetch(`/api/generated-items/${itemId}`, {
+        if (!id) {
+          setError('문항 ID가 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
+        
+        const response = await fetch(`/api/generated-items/${id}`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -102,15 +93,15 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     };
 
     fetchItemData();
-  }, [itemId, router]);
+  }, [params, router]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
-    if (!itemId) return;
+    if (!item?.id) return;
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/generated-items/${itemId}/approve`, {
+      const response = await fetch(`/api/generated-items/${item.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: reviewNotes })
@@ -138,11 +129,11 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     }
 
     if (!confirm('이 문항을 거부하시겠습니까?')) return;
-    if (!itemId) return;
+    if (!item?.id) return;
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/generated-items/${itemId}/reject`, {
+      const response = await fetch(`/api/generated-items/${item.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: rejectNotes })
@@ -164,11 +155,11 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   };
 
   const handleReview = async () => {
-    if (!itemId) return;
+    if (!item?.id) return;
     
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/generated-items/${itemId}/review`, {
+      const response = await fetch(`/api/generated-items/${item.id}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: reviewNotes })
@@ -179,7 +170,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
         alert('문항 검토가 완료되었습니다.');
         // 데이터 다시 불러오기
         setLoading(true);
-        const refreshResponse = await fetch(`/api/generated-items/${itemId}`, {
+        const refreshResponse = await fetch(`/api/generated-items/${item.id}`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
