@@ -1,9 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+
+// 서버 측 캐싱 방지
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface GeneratedItemDetail {
   id: string;
@@ -22,11 +26,8 @@ interface GeneratedItemDetail {
   }>;
 }
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
-
-export default function GeneratedItemDetailPage({ params }: Props) {
+export default function GeneratedItemDetailPage() {
+  const params = useParams();
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,8 +39,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   useEffect(() => {
     const fetchItemData = async () => {
       try {
-        const resolvedParams = await params;
-        const id = resolvedParams.id;
+        const id = params.id as string;
         
         if (!id) {
           setError('문항 ID가 없습니다.');
@@ -93,7 +93,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     };
 
     fetchItemData();
-  }, [params, router]);
+  }, [params.id, router]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
