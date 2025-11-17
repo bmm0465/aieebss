@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 // 서버 측 캐싱 방지
 export const dynamic = 'force-dynamic';
@@ -26,12 +27,10 @@ interface GeneratedItemDetail {
   }>;
 }
 
-interface Props {
-  params: Promise<{ id: string }>;
-}
-
-export default function GeneratedItemDetailPage({ params }: Props) {
+function GeneratedItemDetailContent() {
   const router = useRouter();
+  const params = useParams();
+  const supabase = createClient();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +41,11 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   useEffect(() => {
     const fetchItemData = async () => {
       try {
-        const resolvedParams = await params;
-        const id = resolvedParams.id;
+        console.log('GENERATED ITEM DETAIL: ===== Page INIT =====');
+        console.log('GENERATED ITEM DETAIL: Current URL:', window.location.href);
+        
+        const id = params.id as string;
+        console.log('GENERATED ITEM DETAIL: Params - id:', id);
         
         if (!id) {
           setError('문항 ID가 없습니다.');
@@ -97,7 +99,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     };
 
     fetchItemData();
-  }, [params, router]);
+  }, [params.id, router, supabase]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -502,4 +504,32 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   );
 }
 
-
+export default function GeneratedItemDetailPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        backgroundColor: '#ffffff', 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: '#171717',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: '2rem',
+            fontWeight: 'bold'
+          }}>📋 문항 정보를 불러오는 중...</h1>
+        </div>
+      </div>
+    }>
+      <GeneratedItemDetailContent />
+    </Suspense>
+  );
+}
