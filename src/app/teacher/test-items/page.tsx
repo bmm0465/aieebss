@@ -178,9 +178,10 @@ Kim: Yes, it is. It is my new pencil.`,
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -190,12 +191,15 @@ Kim: Yes, it is. It is my new pencil.`,
                   fontSize: '2.5rem', 
                   margin: 0,
                   fontFamily: 'var(--font-nanum-pen)',
-                  color: '#FFD700',
-                  textShadow: '0 0 10px #FFD700'
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 'bold'
                 }}>
                   📋 평가 문항 및 정답 확인
                 </h1>
-                <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
+                <p style={{ margin: '0.5rem 0 0 0', color: '#4b5563', fontSize: '1.1rem', fontWeight: '500' }}>
                   각 평가에 출제되는 문항과 정답을 확인할 수 있습니다
                 </p>
               </div>
@@ -203,13 +207,16 @@ Kim: Yes, it is. It is my new pencil.`,
             <Link 
               href="/teacher/dashboard"
               style={{
-                backgroundColor: 'rgba(255,215,0,0.2)',
-                color: '#FFD700',
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: 'white',
                 padding: '0.8rem 1.5rem',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 textDecoration: 'none',
-                border: '2px solid rgba(255,215,0,0.5)',
-                fontWeight: 'bold'
+                border: 'none',
+                fontWeight: '600',
+                boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+                transition: 'all 0.3s ease'
               }}
             >
               ← 대시보드로
@@ -257,19 +264,29 @@ Kim: Yes, it is. It is my new pencil.`,
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
-          <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '1.8rem' }}>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>
             {testItems.ORF.title}
           </h2>
-          <p style={{ color: '#171717', opacity: 0.9, marginBottom: '1rem' }}>{testItems.ORF.description}</p>
+          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>{testItems.ORF.description}</p>
           <div style={{ 
-            backgroundColor: 'rgba(0, 0, 0, 0.05)',
+            backgroundColor: '#f9fafb',
             padding: '1.5rem',
-            borderRadius: '10px',
-            marginBottom: '1rem'
+            borderRadius: '12px',
+            marginBottom: '1rem',
+            border: '2px solid #e5e7eb'
           }}>
             <pre style={{ 
               whiteSpace: 'pre-wrap', 
@@ -282,7 +299,7 @@ Kim: Yes, it is. It is my new pencil.`,
               {testItems.ORF.passage}
             </pre>
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#171717', opacity: 0.7, fontStyle: 'italic' }}>
+          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic' }}>
             💡 {testItems.ORF.note}
           </p>
         </div>
@@ -291,26 +308,40 @@ Kim: Yes, it is. It is my new pencil.`,
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
-          <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '1.8rem' }}>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>
             {testItems.MAZE.title}
           </h2>
-          <p style={{ color: '#171717', opacity: 0.9, marginBottom: '1rem' }}>
+          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
             {testItems.MAZE.description} - 총 {testItems.MAZE.totalItems}문항
           </p>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
             {testItems.MAZE.questions.map((q) => (
               <div key={q.num} style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                backgroundColor: '#f9fafb',
                 padding: '1rem',
-                borderRadius: '8px',
-                borderLeft: '3px solid #FFD700'
+                borderRadius: '12px',
+                border: '2px solid #e5e7eb'
               }}>
                 <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
-                  <strong style={{ color: '#FFD700' }}>문항 {q.num}:</strong> {q.sentence}
+                  <strong style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>문항 {q.num}:</strong> {q.sentence}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
                   {q.choices.map((choice, idx) => (
@@ -318,15 +349,16 @@ Kim: Yes, it is. It is my new pencil.`,
                       key={idx}
                       style={{
                         padding: '0.3rem 0.8rem',
-                        borderRadius: '5px',
+                        borderRadius: '8px',
                         fontSize: '0.9rem',
                         backgroundColor: choice === q.answer 
-                          ? 'rgba(76, 175, 80, 0.2)' 
-                          : 'rgba(0, 0, 0, 0.05)',
+                          ? 'rgba(16, 185, 129, 0.1)' 
+                          : '#ffffff',
                         border: choice === q.answer 
-                          ? '2px solid #4CAF50' 
-                          : '1px solid rgba(0, 0, 0, 0.1)',
-                        color: choice === q.answer ? '#4CAF50' : '#171717'
+                          ? '2px solid #10b981' 
+                          : '1px solid #e5e7eb',
+                        color: choice === q.answer ? '#10b981' : '#171717',
+                        fontWeight: choice === q.answer ? '600' : '400'
                       }}
                     >
                       {choice} {choice === q.answer && '✓'}
@@ -336,7 +368,7 @@ Kim: Yes, it is. It is my new pencil.`,
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#171717', opacity: 0.7, fontStyle: 'italic', marginTop: '1rem' }}>
+          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
             💡 {testItems.MAZE.note}
           </p>
         </div>
@@ -363,23 +395,33 @@ function TestItemSection({
     <div style={{
       backgroundColor: '#ffffff',
       padding: '2rem',
-      borderRadius: '15px',
+      borderRadius: '20px',
       marginBottom: '2rem',
-      border: '1px solid rgba(255, 215, 0, 0.3)'
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
     }}>
-      <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '1.8rem' }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
         {title}
       </h2>
-      <p style={{ color: '#171717', opacity: 0.9, marginBottom: '1rem' }}>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
         {description} - 총 {totalItems}개 문항
       </p>
       <div style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.05)',
+        backgroundColor: '#f9fafb',
         padding: '1.5rem',
-        borderRadius: '10px',
+        borderRadius: '12px',
         maxHeight: '300px',
         overflowY: 'auto',
-        marginBottom: '1rem'
+        marginBottom: '1rem',
+        border: '2px solid #e5e7eb'
       }}>
         <div style={{ 
           display: 'grid', 
@@ -391,12 +433,13 @@ function TestItemSection({
               key={idx}
               style={{
                 padding: '0.5rem',
-                backgroundColor: 'rgba(255, 215, 0, 0.1)',
-                borderRadius: '5px',
+                backgroundColor: '#ffffff',
+                borderRadius: '8px',
                 textAlign: 'center',
                 fontSize: '0.9rem',
-                border: '1px solid rgba(255, 215, 0, 0.3)',
-                color: '#171717'
+                border: '1px solid #e5e7eb',
+                color: '#171717',
+                fontWeight: '500'
               }}
             >
               {item}
@@ -404,7 +447,7 @@ function TestItemSection({
           ))}
         </div>
       </div>
-      <p style={{ fontSize: '0.9rem', color: '#171717', opacity: 0.7, fontStyle: 'italic' }}>
+      <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic' }}>
         💡 {note}
       </p>
     </div>

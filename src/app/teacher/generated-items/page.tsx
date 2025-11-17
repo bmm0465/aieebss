@@ -80,9 +80,10 @@ export default function GeneratedItemsPage() {
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -92,12 +93,15 @@ export default function GeneratedItemsPage() {
                   fontSize: '2.5rem',
                   margin: 0,
                   fontFamily: 'var(--font-nanum-pen)',
-                  color: '#FFD700',
-                  textShadow: '0 0 10px #FFD700'
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 'bold'
                 }}>
                   📋 생성된 문항 관리
                 </h1>
-                <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
+                <p style={{ margin: '0.5rem 0 0 0', color: '#4b5563', fontSize: '1.1rem', fontWeight: '500' }}>
                   생성된 문항을 검토하고 승인/거부할 수 있습니다
                 </p>
               </div>
@@ -105,13 +109,16 @@ export default function GeneratedItemsPage() {
             <Link
               href="/teacher/dashboard"
               style={{
-                backgroundColor: 'rgba(255,215,0,0.2)',
-                color: '#FFD700',
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: 'white',
                 padding: '0.8rem 1.5rem',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 textDecoration: 'none',
-                border: '2px solid rgba(255,215,0,0.5)',
-                fontWeight: 'bold'
+                border: 'none',
+                fontWeight: '600',
+                boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+                transition: 'all 0.3s ease'
               }}
             >
               ← 대시보드로
@@ -123,19 +130,24 @@ export default function GeneratedItemsPage() {
         <div style={{
           backgroundColor: '#ffffff',
           padding: '1.5rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
           <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-            <label style={{ fontWeight: 'bold', color: '#FFD700' }}>상태:</label>
+            <label style={{ fontWeight: '600', color: '#4b5563' }}>상태:</label>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
               style={{
-                padding: '0.5rem',
-                borderRadius: '5px',
-                border: '1px solid rgba(255, 215, 0, 0.3)'
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: '2px solid #e5e7eb',
+                backgroundColor: '#ffffff',
+                color: '#171717',
+                fontSize: '0.95rem',
+                cursor: 'pointer'
               }}
             >
               <option value="">전체</option>
@@ -145,14 +157,18 @@ export default function GeneratedItemsPage() {
               <option value="rejected">거부됨</option>
             </select>
 
-            <label style={{ fontWeight: 'bold', color: '#FFD700', marginLeft: '1rem' }}>학년:</label>
+            <label style={{ fontWeight: '600', color: '#4b5563', marginLeft: '1rem' }}>학년:</label>
             <select
               value={gradeFilter}
               onChange={(e) => setGradeFilter(e.target.value)}
               style={{
-                padding: '0.5rem',
-                borderRadius: '5px',
-                border: '1px solid rgba(255, 215, 0, 0.3)'
+                padding: '0.5rem 1rem',
+                borderRadius: '8px',
+                border: '2px solid #e5e7eb',
+                backgroundColor: '#ffffff',
+                color: '#171717',
+                fontSize: '0.95rem',
+                cursor: 'pointer'
               }}
             >
               <option value="">전체</option>
@@ -170,13 +186,14 @@ export default function GeneratedItemsPage() {
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          borderRadius: '20px',
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
           {loading ? (
-            <p>로딩 중...</p>
+            <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>로딩 중...</p>
           ) : items.length === 0 ? (
-            <p style={{ opacity: 0.7, textAlign: 'center', padding: '2rem' }}>
+            <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
               생성된 문항이 없습니다.
             </p>
           ) : (
@@ -186,29 +203,38 @@ export default function GeneratedItemsPage() {
                   key={item.id}
                   style={{
                     padding: '1.5rem',
-                    border: '1px solid rgba(255, 215, 0, 0.3)',
-                    borderRadius: '10px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '12px',
+                    backgroundColor: '#f9fafb',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                        <h3 style={{ margin: 0, color: '#FFD700' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                        <h3 style={{ 
+                          margin: 0,
+                          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                          fontWeight: '600',
+                          fontSize: '1.1rem'
+                        }}>
                           {item.test_type} - {item.grade_level}
                         </h3>
                         {getStatusBadge(item.status)}
                         {item.quality_score !== null && (
-                          <span style={{ opacity: 0.7 }}>
+                          <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>
                             품질: {item.quality_score}점
                           </span>
                         )}
                       </div>
-                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', opacity: 0.6 }}>
+                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#9ca3af' }}>
                         생성: {new Date(item.created_at).toLocaleString('ko-KR')}
                       </p>
                       {item.review_notes && (
-                        <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', opacity: 0.8 }}>
+                        <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#4b5563' }}>
                           검토 의견: {item.review_notes}
                         </p>
                       )}
@@ -217,11 +243,14 @@ export default function GeneratedItemsPage() {
                       href={`/teacher/generated-items/${item.id}`}
                       style={{
                         padding: '0.5rem 1rem',
-                        backgroundColor: '#3498db',
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                         color: 'white',
-                        borderRadius: '5px',
+                        borderRadius: '8px',
                         textDecoration: 'none',
-                        fontSize: '0.9rem'
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        boxShadow: '0 2px 4px -1px rgba(99, 102, 241, 0.3)',
+                        transition: 'all 0.3s ease'
                       }}
                     >
                       상세 보기 →

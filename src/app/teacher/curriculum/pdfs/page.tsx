@@ -124,9 +124,10 @@ export default function CurriculumPDFsPage() {
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -136,12 +137,15 @@ export default function CurriculumPDFsPage() {
                   fontSize: '2.5rem',
                   margin: 0,
                   fontFamily: 'var(--font-nanum-pen)',
-                  color: '#FFD700',
-                  textShadow: '0 0 10px #FFD700'
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: 'bold'
                 }}>
                   📚 교육과정 PDF 관리
                 </h1>
-                <p style={{ margin: '0.5rem 0 0 0', opacity: 0.9 }}>
+                <p style={{ margin: '0.5rem 0 0 0', color: '#4b5563', fontSize: '1.1rem', fontWeight: '500' }}>
                   교육과정 문서나 교재 PDF를 업로드하여 문항 생성에 활용하세요
                 </p>
               </div>
@@ -149,13 +153,16 @@ export default function CurriculumPDFsPage() {
             <Link
               href="/teacher/dashboard"
               style={{
-                backgroundColor: 'rgba(255,215,0,0.2)',
-                color: '#FFD700',
+                display: 'inline-block',
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: 'white',
                 padding: '0.8rem 1.5rem',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 textDecoration: 'none',
-                border: '2px solid rgba(255,215,0,0.5)',
-                fontWeight: 'bold'
+                border: 'none',
+                fontWeight: '600',
+                boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+                transition: 'all 0.3s ease'
               }}
             >
               ← 대시보드로
@@ -167,16 +174,26 @@ export default function CurriculumPDFsPage() {
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
+          borderRadius: '20px',
           marginBottom: '2rem',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
-          <h2 style={{ color: '#FFD700', marginBottom: '1rem' }}>📤 PDF 업로드</h2>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>📤 PDF 업로드</h2>
           <div style={{
-            border: '2px dashed rgba(255, 215, 0, 0.5)',
-            borderRadius: '10px',
+            border: '2px dashed #e5e7eb',
+            borderRadius: '12px',
             padding: '2rem',
-            textAlign: 'center'
+            textAlign: 'center',
+            backgroundColor: '#f9fafb'
           }}>
             <input
               type="file"
@@ -191,21 +208,23 @@ export default function CurriculumPDFsPage() {
               style={{
                 display: 'inline-block',
                 padding: '1rem 2rem',
-                backgroundColor: uploading ? '#ccc' : '#FFD700',
-                color: uploading ? '#666' : '#000',
-                borderRadius: '8px',
+                background: uploading ? '#d1d5db' : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                color: 'white',
+                borderRadius: '12px',
                 cursor: uploading ? 'not-allowed' : 'pointer',
-                fontWeight: 'bold',
-                fontSize: '1.1rem'
+                fontWeight: '600',
+                fontSize: '1.1rem',
+                boxShadow: uploading ? 'none' : '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+                transition: 'all 0.3s ease'
               }}
             >
               {uploading ? '⏳ 업로드 중...' : '📄 PDF 파일 선택'}
             </label>
-            <p style={{ marginTop: '1rem', opacity: 0.7 }}>
+            <p style={{ marginTop: '1rem', color: '#6b7280', fontSize: '0.95rem' }}>
               최대 100MB까지 업로드 가능합니다
             </p>
             {error && (
-              <p style={{ marginTop: '1rem', color: '#F44336' }}>
+              <p style={{ marginTop: '1rem', color: '#ef4444', fontWeight: '500' }}>
                 ⚠️ {error}
               </p>
             )}
@@ -216,14 +235,23 @@ export default function CurriculumPDFsPage() {
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
-          borderRadius: '15px',
-          border: '1px solid rgba(255, 215, 0, 0.3)'
+          borderRadius: '20px',
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
         }}>
-          <h2 style={{ color: '#FFD700', marginBottom: '1.5rem' }}>📋 업로드된 PDF 목록</h2>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>📋 업로드된 PDF 목록</h2>
           {loading ? (
-            <p>로딩 중...</p>
+            <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>로딩 중...</p>
           ) : pdfs.length === 0 ? (
-            <p style={{ opacity: 0.7, textAlign: 'center', padding: '2rem' }}>
+            <p style={{ color: '#6b7280', textAlign: 'center', padding: '2rem' }}>
               업로드된 PDF가 없습니다.
             </p>
           ) : (
@@ -233,23 +261,32 @@ export default function CurriculumPDFsPage() {
                   key={pdf.id}
                   style={{
                     padding: '1.5rem',
-                    border: '1px solid rgba(255, 215, 0, 0.3)',
-                    borderRadius: '10px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                    border: '2px solid #e5e7eb',
+                    borderRadius: '12px',
+                    backgroundColor: '#f9fafb',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
                     <div style={{ flex: 1 }}>
-                      <h3 style={{ margin: '0 0 0.5rem 0', color: '#FFD700' }}>
+                      <h3 style={{ 
+                        margin: '0 0 0.5rem 0',
+                        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                        WebkitBackgroundClip: 'text',
+                        WebkitTextFillColor: 'transparent',
+                        backgroundClip: 'text',
+                        fontWeight: '600',
+                        fontSize: '1.1rem'
+                      }}>
                         {pdf.filename}
                       </h3>
-                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem' }}>
-                        <span style={{ opacity: 0.7 }}>📦 {formatFileSize(pdf.file_size)}</span>
-                        {pdf.grade_level && <span style={{ opacity: 0.7 }}>🎓 {pdf.grade_level}</span>}
-                        {pdf.subject && <span style={{ opacity: 0.7 }}>📖 {pdf.subject}</span>}
+                      <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', marginTop: '0.5rem', alignItems: 'center' }}>
+                        <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>📦 {formatFileSize(pdf.file_size)}</span>
+                        {pdf.grade_level && <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>🎓 {pdf.grade_level}</span>}
+                        {pdf.subject && <span style={{ color: '#6b7280', fontSize: '0.9rem' }}>📖 {pdf.subject}</span>}
                         {getStatusBadge(pdf.status)}
                       </div>
-                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', opacity: 0.6 }}>
+                      <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', color: '#9ca3af' }}>
                         업로드: {new Date(pdf.created_at).toLocaleString('ko-KR')}
                         {pdf.processed_at && (
                           <> | 처리: {new Date(pdf.processed_at).toLocaleString('ko-KR')}</>
