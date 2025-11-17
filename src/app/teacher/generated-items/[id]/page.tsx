@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -26,8 +26,11 @@ interface GeneratedItemDetail {
   }>;
 }
 
-export default function GeneratedItemDetailPage() {
-  const params = useParams();
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default function GeneratedItemDetailPage({ params }: Props) {
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,19 +38,12 @@ export default function GeneratedItemDetailPage() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // 클라이언트에서만 마운트되도록 보장
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    
     const fetchItemData = async () => {
       try {
-        const id = params.id as string;
+        const resolvedParams = await params;
+        const id = resolvedParams.id;
         
         if (!id) {
           setError('문항 ID가 없습니다.');
@@ -101,7 +97,7 @@ export default function GeneratedItemDetailPage() {
     };
 
     fetchItemData();
-  }, [mounted, params.id, router]);
+  }, [params, router]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -203,8 +199,7 @@ export default function GeneratedItemDetailPage() {
     }
   };
 
-  // 서버 사이드 렌더링 방지
-  if (!mounted || loading) {
+  if (loading) {
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 

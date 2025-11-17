@@ -63,7 +63,6 @@ export async function GET(
       .from('generated_test_items')
       .select('*')
       .eq('id', id)
-      .eq('generated_by', user.id)
       .single();
 
     console.log('API: Item query - item:', item ? 'found' : 'not found', 'error:', itemError);
