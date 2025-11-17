@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -22,8 +22,11 @@ interface GeneratedItemDetail {
   }>;
 }
 
-function GeneratedItemDetailContent() {
-  const params = useParams();
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+export default function GeneratedItemDetailPage({ params }: Props) {
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,19 +35,30 @@ function GeneratedItemDetailContent() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchItemData = async () => {
-      const id = params.id as string;
-      if (!id) {
-        setError('문항 ID가 없습니다.');
-        setLoading(false);
-        return;
-      }
+  const [itemId, setItemId] = useState<string | null>(null);
 
+  useEffect(() => {
+    const resolveParams = async () => {
       try {
-        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
+        const resolvedParams = await params;
+        setItemId(resolvedParams.id);
+      } catch (err) {
+        console.error('GENERATED ITEM DETAIL: Error resolving params:', err);
+        setError('문항 ID를 가져오는 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
+    };
+    resolveParams();
+  }, [params]);
+
+  useEffect(() => {
+    if (!itemId) return;
+
+    const fetchItemData = async () => {
+      try {
+        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', itemId);
         
-        const response = await fetch(`/api/generated-items/${id}`, {
+        const response = await fetch(`/api/generated-items/${itemId}`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -88,14 +102,15 @@ function GeneratedItemDetailContent() {
     };
 
     fetchItemData();
-  }, [params.id, router]);
+  }, [itemId, router]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
+    if (!itemId) return;
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/generated-items/${params.id}/approve`, {
+      const response = await fetch(`/api/generated-items/${itemId}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: reviewNotes })
@@ -123,10 +138,11 @@ function GeneratedItemDetailContent() {
     }
 
     if (!confirm('이 문항을 거부하시겠습니까?')) return;
+    if (!itemId) return;
 
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/generated-items/${params.id}/reject`, {
+      const response = await fetch(`/api/generated-items/${itemId}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: rejectNotes })
@@ -148,9 +164,11 @@ function GeneratedItemDetailContent() {
   };
 
   const handleReview = async () => {
+    if (!itemId) return;
+    
     setActionLoading(true);
     try {
-      const response = await fetch(`/api/generated-items/${params.id}/review`, {
+      const response = await fetch(`/api/generated-items/${itemId}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notes: reviewNotes })
@@ -161,7 +179,7 @@ function GeneratedItemDetailContent() {
         alert('문항 검토가 완료되었습니다.');
         // 데이터 다시 불러오기
         setLoading(true);
-        const refreshResponse = await fetch(`/api/generated-items/${params.id}`, {
+        const refreshResponse = await fetch(`/api/generated-items/${itemId}`, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -489,33 +507,4 @@ function GeneratedItemDetailContent() {
   );
 }
 
-export default function GeneratedItemDetailPage() {
-  return (
-    <Suspense fallback={
-      <div style={{ 
-        backgroundColor: '#ffffff', 
-        backgroundSize: 'cover', 
-        minHeight: '100vh',
-        padding: '2rem',
-        color: '#171717',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontSize: '2rem',
-            fontWeight: 'bold'
-          }}>📋 로딩 중...</h1>
-        </div>
-      </div>
-    }>
-      <GeneratedItemDetailContent />
-    </Suspense>
-  );
-}
 
