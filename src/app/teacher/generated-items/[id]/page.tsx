@@ -32,11 +32,19 @@ export default function GeneratedItemDetailPage() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    checkAuthAndLoadItem();
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (mounted) {
+      checkAuthAndLoadItem();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.id]);
+  }, [mounted, params.id]);
 
   const checkAuthAndLoadItem = async () => {
     try {
@@ -46,6 +54,7 @@ export default function GeneratedItemDetailPage() {
       
       if (userError || !user) {
         console.error('인증 오류:', userError);
+        setRedirecting(true);
         router.push('/');
         return;
       }
@@ -58,6 +67,7 @@ export default function GeneratedItemDetailPage() {
         .single();
 
       if (!profile || profile.role !== 'teacher') {
+        setRedirecting(true);
         router.push('/lobby');
         return;
       }
@@ -68,6 +78,7 @@ export default function GeneratedItemDetailPage() {
       await loadItem();
     } catch (err) {
       console.error('인증 확인 오류:', err);
+      setRedirecting(true);
       router.push('/');
     }
   };
@@ -180,13 +191,35 @@ export default function GeneratedItemDetailPage() {
     }
   };
 
-  // 인증 확인 전에는 아무것도 렌더링하지 않음
-  if (!authChecked || loading) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>로딩 중...</div>;
+  // 클라이언트 마운트 전이나 리다이렉트 중에는 로딩 화면만 표시
+  if (!mounted || redirecting || !authChecked || loading) {
+    return (
+      <div style={{ 
+        padding: '2rem', 
+        textAlign: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        로딩 중...
+      </div>
+    );
   }
 
   if (!item) {
-    return <div style={{ padding: '2rem', textAlign: 'center' }}>문항을 찾을 수 없습니다.</div>;
+    return (
+      <div style={{ 
+        padding: '2rem', 
+        textAlign: 'center',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        문항을 찾을 수 없습니다.
+      </div>
+    );
   }
 
   const getStatusBadge = (status: string) => {
