@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
@@ -28,9 +28,12 @@ interface GeneratedItemDetail {
   }>;
 }
 
-function GeneratedItemDetailContent() {
+interface Props {
+  params: Promise<{ id: string }>;
+}
+
+function GeneratedItemDetailContent({ params }: Props) {
   const router = useRouter();
-  const params = useParams();
   const supabase = createClient();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,28 +41,17 @@ function GeneratedItemDetailContent() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  // 클라이언트에서만 마운트되도록 보장
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
-    // 서버 사이드 렌더링 방지 - 클라이언트에서만 실행
-    if (!mounted) {
-      console.log('GENERATED ITEM DETAIL: Not mounted yet, skipping fetch');
-      return;
-    }
-
     const fetchItemData = async () => {
       try {
         console.log('GENERATED ITEM DETAIL: ===== Page INIT =====');
         console.log('GENERATED ITEM DETAIL: Current URL:', window.location.href);
         console.log('GENERATED ITEM DETAIL: Is client:', typeof window !== 'undefined');
         
-        const id = params.id as string;
-        console.log('GENERATED ITEM DETAIL: Params - id:', id);
+        const resolvedParams = await params;
+        const id = resolvedParams.id;
+        console.log('GENERATED ITEM DETAIL: Resolved params - id:', id);
         
         if (!id) {
           setError('문항 ID가 없습니다.');
@@ -132,7 +124,7 @@ function GeneratedItemDetailContent() {
     };
 
     fetchItemData();
-  }, [mounted, params.id, router, supabase]);
+  }, [params, router, supabase]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -234,8 +226,7 @@ function GeneratedItemDetailContent() {
     }
   };
 
-  // 서버 사이드 렌더링 방지
-  if (!mounted || loading) {
+  if (loading) {
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 
@@ -538,7 +529,11 @@ function GeneratedItemDetailContent() {
   );
 }
 
-export default function GeneratedItemDetailPage() {
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default function GeneratedItemDetailPage({ params }: PageProps) {
   return (
     <Suspense fallback={
       <div style={{ 
@@ -563,7 +558,7 @@ export default function GeneratedItemDetailPage() {
         </div>
       </div>
     }>
-      <GeneratedItemDetailContent />
+      <GeneratedItemDetailContent params={params} />
     </Suspense>
   );
 }
