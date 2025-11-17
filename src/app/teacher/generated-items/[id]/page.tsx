@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/client';
 
 interface GeneratedItemDetail {
   id: string;
@@ -28,87 +27,68 @@ export default function GeneratedItemDetailPage() {
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [redirecting, setRedirecting] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const loadItem = async () => {
+      try {
+        const id = params.id as string;
+        if (!id) {
+          setError('문항 ID가 없습니다.');
+          setLoading(false);
+          return;
+        }
 
-  useEffect(() => {
-    if (mounted) {
-      checkAuthAndLoadItem();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mounted, params.id]);
+        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
+        
+        const response = await fetch(`/api/generated-items/${id}`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
 
-  const checkAuthAndLoadItem = async () => {
-    try {
-      // 먼저 인증 확인
-      const supabase = createClient();
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      
-      if (userError || !user) {
-        console.error('인증 오류:', userError);
-        setRedirecting(true);
-        router.push('/');
-        return;
+        console.log('GENERATED ITEM DETAIL: API response status:', response.status);
+
+        if (response.status === 401) {
+          router.push('/');
+          return;
+        }
+
+        if (response.status === 403) {
+          setError('접근 권한이 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        if (!response.ok) {
+          setError('문항을 찾을 수 없습니다.');
+          setLoading(false);
+          return;
+        }
+
+        const data = await response.json();
+        console.log('GENERATED ITEM DETAIL: Data received:', data);
+        
+        if (data.success) {
+          setItem(data.item);
+        } else {
+          setError('문항을 찾을 수 없습니다.');
+        }
+        setLoading(false);
+      } catch (err) {
+        console.error('GENERATED ITEM DETAIL: Error fetching data:', err);
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+        setLoading(false);
       }
+    };
 
-      // 교사 권한 확인
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single();
-
-      if (!profile || profile.role !== 'teacher') {
-        setRedirecting(true);
-        router.push('/lobby');
-        return;
-      }
-
-      setAuthChecked(true);
-      
-      // 인증 확인 후 문항 로드
-      await loadItem();
-    } catch (err) {
-      console.error('인증 확인 오류:', err);
-      setRedirecting(true);
-      router.push('/');
-    }
-  };
-
-  const loadItem = async () => {
-    try {
-      const response = await fetch(`/api/generated-items/${params.id}`);
-      
-      if (response.status === 401) {
-        // 인증 실패 시 로그인 페이지로 리다이렉트
-        router.push('/');
-        return;
-      }
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      if (data.success) {
-        setItem(data.item);
-      } else {
-        console.error('문항 로드 실패:', data.error);
-      }
-    } catch (err) {
-      console.error('문항 상세 로드 오류:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+    loadItem();
+  }, [params.id, router]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -191,33 +171,72 @@ export default function GeneratedItemDetailPage() {
     }
   };
 
-  // 클라이언트 마운트 전이나 리다이렉트 중에는 로딩 화면만 표시
-  if (!mounted || redirecting || !authChecked || loading) {
+  if (loading) {
     return (
       <div style={{ 
-        padding: '2rem', 
-        textAlign: 'center',
+        backgroundColor: '#ffffff', 
+        backgroundSize: 'cover', 
         minHeight: '100vh',
+        padding: '2rem',
+        color: '#171717',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
-        로딩 중...
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: '2rem',
+            fontWeight: 'bold'
+          }}>📋 문항 정보를 불러오는 중...</h1>
+        </div>
       </div>
     );
   }
 
-  if (!item) {
+  if (error || !item) {
     return (
       <div style={{ 
-        padding: '2rem', 
-        textAlign: 'center',
+        backgroundColor: '#ffffff', 
+        backgroundSize: 'cover', 
         minHeight: '100vh',
+        padding: '2rem',
+        color: '#171717',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        alignItems: 'center'
       }}>
-        문항을 찾을 수 없습니다.
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ 
+            background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            marginBottom: '1rem'
+          }}>❌ 오류 발생</h1>
+          <p style={{ marginBottom: '2rem', color: '#4b5563' }}>{error || '문항 정보를 불러올 수 없습니다.'}</p>
+          <Link 
+            href="/teacher/generated-items"
+            style={{
+              display: 'inline-block',
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              color: 'white',
+              padding: '0.8rem 1.5rem',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              boxShadow: '0 4px 6px -1px rgba(99, 102, 241, 0.3)',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            ← 목록으로 돌아가기
+          </Link>
+        </div>
       </div>
     );
   }
