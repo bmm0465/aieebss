@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { createClient } from '@/lib/supabase/client';
 
 interface GeneratedItemDetail {
   id: string;
@@ -30,18 +31,66 @@ export default function GeneratedItemDetailPage() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
   useEffect(() => {
-    loadItem();
+    checkAuthAndLoadItem();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [params.id]);
+
+  const checkAuthAndLoadItem = async () => {
+    try {
+      // 먼저 인증 확인
+      const supabase = createClient();
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.error('인증 오류:', userError);
+        router.push('/');
+        return;
+      }
+
+      // 교사 권한 확인
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+      if (!profile || profile.role !== 'teacher') {
+        router.push('/lobby');
+        return;
+      }
+
+      setAuthChecked(true);
+      
+      // 인증 확인 후 문항 로드
+      await loadItem();
+    } catch (err) {
+      console.error('인증 확인 오류:', err);
+      router.push('/');
+    }
+  };
 
   const loadItem = async () => {
     try {
       const response = await fetch(`/api/generated-items/${params.id}`);
+      
+      if (response.status === 401) {
+        // 인증 실패 시 로그인 페이지로 리다이렉트
+        router.push('/');
+        return;
+      }
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       if (data.success) {
         setItem(data.item);
+      } else {
+        console.error('문항 로드 실패:', data.error);
       }
     } catch (err) {
       console.error('문항 상세 로드 오류:', err);
@@ -131,7 +180,8 @@ export default function GeneratedItemDetailPage() {
     }
   };
 
-  if (loading) {
+  // 인증 확인 전에는 아무것도 렌더링하지 않음
+  if (!authChecked || loading) {
     return <div style={{ padding: '2rem', textAlign: 'center' }}>로딩 중...</div>;
   }
 
