@@ -255,7 +255,7 @@ Kim: Yes, it is. It is my new pencil.`,
 
         {/* ORF */}
         <div style={{
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          backgroundColor: '#ffffff',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -264,9 +264,9 @@ Kim: Yes, it is. It is my new pencil.`,
           <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '1.8rem' }}>
             {testItems.ORF.title}
           </h2>
-          <p style={{ opacity: 0.9, marginBottom: '1rem' }}>{testItems.ORF.description}</p>
+          <p style={{ color: '#171717', opacity: 0.9, marginBottom: '1rem' }}>{testItems.ORF.description}</p>
           <div style={{ 
-            backgroundColor: 'rgba(255, 255, 255, 0.05)',
+            backgroundColor: 'rgba(0, 0, 0, 0.05)',
             padding: '1.5rem',
             borderRadius: '10px',
             marginBottom: '1rem'
@@ -276,19 +276,20 @@ Kim: Yes, it is. It is my new pencil.`,
               fontFamily: 'monospace',
               fontSize: '1rem',
               lineHeight: '1.8',
-              margin: 0
+              margin: 0,
+              color: '#171717'
             }}>
               {testItems.ORF.passage}
             </pre>
           </div>
-          <p style={{ fontSize: '0.9rem', opacity: 0.7, fontStyle: 'italic' }}>
+          <p style={{ fontSize: '0.9rem', color: '#171717', opacity: 0.7, fontStyle: 'italic' }}>
             💡 {testItems.ORF.note}
           </p>
         </div>
 
         {/* MAZE */}
         <div style={{
-          backgroundColor: 'rgba(0,0,0,0.7)',
+          backgroundColor: '#ffffff',
           padding: '2rem',
           borderRadius: '15px',
           marginBottom: '2rem',
@@ -297,18 +298,18 @@ Kim: Yes, it is. It is my new pencil.`,
           <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '1.8rem' }}>
             {testItems.MAZE.title}
           </h2>
-          <p style={{ opacity: 0.9, marginBottom: '1rem' }}>
+          <p style={{ color: '#171717', opacity: 0.9, marginBottom: '1rem' }}>
             {testItems.MAZE.description} - 총 {testItems.MAZE.totalItems}문항
           </p>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
             {testItems.MAZE.questions.map((q) => (
               <div key={q.num} style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                backgroundColor: 'rgba(0, 0, 0, 0.05)',
                 padding: '1rem',
                 borderRadius: '8px',
                 borderLeft: '3px solid #FFD700'
               }}>
-                <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
                   <strong style={{ color: '#FFD700' }}>문항 {q.num}:</strong> {q.sentence}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
@@ -320,12 +321,12 @@ Kim: Yes, it is. It is my new pencil.`,
                         borderRadius: '5px',
                         fontSize: '0.9rem',
                         backgroundColor: choice === q.answer 
-                          ? 'rgba(76, 175, 80, 0.3)' 
-                          : 'rgba(255, 255, 255, 0.1)',
+                          ? 'rgba(76, 175, 80, 0.2)' 
+                          : 'rgba(0, 0, 0, 0.05)',
                         border: choice === q.answer 
                           ? '2px solid #4CAF50' 
-                          : '1px solid rgba(255, 255, 255, 0.2)',
-                        color: choice === q.answer ? '#4CAF50' : 'white'
+                          : '1px solid rgba(0, 0, 0, 0.1)',
+                        color: choice === q.answer ? '#4CAF50' : '#171717'
                       }}
                     >
                       {choice} {choice === q.answer && '✓'}
@@ -335,7 +336,7 @@ Kim: Yes, it is. It is my new pencil.`,
               </div>
             ))}
           </div>
-          <p style={{ fontSize: '0.9rem', opacity: 0.7, fontStyle: 'italic', marginTop: '1rem' }}>
+          <p style={{ fontSize: '0.9rem', color: '#171717', opacity: 0.7, fontStyle: 'italic', marginTop: '1rem' }}>
             💡 {testItems.MAZE.note}
           </p>
         </div>
@@ -360,7 +361,7 @@ function TestItemSection({
 }) {
   return (
     <div style={{
-      backgroundColor: 'rgba(0,0,0,0.7)',
+      backgroundColor: '#ffffff',
       padding: '2rem',
       borderRadius: '15px',
       marginBottom: '2rem',
@@ -369,11 +370,11 @@ function TestItemSection({
       <h2 style={{ color: '#FFD700', marginBottom: '1rem', fontSize: '1.8rem' }}>
         {title}
       </h2>
-      <p style={{ opacity: 0.9, marginBottom: '1rem' }}>
+      <p style={{ color: '#171717', opacity: 0.9, marginBottom: '1rem' }}>
         {description} - 총 {totalItems}개 문항
       </p>
       <div style={{
-        backgroundColor: 'rgba(255, 255, 255, 0.05)',
+        backgroundColor: 'rgba(0, 0, 0, 0.05)',
         padding: '1.5rem',
         borderRadius: '10px',
         maxHeight: '300px',
@@ -394,7 +395,8 @@ function TestItemSection({
                 borderRadius: '5px',
                 textAlign: 'center',
                 fontSize: '0.9rem',
-                border: '1px solid rgba(255, 215, 0, 0.3)'
+                border: '1px solid rgba(255, 215, 0, 0.3)',
+                color: '#171717'
               }}
             >
               {item}
@@ -402,7 +404,7 @@ function TestItemSection({
           ))}
         </div>
       </div>
-      <p style={{ fontSize: '0.9rem', opacity: 0.7, fontStyle: 'italic' }}>
+      <p style={{ fontSize: '0.9rem', color: '#171717', opacity: 0.7, fontStyle: 'italic' }}>
         💡 {note}
       </p>
     </div>

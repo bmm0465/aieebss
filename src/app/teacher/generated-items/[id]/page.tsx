@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,7 +22,7 @@ interface GeneratedItemDetail {
   }>;
 }
 
-export default function GeneratedItemDetailPage() {
+function GeneratedItemDetailContent() {
   const params = useParams();
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
@@ -31,6 +31,11 @@ export default function GeneratedItemDetailPage() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const loadItem = useCallback(async () => {
     try {
@@ -87,8 +92,10 @@ export default function GeneratedItemDetailPage() {
   }, [params.id, router]);
 
   useEffect(() => {
-    loadItem();
-  }, [loadItem]);
+    if (mounted) {
+      loadItem();
+    }
+  }, [mounted, loadItem]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -171,7 +178,7 @@ export default function GeneratedItemDetailPage() {
     }
   };
 
-  if (loading) {
+  if (!mounted || loading) {
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 
@@ -471,6 +478,36 @@ export default function GeneratedItemDetailPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function GeneratedItemDetailPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ 
+        backgroundColor: '#ffffff', 
+        backgroundSize: 'cover', 
+        minHeight: '100vh',
+        padding: '2rem',
+        color: '#171717',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            fontSize: '2rem',
+            fontWeight: 'bold'
+          }}>📋 로딩 중...</h1>
+        </div>
+      </div>
+    }>
+      <GeneratedItemDetailContent />
+    </Suspense>
   );
 }
 
