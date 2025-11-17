@@ -1,15 +1,14 @@
-'use client';
+'use client'
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 
-// 서버 측 캐싱 방지 및 클라이언트 사이드 렌더링 강제
+// 서버 측 캐싱 방지
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-export const runtime = 'edge'; // Edge runtime 사용 (선택사항, 필요시 제거)
 
 interface GeneratedItemDetail {
   id: string;
@@ -32,7 +31,7 @@ interface Props {
   params: Promise<{ id: string }>;
 }
 
-function GeneratedItemDetailContent({ params }: Props) {
+export default function GeneratedItemDetailPage({ params }: Props) {
   const router = useRouter();
   const supabase = createClient();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
@@ -41,22 +40,66 @@ function GeneratedItemDetailContent({ params }: Props) {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // 클라이언트에서만 마운트되도록 보장
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
-    const fetchItemData = async () => {
+    // 서버 사이드에서 실행 방지
+    if (!mounted) return;
+
+    const initializePage = async () => {
       try {
         console.log('GENERATED ITEM DETAIL: ===== Page INIT =====');
         console.log('GENERATED ITEM DETAIL: Current URL:', window.location.href);
-        console.log('GENERATED ITEM DETAIL: Is client:', typeof window !== 'undefined');
+        console.log('GENERATED ITEM DETAIL: Document cookies:', document.cookie);
+        console.log('GENERATED ITEM DETAIL: User agent:', navigator.userAgent);
         
         const resolvedParams = await params;
         const id = resolvedParams.id;
         console.log('GENERATED ITEM DETAIL: Resolved params - id:', id);
+        console.log('GENERATED ITEM DETAIL: Resolved params:', resolvedParams);
+        console.log('GENERATED ITEM DETAIL: ID type:', typeof id);
+        console.log('GENERATED ITEM DETAIL: ID length:', id?.length);
         
         if (!id) {
           setError('문항 ID가 없습니다.');
           setLoading(false);
           return;
+        }
+
+        // 인증 확인 - 여러 방법으로 시도
+        console.log('GENERATED ITEM DETAIL: Starting auth check...');
+        
+        // 방법 1: getUser()
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        console.log('GENERATED ITEM DETAIL: Auth check (getUser) - user:', user?.id, 'error:', authError);
+        console.log('GENERATED ITEM DETAIL: Auth check (getUser) - user email:', user?.email);
+        
+        // 방법 2: getSession()
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        console.log('GENERATED ITEM DETAIL: Auth check (getSession) - session:', sessionData?.session?.user?.id, 'error:', sessionError);
+        
+        if (authError || !user) {
+          console.log('GENERATED ITEM DETAIL: ===== AUTH FAILED =====');
+          console.log('GENERATED ITEM DETAIL: Auth error details:', authError);
+          console.log('GENERATED ITEM DETAIL: Session error details:', sessionError);
+          console.log('GENERATED ITEM DETAIL: Current URL:', window.location.href);
+          console.log('GENERATED ITEM DETAIL: All cookies:', document.cookie);
+          console.log('GENERATED ITEM DETAIL: Supabase cookies:', document.cookie.split(';').filter(c => c.includes('supabase')));
+          console.log('GENERATED ITEM DETAIL: Local storage:', Object.keys(localStorage));
+          console.log('GENERATED ITEM DETAIL: Session storage:', Object.keys(sessionStorage));
+          
+          // 임시: 인증 실패 시에도 페이지를 계속 로드 (디버깅용)
+          console.log('GENERATED ITEM DETAIL: TEMPORARY: Continuing without auth for debugging');
+          // router.push('/');
+          // return;
+        } else {
+          console.log('GENERATED ITEM DETAIL: ===== AUTH SUCCESS =====');
+          console.log('GENERATED ITEM DETAIL: User authenticated:', user.email);
         }
 
         console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
@@ -117,14 +160,19 @@ function GeneratedItemDetailContent({ params }: Props) {
         }
         setLoading(false);
       } catch (err) {
-        console.error('GENERATED ITEM DETAIL: Error fetching data:', err);
+        console.error('GENERATED ITEM DETAIL: Error loading item data:', err);
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
         setLoading(false);
       }
     };
 
-    fetchItemData();
-  }, [params, router, supabase]);
+    initializePage();
+  }, [mounted, params, router, supabase]);
+
+  // 서버 사이드에서 렌더링 방지
+  if (!mounted) {
+    return null;
+  }
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -529,36 +577,3 @@ function GeneratedItemDetailContent({ params }: Props) {
   );
 }
 
-interface PageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default function GeneratedItemDetailPage({ params }: PageProps) {
-  return (
-    <Suspense fallback={
-      <div style={{ 
-        backgroundColor: '#ffffff', 
-        backgroundSize: 'cover', 
-        minHeight: '100vh',
-        padding: '2rem',
-        color: '#171717',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <h1 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            fontSize: '2rem',
-            fontWeight: 'bold'
-          }}>📋 문항 정보를 불러오는 중...</h1>
-        </div>
-      </div>
-    }>
-      <GeneratedItemDetailContent params={params} />
-    </Suspense>
-  );
-}
