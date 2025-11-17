@@ -54,8 +54,13 @@ function GeneratedItemDetailContent() {
         }
 
         console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
+        console.log('GENERATED ITEM DETAIL: API URL:', `/api/generated-items/${id}`);
+        console.log('GENERATED ITEM DETAIL: Current origin:', window.location.origin);
         
-        const response = await fetch(`/api/generated-items/${id}`, {
+        const apiUrl = `/api/generated-items/${id}`;
+        console.log('GENERATED ITEM DETAIL: Making fetch request to:', apiUrl);
+        
+        const response = await fetch(apiUrl, {
           method: 'GET',
           cache: 'no-store',
           headers: {
@@ -63,27 +68,41 @@ function GeneratedItemDetailContent() {
           },
         });
 
-        console.log('GENERATED ITEM DETAIL: API response status:', response.status);
+        console.log('GENERATED ITEM DETAIL: API response received');
+        console.log('GENERATED ITEM DETAIL: - status:', response.status);
+        console.log('GENERATED ITEM DETAIL: - statusText:', response.statusText);
+        console.log('GENERATED ITEM DETAIL: - ok:', response.ok);
+        console.log('GENERATED ITEM DETAIL: - headers:', Object.fromEntries(response.headers.entries()));
 
         if (response.status === 401) {
+          console.log('GENERATED ITEM DETAIL: 401 Unauthorized - redirecting to login');
           router.push('/');
           return;
         }
 
         if (response.status === 403) {
-          setError('접근 권한이 없습니다.');
+          console.log('GENERATED ITEM DETAIL: 403 Forbidden');
+          const errorData = await response.json().catch(() => ({}));
+          console.log('GENERATED ITEM DETAIL: Error details:', errorData);
+          setError(errorData.details || errorData.error || '접근 권한이 없습니다.');
           setLoading(false);
           return;
         }
 
         if (!response.ok) {
-          setError('문항을 찾을 수 없습니다.');
+          console.log('GENERATED ITEM DETAIL: Response not OK');
+          const errorData = await response.json().catch(() => ({}));
+          console.log('GENERATED ITEM DETAIL: Error data:', errorData);
+          setError(errorData.details || errorData.error || '문항을 찾을 수 없습니다.');
           setLoading(false);
           return;
         }
 
         const data = await response.json();
         console.log('GENERATED ITEM DETAIL: Data received:', data);
+        console.log('GENERATED ITEM DETAIL: - success:', data.success);
+        console.log('GENERATED ITEM DETAIL: - item exists:', !!data.item);
+        console.log('GENERATED ITEM DETAIL: - item id:', data.item?.id);
         
         if (data.success) {
           setItem(data.item);
