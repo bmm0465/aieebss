@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { createClient } from '@/lib/supabase/middleware'
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
   console.log('MIDDLEWARE: Processing request for:', pathname)
+  
+  // Supabase 클라이언트 생성 및 세션 갱신
+  // 이는 서버 컴포넌트와 API 라우트가 최신 인증 상태를 가질 수 있도록 보장합니다
+  const { supabase, response } = createClient(request)
+  
+  // 세션 갱신 - getSession() 호출 자체가 만료된 토큰을 갱신하고 쿠키를 업데이트합니다
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+  
+  console.log('MIDDLEWARE: Session check - hasSession:', !!session, 'error:', sessionError?.message)
   
   // teacher/student/[studentId] 경로 처리
   if (pathname.startsWith('/teacher/student/') && pathname !== '/teacher/student') {
@@ -15,11 +25,33 @@ export function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL(`/teacher/student/${studentId}`, request.url))
   }
   
-  return NextResponse.next()
+  // /teacher 경로에 대한 인증 체크
+  // 단, API 라우트는 제외 (API 라우트는 자체적으로 인증을 처리)
+  if (pathname.startsWith('/teacher') && !pathname.startsWith('/api')) {
+    if (!session) {
+      console.log('MIDDLEWARE: No session found for protected route, redirecting to login')
+      const url = request.nextUrl.clone()
+      url.pathname = '/'
+      return NextResponse.redirect(url)
+    }
+    
+    console.log('MIDDLEWARE: Session validated for teacher route')
+  }
+  
+  // 세션이 갱신된 응답 반환
+  return response
 }
 
 export const config = {
   matcher: [
-    '/teacher/student/:path*'
-  ]
+    /*
+     * 아래 경로를 제외한 모든 요청 경로와 일치시킵니다:
+     * - _next/static (정적 파일)
+     * - _next/image (이미지 최적화 파일)
+     * - favicon.ico (파비콘 파일)
+     * - api (API 라우트는 자체적으로 인증 처리)
+     * 이는 보호된 경로와 공개된 경로 모두에서 세션을 갱신하기 위함입니다.
+     */
+    '/((?!_next/static|_next/image|favicon.ico|api).*)',
+  ],
 }

@@ -54,8 +54,9 @@ export const createClient = (request: NextRequest) => {
         },
       },
       auth: {
-        // 미들웨어에서는 기본 설정 사용
-        autoRefreshToken: false,
+        // 미들웨어에서 세션 갱신 활성화
+        // getSession() 호출 시 만료된 토큰을 자동으로 갱신합니다
+        autoRefreshToken: true,
         persistSession: true,
       },
     }
