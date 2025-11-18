@@ -50,7 +50,7 @@
       "unit": 2,
       "entries": [
         {"index": 1, "donga_yoon": "a", "icecream_park": "a", "ybm_kim": "close", "ybm_choi": "bag", "chunjae_text_kim": "a", "chunjae_text_ham": "be", "chunjae_edu_lee": "a"},
-        {"index": 2, "donga_yoon": "apple", "icecream_park": "book", "ybm_kim": "door", "ybm_choi": "gall", "chunjae_text_kim": "bag", "chunjae_text_ham": "bye", "chunjae_edu_lee": "apple"},
+        {"index": 2, "donga_yoon": "apple", "icecream_park": "book", "ybm_kim": "door", "ybm_choi": "ball", "chunjae_text_kim": "bag", "chunjae_text_ham": "bye", "chunjae_edu_lee": "apple"},
         {"index": 3, "donga_yoon": "ball", "icecream_park": "doll", "ybm_kim": "down", "ybm_choi": "car", "chunjae_text_kim": "book", "chunjae_text_ham": "fine", "chunjae_edu_lee": "bag"},
         {"index": 4, "donga_yoon": "book", "icecream_park": "egg", "ybm_kim": "great", "ybm_choi": "chair", "chunjae_text_kim": "chant", "chunjae_text_ham": "how", "chunjae_edu_lee": "candy"},
         {"index": 5, "donga_yoon": "cat", "icecream_park": "fish", "ybm_kim": "no", "ybm_choi": "clock", "chunjae_text_kim": "cup", "chunjae_text_ham": "I", "chunjae_edu_lee": "cup"},
@@ -132,7 +132,7 @@
         {"index": 12, "donga_yoon": "milk", "icecream_park": "six", "ybm_kim": "zoo", "ybm_choi": "like", "chunjae_text_kim": "salad", "chunjae_text_ham": null, "chunjae_edu_lee": "seven"},
         {"index": 13, "donga_yoon": "not", "icecream_park": "sun", "ybm_kim": "two", "ybm_choi": "love", "chunjae_text_kim": "steak", "chunjae_text_ham": null, "chunjae_edu_lee": "six"},
         {"index": 14, "donga_yoon": "pizza", "icecream_park": "thank", "ybm_kim": "three", "ybm_choi": "vase", "chunjae_text_kim": "van", "chunjae_text_ham": null, "chunjae_edu_lee": "ten"},
-        {"index": 15, "donga_yoon": "quiz", "icecream_park": "three", "ybm_kim": "four", "ybm_choi": "viloin", "chunjae_text_kim": "vest", "chunjae_text_ham": null, "chunjae_edu_lee": "they"},
+        {"index": 15, "donga_yoon": "quiz", "icecream_park": "three", "ybm_kim": "four", "ybm_choi": "violin", "chunjae_text_kim": "vest", "chunjae_text_ham": null, "chunjae_edu_lee": "they"},
         {"index": 16, "donga_yoon": "salad", "icecream_park": "tomato", "ybm_kim": "five", "ybm_choi": "yes", "chunjae_text_kim": "yes", "chunjae_text_ham": null, "chunjae_edu_lee": "three"},
         {"index": 17, "donga_yoon": "steak", "icecream_park": "two", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "you", "chunjae_text_ham": null, "chunjae_edu_lee": "two"},
         {"index": 18, "donga_yoon": "yes", "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
