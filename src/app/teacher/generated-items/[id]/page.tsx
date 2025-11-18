@@ -129,7 +129,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [router]);
+  }, []);
 
   useEffect(() => {
     console.log('[GeneratedItemDetail] ===== useEffect EXECUTED =====');
