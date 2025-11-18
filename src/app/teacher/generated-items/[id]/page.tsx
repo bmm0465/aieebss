@@ -28,7 +28,7 @@ interface GeneratedItemDetail {
 }
 
 interface Props {
-  params: Promise<{ id: string }> | { id: string };
+  params: Promise<{ id: string }>;
 }
 
 interface ToastMessage {
@@ -115,8 +115,8 @@ export default function GeneratedItemDetailPage({ params }: Props) {
 
   useEffect(() => {
     const initialize = async () => {
-      // params가 Promise인 경우 처리
-      const resolvedParams = params instanceof Promise ? await params : params;
+      // Next.js 15에서는 params가 항상 Promise입니다
+      const resolvedParams = await params;
       const id = resolvedParams.id;
       
       if (!id) {
