@@ -84,10 +84,12 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       console.log('[GeneratedItemDetail] API response ok:', response.ok);
 
       // 인증 체크 제거 - 일단 페이지는 렌더링되도록 함
+      // 에러가 발생해도 페이지는 렌더링하고 에러 메시지를 표시
       if (response.status === 401) {
         console.log('[GeneratedItemDetail] API returned 401 - showing error instead of redirecting');
         const errorData = await response.json().catch(() => ({}));
         console.log('[GeneratedItemDetail] Error details:', errorData);
+        setItem(null); // item을 null로 설정하여 에러 UI가 보이도록 함
         setError(errorData.error || '인증이 필요합니다. 로그인 후 다시 시도해주세요.');
         setLoading(false);
         setRefreshing(false);
@@ -95,7 +97,9 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       }
 
       if (response.status === 403) {
+        console.log('[GeneratedItemDetail] API returned 403 - showing error');
         const errorData = await response.json().catch(() => ({}));
+        setItem(null); // item을 null로 설정하여 에러 UI가 보이도록 함
         setError(errorData.details || errorData.error || '접근 권한이 없습니다.');
         setLoading(false);
         setRefreshing(false);
@@ -103,8 +107,10 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       }
 
       if (!response.ok) {
+        console.log('[GeneratedItemDetail] API returned error status:', response.status);
         const errorData = await response.json().catch(() => ({}));
-        setError(errorData.details || errorData.error || '문항을 찾을 수 없습니다.');
+        setItem(null); // item을 null로 설정하여 에러 UI가 보이도록 함
+        setError(errorData.details || errorData.error || `문항을 찾을 수 없습니다. (상태 코드: ${response.status})`);
         setLoading(false);
         setRefreshing(false);
         return;
@@ -125,7 +131,8 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       setRefreshing(false);
     } catch (err) {
       console.error('[GeneratedItemDetail] Error loading item data:', err);
-      setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      setItem(null); // item을 null로 설정하여 에러 UI가 보이도록 함
+      setError(`데이터를 불러오는 중 오류가 발생했습니다: ${err instanceof Error ? err.message : String(err)}`);
       setLoading(false);
       setRefreshing(false);
     }
@@ -301,7 +308,8 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     );
   }
 
-  if (error || !item) {
+  // 로딩이 완료되었고 에러가 있거나 item이 없을 때 에러 UI 표시
+  if (!loading && (error || !item)) {
     console.log('[GeneratedItemDetail] Rendering error state - error:', error, 'item:', !!item);
     return (
       <div style={{ 
@@ -314,7 +322,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
         justifyContent: 'center',
         alignItems: 'center'
       }}>
-        <div style={{ textAlign: 'center' }}>
+        <div style={{ textAlign: 'center', maxWidth: '600px' }}>
           <h1 style={{ 
             background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
             WebkitBackgroundClip: 'text',
@@ -324,7 +332,19 @@ export default function GeneratedItemDetailPage({ params }: Props) {
             fontWeight: 'bold',
             marginBottom: '1rem'
           }}>❌ 오류 발생</h1>
-          <p style={{ marginBottom: '2rem', color: '#4b5563' }}>{error || '문항 정보를 불러올 수 없습니다.'}</p>
+          <p style={{ 
+            marginBottom: '2rem', 
+            color: '#4b5563',
+            fontSize: '1.1rem',
+            lineHeight: '1.6'
+          }}>
+            {error || '문항 정보를 불러올 수 없습니다.'}
+          </p>
+          <div style={{ marginBottom: '1rem', padding: '1rem', backgroundColor: '#f3f4f6', borderRadius: '8px' }}>
+            <p style={{ fontSize: '0.9rem', color: '#6b7280', margin: 0 }}>
+              페이지 URL: {typeof window !== 'undefined' ? window.location.href : 'N/A'}
+            </p>
+          </div>
           <Link 
             href="/teacher/generated-items"
             style={{
@@ -344,6 +364,11 @@ export default function GeneratedItemDetailPage({ params }: Props) {
         </div>
       </div>
     );
+  }
+
+  // item이 없으면 여기서도 에러 처리 (타입 안전성)
+  if (!item) {
+    return null;
   }
 
   const getStatusBadge = (status: string) => {
