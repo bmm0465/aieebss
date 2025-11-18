@@ -5,10 +5,6 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
-// 서버 측 캐싱 방지
-export const dynamic = 'force-dynamic';
-export const revalidate = 0;
-
 interface GeneratedItemDetail {
   id: string;
   test_type: string;
@@ -36,10 +32,17 @@ interface ToastMessage {
 }
 
 export default function GeneratedItemDetailPage({ params }: Props) {
+  // 서버 사이드에서도 안전하게 실행되도록 체크
+  const isClient = typeof window !== 'undefined';
+  
   // 컴포넌트가 렌더링되는지 확인하기 위한 즉시 실행 로그
-  console.log('[GeneratedItemDetail] ===== COMPONENT RENDERED =====');
-  console.log('[GeneratedItemDetail] Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
-  console.log('[GeneratedItemDetail] Component function executed');
+  if (isClient) {
+    console.log('[GeneratedItemDetail] ===== COMPONENT RENDERED (CLIENT) =====');
+    console.log('[GeneratedItemDetail] Current URL:', window.location.href);
+    console.log('[GeneratedItemDetail] Component function executed');
+  } else {
+    console.log('[GeneratedItemDetail] ===== COMPONENT RENDERED (SERVER) =====');
+  }
   
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
