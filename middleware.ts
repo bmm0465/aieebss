@@ -9,12 +9,13 @@ export async function middleware(request: NextRequest) {
   
   // Supabase 클라이언트 생성 및 세션 갱신
   // 이는 서버 컴포넌트와 API 라우트가 최신 인증 상태를 가질 수 있도록 보장합니다
+  // 중요: 인증 체크는 하지 않고, 세션 갱신만 수행합니다
+  // 인증 체크는 각 페이지 컴포넌트나 API 라우트에서 처리합니다
   const { supabase, response } = createClient(request)
   
   // 세션 갱신 - getSession() 호출 자체가 만료된 토큰을 갱신하고 쿠키를 업데이트합니다
-  const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-  
-  console.log('MIDDLEWARE: Session check - hasSession:', !!session, 'error:', sessionError?.message)
+  // 인증 체크는 하지 않음 - 단순히 세션을 갱신만 함
+  await supabase.auth.getSession()
   
   // teacher/student/[studentId] 경로 처리
   if (pathname.startsWith('/teacher/student/') && pathname !== '/teacher/student') {
@@ -25,19 +26,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL(`/teacher/student/${studentId}`, request.url))
   }
   
-  // /teacher 경로에 대한 인증 체크
-  // 단, API 라우트는 제외 (API 라우트는 자체적으로 인증을 처리)
-  if (pathname.startsWith('/teacher') && !pathname.startsWith('/api')) {
-    if (!session) {
-      console.log('MIDDLEWARE: No session found for protected route, redirecting to login')
-      const url = request.nextUrl.clone()
-      url.pathname = '/'
-      return NextResponse.redirect(url)
-    }
-    
-    console.log('MIDDLEWARE: Session validated for teacher route')
-  }
-  
+  // 인증 체크 제거 - 각 페이지와 API에서 처리하도록 함
   // 세션이 갱신된 응답 반환
   return response
 }
