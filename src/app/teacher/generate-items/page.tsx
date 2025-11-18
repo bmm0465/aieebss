@@ -37,7 +37,6 @@ export default function GenerateItemsPage() {
     issues?: string[];
     suggestions?: string[];
   } | null>(null);
-  const [itemId, setItemId] = useState<string | null>(null);
   const [error, setError] = useState('');
 
   const testTypeOptions = [
@@ -86,7 +85,6 @@ export default function GenerateItemsPage() {
     setError('');
     setGeneratedItems(null);
     setQualityScore(null);
-    setItemId(null);
 
     try {
       // Agent 기반 API 사용
@@ -109,7 +107,6 @@ export default function GenerateItemsPage() {
 
       setGeneratedItems(data.items);
       setQualityScore(data.qualityScore);
-      setItemId(data.itemId);
     } catch (err) {
       console.error(err);
       setError(err instanceof Error ? err.message : '문항 생성 중 오류가 발생했습니다.');
