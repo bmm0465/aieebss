@@ -295,40 +295,6 @@ export default async function TeacherDashboard() {
           >
             🤖 AI 문항 생성기
           </Link>
-          <Link
-            href="/teacher/curriculum/pdfs"
-            style={{
-              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-              color: 'white',
-              padding: '1.25rem',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: '600',
-              textAlign: 'center',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)'
-            }}
-            className="quick-link"
-          >
-            📚 교육과정 PDF 관리
-          </Link>
-          <Link
-            href="/teacher/generated-items"
-            style={{
-              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
-              color: 'white',
-              padding: '1.25rem',
-              borderRadius: '12px',
-              textDecoration: 'none',
-              fontWeight: '600',
-              textAlign: 'center',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 6px -1px rgba(245, 158, 11, 0.3)'
-            }}
-            className="quick-link"
-          >
-            📋 생성된 문항 관리
-          </Link>
         </div>
 
 

@@ -327,18 +327,6 @@ export default function GenerateItemsPage() {
                   </label>
                 ))}
               </div>
-              <Link
-                href="/teacher/curriculum/pdfs"
-                style={{
-                  display: 'inline-block',
-                  marginTop: '0.5rem',
-                  color: '#FFD700',
-                  textDecoration: 'underline',
-                  fontSize: '0.9rem'
-                }}
-              >
-                PDF 관리 페이지로 이동 →
-              </Link>
             </div>
           )}
 
@@ -446,25 +434,6 @@ export default function GenerateItemsPage() {
                 문항 생성이 완료되었습니다.
               </h2>
               <div style={{ display: 'flex', gap: '1rem' }}>
-                {itemId && (
-                  <Link
-                    href={`/teacher/generated-items/${itemId}`}
-                    style={{
-                      padding: '0.8rem 1.5rem',
-                      fontSize: '1rem',
-                      fontWeight: 'bold',
-                      borderRadius: '8px',
-                      border: 'none',
-                      backgroundColor: '#2563eb',
-                      color: 'white',
-                      cursor: 'pointer',
-                      textDecoration: 'none',
-                      transition: 'all 0.3s ease'
-                    }}
-                  >
-                    📋 상세 보기
-                  </Link>
-                )}
                 <button
                   onClick={handleDownloadPDF}
                   style={{
