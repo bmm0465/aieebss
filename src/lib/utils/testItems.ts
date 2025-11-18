@@ -3,7 +3,7 @@
  * DB에서 승인된 문항을 가져오거나, 없으면 기본 문항을 반환
  */
 
-export type TestType = 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'MAZE';
+export type TestType = 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'STRESS' | 'MEANING' | 'COMPREHENSION';
 
 interface TestItemResponse {
   success: boolean;

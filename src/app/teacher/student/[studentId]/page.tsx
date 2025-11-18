@@ -259,9 +259,19 @@ export default function StudentDetailPage({ params }: Props) {
       correct: testResults?.filter((r: TestResultRow) => r.test_type === 'ORF' && !!r.is_correct).length || 0,
       accuracy: 0
     },
-    MAZE: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'MAZE').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'MAZE' && !!r.is_correct).length || 0,
+    STRESS: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'STRESS').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'STRESS' && !!r.is_correct).length || 0,
+      accuracy: 0
+    },
+    MEANING: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'MEANING').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'MEANING' && !!r.is_correct).length || 0,
+      accuracy: 0
+    },
+    COMPREHENSION: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'COMPREHENSION').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'COMPREHENSION' && !!r.is_correct).length || 0,
       accuracy: 0
     }
   };

@@ -154,11 +154,10 @@ ${contextInfo}
 - 단어 형성 방지 (cat, run, the 등 연속 단어 형성 금지)
 - 연속 중복 방지 (동일 문자가 바로 옆에 오지 않음)
 - 허용 문자만 사용 (W, w, 소문자 l 제외)`,
-      'PSF': `- 정확히 30개의 단어
-- 1~6번 단어: 반드시 2음소 (예: at, on, up, me, go, so)
-- 7~30번 단어: 반드시 3음소 (예: cat, sun, sit, run, top, fan)
-- 음절 수가 아닌 음소 수 기준
-- 발음이 명확하고 음소 분절이 용이한 단어`,
+      'PSF': `- 정확히 20개의 최소대립쌍 문항
+- 각 문항: { word1, word2, correctAnswer } 형식
+- 두 단어는 하나의 음소만 다른 최소대립쌍이어야 함 (예: pin/fin, bat/pat)
+- vocabulary_level.json의 어휘 수준 준수`,
       'NWF': `- 정확히 75개의 무의미 단어
 - 1~25번: VC, CVC 패턴만 (예: vim, pog, ut, ag)
 - 26~45번: CVC, VC + CVCe, CVrC 패턴 혼합 (예: lome, dake, nar, zir)
@@ -172,17 +171,26 @@ ${contextInfo}
 - 51~85번: 상대적으로 낮은 빈도 단어 (예: red, jump, help, fast, six)
 - 모든 단어는 실제 영어 단어이며 의미를 가져야 함
 - 고유명사 제외`,
-      'ORF': `- 150~200 단어 사이의 지문
-- 대화문(dialogue) 형식
-- 화자 이름과 따옴표를 사용한 자연스러운 대화
-- 학년 수준에 맞는 어휘와 문장 구조
-- 정서적으로 안전하고 긍정적인 내용`,
-      'MAZE': `- 최소 20개 이상의 문항
-- 전체 지문은 최소 350단어 이상
-- 각 문항: 문장 + 3개 선택지 (정답 1개, 오답 2개)
-- 정답: 문맥상 의미와 문법이 모두 올바른 단어
-- 오답 1: 문법적으로는 맞지만 의미가 틀린 단어
-- 오답 2: 정답과 품사가 다른 단어로 문법적으로 어색한 문장`
+      'ORF': `- 문장 배열 형식 (한 문장씩 평가)
+- 각 문장은 간단하고 읽기 쉬워야 함
+- core_expressions.json의 표현 사용
+- vocabulary_level.json의 어휘 수준 준수`,
+      'STRESS': `- 정확히 20개의 문항
+- 각 문항: { word, choices, correctAnswer } 형식
+- 2음절 이상의 단어 사용
+- 강세 패턴이 명확한 단어
+- vocabulary_level.json의 어휘 수준 준수`,
+      'MEANING': `- 정확히 20개의 문항
+- 각 문항: { wordOrPhrase, imageOptions, correctAnswer } 형식
+- 단어나 간단한 어구 제시
+- 3개의 그림 선택지 제공
+- vocabulary_level.json의 어휘 수준 준수`,
+      'COMPREHENSION': `- 정확히 15개의 문항
+- 각 문항: { dialogueOrStory, question, options, correctAnswer } 형식
+- 매우 쉽고 간단한 대화나 이야기
+- 모습, 크기, 색깔, 인물 등 주요 정보 포함
+- core_expressions.json의 표현 사용
+- vocabulary_level.json의 어휘 수준 준수`
     };
 
     return requirements[testType] || '';

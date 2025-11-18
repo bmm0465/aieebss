@@ -9,11 +9,13 @@ import AudioResultTable from './AudioResultTable';
 // UI 컴포넌트가 받을 데이터의 타입을 명확하게 정의
 export interface ProcessedResults {
   LNF: { correct: number; total: number; accuracy: number };
-  PSF: { correct_segments: number; target_segments: number; accuracy: number; total: number };
+  PSF: { correct: number; total: number; accuracy: number };
   NWF: { phonemes_correct: number; whole_word_correct: number; total: number; phoneme_accuracy: number; whole_word_accuracy: number };
   WRF: { correct: number; total: number; accuracy: number };
   ORF: { total_wcpm: number; total_accuracy: number; count: number; avg_wcpm: number; avg_accuracy: number };
-  MAZE: { correct: number; total: number; accuracy: number; score: number };
+  STRESS: { correct: number; total: number; accuracy: number };
+  MEANING: { correct: number; total: number; accuracy: number };
+  COMPREHENSION: { correct: number; total: number; accuracy: number };
 }
 
 interface ResultProps {
@@ -24,11 +26,13 @@ interface ResultProps {
 // 각 시험별 제목과 설명
 const testInfo = {
   LNF: { title: "1교시: 고대 룬 문자 해독", description: "알파벳 이름 인지 정확도" },
-  PSF: { title: "2교시: 소리의 원소 분리", description: "음소 분절 능력 정확도" },
-  NWF: { title: "3교시: 초급 주문 시전", description: "파닉스 규칙 적용 능력" },
-  WRF: { title: "4교시: 마법 단어 활성화", description: "주요 단어 인지 정확도" },
-  ORF: { title: "5교시: 고대 이야기 소생술", description: "문장 유창성 및 정확도" },
-  MAZE: { title: "6교시: 지혜의 미로 탈출", description: "문맥 이해 및 추론 능력" },
+  PSF: { title: "2교시: 소리 듣고 식별하기", description: "최소대립쌍 듣고 식별 능력" },
+  NWF: { title: "3교시: 무의미 단어 읽기", description: "파닉스 규칙 적용 능력" },
+  WRF: { title: "4교시: 실제 단어 읽기", description: "주요 단어 인지 정확도" },
+  ORF: { title: "5교시: 문장 읽기", description: "문장 유창성 및 정확도" },
+  STRESS: { title: "6교시: 강세 및 리듬 패턴 파악", description: "강세 패턴 식별 능력" },
+  MEANING: { title: "7교시: 의미 이해", description: "단어/문장 의미 이해 능력" },
+  COMPREHENSION: { title: "8교시: 주요 정보 파악", description: "주요 정보 파악 능력" },
 };
 
 export default function ResultReport({ results, sessionId }: ResultProps) {
@@ -120,8 +124,8 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
                 <h3>{testInfo.PSF.title}</h3>
-                <p>{testInfo.PSF.description}: <strong>{results.PSF.accuracy.toFixed(1)}%</strong> ({results.PSF.correct_segments}/{results.PSF.target_segments})</p>
-                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
+                <p>{testInfo.PSF.description}: <strong>{results.PSF.accuracy.toFixed(1)}%</strong> ({results.PSF.correct}/{results.PSF.total})</p>
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
             </div>
             {/* NWF */}
             <div 
@@ -155,28 +159,47 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
                 <p>평균 정확도: <strong>{results.ORF.avg_accuracy.toFixed(1)}%</strong></p>
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
-            {/* MAZE */}
+            {/* STRESS */}
             <div 
-              style={getCardStyle('MAZE')}
-              onClick={() => handleTestCardClick('MAZE')}
+              style={getCardStyle('STRESS')}
+              onClick={() => handleTestCardClick('STRESS')}
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
-                <h3>{testInfo.MAZE.title}</h3>
-                <p>최종 점수: <strong>{results.MAZE.score.toFixed(1)}점</strong></p>
-                <p>(맞은 개수: {results.MAZE.correct}, 틀린 개수: {results.MAZE.total - results.MAZE.correct})</p>
-                {sessionId && <small style={{ color: '#ccc', fontSize: '0.8rem' }}>💡 클릭하여 상세 결과 확인</small>}
+                <h3>{testInfo.STRESS.title}</h3>
+                <p>{testInfo.STRESS.description}: <strong>{results.STRESS.accuracy.toFixed(1)}%</strong> ({results.STRESS.correct}/{results.STRESS.total})</p>
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
+            </div>
+            {/* MEANING */}
+            <div 
+              style={getCardStyle('MEANING')}
+              onClick={() => handleTestCardClick('MEANING')}
+              title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
+            >
+                <h3>{testInfo.MEANING.title}</h3>
+                <p>{testInfo.MEANING.description}: <strong>{results.MEANING.accuracy.toFixed(1)}%</strong> ({results.MEANING.correct}/{results.MEANING.total})</p>
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
+            </div>
+            {/* COMPREHENSION */}
+            <div 
+              style={getCardStyle('COMPREHENSION')}
+              onClick={() => handleTestCardClick('COMPREHENSION')}
+              title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
+            >
+                <h3>{testInfo.COMPREHENSION.title}</h3>
+                <p>{testInfo.COMPREHENSION.description}: <strong>{results.COMPREHENSION.accuracy.toFixed(1)}%</strong> ({results.COMPREHENSION.correct}/{results.COMPREHENSION.total})</p>
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
             </div>
         </div>
 
         {/* 선택된 교시의 상세 결과 표시 */}
         {selectedTestType && sessionId && (
           <div style={{ marginTop: '2rem' }}>
-            {['LNF', 'PSF', 'NWF', 'WRF', 'ORF'].includes(selectedTestType) ? (
+            {['LNF', 'NWF', 'WRF', 'ORF'].includes(selectedTestType) ? (
               <AudioResultTable
                 testType={selectedTestType}
                 sessionId={sessionId}
               />
-            ) : selectedTestType === 'MAZE' ? (
+            ) : ['PSF', 'STRESS', 'MEANING', 'COMPREHENSION'].includes(selectedTestType) ? (
               <div style={{ 
                 backgroundColor: '#f9fafb', 
                 padding: '2rem', 
@@ -194,18 +217,10 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
                   fontSize: '1.5rem',
                   fontWeight: '600'
                 }}>
-                  {testInfo.MAZE.title}
+                  {testInfo[selectedTestType as keyof typeof testInfo]?.title} 상세 결과
                 </h3>
-                <p style={{ color: '#4b5563', marginBottom: '1rem' }}>
-                  지혜의 미로 탈출 테스트는 선택형 문제로 음성 파일이 없습니다.
-                </p>
-                <p style={{ color: '#1f2937', marginTop: '1rem', fontSize: '1.1rem', fontWeight: '600' }}>
-                  최종 점수: <strong style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}>{results.MAZE.score.toFixed(1)}점</strong>
+                <p style={{ color: '#4b5563', fontSize: '1rem' }}>
+                  {selectedTestType} 평가는 선택형 답변으로 진행되어 음성 파일이 없습니다.
                 </p>
               </div>
             ) : null}

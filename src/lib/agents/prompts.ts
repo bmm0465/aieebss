@@ -343,6 +343,164 @@ export function buildMazeUserPrompt(): string {
 }
 
 /**
+ * STRESS용 시스템 프롬프트
+ */
+export function buildSTRESSSystemPrompt(gradeLevel: GradeLevel, candidateWords: string[]): string {
+  const sampleWords = candidateWords.slice(0, 40);
+  return `당신은 영어 기초 학력 진단 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
+당신의 임무는 강세 및 리듬 패턴 파악 능력을 측정하기 위한 STRESS 평가 문항을 생성하는 것입니다.
+
+[핵심 목표]
+- 초등학생을 위한 STRESS 평가 문항을 생성합니다. 총 20개의 문항으로 구성합니다.
+
+[단어 후보 목록]
+- 아래 단어들은 한국 초등 ${gradeLevel} 교육과정(vocabulary_level.json)에서 추출한 고빈도 단어들입니다.
+- 반드시 이 목록에서만 단어를 선택하여 사용합니다.
+${sampleWords.join(', ')}
+
+[생성 규칙]
+1. 단어 선정:
+   - 2음절 이상의 단어를 선택합니다.
+   - 강세 패턴이 명확한 단어를 사용합니다.
+
+2. 강세 패턴 선택지:
+   - 정답: 올바른 강세 패턴 (예: comPUter)
+   - 오답 1: 첫 음절에 강세 (예: COMputer)
+   - 오답 2: 마지막 음절에 강세 (예: compuTER)
+
+[출력 형식]
+- JSON 객체만 반환합니다.
+- 예시:
+{
+  "STRESS": [
+    {
+      "word": "computer",
+      "choices": ["comPUter", "COMputer", "compuTER"],
+      "correctAnswer": "comPUter"
+    },
+    ...
+  ]
+}
+
+[최종 검토]
+- 강세 패턴이 정확한지 확인한 후 결과만 JSON으로 출력하세요.`;
+}
+
+export function buildSTRESSUserPrompt(): string {
+  return `STRESS 평가용 문항 20개를 생성하여 "STRESS" 배열에 담아 JSON 객체만 반환하세요.
+- 각 항목은 { "word", "choices", "correctAnswer" } 형식이어야 합니다.
+- 제공된 후보 단어 목록에서만 선택하세요.`;
+}
+
+/**
+ * MEANING용 시스템 프롬프트
+ */
+export function buildMEANINGSystemPrompt(gradeLevel: GradeLevel, candidateWords: string[]): string {
+  const sampleWords = candidateWords.slice(0, 40);
+  return `당신은 영어 기초 학력 진단 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
+당신의 임무는 의미 이해 능력을 측정하기 위한 MEANING 평가 문항을 생성하는 것입니다.
+
+[핵심 목표]
+- 초등학생을 위한 MEANING 평가 문항을 생성합니다. 총 20개의 문항으로 구성합니다.
+
+[단어 후보 목록]
+- 아래 단어들은 한국 초등 ${gradeLevel} 교육과정(vocabulary_level.json)에서 추출한 고빈도 단어들입니다.
+- 반드시 이 목록에서만 단어를 선택하여 사용합니다.
+${sampleWords.join(', ')}
+
+[생성 규칙]
+1. 문항 구성:
+   - 단어나 간단한 어구를 제시합니다 (예: "a red apple", "three cats").
+   - 3개의 그림 선택지를 제공합니다.
+
+2. 선택지 구성:
+   - 정답: 제시된 단어/어구와 일치하는 그림
+   - 오답 1: 관련 있지만 다른 그림 (예: "red apple" → "yellow banana")
+   - 오답 2: 관련 없는 그림 (예: "red apple" → "blue ball")
+
+[출력 형식]
+- JSON 객체만 반환합니다.
+- 예시:
+{
+  "MEANING": [
+    {
+      "wordOrPhrase": "a red apple",
+      "imageOptions": ["red apple", "yellow banana", "green grape"],
+      "correctAnswer": "red apple"
+    },
+    ...
+  ]
+}
+
+[최종 검토]
+- 단어/어구와 그림 선택지가 적절한지 확인한 후 결과만 JSON으로 출력하세요.`;
+}
+
+export function buildMEANINGUserPrompt(): string {
+  return `MEANING 평가용 문항 20개를 생성하여 "MEANING" 배열에 담아 JSON 객체만 반환하세요.
+- 각 항목은 { "wordOrPhrase", "imageOptions", "correctAnswer" } 형식이어야 합니다.
+- 제공된 후보 단어 목록에서만 선택하세요.`;
+}
+
+/**
+ * COMPREHENSION용 시스템 프롬프트
+ */
+export function buildCOMPREHENSIONSystemPrompt(gradeLevel: GradeLevel, coreExpressions: string[]): string {
+  const sample = coreExpressions.slice(0, 40);
+  return `당신은 영어 기초 학력 진단 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
+당신의 임무는 주요 정보 파악 능력을 측정하기 위한 COMPREHENSION 평가 문항을 생성하는 것입니다.
+
+[핵심 목표]
+- 초등학생을 위한 COMPREHENSION 평가 문항을 생성합니다. 총 15개의 문항으로 구성합니다.
+
+[핵심 표현 목록]
+- 아래 표현들은 한국 초등 ${gradeLevel} 교육과정(core_expressions.json)에서 추출한 핵심 표현들입니다.
+- 반드시 이 표현들을 활용하여 대화나 이야기를 구성합니다.
+${sample.join(' ')}
+
+[생성 규칙]
+1. 대화/이야기 구성:
+   - 매우 쉽고 간단한 대화나 이야기를 작성합니다.
+   - 모습, 크기, 색깔, 인물 등에 대한 정보를 포함합니다.
+
+2. 질문 구성:
+   - 대화/이야기에서 언급된 주요 정보에 대한 질문을 작성합니다.
+   - 예: "What color is the ball?", "How big is the dog?"
+
+3. 선택지 구성:
+   - 정답: 대화/이야기에서 언급된 정보와 일치
+   - 오답 1-2: 관련 있지만 다른 정보
+
+[출력 형식]
+- JSON 객체만 반환합니다.
+- 예시:
+{
+  "COMPREHENSION": [
+    {
+      "dialogueOrStory": "This is my friend, Tom. He has a big, blue ball.",
+      "question": "What color is the ball?",
+      "options": [
+        { "type": "word", "content": "blue" },
+        { "type": "word", "content": "red" },
+        { "type": "word", "content": "yellow" }
+      ],
+      "correctAnswer": "blue"
+    },
+    ...
+  ]
+}
+
+[최종 검토]
+- core_expressions 기반 표현 사용 여부와 질문-답변의 적절성을 확인한 후 결과만 JSON으로 출력하세요.`;
+}
+
+export function buildCOMPREHENSIONUserPrompt(): string {
+  return `COMPREHENSION 평가용 문항 15개를 생성하여 "COMPREHENSION" 배열에 담아 JSON 객체만 반환하세요.
+- 각 항목은 { "dialogueOrStory", "question", "options", "correctAnswer" } 형식이어야 합니다.
+- core_expressions 기반 표현을 활용하여 대화/이야기를 구성하세요.`;
+}
+
+/**
  * 평가 유형별 공용 system 프롬프트 선택기
  * - 필요 시 Orchestrator/Validator 등에서 재사용 가능하도록 타입 제공
  */
@@ -367,8 +525,12 @@ export function buildSystemPromptForTestType(
       return buildWRFSystemPrompt(gradeLevel, candidateWords);
     case 'ORF':
       return buildORFSystemPrompt(gradeLevel, coreExpressions);
-    case 'MAZE':
-      return buildMazeSystemPrompt(gradeLevel, coreExpressions);
+    case 'STRESS':
+      return buildSTRESSSystemPrompt(gradeLevel, candidateWords);
+    case 'MEANING':
+      return buildMEANINGSystemPrompt(gradeLevel, candidateWords);
+    case 'COMPREHENSION':
+      return buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions);
     default:
       return '';
   }

@@ -463,8 +463,8 @@ export default function OrfTestPage() {
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>5교시 &apos;고대 이야기 소생술 시험&apos;이 끝났습니다. 수고 많으셨습니다!</p>
             <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
-              <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/maze')}>
-                마지막 시험으로 이동
+              <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/stress')}>
+                다음 시험으로 이동
               </button>
               <button 
                 style={{

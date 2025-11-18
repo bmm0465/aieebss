@@ -27,11 +27,13 @@ type TestResult = {
 const calculateResults = (results: TestResult[]): ProcessedResults => {
   const summary: ProcessedResults = {
     LNF: { correct: 0, total: 0, accuracy: 0 },
-    PSF: { correct_segments: 0, target_segments: 0, accuracy: 0, total: 0 },
+    PSF: { correct: 0, total: 0, accuracy: 0 },
     NWF: { phonemes_correct: 0, whole_word_correct: 0, total: 0, phoneme_accuracy: 0, whole_word_accuracy: 0 },
     WRF: { correct: 0, total: 0, accuracy: 0 },
     ORF: { total_wcpm: 0, total_accuracy: 0, count: 0, avg_wcpm: 0, avg_accuracy: 0 },
-    MAZE: { correct: 0, total: 0, accuracy: 0, score: 0 },
+    STRESS: { correct: 0, total: 0, accuracy: 0 },
+    MEANING: { correct: 0, total: 0, accuracy: 0 },
+    COMPREHENSION: { correct: 0, total: 0, accuracy: 0 },
   };
 
   results.forEach(res => {
@@ -40,8 +42,7 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
       if (res.is_correct) summary.LNF.correct++;
     } else if (res.test_type === 'PSF') {
       summary.PSF.total++;
-      summary.PSF.correct_segments += res.correct_segments || 0;
-      summary.PSF.target_segments += res.target_segments || 0;
+      if (res.is_correct) summary.PSF.correct++;
     } else if (res.test_type === 'NWF') {
       summary.NWF.total++;
       // 이미지 규칙에 따라: CLS는 correct_letter_sounds 필드 사용, WRC는 is_whole_word_correct 사용
@@ -54,15 +55,21 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
       summary.ORF.count++;
       summary.ORF.total_wcpm += res.wcpm || 0;
       summary.ORF.total_accuracy += res.accuracy || 0;
-    } else if (res.test_type === 'MAZE') {
-      summary.MAZE.total++;
-      if (res.is_correct) summary.MAZE.correct++;
+    } else if (res.test_type === 'STRESS') {
+      summary.STRESS.total++;
+      if (res.is_correct) summary.STRESS.correct++;
+    } else if (res.test_type === 'MEANING') {
+      summary.MEANING.total++;
+      if (res.is_correct) summary.MEANING.correct++;
+    } else if (res.test_type === 'COMPREHENSION') {
+      summary.COMPREHENSION.total++;
+      if (res.is_correct) summary.COMPREHENSION.correct++;
     }
   });
 
   // 정확도 및 점수 계산
   if (summary.LNF.total > 0) summary.LNF.accuracy = (summary.LNF.correct / summary.LNF.total) * 100;
-  if (summary.PSF.target_segments > 0) summary.PSF.accuracy = (summary.PSF.correct_segments / summary.PSF.target_segments) * 100;
+  if (summary.PSF.total > 0) summary.PSF.accuracy = (summary.PSF.correct / summary.PSF.total) * 100;
   if (summary.NWF.total > 0) {
     // 이미지 규칙에 따라: CLS는 총 음소 점수, WRC는 단어 정답률
     // CLS 정확도는 총 CLS 점수 대비 방식으로 계산 (실제로는 raw 점수를 사용)
@@ -74,10 +81,14 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
     summary.ORF.avg_wcpm = summary.ORF.total_wcpm / summary.ORF.count;
     summary.ORF.avg_accuracy = (summary.ORF.total_accuracy / summary.ORF.count) * 100;
   }
-  if (summary.MAZE.total > 0) {
-    const incorrect = summary.MAZE.total - summary.MAZE.correct;
-    summary.MAZE.score = summary.MAZE.correct - (incorrect / 2);
-    summary.MAZE.accuracy = (summary.MAZE.correct / summary.MAZE.total) * 100;
+  if (summary.STRESS.total > 0) {
+    summary.STRESS.accuracy = (summary.STRESS.correct / summary.STRESS.total) * 100;
+  }
+  if (summary.MEANING.total > 0) {
+    summary.MEANING.accuracy = (summary.MEANING.correct / summary.MEANING.total) * 100;
+  }
+  if (summary.COMPREHENSION.total > 0) {
+    summary.COMPREHENSION.accuracy = (summary.COMPREHENSION.correct / summary.COMPREHENSION.total) * 100;
   }
 
   return summary;

@@ -114,11 +114,13 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
   const getTestTypeName = (type: string): string => {
     const testNames: Record<string, string> = {
       'LNF': '1교시: 고대 룬 문자 해독',
-      'PSF': '2교시: 소리의 원소 분리',
-      'NWF': '3교시: 초급 주문 시전',
-      'WRF': '4교시: 마법 단어 활성화',
-      'ORF': '5교시: 고대 이야기 소생술',
-      'MAZE': '6교시: 지혜의 미로 탈출'
+      'PSF': '2교시: 소리 듣고 식별하기',
+      'NWF': '3교시: 무의미 단어 읽기',
+      'WRF': '4교시: 실제 단어 읽기',
+      'ORF': '5교시: 문장 읽기',
+      'STRESS': '6교시: 강세 및 리듬 패턴 파악',
+      'MEANING': '7교시: 의미 이해',
+      'COMPREHENSION': '8교시: 주요 정보 파악'
     };
     return testNames[type] || type;
   };

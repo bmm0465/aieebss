@@ -20,10 +20,13 @@ import {
   buildWRFUserPrompt,
   buildORFSystemPrompt,
   buildORFUserPrompt,
-  buildMazeSystemPrompt,
-  buildMazeUserPrompt,
+  buildSTRESSSystemPrompt,
+  buildSTRESSUserPrompt,
+  buildMEANINGSystemPrompt,
+  buildMEANINGUserPrompt,
+  buildCOMPREHENSIONSystemPrompt,
+  buildCOMPREHENSIONUserPrompt,
   type PSFWordSpec,
-  type MazeItemSpec
 } from './prompts';
 import { loadVocabularyByLevel, loadCoreExpressions } from './dataUtils';
 
@@ -90,7 +93,11 @@ export class ItemGeneratorAgent {
           aggregatedItems.LNF = itemsForType as string[];
           break;
         case 'PSF':
-          aggregatedItems.PSF = itemsForType as string[];
+          aggregatedItems.PSF = itemsForType as Array<{
+            word1: string;
+            word2: string;
+            correctAnswer: string;
+          }>;
           break;
         case 'NWF':
           aggregatedItems.NWF = itemsForType as string[];
@@ -99,15 +106,32 @@ export class ItemGeneratorAgent {
           aggregatedItems.WRF = itemsForType as string[];
           break;
         case 'ORF':
-          aggregatedItems.ORF = itemsForType as string;
+          aggregatedItems.ORF = itemsForType as string[];
           break;
-        case 'MAZE':
-          aggregatedItems.MAZE = itemsForType as {
-            num: number;
-            sentence: string;
+        case 'STRESS':
+          aggregatedItems.STRESS = itemsForType as Array<{
+            word: string;
             choices: string[];
-            answer: string;
-          }[];
+            correctAnswer: string;
+          }>;
+          break;
+        case 'MEANING':
+          aggregatedItems.MEANING = itemsForType as Array<{
+            wordOrPhrase: string;
+            imageOptions: string[];
+            correctAnswer: string;
+          }>;
+          break;
+        case 'COMPREHENSION':
+          aggregatedItems.COMPREHENSION = itemsForType as Array<{
+            dialogueOrStory: string;
+            question: string;
+            options: Array<{
+              type: 'image' | 'word';
+              content: string;
+            }>;
+            correctAnswer: string;
+          }>;
           break;
         default:
           break;
@@ -165,9 +189,17 @@ export class ItemGeneratorAgent {
         systemPrompt = buildORFSystemPrompt(gradeLevel, coreExpressions);
         userPrompt = buildORFUserPrompt();
         break;
-      case 'MAZE':
-        systemPrompt = buildMazeSystemPrompt(gradeLevel, coreExpressions);
-        userPrompt = buildMazeUserPrompt();
+      case 'STRESS':
+        systemPrompt = buildSTRESSSystemPrompt(gradeLevel, vocabulary);
+        userPrompt = buildSTRESSUserPrompt();
+        break;
+      case 'MEANING':
+        systemPrompt = buildMEANINGSystemPrompt(gradeLevel, vocabulary);
+        userPrompt = buildMEANINGUserPrompt();
+        break;
+      case 'COMPREHENSION':
+        systemPrompt = buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions);
+        userPrompt = buildCOMPREHENSIONUserPrompt();
         break;
       default:
         return undefined;
@@ -197,11 +229,18 @@ ${userPrompt}`;
     type WrfItem = { index?: number; word: string };
     type ParsedResponse = {
       LNF?: string[];
-      PSF?: PSFWordSpec[] | string[];
+      PSF?: PSFWordSpec[] | string[] | Array<{ word1: string; word2: string; correctAnswer: string }>;
       NWF?: NwfItem[];
       WRF?: WrfItem[] | string[];
-      ORF?: string;
-      MAZE?: MazeItemSpec[];
+      ORF?: string | string[];
+      STRESS?: Array<{ word: string; choices: string[]; correctAnswer: string }>;
+      MEANING?: Array<{ wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }>;
+      COMPREHENSION?: Array<{
+        dialogueOrStory: string;
+        question: string;
+        options: Array<{ type: 'image' | 'word'; content: string }>;
+        correctAnswer: string;
+      }>;
     };
 
     const parsed = JSON.parse(raw) as ParsedResponse;
@@ -210,11 +249,9 @@ ${userPrompt}`;
       case 'LNF':
         return parsed.LNF as string[];
       case 'PSF':
-        // PSF는 { index, word, phonemeCount } 배열에서 단어 문자열만 추출
-        // GeneratedItems 타입과의 호환성을 위해 string[]로 저장
+        // PSF는 최소대립쌍 형식
         if (Array.isArray(parsed.PSF)) {
-          const words = (parsed.PSF as PSFWordSpec[]).map((item) => item.word);
-          return words as string[];
+          return parsed.PSF as Array<{ word1: string; word2: string; correctAnswer: string }>;
         }
         return undefined;
       case 'NWF':
@@ -232,16 +269,34 @@ ${userPrompt}`;
         }
         return undefined;
       case 'ORF':
-        return parsed.ORF as string;
-      case 'MAZE':
-        if (Array.isArray(parsed.MAZE)) {
-          const mazeItems = parsed.MAZE.map((item: MazeItemSpec, idx: number) => ({
-            num: item.num ?? idx + 1,
-            sentence: item.sentence,
-            choices: item.choices,
-            answer: item.answer
-          }));
-          return mazeItems;
+        // ORF는 문장 배열로 변경
+        if (typeof parsed.ORF === 'string') {
+          // 기존 형식(전체 지문)을 문장 배열로 변환
+          const sentences = parsed.ORF.split(/[.!?]+/).filter(s => s.trim().length > 0);
+          return sentences.map(s => s.trim() + '.');
+        }
+        if (Array.isArray(parsed.ORF)) {
+          return parsed.ORF as string[];
+        }
+        return undefined;
+      case 'STRESS':
+        if (Array.isArray(parsed.STRESS)) {
+          return parsed.STRESS as Array<{ word: string; choices: string[]; correctAnswer: string }>;
+        }
+        return undefined;
+      case 'MEANING':
+        if (Array.isArray(parsed.MEANING)) {
+          return parsed.MEANING as Array<{ wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }>;
+        }
+        return undefined;
+      case 'COMPREHENSION':
+        if (Array.isArray(parsed.COMPREHENSION)) {
+          return parsed.COMPREHENSION as Array<{
+            dialogueOrStory: string;
+            question: string;
+            options: Array<{ type: 'image' | 'word'; content: string }>;
+            correctAnswer: string;
+          }>;
         }
         return undefined;
       default:

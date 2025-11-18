@@ -39,11 +39,13 @@ export default function RecentTestResults({ results }: RecentTestResultsProps) {
   const getTestTypeEmoji = (testType: string) => {
     const emojis: Record<string, string> = {
       'LNF': '🔤',
-      'WRF': '📖',
+      'PSF': '👂',
       'NWF': '🔀',
-      'MAZE': '🧩',
-      'PSF': '🔊',
-      'ORF': '🗣️'
+      'WRF': '📖',
+      'ORF': '🗣️',
+      'STRESS': '🎵',
+      'MEANING': '🖼️',
+      'COMPREHENSION': '💭'
     };
     return emojis[testType] || '📝';
   };

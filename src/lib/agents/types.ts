@@ -1,6 +1,6 @@
 // Agent 시스템 타입 정의
 
-export type TestType = 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'MAZE';
+export type TestType = 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'STRESS' | 'MEANING' | 'COMPREHENSION';
 
 export type GradeLevel = '초등 1학년' | '초등 2학년' | '초등 3학년' | '초등 4학년' | '초등 5학년' | '초등 6학년';
 
@@ -10,15 +10,32 @@ export type WorkflowAction = 'review' | 'approve' | 'reject' | 'request_revision
 
 export interface GeneratedItems {
   LNF?: string[];
-  PSF?: string[];
+  PSF?: Array<{
+    word1: string;
+    word2: string;
+    correctAnswer: string; // 'word1' or 'word2'
+  }>;
   NWF?: string[];
   WRF?: string[];
-  ORF?: string;
-  MAZE?: Array<{
-    num: number;
-    sentence: string;
-    choices: string[];
-    answer: string;
+  ORF?: string[];
+  STRESS?: Array<{
+    word: string;
+    choices: string[]; // 강세 패턴 표시된 단어들
+    correctAnswer: string;
+  }>;
+  MEANING?: Array<{
+    wordOrPhrase: string;
+    imageOptions: string[]; // 이미지 URL 또는 설명
+    correctAnswer: string;
+  }>;
+  COMPREHENSION?: Array<{
+    dialogueOrStory: string;
+    question: string;
+    options: Array<{
+      type: 'image' | 'word';
+      content: string; // 이미지 URL 또는 단어
+    }>;
+    correctAnswer: string;
   }>;
 }
 

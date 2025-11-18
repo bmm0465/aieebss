@@ -47,24 +47,33 @@ export default async function TestItemsPage() {
       note: '학생은 알파벳의 이름(예: A → "에이")을 말해야 합니다. LNF 표준 규격: 100개, 대소문자 균형, 빈도 높은 문자 우선, W와 소문자 l 제외.'
     },
     PSF: {
-      title: "PSF - 소리의 원소 분리 시험",
-      description: "음소 분리 능력 평가",
-      totalItems: 110,
+      title: "PSF - 소리 듣고 식별하기",
+      description: "최소대립쌍 듣고 식별 능력 평가",
+      totalItems: 20,
       items: [
-        "go", "on", "at", "up", "be", "it", "so", "in", "to", "an",
-        "dad", "sit", "map", "cup", "top", "pen", "cat", "dog", "get", "hot",
-        "mad", "van", "pin", "son", "rug", "hit", "nut", "box", "bat", "bug",
-        "win", "web", "mug", "man", "pig", "dig", "pot", "bed", "mom", "fan",
-        "wig", "car", "fog", "leg", "ten", "hen", "jog", "kid", "fit", "but",
-        "red", "sun", "jam", "mud", "hug", "run", "cut", "not", "tap", "pet",
-        "bell", "stop", "plan", "hand", "gift", "star", "belt", "doll", "gold", "sand",
-        "dot", "big", "sip", "mop", "lid", "lip", "fin", "kit", "had", "can",
-        "zoo", "hop", "hat", "six", "rock", "road", "pan", "jet", "bib", "ship",
-        "desk", "ski", "pull", "toad", "cold", "crab", "lamp", "drum", "nest", "tent",
-        "milk", "pond", "coin", "deep", "moon", "heel", "frog", "camp", "farm", "star"
+        { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
+        { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
+        { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
+        { word1: 'dog', word2: 'log', correctAnswer: 'dog' },
+        { word1: 'sun', word2: 'fun', correctAnswer: 'sun' },
+        { word1: 'bed', word2: 'red', correctAnswer: 'bed' },
+        { word1: 'cup', word2: 'pup', correctAnswer: 'cup' },
+        { word1: 'map', word2: 'cap', correctAnswer: 'map' },
+        { word1: 'sit', word2: 'hit', correctAnswer: 'sit' },
+        { word1: 'pen', word2: 'hen', correctAnswer: 'pen' },
+        { word1: 'big', word2: 'pig', correctAnswer: 'big' },
+        { word1: 'top', word2: 'pop', correctAnswer: 'top' },
+        { word1: 'run', word2: 'sun', correctAnswer: 'run' },
+        { word1: 'leg', word2: 'peg', correctAnswer: 'leg' },
+        { word1: 'mug', word2: 'bug', correctAnswer: 'mug' },
+        { word1: 'fan', word2: 'van', correctAnswer: 'fan' },
+        { word1: 'ten', word2: 'pen', correctAnswer: 'ten' },
+        { word1: 'box', word2: 'fox', correctAnswer: 'box' },
+        { word1: 'six', word2: 'fix', correctAnswer: 'six' },
+        { word1: 'web', word2: 'deb', correctAnswer: 'web' },
       ],
-      type: 'list',
-      note: '학생은 단어를 음소 단위로 분리해야 합니다 (예: cat → /k/ /æ/ /t/). PSF 표준: 초기에 쉬운 단어(2-3음소), 이후 다양한 음소 수 혼합하여 모든 난이도 평가. AI가 자동 채점합니다.'
+      type: 'minimal-pairs',
+      note: '학생은 두 단어를 듣고 들려준 단어를 선택합니다. 최소대립쌍(minimal pairs)은 하나의 음소만 다른 단어 쌍입니다. vocabulary_level.json의 어휘 수준을 준수합니다.'
     },
     NWF: {
       title: "NWF - 초급 주문 시전 시험",
@@ -144,24 +153,50 @@ Kim: Yes, it is. It is my new pencil.`,
       type: 'passage',
       note: 'ORF 표준: 5개 지문으로 구성, 학년 수준에 맞는 어휘와 문장 구조. WCPM과 정확도를 AI가 측정합니다.'
     },
-    MAZE: {
-      title: "MAZE - 지혜의 미로 탈출",
-      description: "독해력 및 문맥 이해 평가",
-      totalItems: 10,
-      questions: [
-        { num: 1, sentence: "Max has a small, brown puppy. His _______ is Sam.", choices: ["hat", "name", "on"], answer: "name" },
-        { num: 2, sentence: "Max likes to _______ with Sam.", choices: ["eat", "happy", "play"], answer: "play" },
-        { num: 3, sentence: "Today, they will _______ to the park.", choices: ["go", "is", "red"], answer: "go" },
-        { num: 4, sentence: "Max gets _______ red ball and they go.", choices: ["under", "his", "run"], answer: "his" },
-        { num: 5, sentence: "The _______ is big and yellow in", choices: ["see", "bed", "sun"], answer: "sun" },
-        { num: 6, sentence: "big and yellow in _______ sky.", choices: ["the", "sad", "she"], answer: "the" },
-        { num: 7, sentence: "At the park, Max _______ the red ball.", choices: ["makes", "throws", "happy"], answer: "throws" },
-        { num: 8, sentence: "Sam runs _______ catches it.", choices: ["for", "very", "and"], answer: "and" },
-        { num: 9, sentence: "They play for _______ long time.", choices: ["see", "a", "it"], answer: "a" },
-        { num: 10, sentence: "Max and Sam _______ very happy together.", choices: ["on", "eat", "are"], answer: "are" }
+    STRESS: {
+      title: "STRESS - 강세 및 리듬 패턴 파악",
+      description: "강세 패턴 식별 능력 평가",
+      totalItems: 20,
+      items: [
+        { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
+        { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
+        { word: 'elephant', choices: ['ELEphant', 'elePHANT', 'elephANT'], correctAnswer: 'ELEphant' },
+        { word: 'tomorrow', choices: ['toMORrow', 'TOmorrow', 'tomorROW'], correctAnswer: 'toMORrow' },
+        { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
       ],
-      type: 'maze',
-      note: 'MAZE 표준: 하나의 연결된 지문(A Fun Day at the Park), 10개 문항. 매 7번째 단어 삭제, 문맥과 문법 모두 고려한 선택지.'
+      type: 'stress-pattern',
+      note: '학생은 단어를 듣고 올바른 강세 패턴을 선택합니다. 2음절 이상의 단어를 사용하며, vocabulary_level.json의 어휘 수준을 준수합니다.'
+    },
+    MEANING: {
+      title: "MEANING - 의미 이해",
+      description: "단어/문장 의미 이해 능력 평가",
+      totalItems: 20,
+      items: [
+        { wordOrPhrase: 'a red apple', imageOptions: ['red apple', 'yellow banana', 'green grape'], correctAnswer: 'red apple' },
+        { wordOrPhrase: 'a big dog', imageOptions: ['big dog', 'small cat', 'blue bird'], correctAnswer: 'big dog' },
+        { wordOrPhrase: 'three cats', imageOptions: ['three cats', 'two dogs', 'one bird'], correctAnswer: 'three cats' },
+      ],
+      type: 'meaning',
+      note: '학생은 단어나 문장을 듣거나 읽고 알맞은 그림을 선택합니다. vocabulary_level.json의 어휘 수준을 준수합니다.'
+    },
+    COMPREHENSION: {
+      title: "COMPREHENSION - 주요 정보 파악",
+      description: "주요 정보 파악 능력 평가",
+      totalItems: 15,
+      items: [
+        { 
+          dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
+          question: 'What does Tom have?',
+          options: [
+            { type: 'word', content: 'blue ball' },
+            { type: 'word', content: 'red car' },
+            { type: 'word', content: 'small yellow cat' },
+          ],
+          correctAnswer: 'blue ball'
+        },
+      ],
+      type: 'comprehension',
+      note: '학생은 짧은 대화나 이야기를 듣거나 읽고 질문에 맞는 답을 선택합니다. core_expressions.json의 표현을 사용하며, vocabulary_level.json의 어휘 수준을 준수합니다.'
     }
   };
 
@@ -234,13 +269,54 @@ Kim: Yes, it is. It is my new pencil.`,
         />
 
         {/* PSF */}
-        <TestItemSection 
-          title={testItems.PSF.title}
-          description={testItems.PSF.description}
-          totalItems={testItems.PSF.totalItems}
-          items={testItems.PSF.items}
-          note={testItems.PSF.note}
-        />
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '20px',
+          marginBottom: '2rem',
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>
+            {testItems.PSF.title}
+          </h2>
+          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+            {testItems.PSF.description} - 총 {testItems.PSF.totalItems}문항
+          </p>
+          <div style={{ display: 'grid', gap: '0.8rem' }}>
+            {testItems.PSF.items.map((item: any, idx: number) => (
+              <div key={idx} style={{
+                backgroundColor: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '12px',
+                border: '2px solid #e5e7eb'
+              }}>
+                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+                  <strong style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>문항 {idx + 1}:</strong> {item.word1} / {item.word2}
+                </div>
+                <div style={{ color: '#10b981', fontWeight: '600', marginLeft: '1rem' }}>
+                  정답: {item.correctAnswer} ✓
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+            💡 {testItems.PSF.note}
+          </p>
+        </div>
 
         {/* NWF */}
         <TestItemSection 
@@ -304,7 +380,7 @@ Kim: Yes, it is. It is my new pencil.`,
           </p>
         </div>
 
-        {/* MAZE */}
+        {/* STRESS */}
         <div style={{
           backgroundColor: '#ffffff',
           padding: '2rem',
@@ -322,14 +398,14 @@ Kim: Yes, it is. It is my new pencil.`,
             fontSize: '1.75rem',
             fontWeight: 'bold'
           }}>
-            {testItems.MAZE.title}
+            {testItems.STRESS.title}
           </h2>
           <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
-            {testItems.MAZE.description} - 총 {testItems.MAZE.totalItems}문항
+            {testItems.STRESS.description} - 총 {testItems.STRESS.totalItems}문항
           </p>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.MAZE.questions.map((q) => (
-              <div key={q.num} style={{
+            {testItems.STRESS.items.map((item: any, idx: number) => (
+              <div key={idx} style={{
                 backgroundColor: '#f9fafb',
                 padding: '1rem',
                 borderRadius: '12px',
@@ -341,27 +417,27 @@ Kim: Yes, it is. It is my new pencil.`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
                     backgroundClip: 'text'
-                  }}>문항 {q.num}:</strong> {q.sentence}
+                  }}>문항 {idx + 1}:</strong> {item.word}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                  {q.choices.map((choice, idx) => (
+                  {item.choices.map((choice: string, optIdx: number) => (
                     <span 
-                      key={idx}
+                      key={optIdx}
                       style={{
                         padding: '0.3rem 0.8rem',
                         borderRadius: '8px',
                         fontSize: '0.9rem',
-                        backgroundColor: choice === q.answer 
+                        backgroundColor: choice === item.correctAnswer 
                           ? 'rgba(16, 185, 129, 0.1)' 
                           : '#ffffff',
-                        border: choice === q.answer 
+                        border: choice === item.correctAnswer 
                           ? '2px solid #10b981' 
                           : '1px solid #e5e7eb',
-                        color: choice === q.answer ? '#10b981' : '#171717',
-                        fontWeight: choice === q.answer ? '600' : '400'
+                        color: choice === item.correctAnswer ? '#10b981' : '#171717',
+                        fontWeight: choice === item.correctAnswer ? '600' : '400'
                       }}
                     >
-                      {choice} {choice === q.answer && '✓'}
+                      {choice} {choice === item.correctAnswer && '✓'}
                     </span>
                   ))}
                 </div>
@@ -369,7 +445,153 @@ Kim: Yes, it is. It is my new pencil.`,
             ))}
           </div>
           <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
-            💡 {testItems.MAZE.note}
+            💡 {testItems.STRESS.note}
+          </p>
+        </div>
+
+        {/* MEANING */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '20px',
+          marginBottom: '2rem',
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>
+            {testItems.MEANING.title}
+          </h2>
+          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+            {testItems.MEANING.description} - 총 {testItems.MEANING.totalItems}문항
+          </p>
+          <div style={{ display: 'grid', gap: '0.8rem' }}>
+            {testItems.MEANING.items.map((item: any, idx: number) => (
+              <div key={idx} style={{
+                backgroundColor: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '12px',
+                border: '2px solid #e5e7eb'
+              }}>
+                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+                  <strong style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>문항 {idx + 1}:</strong> {item.wordOrPhrase}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
+                  {item.imageOptions.map((option: string, optIdx: number) => (
+                    <span 
+                      key={optIdx}
+                      style={{
+                        padding: '0.3rem 0.8rem',
+                        borderRadius: '8px',
+                        fontSize: '0.9rem',
+                        backgroundColor: option === item.correctAnswer 
+                          ? 'rgba(16, 185, 129, 0.1)' 
+                          : '#ffffff',
+                        border: option === item.correctAnswer 
+                          ? '2px solid #10b981' 
+                          : '1px solid #e5e7eb',
+                        color: option === item.correctAnswer ? '#10b981' : '#171717',
+                        fontWeight: option === item.correctAnswer ? '600' : '400'
+                      }}
+                    >
+                      {option} {option === item.correctAnswer && '✓'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+            💡 {testItems.MEANING.note}
+          </p>
+        </div>
+
+        {/* COMPREHENSION */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '20px',
+          marginBottom: '2rem',
+          border: '2px solid #e5e7eb',
+          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+        }}>
+          <h2 style={{ 
+            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            marginBottom: '1.5rem',
+            fontSize: '1.75rem',
+            fontWeight: 'bold'
+          }}>
+            {testItems.COMPREHENSION.title}
+          </h2>
+          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+            {testItems.COMPREHENSION.description} - 총 {testItems.COMPREHENSION.totalItems}문항
+          </p>
+          <div style={{ display: 'grid', gap: '0.8rem' }}>
+            {testItems.COMPREHENSION.items.map((item, idx) => (
+              <div key={idx} style={{
+                backgroundColor: '#f9fafb',
+                padding: '1rem',
+                borderRadius: '12px',
+                border: '2px solid #e5e7eb'
+              }}>
+                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+                  <strong style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>대화/이야기:</strong> {item.dialogueOrStory}
+                </div>
+                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+                  <strong style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text'
+                  }}>질문:</strong> {item.question}
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
+                  {item.options.map((option, optIdx) => (
+                    <span 
+                      key={optIdx}
+                      style={{
+                        padding: '0.3rem 0.8rem',
+                        borderRadius: '8px',
+                        fontSize: '0.9rem',
+                        backgroundColor: option.content === item.correctAnswer 
+                          ? 'rgba(16, 185, 129, 0.1)' 
+                          : '#ffffff',
+                        border: option.content === item.correctAnswer 
+                          ? '2px solid #10b981' 
+                          : '1px solid #e5e7eb',
+                        color: option.content === item.correctAnswer ? '#10b981' : '#171717',
+                        fontWeight: option.content === item.correctAnswer ? '600' : '400'
+                      }}
+                    >
+                      {option.content} {option.content === item.correctAnswer && '✓'}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+            💡 {testItems.COMPREHENSION.note}
           </p>
         </div>
       </div>

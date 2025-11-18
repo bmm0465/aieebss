@@ -50,11 +50,13 @@ export default function StudentDetailChart({ testTypeStats }: StudentDetailChart
   const getTestTypeName = (testType: string) => {
     const names: Record<string, string> = {
       'LNF': 'Letter Naming Fluency',
-      'WRF': 'Word Reading Fluency', 
+      'PSF': '소리 듣고 식별하기',
       'NWF': 'Nonsense Word Fluency',
-      'MAZE': 'Maze Comprehension',
-      'PSF': 'Phoneme Segmentation Fluency',
-      'ORF': 'Oral Reading Fluency'
+      'WRF': 'Word Reading Fluency',
+      'ORF': 'Oral Reading Fluency',
+      'STRESS': '강세 및 리듬 패턴 파악',
+      'MEANING': '의미 이해',
+      'COMPREHENSION': '주요 정보 파악'
     };
     return names[testType] || testType;
   };
@@ -62,11 +64,13 @@ export default function StudentDetailChart({ testTypeStats }: StudentDetailChart
   const getTestTypeEmoji = (testType: string) => {
     const emojis: Record<string, string> = {
       'LNF': '🔤',
-      'WRF': '📖',
+      'PSF': '👂',
       'NWF': '🔀',
-      'MAZE': '🧩',
-      'PSF': '🔊',
-      'ORF': '🗣️'
+      'WRF': '📖',
+      'ORF': '🗣️',
+      'STRESS': '🎵',
+      'MEANING': '🖼️',
+      'COMPREHENSION': '💭'
     };
     return emojis[testType] || '📝';
   };

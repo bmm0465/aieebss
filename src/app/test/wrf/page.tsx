@@ -301,8 +301,8 @@ export default function WrfTestPage() {
                 <h1 style={titleStyle}>시험 종료!</h1>
                 <p style={paragraphStyle}>{feedback || "4교시 '마법 단어 활성화 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
-                  <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/orf')}>
-                    다음 시험으로 이동
+                  <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/reading')}>
+                    통합 읽기 평가로 이동
                   </button>
                   <button 
                     style={{

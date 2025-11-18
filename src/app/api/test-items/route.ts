@@ -73,9 +73,17 @@ export async function GET(request: NextRequest) {
       case 'ORF':
         testItems = items.ORF;
         break;
-      case 'MAZE':
-        testItems = items.MAZE;
+      case 'STRESS':
+        testItems = items.STRESS;
         break;
+      case 'MEANING':
+        testItems = items.MEANING;
+        break;
+      case 'COMPREHENSION':
+        testItems = items.COMPREHENSION;
+        break;
+      default:
+        testItems = null;
     }
 
     return NextResponse.json({

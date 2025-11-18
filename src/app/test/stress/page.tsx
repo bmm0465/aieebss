@@ -6,47 +6,31 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [폴백] PSF 최소대립쌍 고정 문항
-const getFixedMinimalPairs = () => {
-  const fixedPairs = [
-    { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
-    { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
-    { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
-    { word1: 'dog', word2: 'log', correctAnswer: 'dog' },
-    { word1: 'sun', word2: 'fun', correctAnswer: 'sun' },
-    { word1: 'bed', word2: 'red', correctAnswer: 'bed' },
-    { word1: 'cup', word2: 'pup', correctAnswer: 'cup' },
-    { word1: 'map', word2: 'cap', correctAnswer: 'map' },
-    { word1: 'sit', word2: 'hit', correctAnswer: 'sit' },
-    { word1: 'pen', word2: 'hen', correctAnswer: 'pen' },
-    { word1: 'big', word2: 'pig', correctAnswer: 'big' },
-    { word1: 'top', word2: 'pop', correctAnswer: 'top' },
-    { word1: 'run', word2: 'sun', correctAnswer: 'run' },
-    { word1: 'leg', word2: 'peg', correctAnswer: 'leg' },
-    { word1: 'mug', word2: 'bug', correctAnswer: 'mug' },
-    { word1: 'fan', word2: 'van', correctAnswer: 'fan' },
-    { word1: 'ten', word2: 'pen', correctAnswer: 'ten' },
-    { word1: 'box', word2: 'fox', correctAnswer: 'box' },
-    { word1: 'six', word2: 'fix', correctAnswer: 'six' },
-    { word1: 'web', word2: 'deb', correctAnswer: 'web' },
+// [폴백] STRESS 고정 문항
+const getFixedStressItems = () => {
+  return [
+    { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
+    { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
+    { word: 'elephant', choices: ['ELEphant', 'elePHANT', 'elephANT'], correctAnswer: 'ELEphant' },
+    { word: 'tomorrow', choices: ['toMORrow', 'TOmorrow', 'tomorROW'], correctAnswer: 'toMORrow' },
+    { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
   ];
-  return fixedPairs;
 };
 
-interface MinimalPair {
-  word1: string;
-  word2: string;
+interface StressItem {
+  word: string;
+  choices: string[];
   correctAnswer: string;
 }
 
-export default function PsfTestPage() {
+export default function StressTestPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
-  const [pairs, setPairs] = useState<MinimalPair[]>([]);
-  const [pairIndex, setPairIndex] = useState(0);
-  const [currentPair, setCurrentPair] = useState<MinimalPair | null>(null);
+  const [items, setItems] = useState<StressItem[]>([]);
+  const [itemIndex, setItemIndex] = useState(0);
+  const [currentItem, setCurrentItem] = useState<StressItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -63,23 +47,20 @@ export default function PsfTestPage() {
 
       setUser(user);
 
-      // DB에서 승인된 문항 조회 시도
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('PSF', gradeLevel || undefined);
+        const dbItems = await fetchApprovedTestItems('STRESS', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
-          // DB에서 가져온 문항 사용
-          console.log('[PSF] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setPairs(dbItems.items as MinimalPair[]);
+          console.log('[STRESS] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setItems(dbItems.items as StressItem[]);
         } else {
-          // 폴백: 고정 문항 사용
-          console.log('[PSF] 승인된 문항이 없어 기본 문항 사용');
-          setPairs(getFixedMinimalPairs());
+          console.log('[STRESS] 승인된 문항이 없어 기본 문항 사용');
+          setItems(getFixedStressItems());
         }
       } catch (error) {
-        console.error('[PSF] 문항 로딩 오류, 기본 문항 사용:', error);
-        setPairs(getFixedMinimalPairs());
+        console.error('[STRESS] 문항 로딩 오류, 기본 문항 사용:', error);
+        setItems(getFixedStressItems());
       }
     };
     setup();
@@ -115,24 +96,8 @@ export default function PsfTestPage() {
     }
   }, []);
 
-  const playBothWords = useCallback(async () => {
-    if (!currentPair) return;
-    setFeedback('단어를 들어보세요...');
-    setIsAudioLoading(true);
-    
-    // 첫 번째 단어 재생
-    await playWordAudio(currentPair.word1);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // 두 번째 단어 재생
-    await playWordAudio(currentPair.word2);
-    
-    setFeedback('들어본 단어 중 하나를 선택해주세요.');
-    setIsAudioLoading(false);
-  }, [currentPair, playWordAudio]);
-
   const handleAnswerSelect = async (answer: string) => {
-    if (isSubmitting || !currentPair || !user) return;
+    if (isSubmitting || !currentItem || !user) return;
     
     setSelectedAnswer(answer);
     setIsSubmitting(true);
@@ -146,13 +111,14 @@ export default function PsfTestPage() {
         return;
       }
 
-      const response = await fetch('/api/submit-psf', {
+      const response = await fetch('/api/submit-stress', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          question: `${currentPair.word1}|${currentPair.word2}`,
+          question: currentItem.word,
           selectedAnswer: answer,
-          correctAnswer: currentPair.correctAnswer,
+          correctAnswer: currentItem.correctAnswer,
+          choices: currentItem.choices,
           userId: user.id,
           authToken: authUser.id,
         }),
@@ -165,22 +131,22 @@ export default function PsfTestPage() {
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
-        goToNextPair();
+        goToNextItem();
       }, 500);
     } catch (error) {
-      console.error('PSF 제출 오류:', error);
+      console.error('STRESS 제출 오류:', error);
       setFeedback('제출 중 오류가 발생했습니다.');
       setIsSubmitting(false);
     }
   };
 
-  const goToNextPair = () => {
-    const nextIndex = pairIndex + 1;
-    if (nextIndex >= pairs.length) {
+  const goToNextItem = () => {
+    const nextIndex = itemIndex + 1;
+    if (nextIndex >= items.length) {
       setPhase('finished');
     } else {
-      setPairIndex(nextIndex);
-      setCurrentPair(pairs[nextIndex]);
+      setItemIndex(nextIndex);
+      setCurrentItem(items[nextIndex]);
       setSelectedAnswer(null);
       setIsSubmitting(false);
       setFeedback('');
@@ -188,10 +154,10 @@ export default function PsfTestPage() {
   };
 
   useEffect(() => {
-    if (phase === 'testing' && pairs.length > 0 && pairIndex < pairs.length) {
-      setCurrentPair(pairs[pairIndex]);
+    if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
+      setCurrentItem(items[itemIndex]);
     }
-  }, [phase, pairs, pairIndex]);
+  }, [phase, items, itemIndex]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -215,9 +181,9 @@ export default function PsfTestPage() {
 
   const handleStartTest = () => {
     setPhase('testing');
-    setPairIndex(0);
+    setItemIndex(0);
     setTimeLeft(60);
-    setCurrentPair(pairs[0]);
+    setCurrentItem(items[0]);
   };
 
   // --- 스타일 정의 ---
@@ -276,9 +242,9 @@ export default function PsfTestPage() {
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const wordButtonStyle: React.CSSProperties = {
+  const choiceButtonStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: '250px',
+    maxWidth: '300px',
     padding: '20px 24px',
     margin: '0.5rem',
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
@@ -287,13 +253,13 @@ export default function PsfTestPage() {
     borderRadius: '12px',
     cursor: 'pointer',
     fontWeight: '600',
-    fontSize: '1.5rem',
+    fontSize: '1.3rem',
     textAlign: 'center',
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const selectedWordButtonStyle: React.CSSProperties = {
-    ...wordButtonStyle,
+  const selectedChoiceButtonStyle: React.CSSProperties = {
+    ...choiceButtonStyle,
     background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
     boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
   };
@@ -311,6 +277,12 @@ export default function PsfTestPage() {
     fontFamily: 'monospace',
     fontWeight: '600',
   };
+  const wordDisplayStyle: React.CSSProperties = {
+    fontSize: '3rem',
+    fontWeight: 'bold',
+    margin: '2rem 0',
+    color: '#6366f1',
+  };
 
   if (!user) {
     return (
@@ -323,7 +295,7 @@ export default function PsfTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리 듣고 식별하기</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 강세 및 리듬 패턴 파악</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -337,9 +309,9 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              두 개의 단어를 들려드립니다. 들려준 단어 중 하나를 선택해주세요.
+              단어를 듣고 올바른 강세 패턴을 선택해주세요.
               <br />
-              (예: "pin"과 "fin"을 들려주면, 들려준 단어를 선택합니다)
+              (예: "computer"를 들려주면, 강세가 올바르게 표시된 패턴을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -347,10 +319,10 @@ export default function PsfTestPage() {
           </div>
         )}
 
-        {phase === 'testing' && currentPair && (
+        {phase === 'testing' && currentItem && (
           <div>
             <button
-              onClick={playBothWords}
+              onClick={() => playWordAudio(currentItem.word)}
               style={{
                 ...buttonStyle,
                 fontSize: '3rem',
@@ -362,22 +334,19 @@ export default function PsfTestPage() {
             >
               {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
             </button>
-            <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
+            <div style={wordDisplayStyle}>{currentItem.word}</div>
+            <p style={feedbackStyle}>{feedback || '강세 패턴을 선택해주세요.'}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
-              <button
-                onClick={() => handleAnswerSelect(currentPair.word1)}
-                style={selectedAnswer === currentPair.word1 ? selectedWordButtonStyle : wordButtonStyle}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {currentPair.word1}
-              </button>
-              <button
-                onClick={() => handleAnswerSelect(currentPair.word2)}
-                style={selectedAnswer === currentPair.word2 ? selectedWordButtonStyle : wordButtonStyle}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {currentPair.word2}
-              </button>
+              {currentItem.choices.map((choice, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(choice)}
+                  style={selectedAnswer === choice ? selectedChoiceButtonStyle : choiceButtonStyle}
+                  disabled={isSubmitting || isAudioLoading}
+                >
+                  {choice}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -386,10 +355,13 @@ export default function PsfTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "2교시 '소리 듣고 식별하기'가 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "6교시 '강세 및 리듬 패턴 파악'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/reading')}>
+              <button
+                style={{ ...buttonStyle, maxWidth: '250px' }}
+                onClick={() => router.push('/test/meaning')}
+              >
                 다음 시험으로 이동
               </button>
               <button
@@ -430,3 +402,4 @@ export default function PsfTestPage() {
     </div>
   );
 }
+
