@@ -131,7 +131,7 @@ export class OrchestratorAgent {
   private extractItemsForTestType(
     items: GeneratedItems,
     testType: TestType
-  ): string[] | string | Array<{ num: number; sentence: string; choices: string[]; answer: string }> | undefined {
+  ): GeneratedItems[TestType] | undefined {
     return items[testType];
   }
 
