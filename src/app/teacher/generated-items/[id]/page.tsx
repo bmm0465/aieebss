@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
-import { createClient } from '@/lib/supabase/client';
 
 // 서버 측 캐싱 방지
 export const dynamic = 'force-dynamic';
@@ -38,7 +37,6 @@ interface ToastMessage {
 
 export default function GeneratedItemDetailPage({ params }: Props) {
   const router = useRouter();
-  const supabase = createClient();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,14 +49,8 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   // 데이터 페칭 로직을 별도 함수로 분리
   const fetchItem = useCallback(async (id: string, isRefresh = false) => {
     try {
-      // 인증 확인
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      console.log('[GeneratedItemDetail] Fetching item:', id, 'isRefresh:', isRefresh);
       
-      if (authError || !user) {
-        router.push('/');
-        return;
-      }
-
       // 초기 로딩이 아닌 경우에만 refreshing 상태 설정
       if (isRefresh) {
         setRefreshing(true);
@@ -66,16 +58,31 @@ export default function GeneratedItemDetailPage({ params }: Props) {
         setLoading(true);
       }
 
-      const response = await fetch(`/api/generated-items/${id}`, {
+      // API가 인증을 확인하므로 클라이언트에서 중복 확인 불필요
+      // API 응답에 따라 처리
+      const apiUrl = `/api/generated-items/${id}`;
+      console.log('[GeneratedItemDetail] Making API request to:', apiUrl);
+      
+      const response = await fetch(apiUrl, {
         method: 'GET',
         cache: 'no-store',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // 쿠키 포함
       });
 
+      console.log('[GeneratedItemDetail] API response status:', response.status);
+      console.log('[GeneratedItemDetail] API response ok:', response.ok);
+
       if (response.status === 401) {
+        // API에서 인증 실패 시에만 리디렉션
+        console.log('[GeneratedItemDetail] API returned 401 - redirecting to login');
+        const errorData = await response.json().catch(() => ({}));
+        console.log('[GeneratedItemDetail] Error details:', errorData);
         router.push('/');
+        setLoading(false);
+        setRefreshing(false);
         return;
       }
 
@@ -96,22 +103,25 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       }
 
       const data = await response.json();
+      console.log('[GeneratedItemDetail] API response data:', data);
       
       if (data.success) {
+        console.log('[GeneratedItemDetail] Item loaded successfully:', data.item?.id);
         setItem(data.item);
         setError(null);
       } else {
+        console.log('[GeneratedItemDetail] API returned success: false');
         setError('문항을 찾을 수 없습니다.');
       }
       setLoading(false);
       setRefreshing(false);
     } catch (err) {
-      console.error('Error loading item data:', err);
+      console.error('[GeneratedItemDetail] Error loading item data:', err);
       setError('데이터를 불러오는 중 오류가 발생했습니다.');
       setLoading(false);
       setRefreshing(false);
     }
-  }, [router, supabase]);
+  }, [router]);
 
   useEffect(() => {
     const initialize = async () => {
