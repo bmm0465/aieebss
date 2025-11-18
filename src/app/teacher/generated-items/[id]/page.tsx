@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -28,7 +28,12 @@ interface GeneratedItemDetail {
 }
 
 interface Props {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string }> | { id: string };
+}
+
+interface ToastMessage {
+  message: string;
+  type: 'success' | 'error';
 }
 
 export default function GeneratedItemDetailPage({ params }: Props) {
@@ -40,139 +45,101 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   const [reviewNotes, setReviewNotes] = useState('');
   const [rejectNotes, setRejectNotes] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
-  const [mounted, setMounted] = useState(false);
+  const [toast, setToast] = useState<ToastMessage | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // 클라이언트에서만 마운트되도록 보장
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    // 서버 사이드에서 실행 방지
-    if (!mounted) return;
-
-    const initializePage = async () => {
-      try {
-        console.log('GENERATED ITEM DETAIL: ===== Page INIT =====');
-        console.log('GENERATED ITEM DETAIL: Current URL:', window.location.href);
-        console.log('GENERATED ITEM DETAIL: Document cookies:', document.cookie);
-        console.log('GENERATED ITEM DETAIL: User agent:', navigator.userAgent);
-        
-        const resolvedParams = await params;
-        const id = resolvedParams.id;
-        console.log('GENERATED ITEM DETAIL: Resolved params - id:', id);
-        console.log('GENERATED ITEM DETAIL: Resolved params:', resolvedParams);
-        console.log('GENERATED ITEM DETAIL: ID type:', typeof id);
-        console.log('GENERATED ITEM DETAIL: ID length:', id?.length);
-        
-        if (!id) {
-          setError('문항 ID가 없습니다.');
-          setLoading(false);
-          return;
-        }
-
-        // 인증 확인 - 여러 방법으로 시도
-        console.log('GENERATED ITEM DETAIL: Starting auth check...');
-        
-        // 방법 1: getUser()
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        console.log('GENERATED ITEM DETAIL: Auth check (getUser) - user:', user?.id, 'error:', authError);
-        console.log('GENERATED ITEM DETAIL: Auth check (getUser) - user email:', user?.email);
-        
-        // 방법 2: getSession()
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        console.log('GENERATED ITEM DETAIL: Auth check (getSession) - session:', sessionData?.session?.user?.id, 'error:', sessionError);
-        
-        if (authError || !user) {
-          console.log('GENERATED ITEM DETAIL: ===== AUTH FAILED =====');
-          console.log('GENERATED ITEM DETAIL: Auth error details:', authError);
-          console.log('GENERATED ITEM DETAIL: Session error details:', sessionError);
-          console.log('GENERATED ITEM DETAIL: Current URL:', window.location.href);
-          console.log('GENERATED ITEM DETAIL: All cookies:', document.cookie);
-          console.log('GENERATED ITEM DETAIL: Supabase cookies:', document.cookie.split(';').filter(c => c.includes('supabase')));
-          console.log('GENERATED ITEM DETAIL: Local storage:', Object.keys(localStorage));
-          console.log('GENERATED ITEM DETAIL: Session storage:', Object.keys(sessionStorage));
-          
-          // 임시: 인증 실패 시에도 페이지를 계속 로드 (디버깅용)
-          console.log('GENERATED ITEM DETAIL: TEMPORARY: Continuing without auth for debugging');
-          // router.push('/');
-          // return;
-        } else {
-          console.log('GENERATED ITEM DETAIL: ===== AUTH SUCCESS =====');
-          console.log('GENERATED ITEM DETAIL: User authenticated:', user.email);
-        }
-
-        console.log('GENERATED ITEM DETAIL: Fetching data for item ID:', id);
-        console.log('GENERATED ITEM DETAIL: API URL:', `/api/generated-items/${id}`);
-        console.log('GENERATED ITEM DETAIL: Current origin:', window.location.origin);
-        
-        const apiUrl = `/api/generated-items/${id}`;
-        console.log('GENERATED ITEM DETAIL: Making fetch request to:', apiUrl);
-        
-        const response = await fetch(apiUrl, {
-          method: 'GET',
-          cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        console.log('GENERATED ITEM DETAIL: API response received');
-        console.log('GENERATED ITEM DETAIL: - status:', response.status);
-        console.log('GENERATED ITEM DETAIL: - statusText:', response.statusText);
-        console.log('GENERATED ITEM DETAIL: - ok:', response.ok);
-        console.log('GENERATED ITEM DETAIL: - headers:', Object.fromEntries(response.headers.entries()));
-
-        if (response.status === 401) {
-          console.log('GENERATED ITEM DETAIL: 401 Unauthorized - redirecting to login');
-          router.push('/');
-          return;
-        }
-
-        if (response.status === 403) {
-          console.log('GENERATED ITEM DETAIL: 403 Forbidden');
-          const errorData = await response.json().catch(() => ({}));
-          console.log('GENERATED ITEM DETAIL: Error details:', errorData);
-          setError(errorData.details || errorData.error || '접근 권한이 없습니다.');
-          setLoading(false);
-          return;
-        }
-
-        if (!response.ok) {
-          console.log('GENERATED ITEM DETAIL: Response not OK');
-          const errorData = await response.json().catch(() => ({}));
-          console.log('GENERATED ITEM DETAIL: Error data:', errorData);
-          setError(errorData.details || errorData.error || '문항을 찾을 수 없습니다.');
-          setLoading(false);
-          return;
-        }
-
-        const data = await response.json();
-        console.log('GENERATED ITEM DETAIL: Data received:', data);
-        console.log('GENERATED ITEM DETAIL: - success:', data.success);
-        console.log('GENERATED ITEM DETAIL: - item exists:', !!data.item);
-        console.log('GENERATED ITEM DETAIL: - item id:', data.item?.id);
-        
-        if (data.success) {
-          setItem(data.item);
-        } else {
-          setError('문항을 찾을 수 없습니다.');
-        }
-        setLoading(false);
-      } catch (err) {
-        console.error('GENERATED ITEM DETAIL: Error loading item data:', err);
-        setError('데이터를 불러오는 중 오류가 발생했습니다.');
-        setLoading(false);
+  // 데이터 페칭 로직을 별도 함수로 분리
+  const fetchItem = useCallback(async (id: string, isRefresh = false) => {
+    try {
+      // 인증 확인
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      
+      if (authError || !user) {
+        router.push('/');
+        return;
       }
+
+      // 초기 로딩이 아닌 경우에만 refreshing 상태 설정
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
+
+      const response = await fetch(`/api/generated-items/${id}`, {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.status === 401) {
+        router.push('/');
+        return;
+      }
+
+      if (response.status === 403) {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.details || errorData.error || '접근 권한이 없습니다.');
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setError(errorData.details || errorData.error || '문항을 찾을 수 없습니다.');
+        setLoading(false);
+        setRefreshing(false);
+        return;
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setItem(data.item);
+        setError(null);
+      } else {
+        setError('문항을 찾을 수 없습니다.');
+      }
+      setLoading(false);
+      setRefreshing(false);
+    } catch (err) {
+      console.error('Error loading item data:', err);
+      setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [router, supabase]);
+
+  useEffect(() => {
+    const initialize = async () => {
+      // params가 Promise인 경우 처리
+      const resolvedParams = params instanceof Promise ? await params : params;
+      const id = resolvedParams.id;
+      
+      if (!id) {
+        setError('문항 ID가 없습니다.');
+        setLoading(false);
+        return;
+      }
+
+      fetchItem(id);
     };
 
-    initializePage();
-  }, [mounted, params, router, supabase]);
+    initialize();
+  }, [params, fetchItem]);
 
-  // 서버 사이드에서 렌더링 방지
-  if (!mounted) {
-    return null;
-  }
+  // 토스트 메시지 자동 제거
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(() => {
+        setToast(null);
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [toast]);
 
   const handleApprove = async () => {
     if (!confirm('이 문항을 승인하시겠습니까?')) return;
@@ -188,14 +155,19 @@ export default function GeneratedItemDetailPage({ params }: Props) {
 
       const data = await response.json();
       if (data.success) {
-        alert('문항이 승인되었습니다.');
-        router.push('/teacher/generated-items');
+        setToast({ message: '문항이 승인되었습니다.', type: 'success' });
+        // 데이터 재검증
+        await fetchItem(item.id, true);
+        // 잠시 후 목록으로 이동
+        setTimeout(() => {
+          router.push('/teacher/generated-items');
+        }, 1500);
       } else {
-        alert('승인 실패: ' + data.error);
+        setToast({ message: '승인 실패: ' + data.error, type: 'error' });
       }
     } catch (err) {
       console.error('승인 오류:', err);
-      alert('승인 중 오류가 발생했습니다.');
+      setToast({ message: '승인 중 오류가 발생했습니다.', type: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -203,7 +175,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
 
   const handleReject = async () => {
     if (!rejectNotes.trim()) {
-      alert('거부 사유를 입력해주세요.');
+      setToast({ message: '거부 사유를 입력해주세요.', type: 'error' });
       return;
     }
 
@@ -220,14 +192,19 @@ export default function GeneratedItemDetailPage({ params }: Props) {
 
       const data = await response.json();
       if (data.success) {
-        alert('문항이 거부되었습니다.');
-        router.push('/teacher/generated-items');
+        setToast({ message: '문항이 거부되었습니다.', type: 'success' });
+        // 데이터 재검증
+        await fetchItem(item.id, true);
+        // 잠시 후 목록으로 이동
+        setTimeout(() => {
+          router.push('/teacher/generated-items');
+        }, 1500);
       } else {
-        alert('거부 실패: ' + data.error);
+        setToast({ message: '거부 실패: ' + data.error, type: 'error' });
       }
     } catch (err) {
       console.error('거부 오류:', err);
-      alert('거부 중 오류가 발생했습니다.');
+      setToast({ message: '거부 중 오류가 발생했습니다.', type: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -246,29 +223,15 @@ export default function GeneratedItemDetailPage({ params }: Props) {
 
       const data = await response.json();
       if (data.success) {
-        alert('문항 검토가 완료되었습니다.');
-        // 데이터 다시 불러오기
-        setLoading(true);
-        const refreshResponse = await fetch(`/api/generated-items/${item.id}`, {
-          method: 'GET',
-          cache: 'no-store',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-        if (refreshResponse.ok) {
-          const refreshData = await refreshResponse.json();
-          if (refreshData.success) {
-            setItem(refreshData.item);
-          }
-        }
-        setLoading(false);
+        setToast({ message: '문항 검토가 완료되었습니다.', type: 'success' });
+        // 데이터 재검증 (부분 로딩)
+        await fetchItem(item.id, true);
       } else {
-        alert('검토 실패: ' + data.error);
+        setToast({ message: '검토 실패: ' + data.error, type: 'error' });
       }
     } catch (err) {
       console.error('검토 오류:', err);
-      alert('검토 중 오류가 발생했습니다.');
+      setToast({ message: '검토 중 오류가 발생했습니다.', type: 'error' });
     } finally {
       setActionLoading(false);
     }
@@ -367,13 +330,95 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   };
 
   return (
-    <div style={{
-      backgroundColor: '#ffffff',
-      backgroundSize: 'cover',
-      minHeight: '100vh',
-      padding: '2rem',
-      color: '#171717'
-    }}>
+    <>
+      <style>{`
+        @keyframes slideIn {
+          from {
+            transform: translateX(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateX(0);
+            opacity: 1;
+          }
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+      <div style={{
+        backgroundColor: '#ffffff',
+        backgroundSize: 'cover',
+        minHeight: '100vh',
+        padding: '2rem',
+        color: '#171717',
+        position: 'relative'
+      }}>
+        {/* 토스트 메시지 */}
+      {toast && (
+        <div
+          style={{
+            position: 'fixed',
+            top: '2rem',
+            right: '2rem',
+            padding: '1rem 1.5rem',
+            borderRadius: '8px',
+            backgroundColor: toast.type === 'success' ? '#4CAF50' : '#F44336',
+            color: 'white',
+            fontWeight: 'bold',
+            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)',
+            zIndex: 1000,
+            animation: 'slideIn 0.3s ease-out',
+            maxWidth: '400px'
+          }}
+        >
+          {toast.message}
+        </div>
+      )}
+
+      {/* 부분 로딩 오버레이 */}
+      {refreshing && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.3)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 999
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: 'white',
+              padding: '2rem',
+              borderRadius: '12px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.3)'
+            }}
+          >
+            <div style={{ textAlign: 'center' }}>
+              <div
+                style={{
+                  width: '40px',
+                  height: '40px',
+                  border: '4px solid #f3f3f3',
+                  borderTop: '4px solid #6366f1',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite',
+                  margin: '0 auto 1rem'
+                }}
+              />
+              <p style={{ margin: 0, color: '#171717' }}>데이터를 새로고침하는 중...</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         {/* 헤더 */}
         <div style={{
@@ -574,6 +619,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
         )}
       </div>
     </div>
+    </>
   );
 }
 
