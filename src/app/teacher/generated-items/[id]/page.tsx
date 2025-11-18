@@ -36,6 +36,11 @@ interface ToastMessage {
 }
 
 export default function GeneratedItemDetailPage({ params }: Props) {
+  // 컴포넌트가 렌더링되는지 확인하기 위한 즉시 실행 로그
+  console.log('[GeneratedItemDetail] ===== COMPONENT RENDERED =====');
+  console.log('[GeneratedItemDetail] Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
+  console.log('[GeneratedItemDetail] Component function executed');
+  
   const router = useRouter();
   const [item, setItem] = useState<GeneratedItemDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -124,20 +129,37 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   }, [router]);
 
   useEffect(() => {
+    console.log('[GeneratedItemDetail] ===== useEffect EXECUTED =====');
+    console.log('[GeneratedItemDetail] useEffect dependencies:', { params, fetchItem });
+    
     const initialize = async () => {
-      // Next.js 15에서는 params가 항상 Promise입니다
-      const resolvedParams = await params;
-      const id = resolvedParams.id;
+      console.log('[GeneratedItemDetail] initialize function started');
       
-      if (!id) {
-        setError('문항 ID가 없습니다.');
-        setLoading(false);
-        return;
-      }
+      try {
+        // Next.js 15에서는 params가 항상 Promise입니다
+        console.log('[GeneratedItemDetail] Resolving params...');
+        const resolvedParams = await params;
+        const id = resolvedParams.id;
+        console.log('[GeneratedItemDetail] Resolved params - id:', id);
+        
+        if (!id) {
+          console.log('[GeneratedItemDetail] No ID found');
+          setError('문항 ID가 없습니다.');
+          setLoading(false);
+          return;
+        }
 
-      fetchItem(id);
+        console.log('[GeneratedItemDetail] Calling fetchItem with id:', id);
+        await fetchItem(id);
+        console.log('[GeneratedItemDetail] fetchItem completed');
+      } catch (err) {
+        console.error('[GeneratedItemDetail] Error in initialize:', err);
+        setError('초기화 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
     };
 
+    console.log('[GeneratedItemDetail] Starting initialize...');
     initialize();
   }, [params, fetchItem]);
 
@@ -247,7 +269,10 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     }
   };
 
+  console.log('[GeneratedItemDetail] Render - loading:', loading, 'error:', error, 'item:', !!item);
+
   if (loading) {
+    console.log('[GeneratedItemDetail] Rendering loading state');
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 
@@ -274,6 +299,7 @@ export default function GeneratedItemDetailPage({ params }: Props) {
   }
 
   if (error || !item) {
+    console.log('[GeneratedItemDetail] Rendering error state - error:', error, 'item:', !!item);
     return (
       <div style={{ 
         backgroundColor: '#ffffff', 
@@ -339,6 +365,8 @@ export default function GeneratedItemDetailPage({ params }: Props) {
     );
   };
 
+  console.log('[GeneratedItemDetail] Rendering main content - item:', item?.id, 'status:', item?.status);
+  
   return (
     <>
       <style>{`
