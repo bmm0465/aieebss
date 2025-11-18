@@ -6,8 +6,14 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
+interface MeaningItem {
+  wordOrPhrase: string;
+  imageOptions: string[];
+  correctAnswer: string;
+}
+
 // [폴백] MEANING 고정 문항
-const getFixedMeaningItems = () => {
+const getFixedMeaningItems = (): MeaningItem[] => {
   return [
     {
       wordOrPhrase: 'a red apple',
@@ -36,12 +42,6 @@ const getFixedMeaningItems = () => {
     },
   ];
 };
-
-interface MeaningItem {
-  wordOrPhrase: string;
-  imageOptions: string[];
-  correctAnswer: string;
-}
 
 export default function MeaningTestPage() {
   const supabase = createClient();

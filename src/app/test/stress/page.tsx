@@ -6,8 +6,14 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
+interface StressItem {
+  word: string;
+  choices: string[];
+  correctAnswer: string;
+}
+
 // [폴백] STRESS 고정 문항
-const getFixedStressItems = () => {
+const getFixedStressItems = (): StressItem[] => {
   return [
     { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
     { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
@@ -16,12 +22,6 @@ const getFixedStressItems = () => {
     { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
   ];
 };
-
-interface StressItem {
-  word: string;
-  choices: string[];
-  correctAnswer: string;
-}
 
 export default function StressTestPage() {
   const supabase = createClient();

@@ -6,9 +6,15 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
+interface MinimalPair {
+  word1: string;
+  word2: string;
+  correctAnswer: string;
+}
+
 // [폴백] PSF 최소대립쌍 고정 문항
-const getFixedMinimalPairs = () => {
-  const fixedPairs = [
+const getFixedMinimalPairs = (): MinimalPair[] => {
+  const fixedPairs: MinimalPair[] = [
     { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
     { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
     { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
@@ -32,12 +38,6 @@ const getFixedMinimalPairs = () => {
   ];
   return fixedPairs;
 };
-
-interface MinimalPair {
-  word1: string;
-  word2: string;
-  correctAnswer: string;
-}
 
 export default function PsfTestPage() {
   const supabase = createClient();

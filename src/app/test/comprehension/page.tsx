@@ -6,52 +6,6 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [폴백] COMPREHENSION 고정 문항
-const getFixedComprehensionItems = () => {
-  return [
-    {
-      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-      question: 'What does Tom have?',
-      options: [
-        { type: 'word', content: 'blue ball' },
-        { type: 'word', content: 'red car' },
-        { type: 'word', content: 'small yellow cat' },
-      ],
-      correctAnswer: 'blue ball',
-    },
-    {
-      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-      question: 'What color is the ball?',
-      options: [
-        { type: 'word', content: 'blue' },
-        { type: 'word', content: 'red' },
-        { type: 'word', content: 'yellow' },
-      ],
-      correctAnswer: 'blue',
-    },
-    {
-      dialogueOrStory: 'I see a cat. It is small and white.',
-      question: 'What color is the cat?',
-      options: [
-        { type: 'word', content: 'white' },
-        { type: 'word', content: 'black' },
-        { type: 'word', content: 'brown' },
-      ],
-      correctAnswer: 'white',
-    },
-    {
-      dialogueOrStory: 'Look at the dog. It is big and brown.',
-      question: 'How big is the dog?',
-      options: [
-        { type: 'word', content: 'big' },
-        { type: 'word', content: 'small' },
-        { type: 'word', content: 'tiny' },
-      ],
-      correctAnswer: 'big',
-    },
-  ];
-};
-
 interface ComprehensionOption {
   type: 'image' | 'word';
   content: string;
@@ -63,6 +17,52 @@ interface ComprehensionItem {
   options: ComprehensionOption[];
   correctAnswer: string;
 }
+
+// [폴백] COMPREHENSION 고정 문항
+const getFixedComprehensionItems = (): ComprehensionItem[] => {
+  return [
+    {
+      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
+      question: 'What does Tom have?',
+      options: [
+        { type: 'word' as const, content: 'blue ball' },
+        { type: 'word' as const, content: 'red car' },
+        { type: 'word' as const, content: 'small yellow cat' },
+      ],
+      correctAnswer: 'blue ball',
+    },
+    {
+      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
+      question: 'What color is the ball?',
+      options: [
+        { type: 'word' as const, content: 'blue' },
+        { type: 'word' as const, content: 'red' },
+        { type: 'word' as const, content: 'yellow' },
+      ],
+      correctAnswer: 'blue',
+    },
+    {
+      dialogueOrStory: 'I see a cat. It is small and white.',
+      question: 'What color is the cat?',
+      options: [
+        { type: 'word' as const, content: 'white' },
+        { type: 'word' as const, content: 'black' },
+        { type: 'word' as const, content: 'brown' },
+      ],
+      correctAnswer: 'white',
+    },
+    {
+      dialogueOrStory: 'Look at the dog. It is big and brown.',
+      question: 'How big is the dog?',
+      options: [
+        { type: 'word' as const, content: 'big' },
+        { type: 'word' as const, content: 'small' },
+        { type: 'word' as const, content: 'tiny' },
+      ],
+      correctAnswer: 'big',
+    },
+  ];
+};
 
 export default function ComprehensionTestPage() {
   const supabase = createClient();
