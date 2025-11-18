@@ -4,9 +4,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [수정] MAZE 표준 규격에 맞는 하나의 연결된 지문 (A Fun Day at the Park)
-const mazePassage = {
+// [폴백] MAZE 표준 규격에 맞는 하나의 연결된 지문 (A Fun Day at the Park)
+const defaultMazePassage = {
   id: 'fun_day_at_park',
   title: "A Fun Day at the Park",
   content: [
@@ -34,20 +35,99 @@ const mazePassage = {
   ]
 };
 
+type MazeItem = string | { choices: string[]; correctAnswer: string };
+
+interface MazePassage {
+  id: string;
+  title: string;
+  content: MazeItem[];
+}
+
 export default function MazeTestPage() {
-  const supabase = createClient(); // useRouter는 여전히 다른 곳에서 필요할 수 있으므로 유지
+  const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
   const [answers, setAnswers] = useState<(string | null)[]>([]);
   const [timeLeft, setTimeLeft] = useState(180);
+  const [mazePassage, setMazePassage] = useState<MazePassage>(defaultMazePassage);
   const totalItems = mazePassage.content.filter(item => typeof item === 'object').length;
 
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/');
-      else setUser(user);
+      if (!user) {
+        router.push('/');
+        return;
+      }
+
+      setUser(user);
+
+      // DB에서 승인된 문항 조회 시도
+      try {
+        const gradeLevel = await getUserGradeLevel(user.id);
+        const dbItems = await fetchApprovedTestItems('MAZE', gradeLevel || undefined);
+
+        if (dbItems && Array.isArray(dbItems.items)) {
+          // DB에서 가져온 MAZE 문항 사용
+          console.log('[MAZE] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          
+          // MAZE 문항 형식 변환: [{num, sentence, choices, answer}, ...] -> MazePassage 형식
+          const mazeItems: MazeItem[] = [];
+          
+          (dbItems.items as Array<{
+            num: number;
+            sentence: string;
+            choices: string[];
+            answer: string;
+          }>).forEach((item) => {
+            // 문장에서 빈칸 부분 추출
+            const blankIndex = item.sentence.indexOf('_____');
+            if (blankIndex !== -1) {
+              const beforeBlank = item.sentence.substring(0, blankIndex).trim();
+              const afterBlank = item.sentence.substring(blankIndex + 5).trim();
+              
+              if (beforeBlank) {
+                // 이전 문항의 마지막 부분과 연결
+                if (mazeItems.length > 0 && typeof mazeItems[mazeItems.length - 1] === 'string') {
+                  mazeItems[mazeItems.length - 1] = (mazeItems[mazeItems.length - 1] as string) + ' ' + beforeBlank;
+                } else {
+                  mazeItems.push(beforeBlank);
+                }
+              }
+              
+              mazeItems.push({
+                choices: item.choices,
+                correctAnswer: item.answer
+              });
+              
+              if (afterBlank) {
+                mazeItems.push(afterBlank);
+              }
+            } else {
+              // 빈칸이 없으면 전체 문장 추가
+              if (mazeItems.length > 0 && typeof mazeItems[mazeItems.length - 1] === 'string') {
+                mazeItems[mazeItems.length - 1] = (mazeItems[mazeItems.length - 1] as string) + ' ' + item.sentence;
+              } else {
+                mazeItems.push(item.sentence);
+              }
+            }
+          });
+
+          setMazePassage({
+            id: 'db_generated',
+            title: 'Generated Passage',
+            content: mazeItems
+          });
+        } else {
+          // 폴백: 고정 문항 사용
+          console.log('[MAZE] 승인된 문항이 없어 기본 문항 사용');
+          setMazePassage(defaultMazePassage);
+        }
+      } catch (error) {
+        console.error('[MAZE] 문항 로딩 오류, 기본 문항 사용:', error);
+        setMazePassage(defaultMazePassage);
+      }
     };
     checkUser();
   }, [router, supabase.auth]);

@@ -4,8 +4,9 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [수정] ORF 표준 규격에 맞는 5개 지문 (학년 수준에 맞는 어휘와 문장 구조)
+// [폴백] ORF 표준 규격에 맞는 5개 지문 (학년 수준에 맞는 어휘와 문장 구조)
 const rawPassage = `Passage 1: Drawing a Picture
 Leo: What are you doing?
 Mia: I am drawing a picture.
@@ -112,11 +113,36 @@ export default function OrfTestPage() {
   const streamRef = useRef<MediaStream | null>(null);
   const readingStartTimeRef = useRef<number>(0); // [핵심 수정] 읽기 시작 시간 기록
 
+  const [passageText, setPassageText] = useState(passage);
+
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/');
-      else setUser(user);
+      if (!user) {
+        router.push('/');
+        return;
+      }
+
+      setUser(user);
+
+      // DB에서 승인된 문항 조회 시도
+      try {
+        const gradeLevel = await getUserGradeLevel(user.id);
+        const dbItems = await fetchApprovedTestItems('ORF', gradeLevel || undefined);
+
+        if (dbItems && typeof dbItems.items === 'string') {
+          // DB에서 가져온 지문 사용
+          console.log('[ORF] DB에서 승인된 문항 사용');
+          setPassageText(formatPassage(dbItems.items as string));
+        } else {
+          // 폴백: 고정 지문 사용
+          console.log('[ORF] 승인된 문항이 없어 기본 지문 사용');
+          setPassageText(passage);
+        }
+      } catch (error) {
+        console.error('[ORF] 문항 로딩 오류, 기본 지문 사용:', error);
+        setPassageText(passage);
+      }
     };
     checkUser();
   }, [router, supabase.auth]);
@@ -332,7 +358,7 @@ export default function OrfTestPage() {
           <div>
             <div style={timerStyle}>준비 시간: {countdown}초</div>
             <div style={passageBoxStyle}>
-              {renderStyledPassage(passage)}
+              {renderStyledPassage(passageText)}
             </div>
             <p style={feedbackStyle}>{feedback}</p>
           </div>
@@ -341,7 +367,7 @@ export default function OrfTestPage() {
           <div>
             <div style={timerStyle}>남은 시간: {timeLeft}초</div>
             <div style={passageBoxStyle}>
-              {renderStyledPassage(passage)}
+              {renderStyledPassage(passageText)}
             </div>
             <p style={feedbackStyle}>{feedback}</p>
             {!isRecording ? (

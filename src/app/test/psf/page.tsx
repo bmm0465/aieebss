@@ -4,29 +4,18 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [수정] PSF 표준 규격에 맞는 110개 고정된 단어 문항 (다양한 음소 수 혼합)
+// [폴백] PSF 표준 규격에 맞는 30개 고정된 단어 문항
 const getFixedWords = () => {
     // PSF 표준: 초기에는 쉬운 단어, 이후 다양한 음소 수 혼합하여 모든 학생이 다양한 난이도 평가받도록
     const fixedWords = [
-        // 초기 20개: 주로 2-3음소 단어로 구성 (학생들이 쉽게 시작할 수 있도록)
-        "go", "on", "at", "up", "be", "it", "so", "in", "to", "an",
-        "dad", "sit", "map", "cup", "top", "pen", "cat", "dog", "get", "hot",
-        
-        // 21-50: 2-3음소와 일부 4음소 혼합
-        "mad", "van", "pin", "son", "rug", "hit", "nut", "box", "bat", "bug",
-        "win", "web", "mug", "man", "pig", "dig", "pot", "bed", "mom", "fan",
-        "wig", "car", "fog", "leg", "ten", "hen", "jog", "kid", "fit", "but",
-        
-        // 51-80: 다양한 음소 수 균형있게 혼합
-        "red", "sun", "jam", "mud", "hug", "run", "cut", "not", "tap", "pet",
-        "bell", "stop", "plan", "hand", "gift", "star", "belt", "doll", "gold", "sand",
-        "dot", "big", "sip", "mop", "lid", "lip", "fin", "kit", "had", "can",
-        
-        // 81-110: 계속 혼합하되 더 복잡한 단어들 포함
-        "zoo", "hop", "hat", "six", "rock", "road", "pan", "jet", "bib", "ship",
-        "desk", "ski", "pull", "toad", "cold", "crab", "lamp", "drum", "nest", "tent",
-        "milk", "pond", "coin", "deep", "moon", "heel", "frog", "camp", "farm", "star"
+        // 1-6번: 2음소 단어
+        "at", "on", "up", "me", "go", "so",
+        // 7-30번: 3음소 단어
+        "cat", "sun", "sit", "run", "top", "fan", "dog", "bed", "pig", "leg",
+        "red", "hat", "map", "cup", "pen", "mug", "man", "dig", "pot", "mom",
+        "car", "fog", "ten", "hen", "jog", "kid", "fit", "but"
     ];
     return fixedWords;
 };
@@ -59,13 +48,34 @@ export default function PsfTestPage() {
   useEffect(() => {
     const setup = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/');
-      else {
-        setUser(user);
-        setShuffledWords(getFixedWords()); // [수정] PSF 표준 110개 고정 문항 사용
-        // 미리 마이크 권한 요청 및 MediaRecorder 준비
-        prepareMediaRecorder();
+      if (!user) {
+        router.push('/');
+        return;
       }
+
+      setUser(user);
+
+      // DB에서 승인된 문항 조회 시도
+      try {
+        const gradeLevel = await getUserGradeLevel(user.id);
+        const dbItems = await fetchApprovedTestItems('PSF', gradeLevel || undefined);
+
+        if (dbItems && Array.isArray(dbItems.items)) {
+          // DB에서 가져온 문항 사용
+          console.log('[PSF] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setShuffledWords(dbItems.items as string[]);
+        } else {
+          // 폴백: 고정 문항 사용
+          console.log('[PSF] 승인된 문항이 없어 기본 문항 사용');
+          setShuffledWords(getFixedWords());
+        }
+      } catch (error) {
+        console.error('[PSF] 문항 로딩 오류, 기본 문항 사용:', error);
+        setShuffledWords(getFixedWords());
+      }
+
+      // 미리 마이크 권한 요청 및 MediaRecorder 준비
+      prepareMediaRecorder();
     };
     setup();
   }, [router, supabase.auth]);

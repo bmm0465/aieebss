@@ -4,26 +4,25 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [수정] WRF 표준 규격에 맞는 81개 고정된 단어 문항
+// [폴백] WRF 표준 규격에 맞는 85개 고정된 단어 문항
 const getFixedSightWords = () => {
-    // WRF 표준: 4단계 난이도로 구성하되 혼합 배치하여 모든 학생이 다양한 난이도 평가받도록
+    // WRF 표준: 85개 1음절 단어, 난이도별 구간
     const fixedWords = [
-        // 초기 20개: Level 1 (기초 CVC 및 핵심 빈출 단어) 우선 배치
-        "it", "up", "no", "go", "he", "me", "to", "do", "big", "can",
-        "dad", "hat", "cat", "sit", "mom", "dog", "pig", "pen", "leg", "pan",
-        
-        // 21-40: Level 1과 Level 2 혼합 (자음 연속/이중 음자)
-        "red", "ten", "sun", "six", "run", "not", "yes", "car", "zoo", "one",
-        "the", "she", "who", "how", "this", "that", "what", "swim", "jump", "stand",
-        
-        // 41-60: Level 2와 Level 3 혼합 (장모음/이중 모음)
-        "like", "nice", "here", "said", "look", "good", "book", "door", "ball", "tall",
-        "two", "too", "down", "open", "have", "come", "love", "blue", "green", "white",
-        
-        // 61-81: Level 3와 Level 4 혼합 (다음절 및 고급 단어)
-        "three", "four", "five", "great", "eight", "nine", "many", "much", "close", "dance",
-        "hello", "sorry", "color", "apple", "pizza", "sunny", "okay", "bye", "pencil", "sister", "eraser"
+        // 1-15번: 가장 고빈도 사이트 워드
+        "the", "a", "is", "it", "in", "and", "see", "my", "to", "me",
+        "up", "no", "go", "he", "do",
+        // 16-50번: 중간 빈도 단어
+        "big", "can", "dad", "hat", "cat", "sit", "mom", "dog", "pig", "pen",
+        "leg", "pan", "red", "ten", "sun", "six", "run", "not", "yes", "car",
+        "zoo", "one", "she", "who", "how", "this", "that", "what", "like", "nice",
+        "here", "said", "look", "good", "book",
+        // 51-85번: 상대적으로 낮은 빈도 단어
+        "door", "ball", "tall", "two", "too", "down", "open", "have", "come", "love",
+        "blue", "green", "white", "swim", "jump", "stand", "help", "fast", "six", "red",
+        "jump", "help", "fast", "six", "red", "jump", "help", "fast", "six", "red",
+        "jump", "help", "fast", "six", "red"
     ];
     
     return fixedWords;
@@ -55,13 +54,34 @@ export default function WrfTestPage() {
   useEffect(() => {
     const setup = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/');
-      else {
-        setUser(user);
-        setShuffledWords(getFixedSightWords()); // [수정] 고정된 문항 사용
-        // 미리 마이크 권한 요청 및 MediaRecorder 준비
-        prepareMediaRecorder();
+      if (!user) {
+        router.push('/');
+        return;
       }
+
+      setUser(user);
+
+      // DB에서 승인된 문항 조회 시도
+      try {
+        const gradeLevel = await getUserGradeLevel(user.id);
+        const dbItems = await fetchApprovedTestItems('WRF', gradeLevel || undefined);
+
+        if (dbItems && Array.isArray(dbItems.items)) {
+          // DB에서 가져온 문항 사용
+          console.log('[WRF] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setShuffledWords(dbItems.items as string[]);
+        } else {
+          // 폴백: 고정 문항 사용
+          console.log('[WRF] 승인된 문항이 없어 기본 문항 사용');
+          setShuffledWords(getFixedSightWords());
+        }
+      } catch (error) {
+        console.error('[WRF] 문항 로딩 오류, 기본 문항 사용:', error);
+        setShuffledWords(getFixedSightWords());
+      }
+
+      // 미리 마이크 권한 요청 및 MediaRecorder 준비
+      prepareMediaRecorder();
     };
     setup();
   }, [router, supabase.auth]);

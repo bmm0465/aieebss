@@ -2,10 +2,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { createClient } from '@/lib/supabase/client'; // [수정] 새로운 클라이언트 경로
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
+import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [수정] LNF 표준 규격에 맞는 100개 고정된 알파벳 문항
+// [폴백] LNF 표준 규격에 맞는 100개 고정된 알파벳 문항
 const getFixedAlphabet = () => {
     // LNF 표준: 100개 알파벳, 대소문자 균형, 빈도 반영, 특정 문자 제외 (W, 소문자 l)
     const fixedLetters = [
@@ -50,13 +51,34 @@ export default function LnfTestPage() {
   useEffect(() => {
     const setup = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push('/');
-      else {
-        setUser(user);
-        setShuffledAlphabet(getFixedAlphabet()); // [수정] LNF 표준 100개 고정 문항 사용
-        // 미리 마이크 권한 요청 및 MediaRecorder 준비
-        prepareMediaRecorder();
+      if (!user) {
+        router.push('/');
+        return;
       }
+
+      setUser(user);
+
+      // DB에서 승인된 문항 조회 시도
+      try {
+        const gradeLevel = await getUserGradeLevel(user.id);
+        const dbItems = await fetchApprovedTestItems('LNF', gradeLevel || undefined);
+
+        if (dbItems && Array.isArray(dbItems.items)) {
+          // DB에서 가져온 문항 사용
+          console.log('[LNF] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setShuffledAlphabet(dbItems.items as string[]);
+        } else {
+          // 폴백: 고정 문항 사용
+          console.log('[LNF] 승인된 문항이 없어 기본 문항 사용');
+          setShuffledAlphabet(getFixedAlphabet());
+        }
+      } catch (error) {
+        console.error('[LNF] 문항 로딩 오류, 기본 문항 사용:', error);
+        setShuffledAlphabet(getFixedAlphabet());
+      }
+
+      // 미리 마이크 권한 요청 및 MediaRecorder 준비
+      prepareMediaRecorder();
     };
     setup();
   }, [router, supabase.auth]);
