@@ -83,12 +83,12 @@ export default function GeneratedItemDetailPage({ params }: Props) {
       console.log('[GeneratedItemDetail] API response status:', response.status);
       console.log('[GeneratedItemDetail] API response ok:', response.ok);
 
+      // 인증 체크 제거 - 일단 페이지는 렌더링되도록 함
       if (response.status === 401) {
-        // API에서 인증 실패 시에만 리디렉션
-        console.log('[GeneratedItemDetail] API returned 401 - redirecting to login');
+        console.log('[GeneratedItemDetail] API returned 401 - showing error instead of redirecting');
         const errorData = await response.json().catch(() => ({}));
         console.log('[GeneratedItemDetail] Error details:', errorData);
-        router.push('/');
+        setError(errorData.error || '인증이 필요합니다. 로그인 후 다시 시도해주세요.');
         setLoading(false);
         setRefreshing(false);
         return;
