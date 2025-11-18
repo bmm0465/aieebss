@@ -4,7 +4,7 @@ import { createServiceClient } from '@/lib/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { question, selectedAnswer, correctAnswer, choices, userId, authToken } = body;
+    const { question, selectedAnswer, correctAnswer, userId, authToken } = body;
 
     if (!question || !selectedAnswer || !correctAnswer || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });

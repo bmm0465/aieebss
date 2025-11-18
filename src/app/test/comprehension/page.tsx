@@ -364,7 +364,7 @@ export default function ComprehensionTestPage() {
             <p style={paragraphStyle}>
               짧은 대화나 이야기를 듣거나 읽고, 질문에 맞는 답을 선택해주세요.
               <br />
-              (예: "Tom has a big, blue ball"을 듣고, "What color is the ball?"에 "blue"를 선택)
+              (예: &quot;Tom has a big, blue ball&quot;을 듣고, &quot;What color is the ball?&quot;에 &quot;blue&quot;를 선택)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기

@@ -334,7 +334,7 @@ export default function MeaningTestPage() {
             <p style={paragraphStyle}>
               단어나 문장을 듣거나 읽고, 알맞은 그림을 선택해주세요.
               <br />
-              (예: "a red apple"을 들려주거나 보여주면, 빨간 사과 그림을 선택합니다)
+              (예: &quot;a red apple&quot;을 들려주거나 보여주면, 빨간 사과 그림을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기

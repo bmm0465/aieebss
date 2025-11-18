@@ -311,7 +311,7 @@ export default function StressTestPage() {
             <p style={paragraphStyle}>
               단어를 듣고 올바른 강세 패턴을 선택해주세요.
               <br />
-              (예: "computer"를 들려주면, 강세가 올바르게 표시된 패턴을 선택합니다)
+              (예: &quot;computer&quot;를 들려주면, 강세가 올바르게 표시된 패턴을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기

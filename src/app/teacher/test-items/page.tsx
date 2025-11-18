@@ -292,7 +292,7 @@ Kim: Yes, it is. It is my new pencil.`,
             {testItems.PSF.description} - 총 {testItems.PSF.totalItems}문항
           </p>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.PSF.items.map((item: any, idx: number) => (
+            {testItems.PSF.items.map((item: { word1: string; word2: string; correctAnswer: string }, idx: number) => (
               <div key={idx} style={{
                 backgroundColor: '#f9fafb',
                 padding: '1rem',
@@ -404,7 +404,7 @@ Kim: Yes, it is. It is my new pencil.`,
             {testItems.STRESS.description} - 총 {testItems.STRESS.totalItems}문항
           </p>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.STRESS.items.map((item: any, idx: number) => (
+            {testItems.STRESS.items.map((item: { word: string; choices: string[]; correctAnswer: string }, idx: number) => (
               <div key={idx} style={{
                 backgroundColor: '#f9fafb',
                 padding: '1rem',
@@ -473,7 +473,7 @@ Kim: Yes, it is. It is my new pencil.`,
             {testItems.MEANING.description} - 총 {testItems.MEANING.totalItems}문항
           </p>
           <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.MEANING.items.map((item: any, idx: number) => (
+            {testItems.MEANING.items.map((item: { wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }, idx: number) => (
               <div key={idx} style={{
                 backgroundColor: '#f9fafb',
                 padding: '1rem',

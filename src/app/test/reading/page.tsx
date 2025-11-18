@@ -131,6 +131,75 @@ export default function ReadingTestPage() {
     }
   }, []);
 
+  const goToNextItem = useCallback(() => {
+    let currentItems: string[] = [];
+    if (readingPhase === 'nwf') currentItems = nwfWords;
+    else if (readingPhase === 'wrf') currentItems = wrfWords;
+    else currentItems = orfSentences;
+
+    const nextIndex = currentIndex + 1;
+    if (nextIndex >= currentItems.length) {
+      // 현재 단계 완료, 다음 단계로
+      if (readingPhase === 'nwf') {
+        setReadingPhase('wrf');
+        setCurrentIndex(0);
+        setCurrentItem(wrfWords[0] || '');
+        setFeedback('이제 실제 단어를 읽어주세요.');
+      } else if (readingPhase === 'wrf') {
+        setReadingPhase('orf');
+        setCurrentIndex(0);
+        setCurrentItem(orfSentences[0] || '');
+        setFeedback('이제 문장을 읽어주세요.');
+      } else {
+        setTestPhase('finished');
+      }
+    } else {
+      setCurrentIndex(nextIndex);
+      setCurrentItem(currentItems[nextIndex]);
+      setIsSubmitting(false);
+      setFeedback('');
+    }
+  }, [readingPhase, nwfWords, wrfWords, orfSentences, currentIndex]);
+
+  const submitRecording = useCallback(async (audioBlob: Blob) => {
+    if (!user || !currentItem) {
+      setIsSubmitting(false);
+      return;
+    }
+
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+    if (userError || !authUser) {
+      setFeedback('인증이 필요합니다.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+    formData.append('question', currentItem);
+    formData.append('testType', readingPhase.toUpperCase());
+    formData.append('userId', user.id);
+    formData.append('authToken', authUser.id);
+    
+    try {
+      fetch('/api/submit-reading', { method: 'POST', body: formData })
+        .catch(error => {
+          console.error('Reading 요청 전송 실패:', error);
+        });
+      
+      setFeedback('좋아요! 다음 문제예요.');
+      
+      setTimeout(() => {
+        goToNextItem();
+      }, 500);
+
+    } catch (error) {
+      console.error('Reading 요청 전송 실패:', error);
+      setFeedback('요청 전송 중 오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  }, [user, currentItem, readingPhase, supabase, goToNextItem]);
+
   const startRecording = useCallback(async () => {
     setFeedback('');
     
@@ -181,76 +250,7 @@ export default function ReadingTestPage() {
       console.error('마이크 접근 에러:', err);
       setFeedback('마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.');
     }
-  }, [stopRecording]);
-
-  const submitRecording = async (audioBlob: Blob) => {
-    if (!user || !currentItem) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
-    if (userError || !authUser) {
-      setFeedback('인증이 필요합니다.');
-      setIsSubmitting(false);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('audio', audioBlob);
-    formData.append('question', currentItem);
-    formData.append('testType', readingPhase.toUpperCase());
-    formData.append('userId', user.id);
-    formData.append('authToken', authUser.id);
-    
-    try {
-      fetch('/api/submit-reading', { method: 'POST', body: formData })
-        .catch(error => {
-          console.error('Reading 요청 전송 실패:', error);
-        });
-      
-      setFeedback('좋아요! 다음 문제예요.');
-      
-      setTimeout(() => {
-        goToNextItem();
-      }, 500);
-
-    } catch (error) {
-      console.error('Reading 요청 전송 실패:', error);
-      setFeedback('요청 전송 중 오류가 발생했습니다.');
-      setIsSubmitting(false);
-    }
-  };
-
-  const goToNextItem = () => {
-    let currentItems: string[] = [];
-    if (readingPhase === 'nwf') currentItems = nwfWords;
-    else if (readingPhase === 'wrf') currentItems = wrfWords;
-    else currentItems = orfSentences;
-
-    const nextIndex = currentIndex + 1;
-    if (nextIndex >= currentItems.length) {
-      // 현재 단계 완료, 다음 단계로
-      if (readingPhase === 'nwf') {
-        setReadingPhase('wrf');
-        setCurrentIndex(0);
-        setCurrentItem(wrfWords[0] || '');
-        setFeedback('이제 실제 단어를 읽어주세요.');
-      } else if (readingPhase === 'wrf') {
-        setReadingPhase('orf');
-        setCurrentIndex(0);
-        setCurrentItem(orfSentences[0] || '');
-        setFeedback('이제 문장을 읽어주세요.');
-      } else {
-        setTestPhase('finished');
-      }
-    } else {
-      setCurrentIndex(nextIndex);
-      setCurrentItem(currentItems[nextIndex]);
-      setIsSubmitting(false);
-      setFeedback('');
-    }
-  };
+  }, [stopRecording, submitRecording]);
 
   useEffect(() => {
     if (testPhase === 'testing') {

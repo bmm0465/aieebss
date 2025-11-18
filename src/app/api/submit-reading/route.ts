@@ -6,7 +6,6 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   hasHesitation,
   parseTranscriptionResult,
-  timelineToPrompt,
 } from '@/lib/utils/dibelsTranscription';
 
 const openai = new OpenAI({

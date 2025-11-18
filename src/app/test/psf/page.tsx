@@ -339,7 +339,7 @@ export default function PsfTestPage() {
             <p style={paragraphStyle}>
               두 개의 단어를 들려드립니다. 들려준 단어 중 하나를 선택해주세요.
               <br />
-              (예: "pin"과 "fin"을 들려주면, 들려준 단어를 선택합니다)
+              (예: &quot;pin&quot;과 &quot;fin&quot;을 들려주면, 들려준 단어를 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
