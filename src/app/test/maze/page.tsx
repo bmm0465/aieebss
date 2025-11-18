@@ -206,7 +206,7 @@ export default function MazeTestPage() {
     }
     
     setPhase('finished');
-  }, [user, phase, answers, supabase.auth]);
+  }, [user, phase, answers, supabase.auth, mazePassage]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0) return;
