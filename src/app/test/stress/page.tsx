@@ -386,7 +386,6 @@ export default function StressTestPage() {
 
         {phase === 'testing' && currentItem && (() => {
           const totalSyllables = countSyllables(currentItem.word);
-          const syllables = splitIntoSyllables(currentItem.word, totalSyllables);
           const correctStressPosition = getStressPosition(currentItem.correctAnswer);
           
           return (
