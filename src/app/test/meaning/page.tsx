@@ -191,9 +191,30 @@ export default function MeaningTestPage() {
     const newImageUrls: Record<string, string> = {};
     
     try {
-      // 모든 선택지에 대한 이미지 생성/로드
-      for (const option of item.imageOptions) {
-        if (!imageUrls[option]) {
+      // 이미 캐시된 이미지는 즉시 사용
+      const cachedOptions: string[] = [];
+      const uncachedOptions: string[] = [];
+      
+      item.imageOptions.forEach(option => {
+        if (imageUrls[option]) {
+          cachedOptions.push(option);
+          newImageUrls[option] = imageUrls[option];
+        } else {
+          uncachedOptions.push(option);
+        }
+      });
+      
+      if (cachedOptions.length > 0) {
+        console.log(`[MEANING] 캐시된 이미지 사용: ${cachedOptions.join(', ')}`);
+        // 캐시된 이미지는 즉시 상태 업데이트
+        setImageUrls(prev => ({ ...prev, ...newImageUrls }));
+      }
+      
+      // 캐시되지 않은 이미지들을 병렬로 로드
+      if (uncachedOptions.length > 0) {
+        console.log(`[MEANING] 병렬 이미지 로드 시작: ${uncachedOptions.join(', ')}`);
+        
+        const imagePromises = uncachedOptions.map(async (option) => {
           try {
             const response = await fetch('/api/generate-meaning-image', {
               method: 'POST',
@@ -201,21 +222,19 @@ export default function MeaningTestPage() {
               body: JSON.stringify({ phrase: option }),
             });
             
-            console.log(`[MEANING] 이미지 생성 요청: ${option}`);
             if (response.ok) {
               const data = await response.json();
-              // API 응답에서 error 필드 확인
               if (data.error) {
                 console.error(`[MEANING] 이미지 생성 API 에러 (${option}):`, data.error);
-                // 에러가 있어도 계속 진행 (텍스트로 폴백)
+                return { option, url: null, error: data.error };
               } else if (data.imageUrl) {
-                console.log(`[MEANING] 이미지 생성 성공: ${option}, URL: ${data.imageUrl}`);
-                newImageUrls[option] = data.imageUrl;
+                console.log(`[MEANING] 이미지 생성 성공: ${option}${data.cached ? ' (캐시됨)' : ''}`);
+                return { option, url: data.imageUrl, cached: data.cached };
               } else {
                 console.warn(`[MEANING] 이미지 URL이 응답에 없음: ${option}`, data);
+                return { option, url: null, error: 'URL 없음' };
               }
             } else {
-              // response.json()은 한 번만 호출 가능하므로, text로 읽어서 파싱
               const errorText = await response.text().catch(() => '');
               let errorData = {};
               try {
@@ -224,25 +243,31 @@ export default function MeaningTestPage() {
                 // JSON 파싱 실패 시 빈 객체 사용
               }
               console.error(`[MEANING] 이미지 생성 실패 (${option}):`, response.status, errorData);
+              return { option, url: null, error: `HTTP ${response.status}` };
             }
           } catch (error) {
             console.error(`[MEANING] 이미지 생성 실패 (${option}):`, error);
-            // 네트워크 오류 등 - 계속 진행 (텍스트로 폴백)
+            return { option, url: null, error: String(error) };
           }
-        } else {
-          console.log(`[MEANING] 이미지 캐시 사용: ${option}`);
-          newImageUrls[option] = imageUrls[option];
-        }
+        });
+        
+        // 모든 이미지 로드를 병렬로 실행
+        const results = await Promise.all(imagePromises);
+        
+        // 성공한 이미지들을 상태에 추가
+        results.forEach(({ option, url }) => {
+          if (url) {
+            newImageUrls[option] = url;
+          }
+        });
+        
+        console.log(`[MEANING] 병렬 로드 완료: ${results.filter(r => r.url).length}/${uncachedOptions.length}개 성공`);
       }
       
-      console.log(`[MEANING] 로드된 이미지 URLs:`, newImageUrls);
-      setImageUrls(prev => {
-        const updated = { ...prev, ...newImageUrls };
-        console.log(`[MEANING] 전체 imageUrls 상태:`, updated);
-        return updated;
-      });
+      // 최종 상태 업데이트
+      setImageUrls(prev => ({ ...prev, ...newImageUrls }));
     } catch (error) {
-      console.error('이미지 로드 오류:', error);
+      console.error('[MEANING] 이미지 로드 오류:', error);
     } finally {
       setIsLoadingImages(false);
     }
@@ -269,8 +294,32 @@ export default function MeaningTestPage() {
       if (item) {
         loadImagesForItem(item);
       }
+      
+      // 다음 문항의 이미지도 미리 로드 (사용자 경험 개선)
+      if (itemIndex + 1 < items.length) {
+        const nextItem = items[itemIndex + 1];
+        if (nextItem) {
+          // 백그라운드에서 미리 로드 (상태 업데이트는 하지 않음)
+          nextItem.imageOptions.forEach(option => {
+            if (!imageUrls[option]) {
+              fetch('/api/generate-meaning-image', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phrase: option }),
+              })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.imageUrl) {
+                setImageUrls(prev => ({ ...prev, [option]: data.imageUrl }));
+              }
+            })
+                .catch(err => console.log(`[MEANING] 사전 로드 실패 (${option}):`, err));
+            }
+          });
+        }
+      }
     }
-  }, [phase, items, itemIndex, loadImagesForItem]);
+  }, [phase, items, itemIndex, loadImagesForItem, imageUrls]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;

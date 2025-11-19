@@ -1,0 +1,276 @@
+{
+  "metadata": {
+    "source": "출판사별 단원 어휘 표 (사용자 제공)",
+    "created": "2025-11-11",
+    "description": "LLM이 단원 및 출판사별 어휘 난이도를 참고할 수 있도록 정규화한 데이터",
+    "publishers": {
+      "donga_yoon": "동아출판(윤)",
+      "icecream_park": "아이스크림(박)",
+      "ybm_kim": "YBM(김)",
+      "ybm_choi": "YBM(최)",
+      "chunjae_text_kim": "천재교과서(김)",
+      "chunjae_text_ham": "천재교과서(함)",
+      "chunjae_edu_lee": "천재교육(이)"
+    }
+  },
+  "units": [
+    {
+      "unit": 1,
+      "entries": [
+        {"index": 1, "donga_yoon": "be", "icecream_park": "apple", "ybm_kim": "be", "ybm_choi": "I", "chunjae_text_kim": "be", "chunjae_text_ham": "apple", "chunjae_edu_lee": "alphabet"},
+        {"index": 2, "donga_yoon": "bye", "icecream_park": "ball", "ybm_kim": "everyone", "ybm_choi": "am", "chunjae_text_kim": "bye", "chunjae_text_ham": "ball", "chunjae_edu_lee": "am"},
+        {"index": 3, "donga_yoon": "five", "icecream_park": "be", "ybm_kim": "goodbye", "ybm_choi": "goodbye", "chunjae_text_kim": "hello(hi)", "chunjae_text_ham": "cat", "chunjae_edu_lee": "big"},
+        {"index": 4, "donga_yoon": "four", "icecream_park": "cat", "ybm_kim": "hello", "ybm_choi": "hello", "chunjae_text_kim": "I", "chunjae_text_ham": "dog", "chunjae_edu_lee": "goodbye"},
+        {"index": 5, "donga_yoon": "hello", "icecream_park": "dog", "ybm_kim": "I", "ybm_choi": "hi", "chunjae_text_kim": null, "chunjae_text_ham": "egg", "chunjae_edu_lee": "hello"},
+        {"index": 6, "donga_yoon": "hi", "icecream_park": "goodbye/bye", "ybm_kim": "meet", "ybm_choi": "is", "chunjae_text_kim": null, "chunjae_text_ham": "five", "chunjae_edu_lee": "I"},
+        {"index": 7, "donga_yoon": "I", "icecream_park": "hello", "ybm_kim": "name", "ybm_choi": "name", "chunjae_text_kim": null, "chunjae_text_ham": "game", "chunjae_edu_lee": "meet"},
+        {"index": 8, "donga_yoon": "one", "icecream_park": "hi", "ybm_kim": "nice", "ybm_choi": "thank", "chunjae_text_kim": null, "chunjae_text_ham": "hat", "chunjae_edu_lee": "nice"},
+        {"index": 9, "donga_yoon": "six", "icecream_park": "I", "ybm_kim": "to", "ybm_choi": "you", "chunjae_text_kim": null, "chunjae_text_ham": "hello", "chunjae_edu_lee": "sing"},
+        {"index": 10, "donga_yoon": "thank", "icecream_park": "name", "ybm_kim": "too", "ybm_choi": "everyone", "chunjae_text_kim": null, "chunjae_text_ham": "in", "chunjae_edu_lee": "small"},
+        {"index": 11, "donga_yoon": "three", "icecream_park": "what", "ybm_kim": "what", "ybm_choi": "great", "chunjae_text_kim": null, "chunjae_text_ham": "jump", "chunjae_edu_lee": "to"},
+        {"index": 12, "donga_yoon": "two", "icecream_park": "you", "ybm_kim": "you", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "king", "chunjae_edu_lee": "too"},
+        {"index": 13, "donga_yoon": "you", "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "lion", "chunjae_edu_lee": "you"},
+        {"index": 14, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "monkey", "chunjae_edu_lee": null},
+        {"index": 15, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "nine", "chunjae_edu_lee": null},
+        {"index": 16, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "orange", "chunjae_edu_lee": null},
+        {"index": 17, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "pizza", "chunjae_edu_lee": null},
+        {"index": 18, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "queen", "chunjae_edu_lee": null},
+        {"index": 19, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "ring", "chunjae_edu_lee": null},
+        {"index": 20, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "sit", "chunjae_edu_lee": null},
+        {"index": 21, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "six", "chunjae_edu_lee": null},
+        {"index": 22, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "ten", "chunjae_edu_lee": null},
+        {"index": 23, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "up", "chunjae_edu_lee": null},
+        {"index": 24, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "violin", "chunjae_edu_lee": null},
+        {"index": 25, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "wind", "chunjae_edu_lee": null},
+        {"index": 26, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "yellow", "chunjae_edu_lee": null},
+        {"index": 27, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "zebra", "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 2,
+      "entries": [
+        {"index": 1, "donga_yoon": "a", "icecream_park": "a", "ybm_kim": "close", "ybm_choi": "bag", "chunjae_text_kim": "a", "chunjae_text_ham": "be", "chunjae_edu_lee": "a"},
+        {"index": 2, "donga_yoon": "apple", "icecream_park": "book", "ybm_kim": "door", "ybm_choi": "ball", "chunjae_text_kim": "bag", "chunjae_text_ham": "bye", "chunjae_edu_lee": "apple"},
+        {"index": 3, "donga_yoon": "ball", "icecream_park": "doll", "ybm_kim": "down", "ybm_choi": "car", "chunjae_text_kim": "book", "chunjae_text_ham": "fine", "chunjae_edu_lee": "bag"},
+        {"index": 4, "donga_yoon": "book", "icecream_park": "egg", "ybm_kim": "great", "ybm_choi": "chair", "chunjae_text_kim": "chant", "chunjae_text_ham": "how", "chunjae_edu_lee": "candy"},
+        {"index": 5, "donga_yoon": "cat", "icecream_park": "fish", "ybm_kim": "no", "ybm_choi": "clock", "chunjae_text_kim": "cup", "chunjae_text_ham": "I", "chunjae_edu_lee": "cup"},
+        {"index": 6, "donga_yoon": "dog", "icecream_park": "go", "ybm_kim": "okay", "ybm_choi": "cup", "chunjae_text_kim": "go", "chunjae_text_ham": "you", "chunjae_edu_lee": "doll"},
+        {"index": 7, "donga_yoon": "drone", "icecream_park": "hat", "ybm_kim": "open", "ybm_choi": "doll", "chunjae_text_kim": "hat", "chunjae_text_ham": null, "chunjae_edu_lee": "egg"},
+        {"index": 8, "donga_yoon": "fan", "icecream_park": "it", "ybm_kim": "please", "ybm_choi": "big", "chunjae_text_kim": "it", "chunjae_text_ham": null, "chunjae_edu_lee": "hat"},
+        {"index": 9, "donga_yoon": "great", "icecream_park": "look", "ybm_kim": "sit", "ybm_choi": "small", "chunjae_text_kim": "let", "chunjae_text_ham": null, "chunjae_edu_lee": "it"},
+        {"index": 10, "donga_yoon": "hat", "icecream_park": "map", "ybm_kim": "stand", "ybm_choi": "what", "chunjae_text_kim": "look", "chunjae_text_ham": null, "chunjae_edu_lee": "look"},
+        {"index": 11, "donga_yoon": "it", "icecream_park": "pen", "ybm_kim": "thank", "ybm_choi": "it", "chunjae_text_kim": "pen", "chunjae_text_ham": null, "chunjae_edu_lee": "pen"},
+        {"index": 12, "donga_yoon": "look", "icecream_park": "tape", "ybm_kim": "the", "ybm_choi": "this", "chunjae_text_kim": "pig", "chunjae_text_ham": null, "chunjae_edu_lee": "that"},
+        {"index": 13, "donga_yoon": "nice", "icecream_park": "that", "ybm_kim": "up", "ybm_choi": "that", "chunjae_text_kim": "ready", "chunjae_text_ham": null, "chunjae_edu_lee": "this"},
+        {"index": 14, "donga_yoon": "that", "icecream_park": "this", "ybm_kim": "welcome", "ybm_choi": "pig", "chunjae_text_kim": "robot", "chunjae_text_ham": null, "chunjae_edu_lee": "what"},
+        {"index": 15, "donga_yoon": "this", "icecream_park": null, "ybm_kim": "window", "ybm_choi": "pen", "chunjae_text_kim": "that", "chunjae_text_ham": null, "chunjae_edu_lee": "yes"},
+        {"index": 16, "donga_yoon": "too", "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "this", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 17, "donga_yoon": "what", "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "what", "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 3,
+      "entries": [
+        {"index": 1, "donga_yoon": "bee", "icecream_park": "close", "ybm_kim": "a", "ybm_choi": "close", "chunjae_text_kim": "box", "chunjae_text_ham": "a", "chunjae_edu_lee": "close"},
+        {"index": 2, "donga_yoon": "box", "icecream_park": "come", "ybm_kim": "bag", "ybm_choi": "come", "chunjae_text_kim": "close", "chunjae_text_ham": "bike", "chunjae_edu_lee": "come"},
+        {"index": 3, "donga_yoon": "close", "icecream_park": "door", "ybm_kim": "ball", "ybm_choi": "look", "chunjae_text_kim": "come", "chunjae_text_ham": "cup", "chunjae_edu_lee": "door"},
+        {"index": 4, "donga_yoon": "come", "icecream_park": "down", "ybm_kim": "book", "ybm_choi": "open", "chunjae_text_kim": "door", "chunjae_text_ham": "doll", "chunjae_edu_lee": "down"},
+        {"index": 5, "donga_yoon": "door", "icecream_park": "good", "ybm_kim": "clock", "ybm_choi": "run", "chunjae_text_kim": "down", "chunjae_text_ham": "it", "chunjae_edu_lee": "eye"},
+        {"index": 6, "donga_yoon": "down", "icecream_park": "great", "ybm_kim": "doll", "ybm_choi": "sit", "chunjae_text_kim": "game", "chunjae_text_ham": "look", "chunjae_edu_lee": "five"},
+        {"index": 7, "donga_yoon": "here", "icecream_park": "here", "ybm_kim": "hat", "ybm_choi": "stand", "chunjae_text_kim": "here", "chunjae_text_ham": "nice", "chunjae_edu_lee": "good"},
+        {"index": 8, "donga_yoon": "iguana", "icecream_park": "ink", "ybm_kim": "help", "ybm_choi": "book", "chunjae_text_kim": "okay", "chunjae_text_ham": "robot", "chunjae_edu_lee": "grandma"},
+        {"index": 9, "donga_yoon": "okay", "icecream_park": "jump", "ybm_kim": "it", "ybm_choi": "do", "chunjae_text_kim": "one", "chunjae_text_ham": "that", "chunjae_edu_lee": "great"},
+        {"index": 10, "donga_yoon": "open", "icecream_park": "kite", "ybm_kim": "look", "ybm_choi": "door", "chunjae_text_kim": "open", "chunjae_text_ham": "this", "chunjae_edu_lee": "here"},
+        {"index": 11, "donga_yoon": "please", "icecream_park": "lemon", "ybm_kim": "pencil", "ybm_choi": "down", "chunjae_text_kim": "please", "chunjae_text_ham": "what", "chunjae_edu_lee": "igloo"},
+        {"index": 12, "donga_yoon": "sit", "icecream_park": "okay", "ybm_kim": "that", "ybm_choi": "game", "chunjae_text_kim": "sit", "chunjae_text_ham": "yes", "chunjae_edu_lee": "jump"},
+        {"index": 13, "donga_yoon": "the", "icecream_park": "open", "ybm_kim": "this", "ybm_choi": "good", "chunjae_text_kim": "sorry", "chunjae_text_ham": null, "chunjae_edu_lee": "okay"},
+        {"index": 14, "donga_yoon": "sorry", "icecream_park": "please", "ybm_kim": "violin", "ybm_choi": "here", "chunjae_text_kim": "stand", "chunjae_text_ham": null, "chunjae_edu_lee": "open"},
+        {"index": 15, "donga_yoon": "stand", "icecream_park": "sit", "ybm_kim": null, "ybm_choi": "okay", "chunjae_text_kim": "the", "chunjae_text_ham": null, "chunjae_edu_lee": "please"},
+        {"index": 16, "donga_yoon": "up", "icecream_park": "stand", "ybm_kim": null, "ybm_choi": "please", "chunjae_text_kim": "three", "chunjae_text_ham": null, "chunjae_edu_lee": "sit"},
+        {"index": 17, "donga_yoon": "window", "icecream_park": "the", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "two", "chunjae_text_ham": null, "chunjae_edu_lee": "stand"},
+        {"index": 18, "donga_yoon": null, "icecream_park": "there", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "up", "chunjae_text_ham": null, "chunjae_edu_lee": "the"},
+        {"index": 19, "donga_yoon": null, "icecream_park": null, "ybm_kim": "up", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "up"}
+      ]
+    },
+    {
+      "unit": 4,
+      "entries": [
+        {"index": 1, "donga_yoon": "carrot", "icecream_park": "bird", "ybm_kim": "apple", "ybm_choi": "cat", "chunjae_text_kim": "apple", "chunjae_text_ham": "close", "chunjae_edu_lee": "banana"},
+        {"index": 2, "donga_yoon": "eight", "icecream_park": "do", "ybm_kim": "candy", "ybm_choi": "cow", "chunjae_text_kim": "carrot", "chunjae_text_ham": "come", "chunjae_edu_lee": "bean"},
+        {"index": 3, "donga_yoon": "good", "icecream_park": "duck", "ybm_kim": "chicken", "ybm_choi": "dog", "chunjae_text_kim": "dad", "chunjae_text_ham": "door", "chunjae_edu_lee": "box"},
+        {"index": 4, "donga_yoon": "how", "icecream_park": "horse", "ybm_kim": "cookie", "ybm_choi": "duck", "chunjae_text_kim": "dog", "chunjae_text_ham": "down", "chunjae_edu_lee": "carrot"},
+        {"index": 5, "donga_yoon": "kiwi", "icecream_park": "like", "ybm_kim": "cream", "ybm_choi": "lion", "chunjae_text_kim": "eight", "chunjae_text_ham": "here", "chunjae_edu_lee": "do"},
+        {"index": 6, "donga_yoon": "lemon", "icecream_park": "lion", "ybm_kim": "do", "ybm_choi": "monkey", "chunjae_text_kim": "five", "chunjae_text_ham": "okay", "chunjae_edu_lee": "kiwi"},
+        {"index": 7, "donga_yoon": "many", "icecream_park": "mom", "ybm_kim": "good", "ybm_choi": "pig", "chunjae_text_kim": "four", "chunjae_text_ham": "open", "chunjae_edu_lee": "like"},
+        {"index": 8, "donga_yoon": "nine", "icecream_park": "monkey", "ybm_kim": "ice", "ybm_choi": "rabbit", "chunjae_text_kim": "good", "chunjae_text_ham": "please", "chunjae_edu_lee": "monkey"},
+        {"index": 9, "donga_yoon": "no", "icecream_park": "not", "ybm_kim": "kiwi", "ybm_choi": "zebra", "chunjae_text_kim": "how", "chunjae_text_ham": "stand", "chunjae_edu_lee": "nine"},
+        {"index": 10, "donga_yoon": "orange", "icecream_park": "orange", "ybm_kim": "like", "ybm_choi": "one", "chunjae_text_kim": "lemon", "chunjae_text_ham": "thank", "chunjae_edu_lee": "no"},
+        {"index": 11, "donga_yoon": "potato", "icecream_park": "panda", "ybm_kim": "milk", "ybm_choi": "two", "chunjae_text_kim": "many", "chunjae_text_ham": "the", "chunjae_edu_lee": "not"},
+        {"index": 12, "donga_yoon": "seven", "icecream_park": "pig", "ybm_kim": "not", "ybm_choi": "three", "chunjae_text_kim": "melon", "chunjae_text_ham": "touch", "chunjae_edu_lee": "orange"},
+        {"index": 13, "donga_yoon": "ten", "icecream_park": "tiger", "ybm_kim": "pizza", "ybm_choi": "four", "chunjae_text_kim": "nine", "chunjae_text_ham": null, "chunjae_edu_lee": "tomato"},
+        {"index": 14, "donga_yoon": "tomato", "icecream_park": "yes", "ybm_kim": "salad", "ybm_choi": "five", "chunjae_text_kim": "orange", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 15, "donga_yoon": "welcome", "icecream_park": null, "ybm_kim": "vegetable", "ybm_choi": "many", "chunjae_text_kim": "seven", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 16, "donga_yoon": null, "icecream_park": null, "ybm_kim": "yes", "ybm_choi": "tomato", "chunjae_text_kim": "six", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 17, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": "ten", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 18, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": "tomato", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 5,
+      "entries": [
+        {"index": 1, "donga_yoon": "about", "icecream_park": "banana", "ybm_kim": "big", "ybm_choi": "apple", "chunjae_text_kim": "bread", "chunjae_text_ham": "cow", "chunjae_edu_lee": "cat"},
+        {"index": 2, "donga_yoon": "and", "icecream_park": "carrot", "ybm_kim": "cat", "ybm_choi": "banana", "chunjae_text_kim": "cake", "chunjae_text_ham": "eight", "chunjae_edu_lee": "dog"},
+        {"index": 3, "donga_yoon": "banana", "icecream_park": "five", "ybm_kim": "dog", "ybm_choi": "fig", "chunjae_text_kim": "cheese", "chunjae_text_ham": "four", "chunjae_edu_lee": "eight"},
+        {"index": 4, "donga_yoon": "bread", "icecream_park": "four", "ybm_kim": "how", "ybm_choi": "grapes", "chunjae_text_kim": "chicken", "chunjae_text_ham": "many", "chunjae_edu_lee": "elephant"},
+        {"index": 5, "donga_yoon": "chicken", "icecream_park": "how", "ybm_kim": "kangaroo", "ybm_choi": "orange", "chunjae_text_kim": "do", "chunjae_text_ham": "no", "chunjae_edu_lee": "four"},
+        {"index": 6, "donga_yoon": "chip", "icecream_park": "kiwi", "ybm_kim": "many", "ybm_choi": "tomato", "chunjae_text_kim": "fan", "chunjae_text_ham": "one", "chunjae_edu_lee": "how"},
+        {"index": 7, "donga_yoon": "curry", "icecream_park": "many", "ybm_kim": "one", "ybm_choi": "bread", "chunjae_text_kim": "fish", "chunjae_text_ham": "pig", "chunjae_edu_lee": "many"},
+        {"index": 8, "donga_yoon": "do", "icecream_park": "one", "ybm_kim": "pig", "ybm_choi": "ice cream", "chunjae_text_kim": "like", "chunjae_text_ham": "right", "chunjae_edu_lee": "one"},
+        {"index": 9, "donga_yoon": "fish", "icecream_park": "potato", "ybm_kim": "small", "ybm_choi": "pizza", "chunjae_text_kim": "no", "chunjae_text_ham": "seven", "chunjae_edu_lee": "pig"},
+        {"index": 10, "donga_yoon": "juice", "icecream_park": "queen", "ybm_kim": "tiger", "ybm_choi": "salad", "chunjae_text_kim": "not", "chunjae_text_ham": "three", "chunjae_edu_lee": "queen"},
+        {"index": 11, "donga_yoon": "like", "icecream_park": "run", "ybm_kim": "zebra", "ybm_choi": "soup", "chunjae_text_kim": "pizza", "chunjae_text_ham": "two", "chunjae_edu_lee": "rabbit"},
+        {"index": 12, "donga_yoon": "milk", "icecream_park": "six", "ybm_kim": "zoo", "ybm_choi": "like", "chunjae_text_kim": "salad", "chunjae_text_ham": null, "chunjae_edu_lee": "seven"},
+        {"index": 13, "donga_yoon": "not", "icecream_park": "sun", "ybm_kim": "two", "ybm_choi": "love", "chunjae_text_kim": "steak", "chunjae_text_ham": null, "chunjae_edu_lee": "six"},
+        {"index": 14, "donga_yoon": "pizza", "icecream_park": "thank", "ybm_kim": "three", "ybm_choi": "vase", "chunjae_text_kim": "van", "chunjae_text_ham": null, "chunjae_edu_lee": "ten"},
+        {"index": 15, "donga_yoon": "quiz", "icecream_park": "three", "ybm_kim": "four", "ybm_choi": "violin", "chunjae_text_kim": "vest", "chunjae_text_ham": null, "chunjae_edu_lee": "they"},
+        {"index": 16, "donga_yoon": "salad", "icecream_park": "tomato", "ybm_kim": "five", "ybm_choi": "yes", "chunjae_text_kim": "yes", "chunjae_text_ham": null, "chunjae_edu_lee": "three"},
+        {"index": 17, "donga_yoon": "steak", "icecream_park": "two", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "you", "chunjae_text_ham": null, "chunjae_edu_lee": "two"},
+        {"index": 18, "donga_yoon": "yes", "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 6,
+      "entries": [
+        {"index": 1, "donga_yoon": "at", "icecream_park": "about", "ybm_kim": "bird", "ybm_choi": "catch", "chunjae_text_kim": "and", "chunjae_text_ham": "at", "chunjae_edu_lee": "can"},
+        {"index": 2, "donga_yoon": "block", "icecream_park": "black", "ybm_kim": "can", "ybm_choi": "climb", "chunjae_text_kim": "at", "chunjae_text_ham": "book", "chunjae_edu_lee": "climb"},
+        {"index": 3, "donga_yoon": "blue", "icecream_park": "blue", "ybm_kim": "come", "ybm_choi": "dance", "chunjae_text_kim": "black", "chunjae_text_ham": "brush", "chunjae_edu_lee": "fly"},
+        {"index": 4, "donga_yoon": "color", "icecream_park": "box", "ybm_kim": "dance", "ybm_choi": "fly", "chunjae_text_kim": "blue", "chunjae_text_ham": "do", "chunjae_edu_lee": "mom"},
+        {"index": 5, "donga_yoon": "flower", "icecream_park": "color", "ybm_kim": "fly", "ybm_choi": "jump", "chunjae_text_kim": "color", "chunjae_text_ham": "eraser", "chunjae_edu_lee": "run"},
+        {"index": 6, "donga_yoon": "for", "icecream_park": "green", "ybm_kim": "foot", "ybm_choi": "kick", "chunjae_text_kim": "cool", "chunjae_text_ham": "great", "chunjae_edu_lee": "swim"},
+        {"index": 7, "donga_yoon": "green", "icecream_park": "purple", "ybm_kim": "fun", "ybm_choi": "ski", "chunjae_text_kim": "green", "chunjae_text_ham": "have", "chunjae_edu_lee": "violin"},
+        {"index": 8, "donga_yoon": "now", "icecream_park": "red", "ybm_kim": "here", "ybm_choi": "slide", "chunjae_text_kim": "lion", "chunjae_text_ham": "not", "chunjae_edu_lee": "walk"},
+        {"index": 9, "donga_yoon": "red", "icecream_park": "T-shirt", "ybm_kim": "jump", "ybm_choi": "swim", "chunjae_text_kim": "red", "chunjae_text_ham": "pen", "chunjae_edu_lee": "yellow"},
+        {"index": 10, "donga_yoon": "umbrella", "icecream_park": "violin", "ybm_kim": "run", "ybm_choi": "can", "chunjae_text_kim": "thank", "chunjae_text_ham": "pencil", "chunjae_edu_lee": "zoo"},
+        {"index": 11, "donga_yoon": "violin", "icecream_park": "white", "ybm_kim": "skate", "ybm_choi": "juice", "chunjae_text_kim": "welcome", "chunjae_text_ham": "tape", "chunjae_edu_lee": null},
+        {"index": 12, "donga_yoon": "white", "icecream_park": "wind", "ybm_kim": "swim", "ybm_choi": null, "chunjae_text_kim": "white", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 13, "donga_yoon": "yellow", "icecream_park": "yellow", "ybm_kim": "walk", "ybm_choi": null, "chunjae_text_kim": "yellow", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 14, "donga_yoon": null, "icecream_park": "zoo", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 7,
+      "entries": [
+        {"index": 1, "donga_yoon": "boat", "icecream_park": "can", "ybm_kim": "and", "ybm_choi": "crayon", "chunjae_text_kim": "bear", "chunjae_text_ham": "black", "chunjae_edu_lee": "book"},
+        {"index": 2, "donga_yoon": "crayon", "icecream_park": "climb", "ybm_kim": "at", "ybm_choi": "eraser", "chunjae_text_kim": "big", "chunjae_text_ham": "blue", "chunjae_edu_lee": "camera"},
+        {"index": 3, "donga_yoon": "eraser", "icecream_park": "dance", "ybm_kim": "blue", "ybm_choi": "glue stick", "chunjae_text_kim": "bird", "chunjae_text_ham": "color", "chunjae_edu_lee": "coat"},
+        {"index": 4, "donga_yoon": "have", "icecream_park": "fast", "ybm_kim": "car", "ybm_choi": "notebook", "chunjae_text_kim": "cat", "chunjae_text_ham": "flower", "chunjae_edu_lee": "eraser"},
+        {"index": 5, "donga_yoon": "pen", "icecream_park": "skate", "ybm_kim": "color", "ybm_choi": "pencil", "chunjae_text_kim": "cute", "chunjae_text_ham": "green", "chunjae_edu_lee": "glue"},
+        {"index": 6, "donga_yoon": "pencil", "icecream_park": "ski", "ybm_kim": "flower", "ybm_choi": "pencil case", "chunjae_text_kim": "fox", "chunjae_text_ham": "hand", "chunjae_edu_lee": "have"},
+        {"index": 7, "donga_yoon": "piano", "icecream_park": "so", "ybm_kim": "green", "ybm_choi": "ruler", "chunjae_text_kim": "small", "chunjae_text_ham": "now", "chunjae_edu_lee": "lemon"},
+        {"index": 8, "donga_yoon": "ruler", "icecream_park": "sorry", "ybm_kim": "know", "ybm_choi": "scissors", "chunjae_text_kim": "zebra", "chunjae_text_ham": "pink", "chunjae_edu_lee": "notebook"},
+        {"index": 9, "donga_yoon": "tape", "icecream_park": "swim", "ybm_kim": "now", "ybm_choi": "beautiful", "chunjae_text_kim": "zoo", "chunjae_text_ham": "red", "chunjae_edu_lee": "pencil"},
+        {"index": 10, "donga_yoon": null, "icecream_park": "well", "ybm_kim": "orange", "ybm_choi": "have", "chunjae_text_kim": null, "chunjae_text_ham": "sorry", "chunjae_edu_lee": "scissors"},
+        {"index": 11, "donga_yoon": null, "icecream_park": null, "ybm_kim": "pink", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "use", "chunjae_edu_lee": "stick"},
+        {"index": 12, "donga_yoon": null, "icecream_park": null, "ybm_kim": "pretty", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "wash", "chunjae_edu_lee": "toy"},
+        {"index": 13, "donga_yoon": null, "icecream_park": null, "ybm_kim": "red", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "white", "chunjae_edu_lee": null},
+        {"index": 14, "donga_yoon": null, "icecream_park": null, "ybm_kim": "light", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 15, "donga_yoon": null, "icecream_park": null, "ybm_kim": "yellow", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 8,
+      "entries": [
+        {"index": 1, "donga_yoon": "can", "icecream_park": "cake", "ybm_kim": "any", "ybm_choi": "angry", "chunjae_text_kim": "crayon", "chunjae_text_ham": "and", "chunjae_edu_lee": "go"},
+        {"index": 2, "donga_yoon": "climb", "icecream_park": "eraser", "ybm_kim": "crayon", "ybm_choi": "happy", "chunjae_text_kim": "eraser", "chunjae_text_ham": "banana", "chunjae_edu_lee": "happy"},
+        {"index": 3, "donga_yoon": "dance", "icecream_park": "have", "ybm_kim": "doughnut", "ybm_choi": "hungry", "chunjae_text_kim": "glue stick", "chunjae_text_ham": "carrot", "chunjae_edu_lee": "hungry"},
+        {"index": 4, "donga_yoon": "dive", "icecream_park": "notebook", "ybm_kim": "eraser", "ybm_choi": "sad", "chunjae_text_kim": "have", "chunjae_text_ham": "chicken", "chunjae_edu_lee": "now"},
+        {"index": 5, "donga_yoon": "go", "icecream_park": "pencil", "ybm_kim": "glue", "ybm_choi": "tired", "chunjae_text_kim": "mom", "chunjae_text_ham": "dad", "chunjae_edu_lee": "sad"},
+        {"index": 6, "donga_yoon": "jump", "icecream_park": "ruler", "ybm_kim": "have", "ybm_choi": "six", "chunjae_text_kim": "notebook", "chunjae_text_ham": "good", "chunjae_edu_lee": "sorry"},
+        {"index": 7, "donga_yoon": "sing", "icecream_park": "glue", "ybm_kim": "long", "ybm_choi": "seven", "chunjae_text_kim": "now", "chunjae_text_ham": "juice", "chunjae_edu_lee": "thirsty"},
+        {"index": 8, "donga_yoon": "skate", "icecream_park": null, "ybm_kim": "love", "ybm_choi": "eight", "chunjae_text_kim": "pencil", "chunjae_text_ham": "like", "chunjae_edu_lee": "tired"},
+        {"index": 9, "donga_yoon": "ski", "icecream_park": null, "ybm_kim": "notebook", "ybm_choi": "nine", "chunjae_text_kim": "ruler", "chunjae_text_ham": "potato", "chunjae_edu_lee": "very"},
+        {"index": 10, "donga_yoon": "swim", "icecream_park": null, "ybm_kim": "pen", "ybm_choi": "ten", "chunjae_text_kim": null, "chunjae_text_ham": "tomato", "chunjae_edu_lee": null},
+        {"index": 11, "donga_yoon": "tennis", "icecream_park": null, "ybm_kim": "ruler", "ybm_choi": "birthday", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 12, "donga_yoon": null, "icecream_park": null, "ybm_kim": "scissors", "ybm_choi": "year", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 13, "donga_yoon": null, "icecream_park": null, "ybm_kim": "stick", "ybm_choi": "old", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 14, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": "zoo", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 9,
+      "entries": [
+        {"index": 1, "donga_yoon": "baby", "icecream_park": "bee", "ybm_kim": "birthday", "ybm_choi": "blue", "chunjae_text_kim": "can", "chunjae_text_ham": "big", "chunjae_edu_lee": "bike"},
+        {"index": 2, "donga_yoon": "bear", "icecream_park": "beef", "ybm_kim": "eat", "ybm_choi": "brown", "chunjae_text_kim": "dance", "chunjae_text_ham": "bird", "chunjae_edu_lee": "black"},
+        {"index": 3, "donga_yoon": "big", "icecream_park": "brother", "ybm_kim": "happy", "ybm_choi": "green", "chunjae_text_kim": "hot", "chunjae_text_ham": "cheese", "chunjae_edu_lee": "blue"},
+        {"index": 4, "donga_yoon": "cow", "icecream_park": "cool", "ybm_kim": "in", "ybm_choi": "pink", "chunjae_text_kim": "jam", "chunjae_text_ham": "elephant", "chunjae_edu_lee": "color"},
+        {"index": 5, "donga_yoon": "duck", "icecream_park": "cute", "ybm_kim": "menu", "ybm_choi": "orange", "chunjae_text_kim": "jump", "chunjae_text_ham": "say", "chunjae_edu_lee": "green"},
+        {"index": 6, "donga_yoon": "game", "icecream_park": "dad", "ybm_kim": "old", "ybm_choi": "purple", "chunjae_text_kim": "run", "chunjae_text_ham": "small", "chunjae_edu_lee": "new"},
+        {"index": 7, "donga_yoon": "kangaroo", "icecream_park": "family", "ybm_kim": "play", "ybm_choi": "red", "chunjae_text_kim": "shark", "chunjae_text_ham": "tall", "chunjae_edu_lee": "paint"},
+        {"index": 8, "donga_yoon": "lion", "icecream_park": "he", "ybm_kim": "year", "ybm_choi": "white", "chunjae_text_kim": "sing", "chunjae_text_ham": "too", "chunjae_edu_lee": "pink"},
+        {"index": 9, "donga_yoon": "panda", "icecream_park": "left", "ybm_kim": "six", "ybm_choi": "yellow", "chunjae_text_kim": "skate", "chunjae_text_ham": "tree", "chunjae_edu_lee": "red"},
+        {"index": 10, "donga_yoon": "pig", "icecream_park": "pretty", "ybm_kim": "seven", "ybm_choi": "color", "chunjae_text_kim": "swim", "chunjae_text_ham": "very", "chunjae_edu_lee": "thank"},
+        {"index": 11, "donga_yoon": "small", "icecream_park": "prince", "ybm_kim": "eight", "ybm_choi": "right", "chunjae_text_kim": "ticket", "chunjae_text_ham": null, "chunjae_edu_lee": "tiger"},
+        {"index": 12, "donga_yoon": "tiger", "icecream_park": "she", "ybm_kim": "nine", "ybm_choi": null, "chunjae_text_kim": "too", "chunjae_text_ham": null, "chunjae_edu_lee": "welcome"},
+        {"index": 13, "donga_yoon": "very", "icecream_park": "sister", "ybm_kim": "ten", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "white"},
+        {"index": 14, "donga_yoon": null, "icecream_park": "tall", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 15, "donga_yoon": null, "icecream_park": "who", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 10,
+      "entries": [
+        {"index": 1, "donga_yoon": "brother", "icecream_park": "bike", "ybm_kim": "beautiful", "ybm_choi": "cloudy", "chunjae_text_kim": "brother", "chunjae_text_ham": "can", "chunjae_edu_lee": "brother"},
+        {"index": 2, "donga_yoon": "dad", "icecream_park": "eat", "ybm_kim": "brother", "ybm_choi": "cold", "chunjae_text_kim": "grandpa", "chunjae_text_ham": "dance", "chunjae_edu_lee": "cool"},
+        {"index": 3, "donga_yoon": "grandma", "icecream_park": "fire", "ybm_kim": "dad", "ybm_choi": "hot", "chunjae_text_kim": "grandma", "chunjae_text_ham": "go", "chunjae_edu_lee": "dad"},
+        {"index": 4, "donga_yoon": "grandpa", "icecream_park": "lip", "ybm_kim": "grandfather", "ybm_choi": "raining", "chunjae_text_kim": "he", "chunjae_text_ham": "helmet", "chunjae_edu_lee": "frog"},
+        {"index": 5, "donga_yoon": "he", "icecream_park": "out", "ybm_kim": "grandmother", "ybm_choi": "snowing", "chunjae_text_kim": "king", "chunjae_text_ham": "high", "chunjae_edu_lee": "he"},
+        {"index": 6, "donga_yoon": "kick", "icecream_park": "push", "ybm_kim": "he", "ybm_choi": "sunny", "chunjae_text_kim": "kite", "chunjae_text_ham": "ready", "chunjae_edu_lee": "she"},
+        {"index": 7, "donga_yoon": "macaron", "icecream_park": "talk", "ybm_kim": "mom", "ybm_choi": "windy", "chunjae_text_kim": "queen", "chunjae_text_ham": "run", "chunjae_edu_lee": "sister"},
+        {"index": 8, "donga_yoon": "mom", "icecream_park": "touch", "ybm_kim": "she", "ybm_choi": "hat", "chunjae_text_kim": "quiz", "chunjae_text_ham": "sing", "chunjae_edu_lee": "strong"},
+        {"index": 9, "donga_yoon": "pretty", "icecream_park": "watch", "ybm_kim": "show", "ybm_choi": "snowman", "chunjae_text_kim": "she", "chunjae_text_ham": "skate", "chunjae_edu_lee": "tall"},
+        {"index": 10, "donga_yoon": "she", "icecream_park": null, "ybm_kim": "sister", "ybm_choi": "weather", "chunjae_text_kim": "sister", "chunjae_text_ham": "swim", "chunjae_edu_lee": "who"},
+        {"index": 11, "donga_yoon": "sister", "icecream_park": null, "ybm_kim": "tall", "ybm_choi": "dad", "chunjae_text_kim": "strong", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 12, "donga_yoon": "tall", "icecream_park": null, "ybm_kim": "well", "ybm_choi": "go", "chunjae_text_kim": "tall", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 13, "donga_yoon": "who", "icecream_park": null, "ybm_kim": "who", "ybm_choi": "nice", "chunjae_text_kim": "who", "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 14, "donga_yoon": "zebra", "icecream_park": null, "ybm_kim": null, "ybm_choi": "outside", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null},
+        {"index": 15, "donga_yoon": "zoo", "icecream_park": null, "ybm_kim": null, "ybm_choi": "umbrella", "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 11,
+      "entries": [
+        {"index": 1, "donga_yoon": "cloudy", "icecream_park": "birthday", "ybm_kim": "cloudy", "ybm_choi": null, "chunjae_text_kim": "cap", "chunjae_text_ham": "brother", "chunjae_edu_lee": "cloudy"},
+        {"index": 2, "donga_yoon": "let", "icecream_park": "eight", "ybm_kim": "cold", "ybm_choi": null, "chunjae_text_kim": "cloudy", "chunjae_text_ham": "for", "chunjae_edu_lee": "cold"},
+        {"index": 3, "donga_yoon": "outside", "icecream_park": "fox", "ybm_kim": "go", "ybm_choi": null, "chunjae_text_kim": "cold", "chunjae_text_ham": "grandfather", "chunjae_edu_lee": "let"},
+        {"index": 4, "donga_yoon": "raining", "icecream_park": "happy", "ybm_kim": "hot", "ybm_choi": null, "chunjae_text_kim": "outside", "chunjae_text_ham": "grandmother", "chunjae_edu_lee": "out"},
+        {"index": 5, "donga_yoon": "snowing", "icecream_park": "nine", "ybm_kim": "let", "ybm_choi": null, "chunjae_text_kim": "raining", "chunjae_text_ham": "he", "chunjae_edu_lee": "play"},
+        {"index": 6, "donga_yoon": "snowman", "icecream_park": "nose", "ybm_kim": "outside", "ybm_choi": null, "chunjae_text_kim": "snowing", "chunjae_text_ham": "mom", "chunjae_edu_lee": "raining"},
+        {"index": 7, "donga_yoon": "sunny", "icecream_park": "old", "ybm_kim": "raining", "ybm_choi": null, "chunjae_text_kim": "sunny", "chunjae_text_ham": "pretty", "chunjae_edu_lee": "snowing"},
+        {"index": 8, "donga_yoon": "there", "icecream_park": "seven", "ybm_kim": "see", "ybm_choi": null, "chunjae_text_kim": "there", "chunjae_text_ham": "she", "chunjae_edu_lee": "sunny"},
+        {"index": 9, "donga_yoon": "weather", "icecream_park": "stop", "ybm_kim": "snowing", "ybm_choi": null, "chunjae_text_kim": "umbrella", "chunjae_text_ham": "sister", "chunjae_edu_lee": "there"},
+        {"index": 10, "donga_yoon": "windy", "icecream_park": "ten", "ybm_kim": "sunny", "ybm_choi": null, "chunjae_text_kim": "water", "chunjae_text_ham": "who", "chunjae_edu_lee": "we"},
+        {"index": 11, "donga_yoon": null, "icecream_park": "to", "ybm_kim": "we", "ybm_choi": null, "chunjae_text_kim": "weather", "chunjae_text_ham": null, "chunjae_edu_lee": "weather"},
+        {"index": 12, "donga_yoon": null, "icecream_park": "year", "ybm_kim": "weather", "ybm_choi": null, "chunjae_text_kim": "windy", "chunjae_text_ham": null, "chunjae_edu_lee": "windy"},
+        {"index": 13, "donga_yoon": null, "icecream_park": null, "ybm_kim": "windy", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": null}
+      ]
+    },
+    {
+      "unit": 12,
+      "entries": [
+        {"index": 1, "donga_yoon": null, "icecream_park": null, "ybm_kim": "bus", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "cap"},
+        {"index": 2, "donga_yoon": null, "icecream_park": null, "ybm_kim": "cold", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "cloudy"},
+        {"index": 3, "donga_yoon": null, "icecream_park": null, "ybm_kim": "hot", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "coat"},
+        {"index": 4, "donga_yoon": null, "icecream_park": null, "ybm_kim": "let", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "jacket"},
+        {"index": 5, "donga_yoon": null, "icecream_park": null, "ybm_kim": "outside", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "on"},
+        {"index": 6, "donga_yoon": null, "icecream_park": null, "ybm_kim": "raining", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "put"},
+        {"index": 7, "donga_yoon": null, "icecream_park": null, "ybm_kim": "snowing", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "raining"},
+        {"index": 8, "donga_yoon": null, "icecream_park": null, "ybm_kim": "weather", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "sunny"},
+        {"index": 9, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "snowing"},
+        {"index": 10, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "there"},
+        {"index": 11, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "wake"},
+        {"index": 12, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "weather"}
+      ]
+    }
+  ]
+}
+

@@ -233,6 +233,27 @@ export default async function TeacherDashboard() {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <Link
+                href="/teacher/curriculum-data"
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                  color: '#6366f1',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  border: '1px solid rgba(99, 102, 241, 0.3)',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
+                }}
+              >
+                📚 교육과정 데이터
+              </Link>
               <Link 
                 href="/lobby"
                 style={{
@@ -294,6 +315,23 @@ export default async function TeacherDashboard() {
             className="quick-link"
           >
             🤖 AI 문항 생성기
+          </Link>
+          <Link
+            href="/teacher/curriculum-data"
+            style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: 'white',
+              padding: '1.25rem',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 6px -1px rgba(16, 185, 129, 0.3)'
+            }}
+            className="quick-link"
+          >
+            📚 교육과정 데이터
           </Link>
         </div>
 

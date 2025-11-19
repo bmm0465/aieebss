@@ -1,0 +1,669 @@
+{
+  "metadata": {
+    "source": "출판사별 단원 핵심 표현 표 (사용자 제공)",
+    "created": "2025-11-11",
+    "description": "LLM이 단원 및 출판사별 핵심 표현을 참고할 수 있도록 정규화한 데이터",
+    "publishers": {
+      "donga_yoon": "동아출판(윤)",
+      "icecream_park": "아이스크림(박)",
+      "ybm_kim": "YBM(김)",
+      "ybm_choi": "YBM(최)",
+      "chunjae_text_kim": "천재교과서(김)",
+      "chunjae_text_ham": "천재교과서(함)",
+      "chunjae_edu_lee": "천재교육(이)"
+    }
+  },
+  "units": [
+    {
+      "unit": 1,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "Hi. / Hello.",
+          "icecream_park": "Hi. / Hello.",
+          "ybm_kim": "Hello! / Hi!",
+          "ybm_choi": "Hi. / Hello.",
+          "chunjae_text_kim": "Hi. / Hello.",
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        },
+        {
+          "index": 2,
+          "donga_yoon": "I'm Zico.",
+          "icecream_park": "Goodbye. / Bye.",
+          "ybm_kim": "I'm Siyun.",
+          "ybm_choi": "I'm Leo.",
+          "chunjae_text_kim": "Bye.",
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        },
+        {
+          "index": 3,
+          "donga_yoon": "Thank you.",
+          "icecream_park": "I'm Suho.",
+          "ybm_kim": "Nice to meet you.",
+          "ybm_choi": "My name is Hana.",
+          "chunjae_text_kim": "I'm Coco.",
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        },
+        {
+          "index": 4,
+          "donga_yoon": "Bye.",
+          "icecream_park": "What's your name?",
+          "ybm_kim": "What's your name?",
+          "ybm_choi": "Thank you.",
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        },
+        {
+          "index": 5,
+          "donga_yoon": null,
+          "icecream_park": "My name is Suho.",
+          "ybm_kim": "My name is Yeji.",
+          "ybm_choi": "Goodbye.",
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 2,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "What's this/that?",
+          "icecream_park": "What's this/that?",
+          "ybm_kim": "Sit down, please.",
+          "ybm_choi": "What's this?",
+          "chunjae_text_kim": "What's this/that?",
+          "chunjae_text_ham": "Hi. / Hello.",
+          "chunjae_edu_lee": "What's this/that?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "It's a ball.",
+          "icecream_park": "It's a pen.",
+          "ybm_kim": "Okay.",
+          "ybm_choi": "It's a ball.",
+          "chunjae_text_kim": "It's a bag.",
+          "chunjae_text_ham": "Bye.",
+          "chunjae_edu_lee": "It's a pen."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "It's nice!",
+          "icecream_park": "Look.",
+          "ybm_kim": "Thank you.",
+          "ybm_choi": "It's big.",
+          "chunjae_text_kim": "Look!",
+          "chunjae_text_ham": "I'm Momo.",
+          "chunjae_edu_lee": "Look."
+        },
+        {
+          "index": 4,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": "You're welcome.",
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "How are you?",
+          "chunjae_edu_lee": null
+        },
+        {
+          "index": 5,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "I'm fine."
+        }
+      ]
+    },
+    {
+      "unit": 3,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "Sit down, please.",
+          "icecream_park": "Stand up, please.",
+          "ybm_kim": "What's this/that?",
+          "ybm_choi": "Sit down, please.",
+          "chunjae_text_kim": "Sit down, please.",
+          "chunjae_text_ham": "What's this/that?",
+          "chunjae_edu_lee": "Sit down, please."
+        },
+        {
+          "index": 2,
+          "donga_yoon": "Okay.",
+          "icecream_park": "Okay.",
+          "ybm_kim": "It's a bag.",
+          "ybm_choi": "Okay.",
+          "chunjae_text_kim": "Okay.",
+          "chunjae_text_ham": "It's a bike.",
+          "chunjae_edu_lee": "Okay."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "I'm sorry.",
+          "icecream_park": "Great!",
+          "ybm_kim": "Look!",
+          "ybm_choi": "Don't run, please.",
+          "chunjae_text_kim": "I'm sorry.",
+          "chunjae_text_ham": "It's a robot.",
+          "chunjae_edu_lee": "Great!"
+        },
+        {
+          "index": 4,
+          "donga_yoon": "That's okay.",
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": "That's okay.",
+          "chunjae_text_ham": "Nice!",
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 4,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "How many carrots?",
+          "icecream_park": "Do you like pandas?",
+          "ybm_kim": "Do you like chicken?",
+          "ybm_choi": "How many cows?",
+          "chunjae_text_kim": "How many apples?",
+          "chunjae_text_ham": "Sit down, please.",
+          "chunjae_edu_lee": "Do you like tomatoes?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "Four carrots.",
+          "icecream_park": "Yes, I do.",
+          "ybm_kim": "Yes, I do.",
+          "ybm_choi": "Three cows.",
+          "chunjae_text_kim": "Two apples.",
+          "chunjae_text_ham": "Open the door, please.",
+          "chunjae_edu_lee": "Yes, I do."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "Thank you.",
+          "icecream_park": "No, I don't.",
+          "ybm_kim": "No, I don't.",
+          "ybm_choi": "Look!",
+          "chunjae_text_kim": "Good!",
+          "chunjae_text_ham": "Okay.",
+          "chunjae_edu_lee": "No, I don't."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "You're welcome.",
+          "icecream_park": "I like pandas.",
+          "ybm_kim": "I like pizza.",
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "Thank you.",
+          "chunjae_edu_lee": "I like apples."
+        },
+        {
+          "index": 5,
+          "donga_yoon": null,
+          "icecream_park": "I don't like pandas.",
+          "ybm_kim": "I don't like pizza.",
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "You're welcome.",
+          "chunjae_edu_lee": "I don't like apples."
+        }
+      ]
+    },
+    {
+      "unit": 5,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "Do you like salad?",
+          "icecream_park": "How many apples?",
+          "ybm_kim": "How many tigers?",
+          "ybm_choi": "Do you like apples?",
+          "chunjae_text_kim": "Do you like pizza?",
+          "chunjae_text_ham": "How many cows?",
+          "chunjae_edu_lee": "How many pigs?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "Yes, I do.",
+          "icecream_park": "Three apples.",
+          "ybm_kim": "Three tigers.",
+          "ybm_choi": "Yes, I do.",
+          "chunjae_text_kim": "Yes, I do.",
+          "chunjae_text_ham": "Two cows.",
+          "chunjae_edu_lee": "Five pigs."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "No, I don't.",
+          "icecream_park": "Thank you.",
+          "ybm_kim": "It's big.",
+          "ybm_choi": "No, I don't.",
+          "chunjae_text_kim": "No, I don't.",
+          "chunjae_text_ham": "That's right.",
+          "chunjae_edu_lee": "They're big."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "I like salad.",
+          "icecream_park": null,
+          "ybm_kim": "It's small.",
+          "ybm_choi": "I like oranges.",
+          "chunjae_text_kim": "I like pizza.",
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        },
+        {
+          "index": 5,
+          "donga_yoon": "I don't like salad.",
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": "I don't like pizza.",
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 6,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "What color is it?",
+          "icecream_park": "What color is it?",
+          "ybm_kim": "Can you swim?",
+          "ybm_choi": "Can you swim?",
+          "chunjae_text_kim": "What color is it?",
+          "chunjae_text_ham": "Do you have a pencil?",
+          "chunjae_edu_lee": "Can you jump?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "It's green.",
+          "icecream_park": "It's red.",
+          "ybm_kim": "Yes, I can.",
+          "ybm_choi": "Yes, I can.",
+          "chunjae_text_kim": "It's red.",
+          "chunjae_text_ham": "Yes, I do.",
+          "chunjae_edu_lee": "Yes, I can."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "Look at the flower.",
+          "icecream_park": "How about you?",
+          "ybm_kim": "No, I can't.",
+          "ybm_choi": "You can do it.",
+          "chunjae_text_kim": "Thank you.",
+          "chunjae_text_ham": "No, I don't.",
+          "chunjae_edu_lee": "No, I can't."
+        },
+        {
+          "index": 4,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": "I can swim.",
+          "ybm_choi": null,
+          "chunjae_text_kim": "You're welcome.",
+          "chunjae_text_ham": "I have a brush.",
+          "chunjae_edu_lee": "I can jump."
+        },
+        {
+          "index": 5,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": "I can't swim.",
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "I don't have a brush.",
+          "chunjae_edu_lee": "I can't jump."
+        },
+        {
+          "index": 6,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "You can do it!"
+        }
+      ]
+    },
+    {
+      "unit": 7,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "Do you have a pencil?",
+          "icecream_park": "Can you swim?",
+          "ybm_kim": "What color is it?",
+          "ybm_choi": "Do you have a pencil?",
+          "chunjae_text_kim": "Is it a dog?",
+          "chunjae_text_ham": "What color is it?",
+          "chunjae_edu_lee": "Do you have a pencil?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "Yes, I do.",
+          "icecream_park": "Yes, I can.",
+          "ybm_kim": "It's green.",
+          "ybm_choi": "Yes, I do.",
+          "chunjae_text_kim": "Yes, it is.",
+          "chunjae_text_ham": "It's pink.",
+          "chunjae_edu_lee": "Yes, I do."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "No, I don't.",
+          "icecream_park": "No, I can't.",
+          "ybm_kim": "I don't know.",
+          "ybm_choi": "No, I don't.",
+          "chunjae_text_kim": "No, it isn't.",
+          "chunjae_text_ham": "I'm sorry.",
+          "chunjae_edu_lee": "No, I don't."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "I have a pencil.",
+          "icecream_park": "I can swim.",
+          "ybm_kim": null,
+          "ybm_choi": "I have a pencil.",
+          "chunjae_text_kim": "It's big.",
+          "chunjae_text_ham": "That's okay.",
+          "chunjae_edu_lee": "I have a pencil."
+        },
+        {
+          "index": 5,
+          "donga_yoon": "I don't have a pencil.",
+          "icecream_park": "I can't swim.",
+          "ybm_kim": null,
+          "ybm_choi": "I don't have a pencil.",
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "I don't have a pencil."
+        },
+        {
+          "index": 6,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "Here you are.",
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 8,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "Can you swim?",
+          "icecream_park": "Do you have a pencil?",
+          "ybm_kim": "Do you have a ruler?",
+          "ybm_choi": "I'm happy.",
+          "chunjae_text_kim": "Do you have a pencil?",
+          "chunjae_text_ham": "Do you like apples?",
+          "chunjae_edu_lee": "Are you happy?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "Yes, I can.",
+          "icecream_park": "Yes, I do.",
+          "ybm_kim": "Yes, I do.",
+          "ybm_choi": "How old are you?",
+          "chunjae_text_kim": "Yes, I do.",
+          "chunjae_text_ham": "Yes, I do.",
+          "chunjae_edu_lee": "Yes, I am."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "No, I can't.",
+          "icecream_park": "No, I don't.",
+          "ybm_kim": "No, I don't.",
+          "ybm_choi": "I'm ten years old.",
+          "chunjae_text_kim": "No, I don't.",
+          "chunjae_text_ham": "No, I don't.",
+          "chunjae_edu_lee": "No, I'm not."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "I can swim.",
+          "icecream_park": "I have a pencil.",
+          "ybm_kim": "Here you are.",
+          "ybm_choi": null,
+          "chunjae_text_kim": "I have a ruler.",
+          "chunjae_text_ham": "I like chicken.",
+          "chunjae_edu_lee": "I'm happy."
+        },
+        {
+          "index": 5,
+          "donga_yoon": "I can't swim.",
+          "icecream_park": "I don't have a pencil.",
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": "I don't have a ruler.",
+          "chunjae_text_ham": "I don't like carrots.",
+          "chunjae_edu_lee": "I'm sorry."
+        },
+        {
+          "index": 6,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "That's okay.",
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 9,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "It's big.",
+          "icecream_park": "Who is he?",
+          "ybm_kim": "How old are you?",
+          "ybm_choi": "What color is it?",
+          "chunjae_text_kim": "Can you run?",
+          "chunjae_text_ham": "It's big.",
+          "chunjae_edu_lee": "What color is it?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "Is it a bear?",
+          "icecream_park": "He's my dad.",
+          "ybm_kim": "I'm nine years old.",
+          "ybm_choi": "It's red.",
+          "chunjae_text_kim": "Yes, I can.",
+          "chunjae_text_ham": "Is it a bird?",
+          "chunjae_edu_lee": "It's red."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "Yes, it is.",
+          "icecream_park": "He's tall.",
+          "ybm_kim": "Happy birthday!",
+          "ybm_choi": "That's right.",
+          "chunjae_text_kim": "No, I can't.",
+          "chunjae_text_ham": "Yes, it is.",
+          "chunjae_edu_lee": "Thank you."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "No, it isn't.",
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": "I can run.",
+          "chunjae_text_ham": "No, it isn't.",
+          "chunjae_edu_lee": "You're welcome."
+        },
+        {
+          "index": 5,
+          "donga_yoon": null,
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": "I can't run.",
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 10,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "Who is he/she?",
+          "icecream_park": "Don't run, please.",
+          "ybm_kim": "Who is he/she?",
+          "ybm_choi": "How's the weather?",
+          "chunjae_text_kim": "Who is he/she?",
+          "chunjae_text_ham": "Can you swim?",
+          "chunjae_edu_lee": "Who is he/she?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "He's my dad.",
+          "icecream_park": "Okay.",
+          "ybm_kim": "He's my dad.",
+          "ybm_choi": "It's raining.",
+          "chunjae_text_kim": "He's my dad.",
+          "chunjae_text_ham": "Yes, I can.",
+          "chunjae_edu_lee": "He's my dad."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "She's my mom.",
+          "icecream_park": "Sorry.",
+          "ybm_kim": "She's my mom.",
+          "ybm_choi": "Let's go outside.",
+          "chunjae_text_kim": "She's my mom.",
+          "chunjae_text_ham": "No, I can't.",
+          "chunjae_edu_lee": "She's my mom."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "He's tall.",
+          "icecream_park": "Watch out!",
+          "ybm_kim": "Well done!",
+          "ybm_choi": "Okay.",
+          "chunjae_text_kim": "He's tall.",
+          "chunjae_text_ham": "I can dance.",
+          "chunjae_edu_lee": "He's tall."
+        },
+        {
+          "index": 5,
+          "donga_yoon": "She's tall.",
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": "She's tall.",
+          "chunjae_text_ham": "I can't skate.",
+          "chunjae_edu_lee": "She's tall."
+        }
+      ]
+    },
+    {
+      "unit": 11,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": "How's the weather?",
+          "icecream_park": "How old are you?",
+          "ybm_kim": "How's the weather?",
+          "ybm_choi": null,
+          "chunjae_text_kim": "How's the weather?",
+          "chunjae_text_ham": "Who is he?",
+          "chunjae_edu_lee": "How's the weather?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": "It's sunny.",
+          "icecream_park": "I'm nine years old.",
+          "ybm_kim": "It's sunny.",
+          "ybm_choi": null,
+          "chunjae_text_kim": "It's sunny.",
+          "chunjae_text_ham": "He's my dad.",
+          "chunjae_edu_lee": "It's snowing."
+        },
+        {
+          "index": 3,
+          "donga_yoon": "Let's go outside.",
+          "icecream_park": "Happy birthday!",
+          "ybm_kim": "Let's go outside.",
+          "ybm_choi": null,
+          "chunjae_text_kim": "Let's go outside.",
+          "chunjae_text_ham": "He's tall.",
+          "chunjae_edu_lee": "Let's play outside."
+        },
+        {
+          "index": 4,
+          "donga_yoon": "Okay.",
+          "icecream_park": null,
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": "She's pretty.",
+          "chunjae_edu_lee": null
+        }
+      ]
+    },
+    {
+      "unit": 12,
+      "entries": [
+        {
+          "index": 1,
+          "donga_yoon": null,
+          "icecream_park": "How's the weather?",
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "How's the weather?"
+        },
+        {
+          "index": 2,
+          "donga_yoon": null,
+          "icecream_park": "It's sunny.",
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "It's snowing."
+        },
+        {
+          "index": 3,
+          "donga_yoon": null,
+          "icecream_park": "Let's go outside.",
+          "ybm_kim": null,
+          "ybm_choi": null,
+          "chunjae_text_kim": null,
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "Put on your coat."
+        }
+      ]
+    }
+  ]
+}
+
