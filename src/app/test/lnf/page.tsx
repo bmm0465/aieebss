@@ -250,7 +250,7 @@ export default function LnfTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 1) {
       setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
     }
   }, [timeLeft, phase]);

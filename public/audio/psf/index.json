@@ -1,442 +1,150 @@
 [
   {
-    "word": "go",
-    "file": "/audio/psf/go.mp3"
-  },
-  {
-    "word": "on",
-    "file": "/audio/psf/on.mp3"
-  },
-  {
-    "word": "at",
-    "file": "/audio/psf/at.mp3"
-  },
-  {
-    "word": "up",
-    "file": "/audio/psf/up.mp3"
-  },
-  {
-    "word": "be",
-    "file": "/audio/psf/be.mp3"
-  },
-  {
-    "word": "it",
-    "file": "/audio/psf/it.mp3"
-  },
-  {
-    "word": "so",
-    "file": "/audio/psf/so.mp3"
-  },
-  {
-    "word": "in",
-    "file": "/audio/psf/in.mp3"
-  },
-  {
-    "word": "to",
-    "file": "/audio/psf/to.mp3"
-  },
-  {
-    "word": "an",
-    "file": "/audio/psf/an.mp3"
-  },
-  {
-    "word": "dad",
-    "file": "/audio/psf/dad.mp3"
-  },
-  {
-    "word": "sit",
-    "file": "/audio/psf/sit.mp3"
-  },
-  {
-    "word": "map",
-    "file": "/audio/psf/map.mp3"
-  },
-  {
-    "word": "cup",
-    "file": "/audio/psf/cup.mp3"
-  },
-  {
-    "word": "top",
-    "file": "/audio/psf/top.mp3"
-  },
-  {
-    "word": "pen",
-    "file": "/audio/psf/pen.mp3"
-  },
-  {
-    "word": "cat",
-    "file": "/audio/psf/cat.mp3"
-  },
-  {
-    "word": "dog",
-    "file": "/audio/psf/dog.mp3"
-  },
-  {
-    "word": "get",
-    "file": "/audio/psf/get.mp3"
-  },
-  {
-    "word": "hot",
-    "file": "/audio/psf/hot.mp3"
-  },
-  {
-    "word": "mad",
-    "file": "/audio/psf/mad.mp3"
-  },
-  {
-    "word": "van",
-    "file": "/audio/psf/van.mp3"
-  },
-  {
-    "word": "pin",
+    "original": "pin",
     "file": "/audio/psf/pin.mp3"
   },
   {
-    "word": "son",
-    "file": "/audio/psf/son.mp3"
-  },
-  {
-    "word": "rug",
-    "file": "/audio/psf/rug.mp3"
-  },
-  {
-    "word": "hit",
-    "file": "/audio/psf/hit.mp3"
-  },
-  {
-    "word": "nut",
-    "file": "/audio/psf/nut.mp3"
-  },
-  {
-    "word": "box",
-    "file": "/audio/psf/box.mp3"
-  },
-  {
-    "word": "bat",
-    "file": "/audio/psf/bat.mp3"
-  },
-  {
-    "word": "bug",
-    "file": "/audio/psf/bug.mp3"
-  },
-  {
-    "word": "win",
-    "file": "/audio/psf/win.mp3"
-  },
-  {
-    "word": "web",
-    "file": "/audio/psf/web.mp3"
-  },
-  {
-    "word": "mug",
-    "file": "/audio/psf/mug.mp3"
-  },
-  {
-    "word": "man",
-    "file": "/audio/psf/man.mp3"
-  },
-  {
-    "word": "pig",
-    "file": "/audio/psf/pig.mp3"
-  },
-  {
-    "word": "dig",
-    "file": "/audio/psf/dig.mp3"
-  },
-  {
-    "word": "pot",
-    "file": "/audio/psf/pot.mp3"
-  },
-  {
-    "word": "bed",
-    "file": "/audio/psf/bed.mp3"
-  },
-  {
-    "word": "mom",
-    "file": "/audio/psf/mom.mp3"
-  },
-  {
-    "word": "fan",
-    "file": "/audio/psf/fan.mp3"
-  },
-  {
-    "word": "wig",
-    "file": "/audio/psf/wig.mp3"
-  },
-  {
-    "word": "car",
-    "file": "/audio/psf/car.mp3"
-  },
-  {
-    "word": "fog",
-    "file": "/audio/psf/fog.mp3"
-  },
-  {
-    "word": "leg",
-    "file": "/audio/psf/leg.mp3"
-  },
-  {
-    "word": "ten",
-    "file": "/audio/psf/ten.mp3"
-  },
-  {
-    "word": "hen",
-    "file": "/audio/psf/hen.mp3"
-  },
-  {
-    "word": "jog",
-    "file": "/audio/psf/jog.mp3"
-  },
-  {
-    "word": "kid",
-    "file": "/audio/psf/kid.mp3"
-  },
-  {
-    "word": "fit",
-    "file": "/audio/psf/fit.mp3"
-  },
-  {
-    "word": "but",
-    "file": "/audio/psf/but.mp3"
-  },
-  {
-    "word": "red",
-    "file": "/audio/psf/red.mp3"
-  },
-  {
-    "word": "sun",
-    "file": "/audio/psf/sun.mp3"
-  },
-  {
-    "word": "jam",
-    "file": "/audio/psf/jam.mp3"
-  },
-  {
-    "word": "mud",
-    "file": "/audio/psf/mud.mp3"
-  },
-  {
-    "word": "hug",
-    "file": "/audio/psf/hug.mp3"
-  },
-  {
-    "word": "run",
-    "file": "/audio/psf/run.mp3"
-  },
-  {
-    "word": "cut",
-    "file": "/audio/psf/cut.mp3"
-  },
-  {
-    "word": "not",
-    "file": "/audio/psf/not.mp3"
-  },
-  {
-    "word": "tap",
-    "file": "/audio/psf/tap.mp3"
-  },
-  {
-    "word": "pet",
-    "file": "/audio/psf/pet.mp3"
-  },
-  {
-    "word": "bell",
-    "file": "/audio/psf/bell.mp3"
-  },
-  {
-    "word": "stop",
-    "file": "/audio/psf/stop.mp3"
-  },
-  {
-    "word": "plan",
-    "file": "/audio/psf/plan.mp3"
-  },
-  {
-    "word": "hand",
-    "file": "/audio/psf/hand.mp3"
-  },
-  {
-    "word": "gift",
-    "file": "/audio/psf/gift.mp3"
-  },
-  {
-    "word": "star",
-    "file": "/audio/psf/star.mp3"
-  },
-  {
-    "word": "belt",
-    "file": "/audio/psf/belt.mp3"
-  },
-  {
-    "word": "doll",
-    "file": "/audio/psf/doll.mp3"
-  },
-  {
-    "word": "gold",
-    "file": "/audio/psf/gold.mp3"
-  },
-  {
-    "word": "sand",
-    "file": "/audio/psf/sand.mp3"
-  },
-  {
-    "word": "dot",
-    "file": "/audio/psf/dot.mp3"
-  },
-  {
-    "word": "big",
-    "file": "/audio/psf/big.mp3"
-  },
-  {
-    "word": "sip",
-    "file": "/audio/psf/sip.mp3"
-  },
-  {
-    "word": "mop",
-    "file": "/audio/psf/mop.mp3"
-  },
-  {
-    "word": "lid",
-    "file": "/audio/psf/lid.mp3"
-  },
-  {
-    "word": "lip",
-    "file": "/audio/psf/lip.mp3"
-  },
-  {
-    "word": "fin",
+    "original": "fin",
     "file": "/audio/psf/fin.mp3"
   },
   {
-    "word": "kit",
-    "file": "/audio/psf/kit.mp3"
+    "original": "bat",
+    "file": "/audio/psf/bat.mp3"
   },
   {
-    "word": "had",
-    "file": "/audio/psf/had.mp3"
+    "original": "pat",
+    "file": "/audio/psf/pat.mp3"
   },
   {
-    "word": "can",
-    "file": "/audio/psf/can.mp3"
+    "original": "cat",
+    "file": "/audio/psf/cat.mp3"
   },
   {
-    "word": "zoo",
-    "file": "/audio/psf/zoo.mp3"
-  },
-  {
-    "word": "hop",
-    "file": "/audio/psf/hop.mp3"
-  },
-  {
-    "word": "hat",
+    "original": "hat",
     "file": "/audio/psf/hat.mp3"
   },
   {
-    "word": "six",
+    "original": "dog",
+    "file": "/audio/psf/dog.mp3"
+  },
+  {
+    "original": "log",
+    "file": "/audio/psf/log.mp3"
+  },
+  {
+    "original": "sun",
+    "file": "/audio/psf/sun.mp3"
+  },
+  {
+    "original": "fun",
+    "file": "/audio/psf/fun.mp3"
+  },
+  {
+    "original": "bed",
+    "file": "/audio/psf/bed.mp3"
+  },
+  {
+    "original": "red",
+    "file": "/audio/psf/red.mp3"
+  },
+  {
+    "original": "cup",
+    "file": "/audio/psf/cup.mp3"
+  },
+  {
+    "original": "pup",
+    "file": "/audio/psf/pup.mp3"
+  },
+  {
+    "original": "map",
+    "file": "/audio/psf/map.mp3"
+  },
+  {
+    "original": "cap",
+    "file": "/audio/psf/cap.mp3"
+  },
+  {
+    "original": "sit",
+    "file": "/audio/psf/sit.mp3"
+  },
+  {
+    "original": "hit",
+    "file": "/audio/psf/hit.mp3"
+  },
+  {
+    "original": "pen",
+    "file": "/audio/psf/pen.mp3"
+  },
+  {
+    "original": "hen",
+    "file": "/audio/psf/hen.mp3"
+  },
+  {
+    "original": "big",
+    "file": "/audio/psf/big.mp3"
+  },
+  {
+    "original": "pig",
+    "file": "/audio/psf/pig.mp3"
+  },
+  {
+    "original": "top",
+    "file": "/audio/psf/top.mp3"
+  },
+  {
+    "original": "pop",
+    "file": "/audio/psf/pop.mp3"
+  },
+  {
+    "original": "run",
+    "file": "/audio/psf/run.mp3"
+  },
+  {
+    "original": "leg",
+    "file": "/audio/psf/leg.mp3"
+  },
+  {
+    "original": "peg",
+    "file": "/audio/psf/peg.mp3"
+  },
+  {
+    "original": "mug",
+    "file": "/audio/psf/mug.mp3"
+  },
+  {
+    "original": "bug",
+    "file": "/audio/psf/bug.mp3"
+  },
+  {
+    "original": "fan",
+    "file": "/audio/psf/fan.mp3"
+  },
+  {
+    "original": "van",
+    "file": "/audio/psf/van.mp3"
+  },
+  {
+    "original": "ten",
+    "file": "/audio/psf/ten.mp3"
+  },
+  {
+    "original": "box",
+    "file": "/audio/psf/box.mp3"
+  },
+  {
+    "original": "fox",
+    "file": "/audio/psf/fox.mp3"
+  },
+  {
+    "original": "six",
     "file": "/audio/psf/six.mp3"
   },
   {
-    "word": "rock",
-    "file": "/audio/psf/rock.mp3"
+    "original": "web",
+    "file": "/audio/psf/web.mp3"
   },
   {
-    "word": "road",
-    "file": "/audio/psf/road.mp3"
-  },
-  {
-    "word": "pan",
-    "file": "/audio/psf/pan.mp3"
-  },
-  {
-    "word": "jet",
-    "file": "/audio/psf/jet.mp3"
-  },
-  {
-    "word": "bib",
-    "file": "/audio/psf/bib.mp3"
-  },
-  {
-    "word": "ship",
-    "file": "/audio/psf/ship.mp3"
-  },
-  {
-    "word": "desk",
-    "file": "/audio/psf/desk.mp3"
-  },
-  {
-    "word": "ski",
-    "file": "/audio/psf/ski.mp3"
-  },
-  {
-    "word": "pull",
-    "file": "/audio/psf/pull.mp3"
-  },
-  {
-    "word": "toad",
-    "file": "/audio/psf/toad.mp3"
-  },
-  {
-    "word": "cold",
-    "file": "/audio/psf/cold.mp3"
-  },
-  {
-    "word": "crab",
-    "file": "/audio/psf/crab.mp3"
-  },
-  {
-    "word": "lamp",
-    "file": "/audio/psf/lamp.mp3"
-  },
-  {
-    "word": "drum",
-    "file": "/audio/psf/drum.mp3"
-  },
-  {
-    "word": "nest",
-    "file": "/audio/psf/nest.mp3"
-  },
-  {
-    "word": "tent",
-    "file": "/audio/psf/tent.mp3"
-  },
-  {
-    "word": "milk",
-    "file": "/audio/psf/milk.mp3"
-  },
-  {
-    "word": "pond",
-    "file": "/audio/psf/pond.mp3"
-  },
-  {
-    "word": "coin",
-    "file": "/audio/psf/coin.mp3"
-  },
-  {
-    "word": "deep",
-    "file": "/audio/psf/deep.mp3"
-  },
-  {
-    "word": "moon",
-    "file": "/audio/psf/moon.mp3"
-  },
-  {
-    "word": "heel",
-    "file": "/audio/psf/heel.mp3"
-  },
-  {
-    "word": "frog",
-    "file": "/audio/psf/frog.mp3"
-  },
-  {
-    "word": "camp",
-    "file": "/audio/psf/camp.mp3"
-  },
-  {
-    "word": "farm",
-    "file": "/audio/psf/farm.mp3"
-  },
-  {
-    "word": "star",
-    "file": "/audio/psf/star.mp3"
+    "original": "deb",
+    "file": "/audio/psf/deb.mp3"
   }
 ]

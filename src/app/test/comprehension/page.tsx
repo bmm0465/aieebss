@@ -14,8 +14,24 @@ interface ComprehensionOption {
 interface ComprehensionItem {
   dialogueOrStory: string;
   question: string;
+  questionKr?: string; // 한국어 질문 (선택적)
   options: ComprehensionOption[];
   correctAnswer: string;
+}
+
+// 영어 질문을 한국어로 번역하는 간단한 매핑
+const questionTranslations: Record<string, string> = {
+  'What does Tom have?': 'Tom은 무엇을 가지고 있나요?',
+  'What color is the ball?': '공은 무슨 색인가요?',
+  'What color is the cat?': '고양이는 무슨 색인가요?',
+  'How big is the dog?': '강아지는 얼마나 큰가요?',
+  'What does he have?': '그는 무엇을 가지고 있나요?',
+  'What color is it?': '그것은 무슨 색인가요?',
+  'How big is it?': '그것은 얼마나 큰가요?',
+};
+
+function translateQuestion(question: string): string {
+  return questionTranslations[question] || question;
 }
 
 // [폴백] COMPREHENSION 고정 문항
@@ -24,6 +40,7 @@ const getFixedComprehensionItems = (): ComprehensionItem[] => {
     {
       dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
       question: 'What does Tom have?',
+      questionKr: 'Tom은 무엇을 가지고 있나요?',
       options: [
         { type: 'word' as const, content: 'blue ball' },
         { type: 'word' as const, content: 'red car' },
@@ -34,6 +51,7 @@ const getFixedComprehensionItems = (): ComprehensionItem[] => {
     {
       dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
       question: 'What color is the ball?',
+      questionKr: '공은 무슨 색인가요?',
       options: [
         { type: 'word' as const, content: 'blue' },
         { type: 'word' as const, content: 'red' },
@@ -44,6 +62,7 @@ const getFixedComprehensionItems = (): ComprehensionItem[] => {
     {
       dialogueOrStory: 'I see a cat. It is small and white.',
       question: 'What color is the cat?',
+      questionKr: '고양이는 무슨 색인가요?',
       options: [
         { type: 'word' as const, content: 'white' },
         { type: 'word' as const, content: 'black' },
@@ -54,6 +73,7 @@ const getFixedComprehensionItems = (): ComprehensionItem[] => {
     {
       dialogueOrStory: 'Look at the dog. It is big and brown.',
       question: 'How big is the dog?',
+      questionKr: '강아지는 얼마나 큰가요?',
       options: [
         { type: 'word' as const, content: 'big' },
         { type: 'word' as const, content: 'small' },
@@ -111,27 +131,45 @@ export default function ComprehensionTestPage() {
   const playStoryAudio = useCallback(async (story: string) => {
     setIsAudioLoading(true);
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: story }),
-      });
-      if (!response.ok) {
-        throw new Error('음성 생성 실패');
-      }
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // 사전 생성된 오디오 파일 사용 시도
+      const safeFileName = story.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
+      const audioPath = `/audio/comprehension/${safeFileName}.mp3`;
+      const audio = new Audio(audioPath);
+      
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
           resolve();
         };
-        audio.onerror = reject;
+        audio.onerror = () => {
+          // 파일이 없으면 TTS API 사용 (폴백)
+          fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: story }),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('음성 생성 실패');
+              return response.blob();
+            })
+            .then(audioBlob => {
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const fallbackAudio = new Audio(audioUrl);
+              return new Promise<void>((resolveFallback, rejectFallback) => {
+                fallbackAudio.onended = () => {
+                  URL.revokeObjectURL(audioUrl);
+                  resolveFallback();
+                };
+                fallbackAudio.onerror = rejectFallback;
+                fallbackAudio.play();
+              });
+            })
+            .then(() => resolve())
+            .catch(reject);
+        };
         audio.play();
       });
     } catch (error) {
-      console.error('TTS API 에러:', error);
+      console.error('오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
     } finally {
       setIsAudioLoading(false);
@@ -218,7 +256,7 @@ export default function ComprehensionTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 1) {
       setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
     }
   }, [timeLeft, phase]);
@@ -348,7 +386,7 @@ export default function ComprehensionTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>8교시: 주요 정보 파악</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 고대 전설 이해 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -403,7 +441,9 @@ export default function ComprehensionTestPage() {
               </button>
             </div>
             {showText && <div style={storyDisplayStyle}>{currentItem.dialogueOrStory}</div>}
-            <div style={questionDisplayStyle}>{currentItem.question}</div>
+            <div style={questionDisplayStyle}>
+              {currentItem.questionKr || translateQuestion(currentItem.question)}
+            </div>
             <p style={feedbackStyle}>{feedback || '알맞은 답을 선택해주세요.'}</p>
             <div
               style={{
@@ -432,7 +472,7 @@ export default function ComprehensionTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "8교시 '주요 정보 파악'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "6교시 '고대 전설 이해 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button

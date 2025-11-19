@@ -57,6 +57,8 @@ export default function MeaningTestPage() {
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [showText, setShowText] = useState(false);
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
@@ -90,27 +92,45 @@ export default function MeaningTestPage() {
   const playPhraseAudio = useCallback(async (phrase: string) => {
     setIsAudioLoading(true);
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: phrase }),
-      });
-      if (!response.ok) {
-        throw new Error('음성 생성 실패');
-      }
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // 사전 생성된 오디오 파일 사용 시도
+      const safeFileName = phrase.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+      const audioPath = `/audio/meaning/${safeFileName}.mp3`;
+      const audio = new Audio(audioPath);
+      
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
           resolve();
         };
-        audio.onerror = reject;
+        audio.onerror = () => {
+          // 파일이 없으면 TTS API 사용 (폴백)
+          fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: phrase }),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('음성 생성 실패');
+              return response.blob();
+            })
+            .then(audioBlob => {
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const fallbackAudio = new Audio(audioUrl);
+              return new Promise<void>((resolveFallback, rejectFallback) => {
+                fallbackAudio.onended = () => {
+                  URL.revokeObjectURL(audioUrl);
+                  resolveFallback();
+                };
+                fallbackAudio.onerror = rejectFallback;
+                fallbackAudio.play();
+              });
+            })
+            .then(() => resolve())
+            .catch(reject);
+        };
         audio.play();
       });
     } catch (error) {
-      console.error('TTS API 에러:', error);
+      console.error('오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
     } finally {
       setIsAudioLoading(false);
@@ -161,6 +181,41 @@ export default function MeaningTestPage() {
     }
   };
 
+  const loadImagesForItem = useCallback(async (item: MeaningItem) => {
+    setIsLoadingImages(true);
+    const newImageUrls: Record<string, string> = {};
+    
+    try {
+      // 모든 선택지에 대한 이미지 생성/로드
+      for (const option of item.imageOptions) {
+        if (!imageUrls[option]) {
+          try {
+            const response = await fetch('/api/generate-meaning-image', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ phrase: option }),
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              newImageUrls[option] = data.imageUrl;
+            }
+          } catch (error) {
+            console.error(`이미지 생성 실패 (${option}):`, error);
+          }
+        } else {
+          newImageUrls[option] = imageUrls[option];
+        }
+      }
+      
+      setImageUrls(prev => ({ ...prev, ...newImageUrls }));
+    } catch (error) {
+      console.error('이미지 로드 오류:', error);
+    } finally {
+      setIsLoadingImages(false);
+    }
+  }, [imageUrls]);
+
   const goToNextItem = () => {
     const nextIndex = itemIndex + 1;
     if (nextIndex >= items.length) {
@@ -177,9 +232,13 @@ export default function MeaningTestPage() {
 
   useEffect(() => {
     if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
-      setCurrentItem(items[itemIndex]);
+      const item = items[itemIndex];
+      setCurrentItem(item);
+      if (item) {
+        loadImagesForItem(item);
+      }
     }
-  }, [phase, items, itemIndex]);
+  }, [phase, items, itemIndex, loadImagesForItem]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -196,7 +255,7 @@ export default function MeaningTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 1) {
       setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
     }
   }, [timeLeft, phase]);
@@ -318,7 +377,7 @@ export default function MeaningTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>7교시: 의미 이해</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>5교시: 마법서 그림 해석 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -387,10 +446,39 @@ export default function MeaningTestPage() {
                 <button
                   key={index}
                   onClick={() => handleAnswerSelect(option)}
-                  style={selectedAnswer === option ? selectedChoiceButtonStyle : choiceButtonStyle}
-                  disabled={isSubmitting || isAudioLoading}
+                  style={{
+                    ...(selectedAnswer === option ? selectedChoiceButtonStyle : choiceButtonStyle),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    minHeight: '200px',
+                  }}
+                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
                 >
-                  {option}
+                  {imageUrls[option] ? (
+                    <>
+                      <img 
+                        src={imageUrls[option]} 
+                        alt={option}
+                        style={{
+                          width: '150px',
+                          height: '150px',
+                          objectFit: 'contain',
+                          borderRadius: '8px',
+                        }}
+                        onError={(e) => {
+                          // 이미지 로드 실패 시 텍스트만 표시
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                      <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{option}</div>
+                    </>
+                  ) : (
+                    <div style={{ fontSize: '1rem' }}>
+                      {isLoadingImages ? '이미지 로딩 중...' : option}
+                    </div>
+                  )}
                 </button>
               ))}
             </div>
@@ -401,7 +489,7 @@ export default function MeaningTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "7교시 '의미 이해'가 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "5교시 '마법서 그림 해석 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button

@@ -1,0 +1,22 @@
+[
+  {
+    "original": "This is my friend, Tom. He has a big, blue ball.",
+    "file": "/audio/comprehension/this_is_my_friend__tom__he_has_a_big__blue_ball_.mp3"
+  },
+  {
+    "original": "I see a cat. It is small and white.",
+    "file": "/audio/comprehension/i_see_a_cat__it_is_small_and_white_.mp3"
+  },
+  {
+    "original": "Look at the dog. It is big and brown.",
+    "file": "/audio/comprehension/look_at_the_dog__it_is_big_and_brown_.mp3"
+  },
+  {
+    "original": "The sun is hot. The sky is blue.",
+    "file": "/audio/comprehension/the_sun_is_hot__the_sky_is_blue_.mp3"
+  },
+  {
+    "original": "I have a red car. It is very fast.",
+    "file": "/audio/comprehension/i_have_a_red_car__it_is_very_fast_.mp3"
+  }
+]

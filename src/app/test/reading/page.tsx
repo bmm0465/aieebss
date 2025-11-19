@@ -9,19 +9,17 @@ import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems
 type ReadingPhase = 'nwf' | 'wrf' | 'orf';
 type TestPhase = 'ready' | 'testing' | 'finished';
 
-// [폴백] NWF 고정 문항
+// [폴백] NWF 고정 문항 (5개로 제한)
 const getFixedNonsenseWords = () => {
   return [
-    'kig', 'wom', 'sep', 'nem', 'dib', 'rop', 'lin', 'fom', 'mig', 'rup',
-    'dep', 'fod', 'pid', 'rit', 'mog', 'pim', 'sog', 'tib', 'pon', 'heg',
+    'kig', 'wom', 'sep', 'nem', 'dib'
   ];
 };
 
-// [폴백] WRF 고정 문항
+// [폴백] WRF 고정 문항 (5개로 제한)
 const getFixedSightWords = () => {
   return [
-    'cat', 'sun', 'sit', 'run', 'top', 'fan', 'dog', 'bed', 'pig', 'leg',
-    'red', 'hat', 'map', 'cup', 'pen', 'mug', 'man', 'dig', 'pot', 'mom',
+    'cat', 'sun', 'sit', 'run', 'top'
   ];
 };
 
@@ -72,26 +70,26 @@ export default function ReadingTestPage() {
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
         
-        // NWF 문항 로드
+        // NWF 문항 로드 (5개로 제한)
         const nwfItems = await fetchApprovedTestItems('NWF', gradeLevel || undefined);
         if (nwfItems && Array.isArray(nwfItems.items)) {
-          setNwfWords(nwfItems.items as string[]);
+          setNwfWords((nwfItems.items as string[]).slice(0, 5));
         } else {
           setNwfWords(getFixedNonsenseWords());
         }
 
-        // WRF 문항 로드
+        // WRF 문항 로드 (5개로 제한)
         const wrfItems = await fetchApprovedTestItems('WRF', gradeLevel || undefined);
         if (wrfItems && Array.isArray(wrfItems.items)) {
-          setWrfWords(wrfItems.items as string[]);
+          setWrfWords((wrfItems.items as string[]).slice(0, 5));
         } else {
           setWrfWords(getFixedSightWords());
         }
 
-        // ORF 문항 로드
+        // ORF 문항 로드 (5개로 제한)
         const orfItems = await fetchApprovedTestItems('ORF', gradeLevel || undefined);
         if (orfItems && Array.isArray(orfItems.items)) {
-          setOrfSentences(orfItems.items as string[]);
+          setOrfSentences((orfItems.items as string[]).slice(0, 5));
         } else {
           setOrfSentences(getFixedSentences());
         }
@@ -286,7 +284,7 @@ export default function ReadingTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && testPhase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && testPhase === 'testing' && timeLeft > 0) {
+    } else if (timeLeft <= 5 && testPhase === 'testing' && timeLeft > 1) {
       setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
     }
   }, [timeLeft, testPhase]);
@@ -301,9 +299,7 @@ export default function ReadingTestPage() {
   };
 
   const getPhaseTitle = () => {
-    if (readingPhase === 'nwf') return '3교시: 무의미 단어 읽기';
-    if (readingPhase === 'wrf') return '4교시: 실제 단어 읽기';
-    return '5교시: 문장 읽기';
+    return '3교시: 마법 주문 읽기 시험';
   };
 
   const getPhaseDescription = () => {

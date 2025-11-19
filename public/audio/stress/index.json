@@ -1,0 +1,42 @@
+[
+  {
+    "original": "computer",
+    "file": "/audio/stress/computer.mp3"
+  },
+  {
+    "original": "banana",
+    "file": "/audio/stress/banana.mp3"
+  },
+  {
+    "original": "elephant",
+    "file": "/audio/stress/elephant.mp3"
+  },
+  {
+    "original": "tomorrow",
+    "file": "/audio/stress/tomorrow.mp3"
+  },
+  {
+    "original": "beautiful",
+    "file": "/audio/stress/beautiful.mp3"
+  },
+  {
+    "original": "important",
+    "file": "/audio/stress/important.mp3"
+  },
+  {
+    "original": "remember",
+    "file": "/audio/stress/remember.mp3"
+  },
+  {
+    "original": "together",
+    "file": "/audio/stress/together.mp3"
+  },
+  {
+    "original": "understand",
+    "file": "/audio/stress/understand.mp3"
+  },
+  {
+    "original": "different",
+    "file": "/audio/stress/different.mp3"
+  }
+]

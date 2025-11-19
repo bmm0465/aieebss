@@ -35,6 +35,19 @@ const letterSounds: { [key: string]: string[] } = {
   Y: ['yuh', 'y', '이'], Z: ['zuh', 'z', '즈']
 };
 
+// Letter Names와 Letter Sounds가 유사한 알파벳 목록
+// 발음이 유사하여 혼동될 수 있는 경우, Letter Name으로 인정
+const similarLetterNames: { [key: string]: { names: string[], sounds: string[] } } = {
+  O: {
+    names: ['o', 'oh', '오', '오우'],
+    sounds: ['ah', 'aw', 'uh', '아', '어', '으'] // 'oh'와 'ah'가 유사
+  },
+  I: {
+    names: ['i', 'eye', '아이'],
+    sounds: ['ih', 'i', '이'] // 'eye'와 'ih'가 유사
+  }
+};
+
 const normalizeResponse = (value: string | null | undefined) =>
   value ? value.trim().toLowerCase().replace(/[\s-]/g, '') : '';
 
@@ -154,6 +167,7 @@ CRITICAL INSTRUCTIONS:
 Scoring rules:
 - ONLY letter NAMES are correct. Letter sounds must be categorised as "Letter sounds".
 - Accept Korean pronunciations of letter names (예: '에이', '비', '씨', ...).
+- SPECIAL RULE for similar-sounding letters: For letters where the letter name and letter sound are phonetically similar (e.g., 'O': "oh" vs "ah", 'I': "eye" vs "ih"), if the student's response is phonetically close to the letter name, accept it as correct even if it sounds like the letter sound. Use your judgment to determine if the pronunciation is closer to the letter name.
 - Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to first meaningful attempt.
 - If a student self-corrects to the correct letter name within ${HESITATION_THRESHOLD_SECONDS} seconds of their first incorrect attempt, mark the response correct and set "used_self_correction" to true.
 - If the first meaningful attempt occurs after ${HESITATION_THRESHOLD_SECONDS} seconds, the correct response is overridden by "Hesitation".
@@ -173,6 +187,7 @@ Return strict JSON: {
               content: `Target letter: ${upperCaseQuestion}
 Acceptable letter names: ${JSON.stringify(letterNames[upperCaseQuestion] ?? [])}
 Letter sounds (incorrect category): ${JSON.stringify(letterSounds[upperCaseQuestion] ?? [])}
+${similarLetterNames[upperCaseQuestion] ? `Note: This letter has similar-sounding name and sound. Similar names: ${JSON.stringify(similarLetterNames[upperCaseQuestion].names)}, similar sounds: ${JSON.stringify(similarLetterNames[upperCaseQuestion].sounds)}. If the response is phonetically close to the letter name, accept it as correct.` : ''}
 Aggregated transcript: ${aggregatedTranscript}
 Timeline JSON: ${timelineToPrompt(timeline)}
 Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,

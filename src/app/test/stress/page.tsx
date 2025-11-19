@@ -12,6 +12,72 @@ interface StressItem {
   correctAnswer: string;
 }
 
+// 단어의 음절 수를 계산하는 함수 (간단한 영어 음절 규칙)
+function countSyllables(word: string): number {
+  word = word.toLowerCase();
+  if (word.length <= 3) return 1;
+  
+  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+  word = word.replace(/^y/, '');
+  const matches = word.match(/[aeiouy]{1,2}/g);
+  return matches ? matches.length : 1;
+}
+
+// 강세 패턴을 시각화하는 함수
+function visualizeStressPattern(word: string, stressPosition: number, totalSyllables: number): string {
+  const syllables = [];
+  let currentSyllable = '';
+  let syllableIndex = 0;
+  
+  // 간단한 음절 분리 (자음+모음 패턴)
+  for (let i = 0; i < word.length; i++) {
+    const char = word[i];
+    const isVowel = /[aeiouAEIOU]/.test(char);
+    
+    if (isVowel && currentSyllable.length > 0 && !/[aeiouAEIOU]/.test(currentSyllable[currentSyllable.length - 1])) {
+      syllables.push(currentSyllable);
+      currentSyllable = char;
+      syllableIndex++;
+    } else {
+      currentSyllable += char;
+    }
+  }
+  if (currentSyllable) {
+    syllables.push(currentSyllable);
+  }
+  
+  // 음절 수가 맞지 않으면 간단하게 분할
+  if (syllables.length !== totalSyllables) {
+    syllables.length = 0;
+    const approxSyllables = countSyllables(word);
+    const charsPerSyllable = Math.ceil(word.length / approxSyllables);
+    for (let i = 0; i < word.length; i += charsPerSyllable) {
+      syllables.push(word.slice(i, i + charsPerSyllable));
+    }
+  }
+  
+  // 강세 패턴 생성
+  const pattern = syllables.map((_, index) => {
+    if (index === stressPosition - 1) {
+      return '●';
+    }
+    return '○';
+  });
+  
+  return pattern.join(' ');
+}
+
+// 선택지에서 강세 위치 추출
+function getStressPosition(choice: string): number {
+  const match = choice.match(/[A-Z]+/);
+  if (!match) return 1;
+  
+  const stressedPart = match[0];
+  const beforeStressed = choice.substring(0, choice.indexOf(stressedPart));
+  const syllablesBefore = countSyllables(beforeStressed);
+  return syllablesBefore + 1;
+}
+
 // [폴백] STRESS 고정 문항
 const getFixedStressItems = (): StressItem[] => {
   return [
@@ -69,27 +135,44 @@ export default function StressTestPage() {
   const playWordAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: word }),
-      });
-      if (!response.ok) {
-        throw new Error('음성 생성 실패');
-      }
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // 사전 생성된 오디오 파일 사용 시도
+      const audioPath = `/audio/stress/${word.toLowerCase()}.mp3`;
+      const audio = new Audio(audioPath);
+      
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
           resolve();
         };
-        audio.onerror = reject;
+        audio.onerror = () => {
+          // 파일이 없으면 TTS API 사용 (폴백)
+          fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: word }),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('음성 생성 실패');
+              return response.blob();
+            })
+            .then(audioBlob => {
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const fallbackAudio = new Audio(audioUrl);
+              return new Promise<void>((resolveFallback, rejectFallback) => {
+                fallbackAudio.onended = () => {
+                  URL.revokeObjectURL(audioUrl);
+                  resolveFallback();
+                };
+                fallbackAudio.onerror = rejectFallback;
+                fallbackAudio.play();
+              });
+            })
+            .then(() => resolve())
+            .catch(reject);
+        };
         audio.play();
       });
     } catch (error) {
-      console.error('TTS API 에러:', error);
+      console.error('오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
     } finally {
       setIsAudioLoading(false);
@@ -174,7 +257,7 @@ export default function StressTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 1) {
       setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
     }
   }, [timeLeft, phase]);
@@ -295,7 +378,7 @@ export default function StressTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 강세 및 리듬 패턴 파악</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>4교시: 마법 리듬 패턴 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -337,16 +420,22 @@ export default function StressTestPage() {
             <div style={wordDisplayStyle}>{currentItem.word}</div>
             <p style={feedbackStyle}>{feedback || '강세 패턴을 선택해주세요.'}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
-              {currentItem.choices.map((choice, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(choice)}
-                  style={selectedAnswer === choice ? selectedChoiceButtonStyle : choiceButtonStyle}
-                  disabled={isSubmitting || isAudioLoading}
-                >
-                  {choice}
-                </button>
-              ))}
+              {currentItem.choices.map((choice, index) => {
+                const totalSyllables = countSyllables(currentItem.word);
+                const stressPosition = getStressPosition(choice);
+                const pattern = visualizeStressPattern(currentItem.word, stressPosition, totalSyllables);
+                return (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswerSelect(choice)}
+                    style={selectedAnswer === choice ? selectedChoiceButtonStyle : choiceButtonStyle}
+                    disabled={isSubmitting || isAudioLoading}
+                  >
+                    <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{pattern}</div>
+                    <div style={{ fontSize: '1rem', opacity: 0.8 }}>{choice}</div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -355,7 +444,7 @@ export default function StressTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "6교시 '강세 및 리듬 패턴 파악'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "4교시 '마법 리듬 패턴 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button

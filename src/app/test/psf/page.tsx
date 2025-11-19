@@ -88,46 +88,59 @@ export default function PsfTestPage() {
   const playWordAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
-      const response = await fetch('/api/tts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: word }),
-      });
-      if (!response.ok) {
-        throw new Error('음성 생성 실패');
-      }
-      const audioBlob = await response.blob();
-      const audioUrl = URL.createObjectURL(audioBlob);
-      const audio = new Audio(audioUrl);
+      // 사전 생성된 오디오 파일 사용 시도
+      const audioPath = `/audio/psf/${word}.mp3`;
+      const audio = new Audio(audioPath);
+      
       await new Promise<void>((resolve, reject) => {
         audio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
           resolve();
         };
-        audio.onerror = reject;
+        audio.onerror = () => {
+          // 파일이 없으면 TTS API 사용 (폴백)
+          fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: word }),
+          })
+            .then(response => {
+              if (!response.ok) throw new Error('음성 생성 실패');
+              return response.blob();
+            })
+            .then(audioBlob => {
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const fallbackAudio = new Audio(audioUrl);
+              return new Promise<void>((resolveFallback, rejectFallback) => {
+                fallbackAudio.onended = () => {
+                  URL.revokeObjectURL(audioUrl);
+                  resolveFallback();
+                };
+                fallbackAudio.onerror = rejectFallback;
+                fallbackAudio.play();
+              });
+            })
+            .then(() => resolve())
+            .catch(reject);
+        };
         audio.play();
       });
     } catch (error) {
-      console.error('TTS API 에러:', error);
+      console.error('오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
     } finally {
       setIsAudioLoading(false);
     }
   }, []);
 
-  const playBothWords = useCallback(async () => {
+  const playCorrectAnswer = useCallback(async () => {
     if (!currentPair) return;
-    setFeedback('단어를 들어보세요...');
+    setFeedback('정답 단어를 들어보세요...');
     setIsAudioLoading(true);
     
-    // 첫 번째 단어 재생
-    await playWordAudio(currentPair.word1);
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // 정답 단어만 재생
+    await playWordAudio(currentPair.correctAnswer);
     
-    // 두 번째 단어 재생
-    await playWordAudio(currentPair.word2);
-    
-    setFeedback('들어본 단어 중 하나를 선택해주세요.');
+    setFeedback('들어본 단어를 선택해주세요.');
     setIsAudioLoading(false);
   }, [currentPair, playWordAudio]);
 
@@ -208,7 +221,7 @@ export default function PsfTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 0) {
+    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 1) {
       setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
     }
   }, [timeLeft, phase]);
@@ -323,7 +336,7 @@ export default function PsfTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리 듣고 식별하기</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리의 원소 분리 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -337,9 +350,9 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              두 개의 단어를 들려드립니다. 들려준 단어 중 하나를 선택해주세요.
+              정답 단어를 들려드립니다. 들려준 단어를 선택해주세요.
               <br />
-              (예: &quot;pin&quot;과 &quot;fin&quot;을 들려주면, 들려준 단어를 선택합니다)
+              (예: &quot;pin&quot;을 들려주면, &quot;pin&quot;을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -350,7 +363,7 @@ export default function PsfTestPage() {
         {phase === 'testing' && currentPair && (
           <div>
             <button
-              onClick={playBothWords}
+              onClick={playCorrectAnswer}
               style={{
                 ...buttonStyle,
                 fontSize: '3rem',
@@ -360,7 +373,7 @@ export default function PsfTestPage() {
               }}
               disabled={isAudioLoading || isSubmitting}
             >
-              {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
+              {isAudioLoading ? '재생 중...' : '🔊 정답 단어 듣기'}
             </button>
             <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
@@ -386,7 +399,7 @@ export default function PsfTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "2교시 '소리 듣고 식별하기'가 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "2교시 '소리의 원소 분리 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/reading')}>
