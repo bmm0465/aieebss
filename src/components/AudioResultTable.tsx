@@ -70,9 +70,8 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) throw new Error('인증이 필요합니다.');
         
-        const [dateStr, sessionNumStr] = sessionId.split('_');
+        const [dateStr] = sessionId.split('_');
         const sessionDate = new Date(dateStr);
-        const sessionNumber = parseInt(sessionNumStr || '0');
         
         // 먼저 해당 날짜의 모든 결과를 가져온 후 클라이언트에서 필터링
         query = query
@@ -89,23 +88,25 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         query = query.eq('user_id', user.id);
       }
 
-      let { data, error: fetchError } = await query;
+      const { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
       
+      let filteredData = data;
+      
       // 세션 필터링이 필요한 경우 클라이언트에서 처리
-      if (sessionId && data) {
-        const [dateStr, sessionNumStr] = sessionId.split('_');
+      if (sessionId && filteredData) {
+        const [, sessionNumStr] = sessionId.split('_');
         const sessionNumber = parseInt(sessionNumStr || '0');
         
         // 시간순으로 정렬
-        const sortedData = [...data].sort((a, b) => 
+        const sortedData = [...filteredData].sort((a, b) => 
           new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
         );
         
         // 30분 간격으로 세션 구분
-        const sessionGroups: typeof data[] = [];
-        let currentGroup: typeof data = [];
+        const sessionGroups: typeof filteredData[] = [];
+        let currentGroup: typeof filteredData = [];
         let lastTime = 0;
         
         sortedData.forEach(result => {
@@ -126,14 +127,14 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         }
         
         // 요청된 세션 번호의 결과 사용
-        data = sessionGroups[sessionNumber] || [];
+        filteredData = sessionGroups[sessionNumber] || [];
       }
       
-      console.log('[AudioResultTable] 조회된 결과:', data?.length || 0, '개');
+      console.log('[AudioResultTable] 조회된 결과:', filteredData?.length || 0, '개');
       
       // audio_url 경로 분석을 위한 디버깅 정보
-      if (data && data.length > 0) {
-        const audioPaths = data
+      if (filteredData && filteredData.length > 0) {
+        const audioPaths = filteredData
           .filter(item => item.audio_url)
           .map(item => item.audio_url)
           .slice(0, 3); // 처음 3개만 로깅
@@ -141,7 +142,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         console.log('[AudioResultTable] 샘플 audio_url 경로들:', audioPaths);
       }
       
-      setResults(data || []);
+      setResults(filteredData || []);
     } catch (err) {
       console.error('결과 조회 에러:', err);
       setError(err instanceof Error ? err.message : '결과를 불러오는 중 오류가 발생했습니다.');
