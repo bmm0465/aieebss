@@ -68,10 +68,13 @@ const COMPREHENSION_STORIES = [
 // 생성된 오디오 내용을 검증하는 함수
 async function verifyAudioContent(audioBuffer: Buffer, expectedText: string): Promise<boolean> {
   try {
+    // Buffer를 Uint8Array로 변환하여 File 생성자에 전달
+    const uint8Array = new Uint8Array(audioBuffer);
+    
     // Whisper로 오디오를 다시 인식
     const transcription = await openai.audio.transcriptions.create({
       model: 'whisper-1',
-      file: new File([audioBuffer], 'audio.mp3', { type: 'audio/mpeg' }),
+      file: new File([uint8Array], 'audio.mp3', { type: 'audio/mpeg' }),
       language: 'en',
       response_format: 'text',
     });
