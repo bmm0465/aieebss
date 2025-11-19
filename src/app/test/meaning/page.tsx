@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
@@ -168,17 +167,21 @@ export default function MeaningTestPage() {
       });
 
       if (!response.ok) {
-        throw new Error('제출 실패');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[MEANING] 제출 실패:', response.status, errorData);
+        throw new Error(errorData.error || '제출 실패');
       }
 
+      const result = await response.json();
+      console.log('[MEANING] 제출 성공:', result);
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
         goToNextItem();
       }, 500);
     } catch (error) {
-      console.error('MEANING 제출 오류:', error);
-      setFeedback('제출 중 오류가 발생했습니다.');
+      console.error('[MEANING] 제출 오류:', error);
+      setFeedback(`제출 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setIsSubmitting(false);
     }
   };
@@ -198,14 +201,18 @@ export default function MeaningTestPage() {
               body: JSON.stringify({ phrase: option }),
             });
             
+            console.log(`[MEANING] 이미지 생성 요청: ${option}`);
             if (response.ok) {
               const data = await response.json();
               // API 응답에서 error 필드 확인
               if (data.error) {
-                console.error(`이미지 생성 API 에러 (${option}):`, data.error);
+                console.error(`[MEANING] 이미지 생성 API 에러 (${option}):`, data.error);
                 // 에러가 있어도 계속 진행 (텍스트로 폴백)
               } else if (data.imageUrl) {
+                console.log(`[MEANING] 이미지 생성 성공: ${option}, URL: ${data.imageUrl}`);
                 newImageUrls[option] = data.imageUrl;
+              } else {
+                console.warn(`[MEANING] 이미지 URL이 응답에 없음: ${option}`, data);
               }
             } else {
               // response.json()은 한 번만 호출 가능하므로, text로 읽어서 파싱
@@ -216,18 +223,24 @@ export default function MeaningTestPage() {
               } catch {
                 // JSON 파싱 실패 시 빈 객체 사용
               }
-              console.error(`이미지 생성 실패 (${option}):`, response.status, errorData);
+              console.error(`[MEANING] 이미지 생성 실패 (${option}):`, response.status, errorData);
             }
           } catch (error) {
-            console.error(`이미지 생성 실패 (${option}):`, error);
+            console.error(`[MEANING] 이미지 생성 실패 (${option}):`, error);
             // 네트워크 오류 등 - 계속 진행 (텍스트로 폴백)
           }
         } else {
+          console.log(`[MEANING] 이미지 캐시 사용: ${option}`);
           newImageUrls[option] = imageUrls[option];
         }
       }
       
-      setImageUrls(prev => ({ ...prev, ...newImageUrls }));
+      console.log(`[MEANING] 로드된 이미지 URLs:`, newImageUrls);
+      setImageUrls(prev => {
+        const updated = { ...prev, ...newImageUrls };
+        console.log(`[MEANING] 전체 imageUrls 상태:`, updated);
+        return updated;
+      });
     } catch (error) {
       console.error('이미지 로드 오류:', error);
     } finally {
@@ -478,19 +491,22 @@ export default function MeaningTestPage() {
                   {imageUrls[option] && !failedImages.has(option) ? (
                     <>
                       <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-                        <Image 
+                        <img 
                           src={imageUrls[option]} 
                           alt={option}
-                          width={150}
-                          height={150}
-                          unoptimized={true}
                           style={{
+                            width: '150px',
+                            height: '150px',
                             objectFit: 'contain',
                             borderRadius: '8px',
                           }}
                           onError={() => {
                             // 이미지 로드 실패 시 실패 목록에 추가
+                            console.error(`[MEANING] 이미지 로드 실패: ${option}, URL: ${imageUrls[option]}`);
                             setFailedImages(prev => new Set(prev).add(option));
+                          }}
+                          onLoad={() => {
+                            console.log(`[MEANING] 이미지 로드 성공: ${option}, URL: ${imageUrls[option]}`);
                           }}
                         />
                       </div>

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const serviceClient = createServiceClient();
     const isCorrect = selectedAnswer === correctAnswer;
 
-    await serviceClient.from('test_results').insert({
+    const { data: insertData, error: insertError } = await serviceClient.from('test_results').insert({
       user_id: userId,
       test_type: 'STRESS',
       question: question,
@@ -32,10 +32,15 @@ export async function POST(request: Request) {
       correct_answer: correctAnswer,
       is_correct: isCorrect,
       accuracy: isCorrect ? 100 : 0,
-    });
+    }).select();
+
+    if (insertError) {
+      console.error('[STRESS 저장 오류]', insertError);
+      throw new Error(`데이터베이스 저장 실패: ${insertError.message}`);
+    }
 
     console.log(
-      `[STRESS 제출 완료] 사용자: ${userId}, 문제: ${question}, 선택: ${selectedAnswer}, 정답: ${correctAnswer}, 결과: ${isCorrect ? '정답' : '오답'}`,
+      `[STRESS 제출 완료] 사용자: ${userId}, 문제: ${question}, 선택: ${selectedAnswer}, 정답: ${correctAnswer}, 결과: ${isCorrect ? '정답' : '오답'}, 저장된 ID: ${insertData?.[0]?.id || 'N/A'}`,
     );
 
     return NextResponse.json(

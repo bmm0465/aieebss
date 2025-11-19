@@ -172,17 +172,21 @@ export default function PsfTestPage() {
       });
 
       if (!response.ok) {
-        throw new Error('제출 실패');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[PSF] 제출 실패:', response.status, errorData);
+        throw new Error(errorData.error || '제출 실패');
       }
 
+      const result = await response.json();
+      console.log('[PSF] 제출 성공:', result);
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
         goToNextPair();
       }, 500);
     } catch (error) {
-      console.error('PSF 제출 오류:', error);
-      setFeedback('제출 중 오류가 발생했습니다.');
+      console.error('[PSF] 제출 오류:', error);
+      setFeedback(`제출 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setIsSubmitting(false);
     }
   };
