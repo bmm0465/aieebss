@@ -23,40 +23,6 @@ function countSyllables(word: string): number {
   return matches ? matches.length : 1;
 }
 
-// 단어를 음절로 분리하는 함수
-function splitIntoSyllables(word: string, totalSyllables: number): string[] {
-  const syllables = [];
-  let currentSyllable = '';
-  
-  // 간단한 음절 분리 (자음+모음 패턴)
-  for (let i = 0; i < word.length; i++) {
-    const char = word[i];
-    const isVowel = /[aeiouAEIOU]/.test(char);
-    
-    if (isVowel && currentSyllable.length > 0 && !/[aeiouAEIOU]/.test(currentSyllable[currentSyllable.length - 1])) {
-      syllables.push(currentSyllable);
-      currentSyllable = char;
-    } else {
-      currentSyllable += char;
-    }
-  }
-  if (currentSyllable) {
-    syllables.push(currentSyllable);
-  }
-  
-  // 음절 수가 맞지 않으면 간단하게 분할
-  if (syllables.length !== totalSyllables) {
-    syllables.length = 0;
-    const approxSyllables = countSyllables(word);
-    const charsPerSyllable = Math.ceil(word.length / approxSyllables);
-    for (let i = 0; i < word.length; i += charsPerSyllable) {
-      syllables.push(word.slice(i, i + charsPerSyllable));
-    }
-  }
-  
-  return syllables;
-}
-
 // 선택지에서 강세 위치 추출
 function getStressPosition(choice: string): number {
   const match = choice.match(/[A-Z]+/);
