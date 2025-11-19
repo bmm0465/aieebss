@@ -177,7 +177,6 @@ export default function StressTestPage() {
     setSelectedStressPosition(position);
     
     // 선택된 위치에 해당하는 선택지 찾기
-    const totalSyllables = countSyllables(currentItem.word);
     const matchingChoice = currentItem.choices.find(choice => {
       const stressPos = getStressPosition(choice);
       return stressPos === position;
@@ -351,11 +350,6 @@ export default function StressTestPage() {
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const selectedChoiceButtonStyle: React.CSSProperties = {
-    ...choiceButtonStyle,
-    background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-    boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
-  };
   const feedbackStyle: React.CSSProperties = {
     minHeight: '2.5em',
     fontSize: '1.05rem',
@@ -369,12 +363,6 @@ export default function StressTestPage() {
     marginBottom: '1rem',
     fontFamily: 'monospace',
     fontWeight: '600',
-  };
-  const wordDisplayStyle: React.CSSProperties = {
-    fontSize: '3rem',
-    fontWeight: 'bold',
-    margin: '2rem 0',
-    color: '#6366f1',
   };
 
   if (!user) {
