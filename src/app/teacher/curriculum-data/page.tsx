@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import LogoutButton from '@/components/LogoutButton';
 
@@ -45,7 +44,6 @@ interface CurriculumData {
 }
 
 export default function CurriculumDataPage() {
-  const router = useRouter();
   const [dataType, setDataType] = useState<'expressions' | 'vocabulary'>('expressions');
   const [selectedUnit, setSelectedUnit] = useState<number>(1);
   const [coreExpressions, setCoreExpressions] = useState<CurriculumData | null>(null);
@@ -342,7 +340,8 @@ export default function CurriculumDataPage() {
                       {entry.index}
                     </td>
                     {publisherKeys.map((key) => {
-                      const value = (entry as any)[key];
+                      const publisherKey = key as keyof CoreExpressionEntry;
+                      const value = (entry as CoreExpressionEntry)[publisherKey] ?? (entry as VocabularyEntry)[publisherKey as keyof VocabularyEntry];
                       return (
                         <td key={key} style={{ padding: '0.8rem', border: '1px solid #e5e7eb' }}>
                           {value || <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>-</span>}
