@@ -266,8 +266,8 @@ export default function StressTestPage() {
   useEffect(() => {
     if (timeLeft === 10 && phase === 'testing') {
       setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 5 && phase === 'testing' && timeLeft > 1) {
-      setFeedback(`⏰ ${timeLeft}초 후 자동 제출됩니다!`);
+    } else if (timeLeft <= 1 && phase === 'testing') {
+      setFeedback('');
     }
   }, [timeLeft, phase]);
 
@@ -404,18 +404,29 @@ export default function StressTestPage() {
               >
                 {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
               </button>
-              <p style={feedbackStyle}>{feedback || '강세가 있는 음절을 클릭해주세요.'}</p>
+              <p style={feedbackStyle}>{feedback || '강세가 있는 위치를 클릭해주세요.'}</p>
               
-              {/* 클릭 가능한 단어 표시 */}
+              {/* 단어 표시 */}
+              <div style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                margin: '2rem 0',
+                color: '#6366f1',
+                textAlign: 'center',
+              }}>
+                {currentItem.word}
+              </div>
+              
+              {/* 클릭 가능한 강세 패턴 표시 (O O O) */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                gap: '0.5rem',
-                margin: '3rem 0',
+                gap: '1rem',
+                margin: '2rem 0',
                 flexWrap: 'wrap',
               }}>
-                {syllables.map((syllable, index) => {
+                {Array.from({ length: totalSyllables }, (_, index) => {
                   const position = index + 1;
                   const isSelected = selectedStressPosition === position;
                   const isCorrect = position === correctStressPosition;
@@ -425,11 +436,14 @@ export default function StressTestPage() {
                       key={index}
                       onClick={() => handleSyllableClick(position)}
                       style={{
-                        position: 'relative',
                         cursor: isSubmitting || isAudioLoading ? 'not-allowed' : 'pointer',
-                        padding: '1rem 1.5rem',
-                        margin: '0.25rem',
-                        fontSize: '2.5rem',
+                        width: '4rem',
+                        height: '4rem',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
                         fontWeight: 'bold',
                         color: isSelected ? '#ffffff' : '#6366f1',
                         backgroundColor: isSelected 
@@ -438,7 +452,6 @@ export default function StressTestPage() {
                         border: `3px solid ${isSelected 
                           ? (isCorrect ? '#10b981' : '#ef4444')
                           : '#6366f1'}`,
-                        borderRadius: '12px',
                         transition: 'all 0.2s ease',
                         opacity: isSubmitting || isAudioLoading ? 0.5 : 1,
                         userSelect: 'none',
@@ -447,25 +460,7 @@ export default function StressTestPage() {
                           : 'none',
                       }}
                     >
-                      {syllable}
-                      {isSelected && (
-                        <div style={{
-                          position: 'absolute',
-                          top: '-0.5rem',
-                          right: '-0.5rem',
-                          width: '1.5rem',
-                          height: '1.5rem',
-                          borderRadius: '50%',
-                          backgroundColor: isCorrect ? '#10b981' : '#ef4444',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          fontSize: '1rem',
-                          color: 'white',
-                        }}>
-                          ●
-                        </div>
-                      )}
+                      {isSelected ? '●' : '○'}
                     </div>
                   );
                 })}
