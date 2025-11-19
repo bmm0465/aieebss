@@ -17,9 +17,9 @@ const openai = new OpenAI({
 // 규칙 셋 정의 (파일 최상단)
 const letterNames: { [key: string]: string[] } = {
   A: ['a', 'ay'], B: ['b', 'bee'], C: ['c', 'cee', 'see'], D: ['d', 'dee'], E: ['e', 'ee'],
-  F: ['f', 'eff'], G: ['g', 'gee'], H: ['h', 'aitch', 'haitch'], I: ['i'], J: ['j', 'jay'],
+  F: ['f', 'eff'], G: ['g', 'gee'], H: ['h', 'aitch', 'haitch'], I: ['i', 'eye', '아이'], J: ['j', 'jay'],
   K: ['k', 'kay'], L: ['l', 'ell'], M: ['m', 'em'], N: ['n', 'en'], O: ['o', 'oh', '오', '오우'],
-  P: ['p', 'pee'], Q: ['q', 'cue', 'que'], R: ['r', 'ar'], S: ['s', 'ess'], T: ['t', 'tee'],
+  P: ['p', 'pee'], Q: ['q', 'cue', 'que'], R: ['r', 'ar'], S: ['s', 'ess', '에스'], T: ['t', 'tee'],
   U: ['u', 'you'], V: ['v', 'vee'], W: ['w', 'double u', 'doubleu'], X: ['x', 'ex'], Y: ['y', 'why'],
   Z: ['z', 'zee', 'zed']
 };
@@ -43,8 +43,8 @@ const similarLetterNames: { [key: string]: { names: string[], sounds: string[] }
     sounds: ['ah', 'aw', 'uh', '아', '어', '으'] // 'oh'와 'ah'가 유사
   },
   I: {
-    names: ['i', 'eye', '아이'],
-    sounds: ['ih', 'i', '이'] // 'eye'와 'ih'가 유사
+    names: ['i', 'eye', '아이'], // '이'는 letter sound이므로 제외
+    sounds: ['ih', 'i', '이'] // 'eye'와 'ih'가 유사하지만, '이'는 정확한 letter name이 아니므로 오답
   }
 };
 
@@ -166,8 +166,10 @@ CRITICAL INSTRUCTIONS:
 
 Scoring rules:
 - ONLY letter NAMES are correct. Letter sounds must be categorised as "Letter sounds".
-- Accept Korean pronunciations of letter names (예: '에이', '비', '씨', ...).
-- SPECIAL RULE for similar-sounding letters: For letters where the letter name and letter sound are phonetically similar (e.g., 'O': "oh" vs "ah", 'I': "eye" vs "ih"), if the student's response is phonetically close to the letter name, accept it as correct even if it sounds like the letter sound. Use your judgment to determine if the pronunciation is closer to the letter name.
+- Accept Korean pronunciations of letter names ONLY when they match the exact letter name (예: '에이' for A, '비' for B, '씨' for C, '아이' for I, '에스' for S, ...).
+- IMPORTANT: For letter 'I', only accept '아이' (ai) as correct Korean pronunciation. '이' (i) is a letter sound and must be marked as incorrect.
+- IMPORTANT: For letter 'S', only accept '에스' (es) as correct Korean pronunciation. '스' (s) is a letter sound and must be marked as incorrect.
+- SPECIAL RULE for similar-sounding letters: For letters where the letter name and letter sound are phonetically similar (e.g., 'O': "oh" vs "ah", 'I': "eye/아이" vs "ih/이"), if the student's response is phonetically close to the letter name, accept it as correct. However, for 'I', '이' is NOT acceptable - only '아이' is correct.
 - Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to first meaningful attempt.
 - If a student self-corrects to the correct letter name within ${HESITATION_THRESHOLD_SECONDS} seconds of their first incorrect attempt, mark the response correct and set "used_self_correction" to true.
 - If the first meaningful attempt occurs after ${HESITATION_THRESHOLD_SECONDS} seconds, the correct response is overridden by "Hesitation".

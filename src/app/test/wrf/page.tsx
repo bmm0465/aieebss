@@ -131,11 +131,11 @@ export default function WrfTestPage() {
     }
   }, [timeLeft, phase, isRecording, stopRecording]);
 
-  // [개선] 자동 제출 기능 - 시간 만료 알림 추가
+  // [개선] 자동 제출 기능 - 시간 만료 카운트다운
   useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 1 && phase === 'testing') {
+    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && phase === 'testing') {
       setFeedback('');
     }
   }, [timeLeft, phase]);

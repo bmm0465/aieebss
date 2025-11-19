@@ -200,10 +200,27 @@ export default function MeaningTestPage() {
             
             if (response.ok) {
               const data = await response.json();
-              newImageUrls[option] = data.imageUrl;
+              // API 응답에서 error 필드 확인
+              if (data.error) {
+                console.error(`이미지 생성 API 에러 (${option}):`, data.error);
+                // 에러가 있어도 계속 진행 (텍스트로 폴백)
+              } else if (data.imageUrl) {
+                newImageUrls[option] = data.imageUrl;
+              }
+            } else {
+              // response.json()은 한 번만 호출 가능하므로, text로 읽어서 파싱
+              const errorText = await response.text().catch(() => '');
+              let errorData = {};
+              try {
+                errorData = errorText ? JSON.parse(errorText) : {};
+              } catch {
+                // JSON 파싱 실패 시 빈 객체 사용
+              }
+              console.error(`이미지 생성 실패 (${option}):`, response.status, errorData);
             }
           } catch (error) {
             console.error(`이미지 생성 실패 (${option}):`, error);
+            // 네트워크 오류 등 - 계속 진행 (텍스트로 폴백)
           }
         } else {
           newImageUrls[option] = imageUrls[option];
@@ -255,9 +272,9 @@ export default function MeaningTestPage() {
   }, [timeLeft, phase]);
 
   useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 1 && phase === 'testing') {
+    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && phase === 'testing') {
       setFeedback('');
     }
   }, [timeLeft, phase]);
@@ -479,8 +496,22 @@ export default function MeaningTestPage() {
                       <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{option}</div>
                     </>
                   ) : (
-                    <div style={{ fontSize: '1rem' }}>
-                      {isLoadingImages ? '이미지 로딩 중...' : option}
+                    <div style={{ 
+                      fontSize: '1rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      minHeight: '150px',
+                    }}>
+                      {isLoadingImages ? (
+                        <>
+                          <div style={{ marginBottom: '0.5rem' }}>이미지 생성 중...</div>
+                          <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{option}</div>
+                        </>
+                      ) : (
+                        option
+                      )}
                     </div>
                   )}
                 </button>

@@ -10,6 +10,7 @@ interface AudioResult {
   question?: string;
   question_word?: string;
   student_answer?: string;
+  correct_answer?: string;
   is_correct?: boolean;
   audio_url?: string;
   created_at?: string;
@@ -25,6 +26,9 @@ interface AudioResultTableProps {
   sessionId?: string;
   studentId?: string; // 교사가 특정 학생의 결과를 볼 때 사용
 }
+
+// 선택형 테스트 목록
+const choiceTests = ['PSF', 'STRESS', 'MEANING', 'COMPREHENSION'];
 
 export default function AudioResultTable({ testType, sessionId, studentId }: AudioResultTableProps) {
   const [results, setResults] = useState<AudioResult[]>([]);
@@ -47,12 +51,19 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 
     try {
       const supabase = createClient();
+      // 선택형 테스트(PSF, STRESS, MEANING, COMPREHENSION)는 audio_url이 없으므로 필터 제거
+      const isChoiceTest = choiceTests.includes(testType);
+      
       let query = supabase
         .from('test_results')
         .select('*')
         .eq('test_type', testType)
-        .not('audio_url', 'is', null) // 음성 파일이 있는 결과만
         .order('created_at', { ascending: false });
+      
+      // 음성 파일이 있는 테스트만 audio_url 필터 적용
+      if (!isChoiceTest) {
+        query = query.not('audio_url', 'is', null);
+      }
 
       if (sessionId) {
         // 세션별 결과 조회
@@ -113,14 +124,14 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 
   const getTestTypeName = (type: string): string => {
     const testNames: Record<string, string> = {
-      'LNF': '1교시: 고대 룬 문자 해독',
-      'PSF': '2교시: 소리 듣고 식별하기',
-      'NWF': '3교시: 무의미 단어 읽기',
-      'WRF': '4교시: 실제 단어 읽기',
-      'ORF': '5교시: 문장 읽기',
-      'STRESS': '6교시: 강세 및 리듬 패턴 파악',
-      'MEANING': '7교시: 의미 이해',
-      'COMPREHENSION': '8교시: 주요 정보 파악'
+      'LNF': '1교시: 고대 룬 문자 해독 시험',
+      'PSF': '2교시: 소리의 원소 분리 시험',
+      'NWF': '3교시: 마법 주문 읽기 시험 (무의미 단어)',
+      'WRF': '3교시: 마법 주문 읽기 시험 (실제 단어)',
+      'ORF': '3교시: 마법 주문 읽기 시험 (문장)',
+      'STRESS': '4교시: 마법 리듬 패턴 시험',
+      'MEANING': '5교시: 마법서 그림 해석 시험',
+      'COMPREHENSION': '6교시: 고대 전설 이해 시험'
     };
     return testNames[type] || type;
   };
@@ -180,10 +191,10 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         textAlign: 'center'
       }}>
         <h3 style={{ color: '#FFD700', marginBottom: '1rem' }}>
-          🎵 {getTestTypeName(testType)} 음성 결과
+          {choiceTests.includes(testType) ? '📋' : '🎵'} {getTestTypeName(testType)} {choiceTests.includes(testType) ? '상세 결과' : '음성 결과'}
         </h3>
         <p style={{ color: '#ccc' }}>
-          {getTestTypeName(testType)} 테스트의 음성 파일이 없습니다.
+          {getTestTypeName(testType)} 테스트의 {choiceTests.includes(testType) ? '결과' : '음성 파일'}이 없습니다.
         </p>
       </div>
     );
@@ -198,7 +209,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <h3 style={{ color: '#FFD700', margin: 0 }}>
-          🎵 {getTestTypeName(testType)} 음성 결과 ({results.length}개)
+          {choiceTests.includes(testType) ? '📋' : '🎵'} {getTestTypeName(testType)} {choiceTests.includes(testType) ? '상세 결과' : '음성 결과'} ({results.length}개)
         </h3>
         <button 
           onClick={fetchResults}
@@ -226,10 +237,10 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
           <thead>
             <tr style={{ backgroundColor: 'rgba(255, 215, 0, 0.1)' }}>
               <th style={{ padding: '1rem', textAlign: 'left', color: '#FFD700', borderBottom: '1px solid rgba(255, 215, 0, 0.3)' }}>
-                음성 파일
+                {choiceTests.includes(testType) ? '문제' : '음성 파일'}
               </th>
               <th style={{ padding: '1rem', textAlign: 'left', color: '#FFD700', borderBottom: '1px solid rgba(255, 215, 0, 0.3)' }}>
-                전사 결과
+                {choiceTests.includes(testType) ? '학생 답변' : '전사 결과'}
               </th>
               <th style={{ padding: '1rem', textAlign: 'left', color: '#FFD700', borderBottom: '1px solid rgba(255, 215, 0, 0.3)' }}>
                 정답
@@ -237,6 +248,11 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
               <th style={{ padding: '1rem', textAlign: 'center', color: '#FFD700', borderBottom: '1px solid rgba(255, 215, 0, 0.3)' }}>
                 결과
               </th>
+              {choiceTests.includes(testType) && (
+                <th style={{ padding: '1rem', textAlign: 'left', color: '#FFD700', borderBottom: '1px solid rgba(255, 215, 0, 0.3)' }}>
+                  오류 유형
+                </th>
+              )}
               <th style={{ padding: '1rem', textAlign: 'center', color: '#FFD700', borderBottom: '1px solid rgba(255, 215, 0, 0.3)' }}>
                 시간
               </th>
@@ -256,24 +272,30 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                     onClick={() => toggleExpanded(safeId)}
                   >
                   <td style={{ padding: '1rem' }}>
-                    {result.audio_url ? (
-                      <AudioPlayer 
-                        audioPath={result.audio_url} 
-                        userId={result.user_id}
-                        testType={result.test_type}
-                        createdAt={result.created_at}
-                      />
+                    {choiceTests.includes(testType) ? (
+                      <div style={{ maxWidth: '200px', wordBreak: 'break-word', color: '#e9ecef' }}>
+                        {result.question || '문제 없음'}
+                      </div>
                     ) : (
-                      <span style={{ color: '#ccc' }}>음성 파일 없음</span>
+                      result.audio_url ? (
+                        <AudioPlayer 
+                          audioPath={result.audio_url} 
+                          userId={result.user_id}
+                          testType={result.test_type}
+                          createdAt={result.created_at}
+                        />
+                      ) : (
+                        <span style={{ color: '#ccc' }}>음성 파일 없음</span>
+                      )
                     )}
                   </td>
                   <td style={{ padding: '1rem', color: '#e9ecef' }}>
                     <div style={{ maxWidth: '200px', wordBreak: 'break-word' }}>
-                      {result.student_answer || '전사 결과 없음'}
+                      {result.student_answer || (choiceTests.includes(testType) ? '답변 없음' : '전사 결과 없음')}
                     </div>
                   </td>
                   <td style={{ padding: '1rem', color: '#e9ecef', fontWeight: 'bold' }}>
-                    {getCorrectAnswer(result)}
+                    {choiceTests.includes(testType) ? (result.correct_answer || 'N/A') : getCorrectAnswer(result)}
                   </td>
                   <td style={{ padding: '1rem', textAlign: 'center' }}>
                     <ResultBadge 
@@ -282,6 +304,11 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                       targetSegments={result.target_segments}
                     />
                   </td>
+                  {choiceTests.includes(testType) && (
+                    <td style={{ padding: '1rem', color: '#e9ecef' }}>
+                      {result.error_type || '-'}
+                    </td>
+                  )}
                   <td style={{ padding: '1rem', textAlign: 'center', color: '#ccc', fontSize: '0.9rem' }}>
                     {result.created_at ? new Date(result.created_at).toLocaleTimeString('ko-KR', { 
                       hour: '2-digit', 
@@ -292,7 +319,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                   </tr>
                   {isExpanded(safeId) && (
                   <tr>
-                    <td colSpan={5} style={{ padding: '0 1rem 1rem 1rem' }}>
+                    <td colSpan={choiceTests.includes(testType) ? 6 : 5} style={{ padding: '0 1rem 1rem 1rem' }}>
                       <div style={{ 
                         backgroundColor: 'rgba(0, 0, 0, 0.3)', 
                         padding: '1rem', 

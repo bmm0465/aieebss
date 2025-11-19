@@ -24,10 +24,10 @@ const questionTranslations: Record<string, string> = {
   'What does Tom have?': 'Tom은 무엇을 가지고 있나요?',
   'What color is the ball?': '공은 무슨 색인가요?',
   'What color is the cat?': '고양이는 무슨 색인가요?',
-  'How big is the dog?': '강아지는 얼마나 큰가요?',
+  'How big is the dog?': '강아지의 크기는 어떠한가요?',
   'What does he have?': '그는 무엇을 가지고 있나요?',
   'What color is it?': '그것은 무슨 색인가요?',
-  'How big is it?': '그것은 얼마나 큰가요?',
+  'How big is it?': '그것의 크기는 어떠한가요?',
 };
 
 function translateQuestion(question: string): string {
@@ -73,7 +73,7 @@ const getFixedComprehensionItems = (): ComprehensionItem[] => {
     {
       dialogueOrStory: 'Look at the dog. It is big and brown.',
       question: 'How big is the dog?',
-      questionKr: '강아지는 얼마나 큰가요?',
+      questionKr: '강아지의 크기는 어떠한가요?',
       options: [
         { type: 'word' as const, content: 'big' },
         { type: 'word' as const, content: 'small' },
@@ -254,9 +254,9 @@ export default function ComprehensionTestPage() {
   }, [timeLeft, phase]);
 
   useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 1 && phase === 'testing') {
+    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && phase === 'testing') {
       setFeedback('');
     }
   }, [timeLeft, phase]);

@@ -25,14 +25,14 @@ interface ResultProps {
 
 // 각 시험별 제목과 설명
 const testInfo = {
-  LNF: { title: "1교시: 고대 룬 문자 해독", description: "알파벳 이름 인지 정확도" },
-  PSF: { title: "2교시: 소리 듣고 식별하기", description: "최소대립쌍 듣고 식별 능력" },
-  NWF: { title: "3교시: 무의미 단어 읽기", description: "파닉스 규칙 적용 능력" },
-  WRF: { title: "4교시: 실제 단어 읽기", description: "주요 단어 인지 정확도" },
-  ORF: { title: "5교시: 문장 읽기", description: "문장 유창성 및 정확도" },
-  STRESS: { title: "6교시: 강세 및 리듬 패턴 파악", description: "강세 패턴 식별 능력" },
-  MEANING: { title: "7교시: 의미 이해", description: "단어/문장 의미 이해 능력" },
-  COMPREHENSION: { title: "8교시: 주요 정보 파악", description: "주요 정보 파악 능력" },
+  LNF: { title: "1교시: 고대 룬 문자 해독 시험", description: "알파벳 이름 인지 정확도" },
+  PSF: { title: "2교시: 소리의 원소 분리 시험", description: "최소대립쌍 듣고 식별 능력" },
+  NWF: { title: "3교시: 마법 주문 읽기 시험 (무의미 단어)", description: "파닉스 규칙 적용 능력" },
+  WRF: { title: "3교시: 마법 주문 읽기 시험 (실제 단어)", description: "주요 단어 인지 정확도" },
+  ORF: { title: "3교시: 마법 주문 읽기 시험 (문장)", description: "문장 유창성 및 정확도" },
+  STRESS: { title: "4교시: 마법 리듬 패턴 시험", description: "강세 패턴 식별 능력" },
+  MEANING: { title: "5교시: 마법서 그림 해석 시험", description: "단어/문장 의미 이해 능력" },
+  COMPREHENSION: { title: "6교시: 고대 전설 이해 시험", description: "주요 정보 파악 능력" },
 };
 
 export default function ResultReport({ results, sessionId }: ResultProps) {

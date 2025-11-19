@@ -138,6 +138,7 @@ export default function ReadingTestPage() {
     const nextIndex = currentIndex + 1;
     if (nextIndex >= currentItems.length) {
       // 현재 단계 완료, 다음 단계로
+      setIsSubmitting(false); // phase 전환 시 상태 초기화
       if (readingPhase === 'nwf') {
         setReadingPhase('wrf');
         setCurrentIndex(0);
@@ -282,9 +283,9 @@ export default function ReadingTestPage() {
   }, [timeLeft, testPhase, isRecording, stopRecording]);
 
   useEffect(() => {
-    if (timeLeft === 10 && testPhase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 1 && testPhase === 'testing') {
+    if (timeLeft <= 10 && timeLeft > 0 && testPhase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && testPhase === 'testing') {
       setFeedback('');
     }
   }, [timeLeft, testPhase]);

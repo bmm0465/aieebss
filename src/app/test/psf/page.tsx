@@ -219,9 +219,9 @@ export default function PsfTestPage() {
   }, [timeLeft, phase]);
 
   useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 1 && phase === 'testing') {
+    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && phase === 'testing') {
       setFeedback('');
     }
   }, [timeLeft, phase]);
@@ -350,7 +350,7 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              정답 단어를 들려드립니다. 들려준 단어를 선택해주세요.
+              단어를 들려드립니다. 들려준 단어를 선택해주세요.
               <br />
               (예: &quot;pin&quot;을 들려주면, &quot;pin&quot;을 선택합니다)
             </p>
@@ -370,10 +370,11 @@ export default function PsfTestPage() {
                 minHeight: '100px',
                 marginBottom: '2rem',
                 opacity: isAudioLoading ? 0.5 : 1,
+                whiteSpace: 'nowrap',
               }}
               disabled={isAudioLoading || isSubmitting}
             >
-              {isAudioLoading ? '재생 중...' : '🔊 정답 단어 듣기'}
+              {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
             </button>
             <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>

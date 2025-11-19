@@ -230,9 +230,9 @@ export default function StressTestPage() {
   }, [timeLeft, phase]);
 
   useEffect(() => {
-    if (timeLeft === 10 && phase === 'testing') {
-      setFeedback('⏰ 10초 후 자동으로 제출됩니다. 서둘러 주세요!');
-    } else if (timeLeft <= 1 && phase === 'testing') {
+    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && phase === 'testing') {
       setFeedback('');
     }
   }, [timeLeft, phase]);
@@ -352,7 +352,6 @@ export default function StressTestPage() {
 
         {phase === 'testing' && currentItem && (() => {
           const totalSyllables = countSyllables(currentItem.word);
-          const correctStressPosition = getStressPosition(currentItem.correctAnswer);
           
           return (
             <div>
@@ -364,6 +363,7 @@ export default function StressTestPage() {
                   minHeight: '100px',
                   marginBottom: '2rem',
                   opacity: isAudioLoading ? 0.5 : 1,
+                  whiteSpace: 'nowrap',
                 }}
                 disabled={isAudioLoading || isSubmitting}
               >
@@ -371,18 +371,7 @@ export default function StressTestPage() {
               </button>
               <p style={feedbackStyle}>{feedback || '강세가 있는 위치를 클릭해주세요.'}</p>
               
-              {/* 단어 표시 */}
-              <div style={{
-                fontSize: '3rem',
-                fontWeight: 'bold',
-                margin: '2rem 0',
-                color: '#6366f1',
-                textAlign: 'center',
-              }}>
-                {currentItem.word}
-              </div>
-              
-              {/* 클릭 가능한 강세 패턴 표시 (O O O) */}
+              {/* 클릭 가능한 강세 패턴 표시 (O O O) - 단어 위에 배치 */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -394,7 +383,6 @@ export default function StressTestPage() {
                 {Array.from({ length: totalSyllables }, (_, index) => {
                   const position = index + 1;
                   const isSelected = selectedStressPosition === position;
-                  const isCorrect = position === correctStressPosition;
                   
                   return (
                     <div
@@ -411,12 +399,8 @@ export default function StressTestPage() {
                         fontSize: '2rem',
                         fontWeight: 'bold',
                         color: isSelected ? '#ffffff' : '#6366f1',
-                        backgroundColor: isSelected 
-                          ? (isCorrect ? '#10b981' : '#ef4444')
-                          : 'transparent',
-                        border: `3px solid ${isSelected 
-                          ? (isCorrect ? '#10b981' : '#ef4444')
-                          : '#6366f1'}`,
+                        backgroundColor: isSelected ? '#6366f1' : 'transparent',
+                        border: `3px solid #6366f1`,
                         transition: 'all 0.2s ease',
                         opacity: isSubmitting || isAudioLoading ? 0.5 : 1,
                         userSelect: 'none',
@@ -429,6 +413,17 @@ export default function StressTestPage() {
                     </div>
                   );
                 })}
+              </div>
+              
+              {/* 단어 표시 - 음절 아래에 배치 */}
+              <div style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                margin: '2rem 0',
+                color: '#6366f1',
+                textAlign: 'center',
+              }}>
+                {currentItem.word}
               </div>
               
               {/* 제출 버튼 */}
