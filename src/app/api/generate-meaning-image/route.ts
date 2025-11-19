@@ -59,9 +59,13 @@ export async function POST(request: Request) {
       quality: 'standard',
     });
 
-    const imageUrl = imageResponse.data[0].url;
+    if (!imageResponse.data || imageResponse.data.length === 0) {
+      throw new Error('이미지 생성 실패: 응답 데이터가 없습니다.');
+    }
+
+    const imageUrl = imageResponse.data[0]?.url;
     if (!imageUrl) {
-      throw new Error('이미지 생성 실패');
+      throw new Error('이미지 생성 실패: 이미지 URL이 없습니다.');
     }
 
     // 이미지 다운로드
