@@ -334,22 +334,6 @@ export default function StressTestPage() {
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const choiceButtonStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '300px',
-    padding: '20px 24px',
-    margin: '0.5rem',
-    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '1.3rem',
-    textAlign: 'center',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
-  };
   const feedbackStyle: React.CSSProperties = {
     minHeight: '2.5em',
     fontSize: '1.05rem',
