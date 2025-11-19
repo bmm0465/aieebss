@@ -483,6 +483,7 @@ export default function MeaningTestPage() {
                           alt={option}
                           width={150}
                           height={150}
+                          unoptimized={true}
                           style={{
                             objectFit: 'contain',
                             borderRadius: '8px',

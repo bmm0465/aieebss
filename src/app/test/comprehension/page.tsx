@@ -19,6 +19,26 @@ interface ComprehensionItem {
   correctAnswer: string;
 }
 
+// 영어 보기를 한국어로 번역하는 매핑
+const optionTranslations: Record<string, string> = {
+  'blue ball': '파란 공',
+  'red car': '빨간 자동차',
+  'small yellow cat': '작은 노란 고양이',
+  'blue': '파란색',
+  'red': '빨간색',
+  'yellow': '노란색',
+  'white': '하얀색',
+  'black': '검은색',
+  'brown': '갈색',
+  'big': '큰',
+  'small': '작은',
+  'tiny': '아주 작은',
+};
+
+function translateOption(option: string): string {
+  return optionTranslations[option] || option;
+}
+
 // 영어 질문을 한국어로 번역하는 간단한 매핑
 const questionTranslations: Record<string, string> = {
   'What does Tom have?': 'Tom은 무엇을 가지고 있나요?',
@@ -461,7 +481,7 @@ export default function ComprehensionTestPage() {
                   style={selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle}
                   disabled={isSubmitting || isAudioLoading}
                 >
-                  {option.content}
+                  {translateOption(option.content)}
                 </button>
               ))}
             </div>

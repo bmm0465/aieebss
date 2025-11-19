@@ -148,8 +148,15 @@ export default function StressTestPage() {
       return stressPos === position;
     });
     
+    // matchingChoice를 찾았으면 설정, 없으면 첫 번째 선택지를 기본값으로 사용
+    // (실제로는 항상 찾아야 하지만, 안전장치로)
     if (matchingChoice) {
       setSelectedAnswer(matchingChoice);
+    } else if (currentItem.choices.length > 0) {
+      // 선택지를 찾지 못한 경우, position에 가장 가까운 선택지 사용
+      // 또는 첫 번째 선택지를 임시로 사용 (디버깅용)
+      console.warn(`[STRESS] position ${position}에 해당하는 선택지를 찾지 못함. 첫 번째 선택지 사용.`);
+      setSelectedAnswer(currentItem.choices[0]);
     }
   };
 
@@ -426,8 +433,8 @@ export default function StressTestPage() {
                 {currentItem.word}
               </div>
               
-              {/* 제출 버튼 */}
-              {selectedAnswer && (
+              {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
+              {selectedStressPosition !== null && (
                 <button
                   onClick={handleSubmit}
                   style={{
@@ -438,7 +445,7 @@ export default function StressTestPage() {
                       ? '#10b981' 
                       : '#6366f1',
                   }}
-                  disabled={isSubmitting || isAudioLoading}
+                  disabled={isSubmitting || isAudioLoading || !selectedAnswer}
                 >
                   {isSubmitting ? '제출 중...' : '제출하기'}
                 </button>

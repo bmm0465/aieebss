@@ -70,9 +70,11 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) throw new Error('인증이 필요합니다.');
         
-        const [dateStr] = sessionId.split('_');
+        const [dateStr, sessionNumStr] = sessionId.split('_');
         const sessionDate = new Date(dateStr);
+        const sessionNumber = parseInt(sessionNumStr || '0');
         
+        // 먼저 해당 날짜의 모든 결과를 가져온 후 클라이언트에서 필터링
         query = query
           .eq('user_id', user.id)
           .gte('created_at', sessionDate.toISOString().split('T')[0])
@@ -87,9 +89,45 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         query = query.eq('user_id', user.id);
       }
 
-      const { data, error: fetchError } = await query;
+      let { data, error: fetchError } = await query;
 
       if (fetchError) throw fetchError;
+      
+      // 세션 필터링이 필요한 경우 클라이언트에서 처리
+      if (sessionId && data) {
+        const [dateStr, sessionNumStr] = sessionId.split('_');
+        const sessionNumber = parseInt(sessionNumStr || '0');
+        
+        // 시간순으로 정렬
+        const sortedData = [...data].sort((a, b) => 
+          new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+        );
+        
+        // 30분 간격으로 세션 구분
+        const sessionGroups: typeof data[] = [];
+        let currentGroup: typeof data = [];
+        let lastTime = 0;
+        
+        sortedData.forEach(result => {
+          const resultTime = new Date(result.created_at || 0).getTime();
+          
+          // 30분(1800000ms) 이상 차이나면 새로운 세션
+          if (resultTime - lastTime > 1800000 && currentGroup.length > 0) {
+            sessionGroups.push(currentGroup);
+            currentGroup = [];
+          }
+          
+          currentGroup.push(result);
+          lastTime = resultTime;
+        });
+        
+        if (currentGroup.length > 0) {
+          sessionGroups.push(currentGroup);
+        }
+        
+        // 요청된 세션 번호의 결과 사용
+        data = sessionGroups[sessionNumber] || [];
+      }
       
       console.log('[AudioResultTable] 조회된 결과:', data?.length || 0, '개');
       

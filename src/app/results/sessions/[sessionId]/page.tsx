@@ -96,12 +96,14 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
 
 // 세션 ID로부터 해당 세션의 결과들을 필터링하는 함수
 function filterResultsBySession(results: TestResult[], sessionId: string): TestResult[] {
-  const [dateStr] = sessionId.split('_');
+  const [dateStr, sessionNumStr] = sessionId.split('_');
   const sessionDate = new Date(dateStr);
+  const sessionNumber = parseInt(sessionNumStr || '0');
   
   // 해당 날짜의 결과들을 가져옴
   const dayResults = results.filter(result => {
-    const resultDate = new Date(result.created_at || 0);
+    if (!result.created_at) return false;
+    const resultDate = new Date(result.created_at);
     return resultDate.toISOString().split('T')[0] === sessionDate.toISOString().split('T')[0];
   });
 
@@ -109,9 +111,6 @@ function filterResultsBySession(results: TestResult[], sessionId: string): TestR
   const sortedResults = dayResults.sort((a, b) => 
     new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
   );
-
-  // 세션 번호 추출
-  const sessionNumber = parseInt(sessionId.split('_')[1] || '0');
   
   // 30분 간격으로 세션 구분
   const sessionGroups: TestResult[][] = [];
@@ -135,8 +134,18 @@ function filterResultsBySession(results: TestResult[], sessionId: string): TestR
     sessionGroups.push(currentGroup);
   }
 
+  // 디버깅: 세션 그룹 정보
+  console.log(`[filterResultsBySession] 날짜: ${dateStr}, 세션 번호: ${sessionNumber}`);
+  console.log(`[filterResultsBySession] 세션 그룹 수: ${sessionGroups.length}`);
+  sessionGroups.forEach((group, idx) => {
+    const testTypes = [...new Set(group.map(r => r.test_type))];
+    console.log(`[filterResultsBySession] 세션 ${idx}: ${group.length}개 결과, 타입: ${testTypes.join(', ')}`);
+  });
+
   // 요청된 세션 번호의 결과 반환
-  return sessionGroups[sessionNumber] || [];
+  const selectedSession = sessionGroups[sessionNumber] || [];
+  console.log(`[filterResultsBySession] 선택된 세션 ${sessionNumber}: ${selectedSession.length}개 결과`);
+  return selectedSession;
 }
 
 interface PageProps {
@@ -187,8 +196,20 @@ export default async function SessionDetailPage({ params }: PageProps) {
 
   // 세션별로 필터링
   const sessionResults = filterResultsBySession(allResults, sessionId);
+  
+  // 디버깅: 세션 필터링 결과 로그
+  console.log(`[SessionDetailPage] 전체 결과: ${allResults.length}개`);
+  console.log(`[SessionDetailPage] 세션 ID: ${sessionId}`);
+  console.log(`[SessionDetailPage] 필터링된 결과: ${sessionResults.length}개`);
+  console.log(`[SessionDetailPage] 테스트 타입별 개수:`, 
+    sessionResults.reduce((acc, r) => {
+      acc[r.test_type] = (acc[r.test_type] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>)
+  );
 
   if (sessionResults.length === 0) {
+    console.warn(`[SessionDetailPage] 세션 ${sessionId}에 대한 결과가 없습니다.`);
     notFound();
   }
 

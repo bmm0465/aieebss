@@ -166,10 +166,12 @@ CRITICAL INSTRUCTIONS:
 
 Scoring rules:
 - ONLY letter NAMES are correct. Letter sounds must be categorised as "Letter sounds".
-- Accept Korean pronunciations of letter names ONLY when they match the exact letter name (예: '에이' for A, '비' for B, '씨' for C, '아이' for I, '에스' for S, ...).
-- IMPORTANT: For letter 'I', only accept '아이' (ai) as correct Korean pronunciation. '이' (i) is a letter sound and must be marked as incorrect.
-- IMPORTANT: For letter 'S', only accept '에스' (es) as correct Korean pronunciation. '스' (s) is a letter sound and must be marked as incorrect.
+- Accept Korean pronunciations of letter names ONLY when they match the exact letter name (예: '에이' for A, '비' for B, '씨' for C, '디' for D, '아이' for I, '에스' for S, ...).
+- CRITICAL: For letter 'D', only accept '디' (di) as correct Korean pronunciation. '드' (duh) is a letter sound and must be marked as incorrect. If the transcript shows 'D' but the pronunciation sounds like '드' (duh), mark it as incorrect.
+- CRITICAL: For letter 'I', only accept '아이' (ai) as correct Korean pronunciation. '이' (i) is a letter sound and must be marked as incorrect. If the transcript shows 'I' but the pronunciation sounds like '이' (i), mark it as incorrect.
+- CRITICAL: For letter 'S', only accept '에스' (es) as correct Korean pronunciation. '스' (s) is a letter sound and must be marked as incorrect. If the transcript shows 'S' but the pronunciation sounds like '스' (s), mark it as incorrect.
 - SPECIAL RULE for similar-sounding letters: For letters where the letter name and letter sound are phonetically similar (e.g., 'O': "oh" vs "ah", 'I': "eye/아이" vs "ih/이"), if the student's response is phonetically close to the letter name, accept it as correct. However, for 'I', '이' is NOT acceptable - only '아이' is correct.
+- IMPORTANT: When the transcript shows a single letter (e.g., 'D', 'S'), you must analyze the actual pronunciation from the audio context. If it sounds like a letter sound (e.g., '드', '스') rather than a letter name (e.g., '디', '에스'), mark it as incorrect.
 - Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to first meaningful attempt.
 - If a student self-corrects to the correct letter name within ${HESITATION_THRESHOLD_SECONDS} seconds of their first incorrect attempt, mark the response correct and set "used_self_correction" to true.
 - If the first meaningful attempt occurs after ${HESITATION_THRESHOLD_SECONDS} seconds, the correct response is overridden by "Hesitation".
