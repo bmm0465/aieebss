@@ -27,7 +27,6 @@ function countSyllables(word: string): number {
 function visualizeStressPattern(word: string, stressPosition: number, totalSyllables: number): string {
   const syllables = [];
   let currentSyllable = '';
-  let syllableIndex = 0;
   
   // 간단한 음절 분리 (자음+모음 패턴)
   for (let i = 0; i < word.length; i++) {
@@ -37,7 +36,6 @@ function visualizeStressPattern(word: string, stressPosition: number, totalSylla
     if (isVowel && currentSyllable.length > 0 && !/[aeiouAEIOU]/.test(currentSyllable[currentSyllable.length - 1])) {
       syllables.push(currentSyllable);
       currentSyllable = char;
-      syllableIndex++;
     } else {
       currentSyllable += char;
     }

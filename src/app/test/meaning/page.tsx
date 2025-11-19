@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
@@ -59,6 +60,7 @@ export default function MeaningTestPage() {
   const [showText, setShowText] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const setup = async () => {
@@ -456,22 +458,24 @@ export default function MeaningTestPage() {
                   }}
                   disabled={isSubmitting || isAudioLoading || isLoadingImages}
                 >
-                  {imageUrls[option] ? (
+                  {imageUrls[option] && !failedImages.has(option) ? (
                     <>
-                      <img 
-                        src={imageUrls[option]} 
-                        alt={option}
-                        style={{
-                          width: '150px',
-                          height: '150px',
-                          objectFit: 'contain',
-                          borderRadius: '8px',
-                        }}
-                        onError={(e) => {
-                          // 이미지 로드 실패 시 텍스트만 표시
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+                      <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                        <Image 
+                          src={imageUrls[option]} 
+                          alt={option}
+                          width={150}
+                          height={150}
+                          style={{
+                            objectFit: 'contain',
+                            borderRadius: '8px',
+                          }}
+                          onError={() => {
+                            // 이미지 로드 실패 시 실패 목록에 추가
+                            setFailedImages(prev => new Set(prev).add(option));
+                          }}
+                        />
+                      </div>
                       <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{option}</div>
                     </>
                   ) : (
