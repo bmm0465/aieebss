@@ -194,36 +194,10 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
         {/* 선택된 교시의 상세 결과 표시 */}
         {selectedTestType && sessionId && (
           <div style={{ marginTop: '2rem' }}>
-            {['LNF', 'NWF', 'WRF', 'ORF'].includes(selectedTestType) ? (
-              <AudioResultTable
-                testType={selectedTestType}
-                sessionId={sessionId}
-              />
-            ) : ['PSF', 'STRESS', 'MEANING', 'COMPREHENSION'].includes(selectedTestType) ? (
-              <div style={{ 
-                backgroundColor: '#f9fafb', 
-                padding: '2rem', 
-                borderRadius: '16px', 
-                textAlign: 'center',
-                border: '2px solid #e5e7eb',
-                boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-              }}>
-                <h3 style={{ 
-                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  marginBottom: '1rem',
-                  fontSize: '1.5rem',
-                  fontWeight: '600'
-                }}>
-                  {testInfo[selectedTestType as keyof typeof testInfo]?.title} 상세 결과
-                </h3>
-                <p style={{ color: '#4b5563', fontSize: '1rem' }}>
-                  {selectedTestType} 평가는 선택형 답변으로 진행되어 음성 파일이 없습니다.
-                </p>
-              </div>
-            ) : null}
+            <AudioResultTable
+              testType={selectedTestType}
+              sessionId={sessionId}
+            />
           </div>
         )}
 

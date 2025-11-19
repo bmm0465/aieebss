@@ -243,14 +243,10 @@ export default async function TeacherDashboard() {
                   textDecoration: 'none',
                   fontWeight: '600',
                   border: '1px solid rgba(99, 102, 241, 0.3)',
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
+                  display: 'inline-block'
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.2)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = 'rgba(99, 102, 241, 0.1)';
-                }}
+                className="curriculum-data-link"
               >
                 📚 교육과정 데이터
               </Link>

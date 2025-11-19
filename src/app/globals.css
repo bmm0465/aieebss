@@ -94,6 +94,12 @@ body {
   transition: all 0.3s ease;
 }
 
+/* 교사 대시보드 교육과정 데이터 링크 호버 효과 */
+.curriculum-data-link:hover {
+  background-color: rgba(99, 102, 241, 0.2) !important;
+  transition: all 0.2s ease;
+}
+
 /* 모던한 버튼 기본 스타일 */
 .btn-primary {
   background: var(--gradient-primary);
