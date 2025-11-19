@@ -23,8 +23,8 @@ function countSyllables(word: string): number {
   return matches ? matches.length : 1;
 }
 
-// 강세 패턴을 시각화하는 함수
-function visualizeStressPattern(word: string, stressPosition: number, totalSyllables: number): string {
+// 단어를 음절로 분리하는 함수
+function splitIntoSyllables(word: string, totalSyllables: number): string[] {
   const syllables = [];
   let currentSyllable = '';
   
@@ -54,15 +54,7 @@ function visualizeStressPattern(word: string, stressPosition: number, totalSylla
     }
   }
   
-  // 강세 패턴 생성
-  const pattern = syllables.map((_, index) => {
-    if (index === stressPosition - 1) {
-      return '●';
-    }
-    return '○';
-  });
-  
-  return pattern.join(' ');
+  return syllables;
 }
 
 // 선택지에서 강세 위치 추출
@@ -96,6 +88,7 @@ export default function StressTestPage() {
   const [itemIndex, setItemIndex] = useState(0);
   const [currentItem, setCurrentItem] = useState<StressItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedStressPosition, setSelectedStressPosition] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -177,10 +170,28 @@ export default function StressTestPage() {
     }
   }, []);
 
-  const handleAnswerSelect = async (answer: string) => {
+  // 음절 클릭 핸들러
+  const handleSyllableClick = (position: number) => {
     if (isSubmitting || !currentItem || !user) return;
     
-    setSelectedAnswer(answer);
+    setSelectedStressPosition(position);
+    
+    // 선택된 위치에 해당하는 선택지 찾기
+    const totalSyllables = countSyllables(currentItem.word);
+    const matchingChoice = currentItem.choices.find(choice => {
+      const stressPos = getStressPosition(choice);
+      return stressPos === position;
+    });
+    
+    if (matchingChoice) {
+      setSelectedAnswer(matchingChoice);
+    }
+  };
+
+  // 제출 핸들러
+  const handleSubmit = async () => {
+    if (isSubmitting || !currentItem || !user || !selectedAnswer) return;
+    
     setIsSubmitting(true);
     setFeedback('제출 중...');
 
@@ -197,7 +208,7 @@ export default function StressTestPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: currentItem.word,
-          selectedAnswer: answer,
+          selectedAnswer: selectedAnswer,
           correctAnswer: currentItem.correctAnswer,
           choices: currentItem.choices,
           userId: user.id,
@@ -229,6 +240,7 @@ export default function StressTestPage() {
       setItemIndex(nextIndex);
       setCurrentItem(items[nextIndex]);
       setSelectedAnswer(null);
+      setSelectedStressPosition(null);
       setIsSubmitting(false);
       setFeedback('');
     }
@@ -390,9 +402,9 @@ export default function StressTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              단어를 듣고 올바른 강세 패턴을 선택해주세요.
+              단어를 듣고 강세가 있는 위치를 클릭해주세요.
               <br />
-              (예: &quot;computer&quot;를 들려주면, 강세가 올바르게 표시된 패턴을 선택합니다)
+              (예: &quot;computer&quot;를 들려주면, 강세가 있는 음절을 클릭합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -400,43 +412,113 @@ export default function StressTestPage() {
           </div>
         )}
 
-        {phase === 'testing' && currentItem && (
-          <div>
-            <button
-              onClick={() => playWordAudio(currentItem.word)}
-              style={{
-                ...buttonStyle,
-                fontSize: '3rem',
-                minHeight: '100px',
-                marginBottom: '2rem',
-                opacity: isAudioLoading ? 0.5 : 1,
-              }}
-              disabled={isAudioLoading || isSubmitting}
-            >
-              {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
-            </button>
-            <div style={wordDisplayStyle}>{currentItem.word}</div>
-            <p style={feedbackStyle}>{feedback || '강세 패턴을 선택해주세요.'}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
-              {currentItem.choices.map((choice, index) => {
-                const totalSyllables = countSyllables(currentItem.word);
-                const stressPosition = getStressPosition(choice);
-                const pattern = visualizeStressPattern(currentItem.word, stressPosition, totalSyllables);
-                return (
-                  <button
-                    key={index}
-                    onClick={() => handleAnswerSelect(choice)}
-                    style={selectedAnswer === choice ? selectedChoiceButtonStyle : choiceButtonStyle}
-                    disabled={isSubmitting || isAudioLoading}
-                  >
-                    <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{pattern}</div>
-                    <div style={{ fontSize: '1rem', opacity: 0.8 }}>{choice}</div>
-                  </button>
-                );
-              })}
+        {phase === 'testing' && currentItem && (() => {
+          const totalSyllables = countSyllables(currentItem.word);
+          const syllables = splitIntoSyllables(currentItem.word, totalSyllables);
+          const correctStressPosition = getStressPosition(currentItem.correctAnswer);
+          
+          return (
+            <div>
+              <button
+                onClick={() => playWordAudio(currentItem.word)}
+                style={{
+                  ...buttonStyle,
+                  fontSize: '3rem',
+                  minHeight: '100px',
+                  marginBottom: '2rem',
+                  opacity: isAudioLoading ? 0.5 : 1,
+                }}
+                disabled={isAudioLoading || isSubmitting}
+              >
+                {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
+              </button>
+              <p style={feedbackStyle}>{feedback || '강세가 있는 음절을 클릭해주세요.'}</p>
+              
+              {/* 클릭 가능한 단어 표시 */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                gap: '0.5rem',
+                margin: '3rem 0',
+                flexWrap: 'wrap',
+              }}>
+                {syllables.map((syllable, index) => {
+                  const position = index + 1;
+                  const isSelected = selectedStressPosition === position;
+                  const isCorrect = position === correctStressPosition;
+                  
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => handleSyllableClick(position)}
+                      style={{
+                        position: 'relative',
+                        cursor: isSubmitting || isAudioLoading ? 'not-allowed' : 'pointer',
+                        padding: '1rem 1.5rem',
+                        margin: '0.25rem',
+                        fontSize: '2.5rem',
+                        fontWeight: 'bold',
+                        color: isSelected ? '#ffffff' : '#6366f1',
+                        backgroundColor: isSelected 
+                          ? (isCorrect ? '#10b981' : '#ef4444')
+                          : 'transparent',
+                        border: `3px solid ${isSelected 
+                          ? (isCorrect ? '#10b981' : '#ef4444')
+                          : '#6366f1'}`,
+                        borderRadius: '12px',
+                        transition: 'all 0.2s ease',
+                        opacity: isSubmitting || isAudioLoading ? 0.5 : 1,
+                        userSelect: 'none',
+                        boxShadow: isSelected 
+                          ? '0 4px 12px rgba(99, 102, 241, 0.3)'
+                          : 'none',
+                      }}
+                    >
+                      {syllable}
+                      {isSelected && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '-0.5rem',
+                          right: '-0.5rem',
+                          width: '1.5rem',
+                          height: '1.5rem',
+                          borderRadius: '50%',
+                          backgroundColor: isCorrect ? '#10b981' : '#ef4444',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '1rem',
+                          color: 'white',
+                        }}>
+                          ●
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* 제출 버튼 */}
+              {selectedAnswer && (
+                <button
+                  onClick={handleSubmit}
+                  style={{
+                    ...buttonStyle,
+                    maxWidth: '300px',
+                    marginTop: '2rem',
+                    backgroundColor: selectedAnswer === currentItem.correctAnswer 
+                      ? '#10b981' 
+                      : '#6366f1',
+                  }}
+                  disabled={isSubmitting || isAudioLoading}
+                >
+                  {isSubmitting ? '제출 중...' : '제출하기'}
+                </button>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {phase === 'finished' && (
           <div>

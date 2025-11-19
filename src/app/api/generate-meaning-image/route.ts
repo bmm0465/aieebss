@@ -26,7 +26,8 @@ export async function POST(request: Request) {
     const fileName = generateFileName(phrase);
     const storagePath = `meaning-images/${fileName}`;
 
-    // 이미지가 이미 존재하는지 확인
+    // 이미지가 이미 존재하는지 확인 (bucket이 없을 수 있으므로 안전하게 처리)
+    let useStorage = false;
     try {
       const { data: existingFile, error: listError } = await serviceClient.storage
         .from('meaning-images')
@@ -45,9 +46,11 @@ export async function POST(request: Request) {
           cached: true 
         });
       }
+      useStorage = true; // bucket이 존재하면 Storage 사용
     } catch (error) {
-      // Storage 확인 실패 시 계속 진행 (새로 생성)
-      console.warn('Storage 확인 실패, 새 이미지 생성:', error);
+      // Storage bucket이 없거나 확인 실패 시 DALL-E URL 직접 사용
+      console.warn('Storage 확인 실패, DALL-E URL 직접 사용:', error);
+      useStorage = false;
     }
 
     // DALL-E 3로 이미지 생성
@@ -68,34 +71,42 @@ export async function POST(request: Request) {
       throw new Error('이미지 생성 실패: 이미지 URL이 없습니다.');
     }
 
-    // 이미지 다운로드
-    const imageResponse_fetch = await fetch(imageUrl);
-    const imageBuffer = Buffer.from(await imageResponse_fetch.arrayBuffer());
+    // Storage를 사용할 수 있으면 저장 시도, 없으면 DALL-E URL 직접 반환
+    if (useStorage) {
+      try {
+        // 이미지 다운로드
+        const imageResponse_fetch = await fetch(imageUrl);
+        const imageBuffer = Buffer.from(await imageResponse_fetch.arrayBuffer());
 
-    // Supabase Storage에 저장
-    const { error: uploadError } = await serviceClient.storage
-      .from('meaning-images')
-      .upload(storagePath, imageBuffer, {
-        contentType: 'image/png',
-        upsert: false,
-      });
+        // Supabase Storage에 저장
+        const { error: uploadError } = await serviceClient.storage
+          .from('meaning-images')
+          .upload(storagePath, imageBuffer, {
+            contentType: 'image/png',
+            upsert: false,
+          });
 
-    if (uploadError) {
-      console.error('Storage 업로드 오류:', uploadError);
-      // 업로드 실패해도 이미지 URL 반환
-      return NextResponse.json({ 
-        imageUrl: imageUrl,
-        cached: false 
-      });
+        if (!uploadError) {
+          // 공개 URL 생성
+          const { data: urlData } = serviceClient.storage
+            .from('meaning-images')
+            .getPublicUrl(storagePath);
+
+          return NextResponse.json({ 
+            imageUrl: urlData.publicUrl,
+            cached: false 
+          });
+        } else {
+          console.error('Storage 업로드 오류:', uploadError);
+        }
+      } catch (storageError) {
+        console.error('Storage 처리 오류:', storageError);
+      }
     }
 
-    // 공개 URL 생성
-    const { data: urlData } = serviceClient.storage
-      .from('meaning-images')
-      .getPublicUrl(storagePath);
-
+    // Storage 사용 불가 또는 업로드 실패 시 DALL-E URL 직접 반환
     return NextResponse.json({ 
-      imageUrl: urlData.publicUrl,
+      imageUrl: imageUrl,
       cached: false 
     });
 
