@@ -44,12 +44,14 @@ interface CurriculumData {
 }
 
 export default function CurriculumDataPage() {
-  const [dataType, setDataType] = useState<'expressions' | 'vocabulary'>('expressions');
+  const [dataType, setDataType] = useState<'expressions' | 'vocabulary' | 'wordlist'>('expressions');
   const [selectedUnit, setSelectedUnit] = useState<number>(1);
   const [coreExpressions, setCoreExpressions] = useState<CurriculumData | null>(null);
   const [vocabulary, setVocabulary] = useState<CurriculumData | null>(null);
+  const [wordList, setWordList] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   useEffect(() => {
     const loadData = async () => {
@@ -67,6 +69,21 @@ export default function CurriculumDataPage() {
         if (!vocabularyResponse.ok) throw new Error('어휘 난이도 데이터를 불러올 수 없습니다.');
         const vocabularyData = await vocabularyResponse.json();
         setVocabulary(vocabularyData);
+        
+        // 초등 필수 어휘 목록 로드
+        const wordListResponse = await fetch('/data/초등 필수 어휘 목록(800개).txt');
+        if (!wordListResponse.ok) throw new Error('초등 필수 어휘 목록을 불러올 수 없습니다.');
+        const wordListText = await wordListResponse.text();
+        const words = wordListText
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .map(line => {
+            // 괄호 안의 내용 제거 (예: "a (an)" -> "a")
+            const mainWord = line.split('(')[0].trim();
+            return mainWord;
+          });
+        setWordList(words);
         
         setError(null);
       } catch (err) {
@@ -174,7 +191,7 @@ export default function CurriculumDataPage() {
               📚 교육과정 데이터
             </h1>
             <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>
-              {dataType === 'expressions' ? '핵심 표현' : '어휘 난이도'} 데이터 확인
+              {dataType === 'expressions' ? '핵심 표현' : dataType === 'vocabulary' ? '어휘 난이도' : '초등 필수 어휘 목록'} 데이터 확인
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
@@ -205,7 +222,8 @@ export default function CurriculumDataPage() {
           border: '1px solid rgba(0, 0, 0, 0.1)',
           display: 'flex',
           gap: '1rem',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexWrap: 'wrap'
         }}>
           <span style={{ fontWeight: '600', fontSize: '1.1rem' }}>데이터 타입:</span>
           <button
@@ -240,10 +258,26 @@ export default function CurriculumDataPage() {
           >
             어휘 난이도
           </button>
+          <button
+            onClick={() => setDataType('wordlist')}
+            style={{
+              padding: '0.8rem 1.5rem',
+              backgroundColor: dataType === 'wordlist' ? '#6366f1' : '#f3f4f6',
+              color: dataType === 'wordlist' ? 'white' : '#374151',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: '600',
+              fontSize: '1rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            초등 필수 어휘 목록
+          </button>
         </div>
 
         {/* 메타데이터 */}
-        {currentData && (
+        {currentData && dataType !== 'wordlist' && (
           <div style={{
             backgroundColor: '#f9fafb',
             padding: '1.5rem',
@@ -268,8 +302,67 @@ export default function CurriculumDataPage() {
           </div>
         )}
 
+        {/* 어휘 목록 정보 */}
+        {dataType === 'wordlist' && (
+          <div style={{
+            backgroundColor: '#f9fafb',
+            padding: '1.5rem',
+            borderRadius: '15px',
+            marginBottom: '2rem',
+            border: '1px solid rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.2rem', fontWeight: '600' }}>
+              📋 어휘 목록 정보
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+              <div>
+                <strong>총 어휘 수:</strong> {wordList.length}개
+              </div>
+              <div>
+                <strong>검색 결과:</strong> {searchTerm ? wordList.filter(word => word.toLowerCase().includes(searchTerm.toLowerCase())).length : wordList.length}개
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 검색 기능 (어휘 목록만) */}
+        {dataType === 'wordlist' && (
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '1.5rem',
+            borderRadius: '15px',
+            marginBottom: '2rem',
+            border: '1px solid rgba(0, 0, 0, 0.1)'
+          }}>
+            <h3 style={{ margin: '0 0 1rem 0', fontSize: '1.2rem', fontWeight: '600' }}>
+              🔍 어휘 검색
+            </h3>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="어휘를 검색하세요 (예: apple, cat, ...)"
+              style={{
+                width: '100%',
+                padding: '0.8rem 1rem',
+                fontSize: '1rem',
+                border: '2px solid #e5e7eb',
+                borderRadius: '8px',
+                outline: 'none',
+                transition: 'all 0.2s'
+              }}
+              onFocus={(e) => {
+                e.currentTarget.style.borderColor = '#6366f1';
+              }}
+              onBlur={(e) => {
+                e.currentTarget.style.borderColor = '#e5e7eb';
+              }}
+            />
+          </div>
+        )}
+
         {/* 단원 선택 */}
-        {currentData && (
+        {currentData && dataType !== 'wordlist' && (
           <div style={{
             backgroundColor: '#ffffff',
             padding: '1.5rem',
@@ -305,7 +398,65 @@ export default function CurriculumDataPage() {
         )}
 
         {/* 데이터 테이블 */}
-        {currentUnit && (
+        {dataType === 'wordlist' ? (
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '1.5rem',
+            borderRadius: '15px',
+            border: '1px solid rgba(0, 0, 0, 0.1)',
+            maxHeight: '600px',
+            overflowY: 'auto'
+          }}>
+            <h3 style={{ margin: '0 0 1.5rem 0', fontSize: '1.2rem', fontWeight: '600' }}>
+              초등 필수 어휘 목록 ({wordList.length}개)
+            </h3>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+              gap: '0.8rem'
+            }}>
+              {wordList
+                .filter(word => 
+                  searchTerm === '' || word.toLowerCase().includes(searchTerm.toLowerCase())
+                )
+                .map((word, index) => (
+                  <div
+                    key={index}
+                    style={{
+                      padding: '0.8rem',
+                      backgroundColor: '#f9fafb',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      textAlign: 'center',
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f3f4f6';
+                      e.currentTarget.style.borderColor = '#6366f1';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = '#f9fafb';
+                      e.currentTarget.style.borderColor = '#e5e7eb';
+                    }}
+                  >
+                    {word}
+                  </div>
+                ))}
+            </div>
+            {searchTerm && wordList.filter(word => word.toLowerCase().includes(searchTerm.toLowerCase())).length === 0 && (
+              <div style={{
+                textAlign: 'center',
+                padding: '3rem 2rem',
+                color: '#6b7280'
+              }}>
+                <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>검색 결과가 없습니다</p>
+                <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>다른 검색어를 입력해보세요</p>
+              </div>
+            )}
+          </div>
+        ) : currentUnit ? (
           <div style={{
             backgroundColor: '#ffffff',
             padding: '1.5rem',
@@ -353,7 +504,7 @@ export default function CurriculumDataPage() {
               </tbody>
             </table>
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
