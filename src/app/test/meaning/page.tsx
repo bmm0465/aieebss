@@ -540,6 +540,7 @@ export default function MeaningTestPage() {
                   {imageUrls[option] && !failedImages.has(option) ? (
                     <>
                       <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img 
                           src={imageUrls[option]} 
                           alt={option}

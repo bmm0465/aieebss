@@ -119,7 +119,7 @@ export default function CurriculumDataPage() {
           unitStats[unit.unit] = { total: 0, overlaps: 0 };
         }
         unit.entries.forEach(entry => {
-          const value = (entry as any)[publisherKey];
+          const value = (entry as Record<string, string | null | undefined>)[publisherKey];
           if (value && typeof value === 'string') {
             // 표현의 경우 정규화 (대소문자, 공백, 구두점)
             const normalized = value.trim().toLowerCase();
@@ -150,7 +150,7 @@ export default function CurriculumDataPage() {
         const unitItems: { [item: string]: string[] } = {};
         unit.entries.forEach(entry => {
           publisherKeys.forEach(publisherKey => {
-            const value = (entry as any)[publisherKey];
+            const value = (entry as Record<string, string | null | undefined>)[publisherKey];
             if (value && typeof value === 'string') {
               const normalized = value.trim().toLowerCase();
               if (normalized) {
@@ -170,7 +170,7 @@ export default function CurriculumDataPage() {
 
     // 겹치는 항목 찾기 (2개 이상 출판사에서 사용)
     const overlaps = Object.entries(allItems)
-      .filter(([_, data]) => data.count >= 2)
+      .filter(([, data]) => data.count >= 2)
       .map(([item, data]) => ({
         item,
         publishers: data.publishers,
