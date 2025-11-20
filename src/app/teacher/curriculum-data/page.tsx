@@ -36,6 +36,7 @@ interface CurriculumData {
     source: string;
     created: string;
     description: string;
+    dataType?: string;
     publishers: {
       [key: string]: string;
     };
