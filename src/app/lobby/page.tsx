@@ -216,7 +216,7 @@ export default function LobbyPage() {
           <Image src="/owl.png" alt="안내하는 부엉이" width={80} height={80} />
           <div style={owlMessageStyle}>
             <p style={{ margin: 0, fontWeight: 'bold' }}>
-              달빛 마법학교 입학처에 온 것을 환영합니다!
+              달빛 마법학교에 온 것을 환영합니다!
             </p>
             <p style={{ margin: '0.5rem 0 0 0' }}>
               여러분은 총 여섯 가지의 입학 시험 과목에 참여하게 됩니다.
