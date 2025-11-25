@@ -19,6 +19,12 @@ interface AudioResult {
   target_segments?: number;
   wcpm?: number;
   accuracy?: number;
+  transcription_results?: {
+    openai?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    gemini?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    aws?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    azure?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+  };
 }
 
 interface AudioResultTableProps {
@@ -365,7 +371,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                         borderRadius: '8px',
                         fontSize: '0.9rem'
                       }}>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                           <div>
                             <strong style={{ color: '#FFD700' }}>문제 ID:</strong> {result.id ? (typeof result.id === 'string' ? result.id.slice(0, 8) : String(result.id).slice(0, 8)) : 'N/A'}...
                           </div>
@@ -385,6 +391,84 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                             </div>
                           )}
                         </div>
+                        
+                        {/* Multi-API Transcription Results */}
+                        {result.transcription_results && (
+                          <div style={{ 
+                            marginTop: '1rem', 
+                            padding: '1rem', 
+                            backgroundColor: 'rgba(0, 0, 0, 0.2)', 
+                            borderRadius: '8px',
+                            border: '1px solid rgba(255, 215, 0, 0.3)'
+                          }}>
+                            <strong style={{ color: '#FFD700', fontSize: '1rem', marginBottom: '0.5rem', display: 'block' }}>
+                              음성 인식 결과 비교 (4개 모델)
+                            </strong>
+                            <div style={{ 
+                              display: 'grid', 
+                              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+                              gap: '1rem',
+                              marginTop: '0.5rem'
+                            }}>
+                              {['openai', 'gemini', 'aws', 'azure'].map((provider) => {
+                                const providerData = (result.transcription_results as any)?.[provider];
+                                const isSuccess = providerData && !providerData.error;
+                                const providerNames: Record<string, string> = {
+                                  openai: 'OpenAI (GPT-4o)',
+                                  gemini: 'Google Gemini 2.5 Pro',
+                                  aws: 'AWS Transcribe',
+                                  azure: 'Azure AI Speech',
+                                };
+                                
+                                return (
+                                  <div 
+                                    key={provider}
+                                    style={{
+                                      padding: '0.75rem',
+                                      backgroundColor: isSuccess ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
+                                      borderRadius: '6px',
+                                      border: `1px solid ${isSuccess ? 'rgba(40, 167, 69, 0.3)' : 'rgba(220, 53, 69, 0.3)'}`
+                                    }}
+                                  >
+                                    <div style={{ 
+                                      fontWeight: 'bold', 
+                                      color: isSuccess ? '#28a745' : '#dc3545',
+                                      marginBottom: '0.5rem',
+                                      fontSize: '0.9rem'
+                                    }}>
+                                      {providerNames[provider]} {isSuccess ? '✅' : '❌'}
+                                    </div>
+                                    {isSuccess ? (
+                                      <>
+                                        <div style={{ marginBottom: '0.25rem', fontSize: '0.85rem' }}>
+                                          <strong style={{ color: '#FFD700' }}>전사:</strong>
+                                          <div style={{ 
+                                            color: '#e9ecef', 
+                                            wordBreak: 'break-word',
+                                            marginTop: '0.25rem',
+                                            maxHeight: '60px',
+                                            overflowY: 'auto'
+                                          }}>
+                                            {providerData.text || '(빈 결과)'}
+                                          </div>
+                                        </div>
+                                        {providerData.confidence && (
+                                          <div style={{ fontSize: '0.8rem', color: '#ccc', marginTop: '0.25rem' }}>
+                                            <strong>신뢰도:</strong> {providerData.confidence}
+                                          </div>
+                                        )}
+                                      </>
+                                    ) : (
+                                      <div style={{ fontSize: '0.8rem', color: '#dc3545' }}>
+                                        오류: {providerData?.error || '알 수 없는 오류'}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </td>
                   </tr>

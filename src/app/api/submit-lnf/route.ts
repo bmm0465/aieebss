@@ -3,11 +3,11 @@ import { createServiceClient } from '@/lib/supabase/server';
 import { generateStoragePath } from '@/lib/storage-path';
 import {
   hasHesitation,
-  parseTranscriptionResult,
   timelineToPrompt,
 } from '@/lib/utils/dibelsTranscription';
 import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { transcribeAll, getPrimaryTranscription } from '@/lib/services/transcriptionService';
 
 // OpenAI 클라이언트 초기화 (파일 최상단)
 const openai = new OpenAI({
@@ -96,19 +96,15 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     }
 
     
-    const [storageResult, transcription] = await Promise.all([
+    const [storageResult, allTranscriptions] = await Promise.all([
       supabase.storage
         .from('student-recordings')
         .upload(storagePath, arrayBuffer, { 
           contentType: 'audio/webm',
           upsert: false
         }),
-      openai.audio.transcriptions.create({
-      model: 'gpt-4o-transcribe',
-        file: new File([arrayBuffer], 'audio.webm', { type: 'audio/webm' }),
+      transcribeAll(arrayBuffer, {
         language: 'en',
-        response_format: 'json',
-        temperature: 0,
         prompt: `This is a DIBELS 8th edition Letter Naming Fluency (LNF) test for Korean EFL students. The student will name individual English letters.
 
 CRITICAL INSTRUCTIONS:
@@ -117,14 +113,21 @@ CRITICAL INSTRUCTIONS:
 3. Accept English letter names: 'ay', 'bee', 'cee', 'dee', 'ee', 'eff', 'gee', 'aitch', 'eye', 'jay', 'kay', 'ell', 'em', 'en', 'oh', 'pee', 'cue', 'ar', 'ess', 'tee', 'you', 'vee', 'double-u', 'ex', 'why', 'zee'.
 4. Be flexible with hesitations, repetitions, and partial attempts.
 5. Return strict JSON with keys: "text" (string), "confidence" (string), and "segments" (array of {"start": number, "end": number, "text": string}) where start/end are seconds from audio start. Always include the segments array (empty if no speech).`,
-      })
+        responseFormat: 'json',
+        temperature: 0,
+      }),
     ]);
 
     const { data: storageData, error: storageError } = storageResult;
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    const transcriptionData = parseTranscriptionResult(transcription);
+    // Use OpenAI result as primary for backward compatibility
+    const transcriptionData = getPrimaryTranscription(allTranscriptions);
+    if (!transcriptionData) {
+      throw new Error('OpenAI transcription failed - primary transcription is required');
+    }
+
     const timeline = transcriptionData.timeline;
     const confidence = transcriptionData.confidence ?? 'medium';
     const aggregatedTranscript = transcriptionData.text || '';
@@ -252,6 +255,38 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
 
     const processingTime = Date.now() - startTime;
     
+    // Prepare transcription_results JSONB data
+    const transcriptionResults = {
+      openai: allTranscriptions.openai.success && allTranscriptions.openai.result
+        ? {
+            text: allTranscriptions.openai.result.text,
+            confidence: allTranscriptions.openai.result.confidence,
+            timeline: allTranscriptions.openai.result.timeline,
+          }
+        : { error: allTranscriptions.openai.error },
+      gemini: allTranscriptions.gemini.success && allTranscriptions.gemini.result
+        ? {
+            text: allTranscriptions.gemini.result.text,
+            confidence: allTranscriptions.gemini.result.confidence,
+            timeline: allTranscriptions.gemini.result.timeline,
+          }
+        : { error: allTranscriptions.gemini.error },
+      aws: allTranscriptions.aws.success && allTranscriptions.aws.result
+        ? {
+            text: allTranscriptions.aws.result.text,
+            confidence: allTranscriptions.aws.result.confidence,
+            timeline: allTranscriptions.aws.result.timeline,
+          }
+        : { error: allTranscriptions.aws.error },
+      azure: allTranscriptions.azure.success && allTranscriptions.azure.result
+        ? {
+            text: allTranscriptions.azure.result.text,
+            confidence: allTranscriptions.azure.result.confidence,
+            timeline: allTranscriptions.azure.result.timeline,
+          }
+        : { error: allTranscriptions.azure.error },
+    };
+    
     const { error: insertError } = await supabase.from('test_results').insert({
       user_id: userId,
       test_type: 'LNF',
@@ -260,6 +295,7 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
       is_correct: isCorrect,
       error_type: errorType,
       audio_url: audioUrl,
+      transcription_results: transcriptionResults,
     });
 
     if (insertError) {

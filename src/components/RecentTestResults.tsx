@@ -14,6 +14,12 @@ interface TestResult {
   audio_url: string | null;
   created_at: string;
   error_details?: Record<string, unknown>;
+  transcription_results?: {
+    openai?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    gemini?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    aws?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    azure?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+  };
 }
 
 interface RecentTestResultsProps {
@@ -202,6 +208,74 @@ export default function RecentTestResults({ results }: RecentTestResultsProps) {
                   }}>
                     {JSON.stringify(result.error_details, null, 2)}
                   </pre>
+                </div>
+              )}
+
+              {/* Multi-API Transcription Results */}
+              {result.transcription_results && (
+                <div style={{ 
+                  marginTop: '1rem',
+                  padding: '0.8rem',
+                  backgroundColor: 'rgba(255, 215, 0, 0.1)',
+                  borderRadius: '5px',
+                  border: '1px solid rgba(255, 215, 0, 0.3)'
+                }}>
+                  <strong style={{ color: '#FFD700', fontSize: '0.9rem', marginBottom: '0.5rem', display: 'block' }}>
+                    음성 인식 결과 비교 (4개 모델)
+                  </strong>
+                  <div style={{ 
+                    display: 'grid', 
+                    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+                    gap: '0.75rem',
+                    marginTop: '0.5rem'
+                  }}>
+                    {['openai', 'gemini', 'aws', 'azure'].map((provider) => {
+                      const providerData = result.transcription_results?.[provider as keyof typeof result.transcription_results];
+                      const isSuccess = providerData && !providerData.error;
+                      const providerNames: Record<string, string> = {
+                        openai: 'OpenAI',
+                        gemini: 'Gemini',
+                        aws: 'AWS',
+                        azure: 'Azure',
+                      };
+                      
+                      return (
+                        <div 
+                          key={provider}
+                          style={{
+                            padding: '0.5rem',
+                            backgroundColor: isSuccess ? 'rgba(40, 167, 69, 0.1)' : 'rgba(220, 53, 69, 0.1)',
+                            borderRadius: '4px',
+                            border: `1px solid ${isSuccess ? 'rgba(40, 167, 69, 0.3)' : 'rgba(220, 53, 69, 0.3)'}`,
+                            fontSize: '0.8rem'
+                          }}
+                        >
+                          <div style={{ 
+                            fontWeight: 'bold', 
+                            color: isSuccess ? '#28a745' : '#dc3545',
+                            marginBottom: '0.25rem'
+                          }}>
+                            {providerNames[provider]} {isSuccess ? '✅' : '❌'}
+                          </div>
+                          {isSuccess ? (
+                            <div style={{ 
+                              color: '#e9ecef', 
+                              wordBreak: 'break-word',
+                              maxHeight: '40px',
+                              overflowY: 'auto',
+                              fontSize: '0.75rem'
+                            }}>
+                              {providerData.text || '(빈 결과)'}
+                            </div>
+                          ) : (
+                            <div style={{ fontSize: '0.7rem', color: '#dc3545' }}>
+                              {providerData?.error || '오류'}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               )}
 

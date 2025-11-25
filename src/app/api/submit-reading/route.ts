@@ -5,8 +5,8 @@ import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   hasHesitation,
-  parseTranscriptionResult,
 } from '@/lib/utils/dibelsTranscription';
+import { transcribeAll, getPrimaryTranscription } from '@/lib/services/transcriptionService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -50,24 +50,22 @@ async function processReadingInBackground(
 
     const storagePath = await generateStoragePath(userId, testType);
 
-    const [storageResult, transcription] = await Promise.all([
+    const [storageResult, allTranscriptions] = await Promise.all([
       supabase.storage
         .from('student-recordings')
         .upload(storagePath, arrayBuffer, {
           contentType: 'audio/webm',
           upsert: false,
         }),
-      openai.audio.transcriptions.create({
-        model: 'gpt-4o-transcribe',
-        file: new File([arrayBuffer], 'audio.webm', { type: 'audio/webm' }),
+      transcribeAll(arrayBuffer, {
         language: 'en',
-        response_format: 'json',
-        temperature: 0,
         prompt: `This is a reading fluency test for Korean EFL students. The student will read ${testType === 'NWF' ? 'a nonsense word' : testType === 'WRF' ? 'a real word' : 'a sentence'}.
 
 TARGET: "${question}"
 
 Accept Korean-accented pronunciations and be flexible with variations.`,
+        responseFormat: 'json',
+        temperature: 0,
       }),
     ]);
 
@@ -75,7 +73,12 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    const transcriptionData = parseTranscriptionResult(transcription);
+    // Use OpenAI result as primary for backward compatibility
+    const transcriptionData = getPrimaryTranscription(allTranscriptions);
+    if (!transcriptionData) {
+      throw new Error('OpenAI transcription failed - primary transcription is required');
+    }
+
     const timeline = transcriptionData.timeline;
     const confidence = transcriptionData.confidence ?? 'medium';
     const studentAnswer = transcriptionData.text?.trim() || 'no_response';
@@ -83,6 +86,38 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
 
     // 간단한 정확도 평가
     const isCorrect = !hesitationDetected && studentAnswer.toLowerCase().includes(question.toLowerCase().split(' ')[0]);
+
+    // Prepare transcription_results JSONB data
+    const transcriptionResults = {
+      openai: allTranscriptions.openai.success && allTranscriptions.openai.result
+        ? {
+            text: allTranscriptions.openai.result.text,
+            confidence: allTranscriptions.openai.result.confidence,
+            timeline: allTranscriptions.openai.result.timeline,
+          }
+        : { error: allTranscriptions.openai.error },
+      gemini: allTranscriptions.gemini.success && allTranscriptions.gemini.result
+        ? {
+            text: allTranscriptions.gemini.result.text,
+            confidence: allTranscriptions.gemini.result.confidence,
+            timeline: allTranscriptions.gemini.result.timeline,
+          }
+        : { error: allTranscriptions.gemini.error },
+      aws: allTranscriptions.aws.success && allTranscriptions.aws.result
+        ? {
+            text: allTranscriptions.aws.result.text,
+            confidence: allTranscriptions.aws.result.confidence,
+            timeline: allTranscriptions.aws.result.timeline,
+          }
+        : { error: allTranscriptions.aws.error },
+      azure: allTranscriptions.azure.success && allTranscriptions.azure.result
+        ? {
+            text: allTranscriptions.azure.result.text,
+            confidence: allTranscriptions.azure.result.confidence,
+            timeline: allTranscriptions.azure.result.timeline,
+          }
+        : { error: allTranscriptions.azure.error },
+    };
 
     await supabase.from('test_results').insert({
       user_id: userId,
@@ -94,6 +129,7 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
       audio_url: audioUrl,
       confidence_level: confidence,
       processing_time_ms: Date.now() - startTime,
+      transcription_results: transcriptionResults,
     });
 
     console.log(
