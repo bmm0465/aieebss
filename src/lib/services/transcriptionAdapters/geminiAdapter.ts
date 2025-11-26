@@ -32,7 +32,7 @@ export async function transcribeWithGemini(
     // For now, we'll use the generative model with audio input if supported
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    let rawText = response.text();
+    const rawText = response.text();
 
     // Parse JSON if response is wrapped in markdown code blocks
     let parsedData: { text?: string; confidence?: string; segments?: Array<{ start: number; end: number; text: string }> } = {};

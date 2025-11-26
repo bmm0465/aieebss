@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "migrate-storage": "npx tsx scripts/migrate-storage.ts"
+    "migrate-storage": "npx tsx scripts/migrate-storage.ts",
+    "deploy": "tsx scripts/auto-deploy.ts",
+    "monitor": "tsx scripts/monitor-deployment.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.939.0",

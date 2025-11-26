@@ -6,8 +6,7 @@ export interface TranscriptionOptions {
 
 export async function transcribeWithAzure(
   audioBuffer: ArrayBuffer,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  _options: TranscriptionOptions = {},
+  options: TranscriptionOptions = {},
 ): Promise<ParsedTranscription> {
   const subscriptionKey = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION || 'eastus';
@@ -19,7 +18,7 @@ export async function transcribeWithAzure(
   // Azure Speech REST API endpoint
   // Note: base64Audio conversion is not needed for direct audio buffer upload
   // Map language to Azure language code format (e.g., 'en' -> 'en-US')
-  const languageCode = _options.language === 'en' ? 'en-US' : _options.language || 'en-US';
+  const languageCode = options.language === 'en' ? 'en-US' : options.language || 'en-US';
   const endpoint = `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=${encodeURIComponent(languageCode)}`;
 
   try {
