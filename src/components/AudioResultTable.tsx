@@ -449,7 +449,20 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                                             maxHeight: '60px',
                                             overflowY: 'auto'
                                           }}>
-                                            {providerData.text || '(빈 결과)'}
+                                            {(() => {
+                                              // Extract text from JSON markdown if present
+                                              const text = providerData.text || '';
+                                              const jsonMatch = text.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+                                              if (jsonMatch) {
+                                                try {
+                                                  const parsed = JSON.parse(jsonMatch[1]);
+                                                  return parsed.text || text;
+                                                } catch {
+                                                  return text;
+                                                }
+                                              }
+                                              return text || '(빈 결과)';
+                                            })()}
                                           </div>
                                         </div>
                                         {providerData.confidence && (

@@ -28,8 +28,15 @@ GOOGLE_AI_API_KEY
 AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY
 AWS_REGION
+AWS_S3_BUCKET_NAME
 ```
 기본값: `us-east-1` (AWS_REGION이 설정되지 않은 경우)
+
+**중요**: AWS Transcribe는 S3 버킷이 필요합니다. 
+- AWS Transcribe는 S3 URI(`s3://bucket/key`)만 받을 수 있으며, HTTP/HTTPS URL은 지원하지 않습니다.
+- Supabase Storage에 저장된 오디오 파일을 임시로 S3에 업로드하여 전사 작업을 수행합니다.
+- 전사 완료 후 S3의 임시 파일은 자동으로 삭제됩니다 (Supabase Storage의 원본 파일은 유지됩니다).
+- `AWS_S3_BUCKET_NAME`: 오디오 파일을 저장할 S3 버킷 이름 (필수)
 
 ### Azure AI Speech
 ```
@@ -65,6 +72,7 @@ AZURE_SPEECH_REGION
 - `AWS_ACCESS_KEY_ID`: AWS 액세스 키 ID
 - `AWS_SECRET_ACCESS_KEY`: AWS 시크릿 액세스 키
 - `AWS_REGION`: AWS 리전 (예: `us-east-1`, `ap-northeast-2`)
+- `AWS_S3_BUCKET_NAME`: 오디오 파일을 저장할 S3 버킷 이름 (AWS Transcribe 사용 시 필수)
 
 ### Azure
 - `AZURE_SPEECH_KEY`: Azure Speech 서비스 키

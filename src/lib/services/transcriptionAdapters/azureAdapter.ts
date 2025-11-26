@@ -18,7 +18,9 @@ export async function transcribeWithAzure(
 
   // Azure Speech REST API endpoint
   // Note: base64Audio conversion is not needed for direct audio buffer upload
-  const endpoint = `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`;
+  // Map language to Azure language code format (e.g., 'en' -> 'en-US')
+  const languageCode = _options.language === 'en' ? 'en-US' : _options.language || 'en-US';
+  const endpoint = `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1?language=${encodeURIComponent(languageCode)}`;
 
   try {
     // Get access token first (or use subscription key directly)

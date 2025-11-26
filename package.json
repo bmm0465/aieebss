@@ -10,6 +10,7 @@
     "migrate-storage": "npx tsx scripts/migrate-storage.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.939.0",
     "@aws-sdk/client-transcribe": "^3.939.0",
     "@google/generative-ai": "^0.24.1",
     "@supabase/ssr": "^0.7.0",

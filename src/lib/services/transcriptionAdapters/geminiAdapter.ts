@@ -32,26 +32,62 @@ export async function transcribeWithGemini(
     // For now, we'll use the generative model with audio input if supported
     const result = await model.generateContent(prompt);
     const response = await result.response;
-    const text = response.text();
+    let rawText = response.text();
 
-    // Parse the response and create a basic timeline
-    const timeline: TimelineEntry[] = text
-      ? [
-          {
-            index: 0,
-            start: 0,
-            end: Math.max(text.split(/\s+/).length * 0.6, 1),
-            text: text.trim(),
-          },
-        ]
-      : [];
+    // Parse JSON if response is wrapped in markdown code blocks
+    let parsedData: { text?: string; confidence?: string; segments?: Array<{ start: number; end: number; text: string }> } = {};
+    
+    // Check if response contains JSON in markdown code blocks
+    const jsonMatch = rawText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+    if (jsonMatch) {
+      try {
+        parsedData = JSON.parse(jsonMatch[1]);
+      } catch (parseError) {
+        console.warn('[Gemini] Failed to parse JSON from response:', parseError);
+      }
+    } else {
+      // Try to parse as direct JSON
+      try {
+        parsedData = JSON.parse(rawText);
+      } catch {
+        // If not JSON, treat as plain text
+        parsedData = { text: rawText };
+      }
+    }
+
+    // Extract text, confidence, and segments
+    const text = parsedData.text || rawText.trim();
+    const confidence = parsedData.confidence || 'medium';
+    
+    // Build timeline from segments if available
+    let timeline: TimelineEntry[] = [];
+    if (parsedData.segments && Array.isArray(parsedData.segments)) {
+      timeline = parsedData.segments.map((segment, index) => ({
+        index,
+        start: segment.start || 0,
+        end: segment.end || 0,
+        text: segment.text || '',
+      })).filter(entry => entry.text.length > 0);
+    }
+    
+    // If no timeline from segments, create a basic one
+    if (timeline.length === 0 && text) {
+      timeline = [
+        {
+          index: 0,
+          start: 0,
+          end: Math.max(text.split(/\s+/).length * 0.6, 1),
+          text: text.trim(),
+        },
+      ];
+    }
 
     return {
       text: text.trim(),
-      confidence: 'medium',
+      confidence,
       timeline,
-      duration: 0,
-      raw: { text, model: 'gemini-2.5-pro' },
+      duration: timeline.length > 0 ? timeline[timeline.length - 1].end : 0,
+      raw: { text: rawText, parsed: parsedData, model: 'gemini-2.5-pro' },
     };
   } catch (error) {
     console.error('[Gemini Transcription Error]', error);
