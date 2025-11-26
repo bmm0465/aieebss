@@ -1,4 +1,5 @@
 import { TranscribeClient, StartTranscriptionJobCommand, GetTranscriptionJobCommand } from '@aws-sdk/client-transcribe';
+import type { LanguageCode } from '@aws-sdk/client-transcribe';
 import type { ParsedTranscription, TimelineEntry } from '@/lib/utils/dibelsTranscription';
 
 export interface TranscriptionOptions {
@@ -58,7 +59,11 @@ export async function transcribeWithAWSS3(
   });
 
   const jobName = `transcription-${Date.now()}`;
-  const languageCode = options.language === 'en' ? 'en-US' : options.language || 'en-US';
+  // Map language to AWS Transcribe LanguageCode type
+  // Default to 'en-US' if language is 'en' or not specified
+  const languageCode: LanguageCode = (options.language === 'en' || !options.language 
+    ? 'en-US' 
+    : options.language as LanguageCode) as LanguageCode;
 
   // Start transcription job
   const startCommand = new StartTranscriptionJobCommand({
