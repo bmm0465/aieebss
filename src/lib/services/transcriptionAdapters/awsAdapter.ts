@@ -7,6 +7,7 @@ export interface TranscriptionOptions {
 
 export async function transcribeWithAWS(
   _audioBuffer: ArrayBuffer,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _options: TranscriptionOptions = {},
 ): Promise<ParsedTranscription> {
   // AWS Transcribe requires audio to be uploaded to S3 first
@@ -23,6 +24,7 @@ export async function transcribeWithAWS(
   // Credentials and options will be used when S3 integration is implemented
   const _accessKeyId = process.env.AWS_ACCESS_KEY_ID;
   const _secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _region = process.env.AWS_REGION || 'us-east-1';
 
   if (!_accessKeyId || !_secretAccessKey) {

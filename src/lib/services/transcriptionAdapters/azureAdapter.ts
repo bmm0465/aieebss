@@ -6,6 +6,7 @@ export interface TranscriptionOptions {
 
 export async function transcribeWithAzure(
   audioBuffer: ArrayBuffer,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _options: TranscriptionOptions = {},
 ): Promise<ParsedTranscription> {
   const subscriptionKey = process.env.AZURE_SPEECH_KEY;
