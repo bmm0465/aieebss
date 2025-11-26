@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>달빛 마법학교 사용 가이드</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Nanum+Pen+Script&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .presentation-container {
+            width: 1280px;
+            height: 720px;
+            position: relative;
+            background: #000;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            overflow: hidden;
+        }
+
+        .slide {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            pointer-events: none;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4c1d95 100%);
+            padding: 3rem 4rem;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide.active {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .magic-text {
+            font-family: 'Nanum Pen Script', cursive;
+            background: linear-gradient(to right, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 1.5rem;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .nav-button {
+            position: absolute;
+            bottom: 2rem;
+            z-index: 20;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .prev-btn {
+            right: 5rem;
+        }
+
+        .next-btn {
+            right: 2rem;
+        }
+
+        .slide-indicator {
+            position: absolute;
+            bottom: 2.5rem;
+            left: 4rem;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.9rem;
+            z-index: 20;
+        }
+
+        /* Animation utilities */
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .delay-100 {
+            animation-delay: 0.1s;
+        }
+
+        .delay-200 {
+            animation-delay: 0.2s;
+        }
+
+        .delay-300 {
+            animation-delay: 0.3s;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="presentation-container">
+
+        <!-- Slide 1: Title -->
+        <div class="slide active" id="slide-1">
+            <div class="h-full flex flex-col justify-center items-center text-center">
+                <div class="mb-6 fade-in-up">
+                    <i class="fa-solid fa-hat-wizard text-6xl text-indigo-400 mb-4"></i>
+                    <h2 class="text-2xl text-indigo-200 font-light tracking-widest uppercase">AI-Powered English
+                        Assessment</h2>
+                </div>
+                <h1 class="text-7xl font-bold text-white mb-8 fade-in-up delay-100">
+                    달빛 마법학교 <br>
+                    <span class="magic-text">사용자 가이드</span>
+                </h1>
+                <p class="text-xl text-gray-300 max-w-2xl leading-relaxed fade-in-up delay-200">
+                    선생님과 학생을 위한<br>
+                    쉽고 재미있는 AI 영어 읽기 평가 시스템 활용법
+                </p>
+                <div class="mt-12 fade-in-up delay-300">
+                    <span
+                        class="px-6 py-3 bg-indigo-600 rounded-full text-white font-bold shadow-lg shadow-indigo-500/50">
+                        시작하기 <i class="fa-solid fa-arrow-right ml-2"></i>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Login -->
+        <div class="slide" id="slide-2">
+            <header class="mb-12 border-b border-white/10 pb-6">
+                <h2 class="text-4xl font-bold text-white">1. 입학처 <span
+                        class="text-indigo-400 text-2xl ml-2">(로그인)</span></h2>
+            </header>
+            <div class="grid grid-cols-2 gap-12 h-full">
+                <div class="flex flex-col justify-center space-y-8">
+                    <div class="glass-panel p-8 fade-in-up">
+                        <h3 class="text-2xl font-bold text-indigo-200 mb-4"><i class="fa-solid fa-key mr-3"></i>마법사 인증
+                        </h3>
+                        <p class="text-gray-300 text-lg leading-relaxed">
+                            선생님께 부여받은 <strong>고유 이메일</strong>과 <strong>암호</strong>를 입력하세요.<br>
+                            개인별 학습 기록이 안전하게 저장됩니다.
+                        </p>
+                    </div>
+                    <div class="bg-yellow-500/10 border-l-4 border-yellow-500 p-6 rounded-r-lg fade-in-up delay-100">
+                        <h4 class="text-yellow-400 font-bold mb-2"><i
+                                class="fa-solid fa-triangle-exclamation mr-2"></i>주의사항</h4>
+                        <p class="text-gray-300">본인의 계정이 아닌 경우 평가 결과가 섞일 수 있으니 반드시 본인 계정인지 확인해주세요.</p>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center fade-in-up delay-200">
+                    <!-- Mockup UI -->
+                    <div class="bg-white rounded-xl p-8 w-full max-w-md shadow-2xl transform rotate-2">
+                        <div class="text-center mb-6">
+                            <h3 class="text-2xl font-bold text-gray-800 font-serif">달빛 마법학교</h3>
+                        </div>
+                        <div class="space-y-4">
+                            <div
+                                class="h-12 bg-gray-100 rounded-lg border border-gray-200 flex items-center px-4 text-gray-400">
+                                wizard@school.com</div>
+                            <div
+                                class="h-12 bg-gray-100 rounded-lg border border-gray-200 flex items-center px-4 text-gray-400">
+                                ••••••••</div>
+                            <div
+                                class="h-12 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-bold">
+                                입장하기</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 3: Lobby -->
+        <div class="slide" id="slide-3">
+            <header class="mb-8 border-b border-white/10 pb-4">
+                <h2 class="text-4xl font-bold text-white">2. 로비 <span class="text-pink-400 text-2xl ml-2">(평가 선택)</span>
+                </h2>
+            </header>
+            <div class="flex flex-col h-full">
+                <p class="text-lg text-gray-300 mb-6 fade-in-up">총 <strong>여섯 가지</strong> 입학 시험 과목이 준비되어 있습니다.</p>
+
+                <div class="grid grid-cols-3 gap-4 overflow-y-auto" style="max-height: 480px;">
+                    <!-- Card 1: LNF -->
+                    <div
+                        class="glass-panel p-5 hover:bg-white/10 transition duration-300 cursor-pointer fade-in-up delay-100">
+                        <div
+                            class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center mb-3 text-white text-lg">
+                            <i class="fa-solid fa-font"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">1교시: LNF</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">고대 룬 문자 해독 시험<br>알파벳을 빠르고 정확하게 읽기</p>
+                    </div>
+
+                    <!-- Card 2: PSF -->
+                    <div
+                        class="glass-panel p-5 hover:bg-white/10 transition duration-300 cursor-pointer fade-in-up delay-200">
+                        <div
+                            class="w-10 h-10 bg-pink-500 rounded-full flex items-center justify-center mb-3 text-white text-lg">
+                            <i class="fa-solid fa-shapes"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">2교시: PSF</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">소리의 원소 분리 시험<br>비슷한 소리를 구별하기</p>
+                    </div>
+
+                    <!-- Card 3: Reading -->
+                    <div
+                        class="glass-panel p-5 hover:bg-white/10 transition duration-300 cursor-pointer fade-in-up delay-300">
+                        <div
+                            class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center mb-3 text-white text-lg">
+                            <i class="fa-solid fa-book-open"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">3교시: Reading</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">마법 주문 읽기 시험<br>무의미 단어부터 이야기까지</p>
+                    </div>
+
+                    <!-- Card 4: Stress -->
+                    <div
+                        class="glass-panel p-5 hover:bg-white/10 transition duration-300 cursor-pointer fade-in-up delay-100">
+                        <div
+                            class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center mb-3 text-white text-lg">
+                            <i class="fa-solid fa-music"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">4교시: Stress</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">마법 리듬 패턴 시험<br>단어의 강세를 찾아내기</p>
+                    </div>
+
+                    <!-- Card 5: Meaning -->
+                    <div
+                        class="glass-panel p-5 hover:bg-white/10 transition duration-300 cursor-pointer fade-in-up delay-200">
+                        <div
+                            class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center mb-3 text-white text-lg">
+                            <i class="fa-solid fa-image"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">5교시: Meaning</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">마법서 그림 해석 시험<br>단어의 의미를 그림으로 찾기</p>
+                    </div>
+
+                    <!-- Card 6: Comprehension -->
+                    <div
+                        class="glass-panel p-5 hover:bg-white/10 transition duration-300 cursor-pointer fade-in-up delay-300">
+                        <div
+                            class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center mb-3 text-white text-lg">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="text-lg font-bold text-white mb-1">6교시: Comprehension</h3>
+                        <p class="text-gray-400 text-xs leading-relaxed">고대 전설 이해 시험<br>이야기를 듣고 질문에 답하기</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-indigo-900/40 p-4 rounded-lg flex items-center gap-4 fade-in-up delay-300">
+                    <i class="fa-solid fa-circle-info text-indigo-300 text-xl"></i>
+                    <p class="text-indigo-200 text-sm">선생님이 지시한 평가 항목을 클릭하면 바로 시험이 시작됩니다. 평가 결과는 로비에서 확인할 수 있습니다.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 4: Assessment -->
+        <div class="slide" id="slide-4">
+            <header class="mb-8 border-b border-white/10 pb-6">
+                <h2 class="text-4xl font-bold text-white">3. 주문 시전 <span class="text-green-400 text-2xl ml-2">(평가
+                        진행)</span></h2>
+            </header>
+            <div class="grid grid-cols-12 gap-8 h-full">
+                <div class="col-span-7 space-y-6">
+                    <div class="glass-panel p-6 fade-in-up">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span
+                                class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">1</span>
+                            <h3 class="text-xl font-bold text-white">마이크 권한 허용</h3>
+                        </div>
+                        <p class="text-gray-300 ml-12">브라우저 상단의 <strong>'마이크 사용 허용'</strong> 버튼을 반드시 눌러주세요. 목소리가 들리지 않으면
+                            마법이 발동하지 않습니다.</p>
+                    </div>
+
+                    <div class="glass-panel p-6 fade-in-up delay-100">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span
+                                class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">2</span>
+                            <h3 class="text-xl font-bold text-white">또박또박 읽기</h3>
+                        </div>
+                        <p class="text-gray-300 ml-12">화면에 나오는 글자나 그림을 보고 큰 소리로 읽으세요. AI가 실시간으로 듣고 있습니다.</p>
+                    </div>
+
+                    <div class="glass-panel p-6 fade-in-up delay-200">
+                        <div class="flex items-center gap-4 mb-4">
+                            <span
+                                class="w-8 h-8 rounded-full bg-red-500 flex items-center justify-center text-white font-bold">3</span>
+                            <h3 class="text-xl font-bold text-white">제한 시간 확인</h3>
+                        </div>
+                        <p class="text-gray-300 ml-12">화면 상단의 타이머가 <strong>60초</strong>로 설정되어 있으며, 0이 되면 평가가 자동으로 종료됩니다.</p>
+                    </div>
+                </div>
+
+                <div class="col-span-5 flex flex-col items-center justify-center fade-in-up delay-300">
+                    <div class="relative">
+                        <div class="absolute -inset-4 bg-red-500/20 rounded-full animate-ping"></div>
+                        <div
+                            class="w-32 h-32 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center shadow-2xl relative z-10">
+                            <i class="fa-solid fa-microphone text-5xl text-white"></i>
+                        </div>
+                    </div>
+                    <p class="mt-8 text-xl font-bold text-white animate-pulse">Recording...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 5: Results -->
+        <div class="slide" id="slide-5">
+            <header class="mb-10 border-b border-white/10 pb-6">
+                <h2 class="text-4xl font-bold text-white">4. 결과 확인 <span
+                        class="text-yellow-400 text-2xl ml-2">(피드백)</span></h2>
+            </header>
+            <div class="flex flex-col items-center justify-center h-full pb-20">
+                <div class="grid grid-cols-3 gap-8 w-full max-w-5xl">
+                    <div class="glass-panel p-8 text-center fade-in-up">
+                        <h3 class="text-gray-400 mb-2">정확도</h3>
+                        <div class="text-5xl font-bold text-green-400 mb-2">95%</div>
+                        <p class="text-sm text-gray-500">훌륭해요!</p>
+                    </div>
+                    <div class="glass-panel p-8 text-center fade-in-up delay-100">
+                        <h3 class="text-gray-400 mb-2">소요 시간</h3>
+                        <div class="text-5xl font-bold text-blue-400 mb-2">45s</div>
+                        <p class="text-sm text-gray-500">빠른 속도입니다</p>
+                    </div>
+                    <div class="glass-panel p-8 text-center fade-in-up delay-200">
+                        <h3 class="text-gray-400 mb-2">AI 코멘트</h3>
+                        <div class="text-xl text-white mb-2">"발음이 매우 정확합니다."</div>
+                        <p class="text-sm text-gray-500">GPT-4o 분석</p>
+                    </div>
+                </div>
+
+                <div class="mt-12 text-center fade-in-up delay-300">
+                    <h3 class="text-2xl text-white font-bold mb-4">세션별 결과 확인</h3>
+                    <p class="text-gray-300 max-w-2xl mx-auto leading-relaxed mb-4">
+                        모든 평가가 끝나면 로비에서 <strong>'이전 평가 결과 보기'</strong> 버튼을 통해 세션별 상세 결과를 확인할 수 있습니다.
+                        AI가 제공하는 종합 피드백과 각 평가별 정확도, 강점, 개선점을 한눈에 볼 수 있습니다.
+                    </p>
+                    <div class="bg-indigo-900/40 p-4 rounded-lg inline-block">
+                        <p class="text-indigo-200 text-sm">
+                            <i class="fa-solid fa-lightbulb mr-2"></i>
+                            선생님께서는 교사 대시보드에서 모든 학생의 결과를 종합적으로 관리할 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="slide-indicator">Slide <span id="current-slide">1</span> / 5</div>
+        <button class="nav-button prev-btn" onclick="changeSlide(-1)"><i class="fa-solid fa-chevron-left"></i>
+            이전</button>
+        <button class="nav-button next-btn" onclick="changeSlide(1)">다음 <i
+                class="fa-solid fa-chevron-right"></i></button>
+
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 5;
+
+        function changeSlide(direction) {
+            const nextSlide = currentSlide + direction;
+
+            if (nextSlide >= 1 && nextSlide <= totalSlides) {
+                // Remove active class from current
+                document.getElementById(`slide-${currentSlide}`).classList.remove('active');
+
+                // Update current
+                currentSlide = nextSlide;
+
+                // Add active class to new
+                document.getElementById(`slide-${currentSlide}`).classList.add('active');
+
+                // Update indicator
+                document.getElementById('current-slide').innerText = currentSlide;
+            }
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Space') {
+                changeSlide(1);
+            } else if (e.key === 'ArrowLeft') {
+                changeSlide(-1);
+            }
+        });
+    </script>
+
+</body>
+
+</html>
