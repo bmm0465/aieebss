@@ -6,25 +6,9 @@ export interface TranscriptionOptions {
 }
 
 export async function transcribeWithAWS(
-  audioBuffer: ArrayBuffer,
-  options: TranscriptionOptions = {},
+  _audioBuffer: ArrayBuffer,
+  _options: TranscriptionOptions = {},
 ): Promise<ParsedTranscription> {
-  const accessKeyId = process.env.AWS_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
-  const region = process.env.AWS_REGION || 'us-east-1';
-
-  if (!accessKeyId || !secretAccessKey) {
-    throw new Error('AWS credentials are not set');
-  }
-
-  const client = new TranscribeClient({
-    region,
-    credentials: {
-      accessKeyId,
-      secretAccessKey,
-    },
-  });
-
   // AWS Transcribe requires audio to be uploaded to S3 first
   // For now, we'll use a simplified approach with direct API call if possible
   // In production, you'd need to upload to S3 first, then start transcription job
@@ -36,6 +20,15 @@ export async function transcribeWithAWS(
   // 4. Get results from S3
   
   // This is a placeholder implementation. For production, you'd need S3 integration
+  // Credentials and options will be used when S3 integration is implemented
+  const _accessKeyId = process.env.AWS_ACCESS_KEY_ID;
+  const _secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY;
+  const _region = process.env.AWS_REGION || 'us-east-1';
+
+  if (!_accessKeyId || !_secretAccessKey) {
+    throw new Error('AWS credentials are not set');
+  }
+  
   throw new Error(
     'AWS Transcribe requires S3 integration. Please upload audio to S3 first, then start transcription job.',
   );

@@ -410,8 +410,8 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                               gap: '1rem',
                               marginTop: '0.5rem'
                             }}>
-                              {['openai', 'gemini', 'aws', 'azure'].map((provider) => {
-                                const providerData = (result.transcription_results as any)?.[provider];
+                              {(['openai', 'gemini', 'aws', 'azure'] as const).map((provider) => {
+                                const providerData = result.transcription_results?.[provider];
                                 const isSuccess = providerData && !providerData.error;
                                 const providerNames: Record<string, string> = {
                                   openai: 'OpenAI (GPT-4o)',

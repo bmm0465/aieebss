@@ -1,16 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createServiceClient } from '@/lib/supabase/server';
 import { generateStoragePath } from '@/lib/storage-path';
-import OpenAI from 'openai';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   hasHesitation,
 } from '@/lib/utils/dibelsTranscription';
 import { transcribeAll, getPrimaryTranscription } from '@/lib/services/transcriptionService';
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
 
 const HESITATION_THRESHOLD_SECONDS = 5;
 

@@ -6,7 +6,7 @@ export interface TranscriptionOptions {
 
 export async function transcribeWithAzure(
   audioBuffer: ArrayBuffer,
-  options: TranscriptionOptions = {},
+  _options: TranscriptionOptions = {},
 ): Promise<ParsedTranscription> {
   const subscriptionKey = process.env.AZURE_SPEECH_KEY;
   const region = process.env.AZURE_SPEECH_REGION || 'eastus';
@@ -15,10 +15,8 @@ export async function transcribeWithAzure(
     throw new Error('AZURE_SPEECH_KEY is not set');
   }
 
-  // Convert ArrayBuffer to base64
-  const base64Audio = Buffer.from(audioBuffer).toString('base64');
-
   // Azure Speech REST API endpoint
+  // Note: base64Audio conversion is not needed for direct audio buffer upload
   const endpoint = `https://${region}.stt.speech.microsoft.com/speech/recognition/conversation/cognitiveservices/v1`;
 
   try {
