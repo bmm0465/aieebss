@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "migrate-database": "npx tsx scripts/migrate-database.ts",
+    "migrate-auth-only": "npx tsx scripts/migrate-auth-users-only.ts",
     "migrate-storage": "npx tsx scripts/migrate-storage.ts",
     "deploy": "tsx scripts/auto-deploy.ts",
     "monitor": "tsx scripts/monitor-deployment.ts"
