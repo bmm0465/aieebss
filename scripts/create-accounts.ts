@@ -185,7 +185,7 @@ const students: Student[] = [
  * 교사 계정 생성
  */
 async function createTeachers(
-  client: ReturnType<typeof createSupabaseClient>,
+  client: any,
   existingUsersMap: Map<string, string>,
   dryRun: boolean
 ): Promise<Map<string, string>> {
@@ -282,7 +282,7 @@ async function createTeachers(
  * 학생 계정 생성
  */
 async function createStudents(
-  client: ReturnType<typeof createSupabaseClient>,
+  client: any,
   existingUsersMap: Map<string, string>,
   dryRun: boolean
 ): Promise<Map<string, string>> {
@@ -397,7 +397,7 @@ async function createStudents(
  * 교사-학생 배정
  */
 async function createAssignments(
-  client: ReturnType<typeof createSupabaseClient>,
+  client: any,
   teacherIdMap: Map<string, string>,
   studentIdMap: Map<string, string>,
   dryRun: boolean
