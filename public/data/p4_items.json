@@ -1,0 +1,38 @@
+{
+  "nwf": [
+    "sep",
+    "het",
+    "tum",
+    "lut",
+    "dit",
+    "reg",
+    "fet",
+    "pom",
+    "teb",
+    "gid"
+  ],
+  "wrf": [
+    "and",
+    "apple",
+    "at",
+    "ball",
+    "banana",
+    "be",
+    "big",
+    "bike",
+    "bird",
+    "black"
+  ],
+  "orf": [
+    "I'm Momo",
+    "How are you?",
+    "What's this",
+    "It's a bike",
+    "It's a robot",
+    "Sit down, please",
+    "Open the door, please",
+    "Thank you",
+    "You're welcome",
+    "How many cows?"
+  ]
+}

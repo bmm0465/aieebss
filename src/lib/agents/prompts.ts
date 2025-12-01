@@ -3,6 +3,18 @@
 // - ItemGeneratorAgent에서 호출하여 사용
 
 import type { GradeLevel, TestType } from './types';
+import type { Publisher } from './dataUtils';
+
+// 출판사 이름 매핑
+const PUBLISHER_NAMES: Record<Publisher, string> = {
+  donga_yoon: '동아출판(윤)',
+  icecream_park: '아이스크림(박)',
+  ybm_kim: 'YBM(김)',
+  ybm_choi: 'YBM(최)',
+  chunjae_text_kim: '천재교과서(김)',
+  chunjae_text_ham: '천재교과서(함)',
+  chunjae_edu_lee: '천재교육(이)'
+};
 
 // LNF에서 사용할 고빈도 / 저빈도 문자 집합
 const LNF_ALLOWED_CHARS = [
@@ -84,8 +96,16 @@ export function buildLNFUserPrompt(): string {
  * - vocabulary_level 기반 고빈도·친숙 단어 목록을 참고한다.
  * - 최소대립쌍(minimal pair) 형식으로 생성: 두 개의 유사한 단어 중 하나가 정답
  */
-export function buildPSFSystemPrompt(gradeLevel: GradeLevel, candidateWords: string[]): string {
+export function buildPSFSystemPrompt(
+  gradeLevel: GradeLevel, 
+  candidateWords: string[],
+  publisher?: Publisher
+): string {
   const sampleWords = candidateWords.slice(0, 40);
+  const publisherNote = publisher 
+    ? `\n[중요 제한 사항]\n- 반드시 ${PUBLISHER_NAMES[publisher]} 교과서의 어휘만 사용해야 합니다.\n- 위 단어 후보 목록은 ${PUBLISHER_NAMES[publisher]} 교과서에서 추출한 어휘입니다.\n- 다른 출판사의 어휘는 절대 사용하지 마세요.\n`
+    : '';
+  
   return `당신은 DIBELS 8th Edition과 같은 초기 문해력 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
 당신의 임무는 음소 분절 능력을 측정하기 위한 PSF(Phonemic Segmentation Fluency) 평가 문항 목록을 생성하는 것입니다.
 
@@ -96,7 +116,7 @@ export function buildPSFSystemPrompt(gradeLevel: GradeLevel, candidateWords: str
 [단어 후보 목록]
 - 아래 단어들은 한국 초등 ${gradeLevel} 교육과정(vocabulary_level.json)에서 추출한 고빈도·친숙 단어들입니다.
 - 최소대립쌍을 구성할 때 이 목록에서 단어를 선택합니다.
-${sampleWords.join(', ')}
+${sampleWords.join(', ')}${publisherNote}
 
 [생성 규칙]
 1. 최소대립쌍 구성:
@@ -210,8 +230,16 @@ export function buildNWFUserPrompt(): string {
 /**
  * WRF용 시스템 프롬프트
  */
-export function buildWRFSystemPrompt(gradeLevel: GradeLevel, candidateWords: string[]): string {
+export function buildWRFSystemPrompt(
+  gradeLevel: GradeLevel, 
+  candidateWords: string[],
+  publisher?: Publisher
+): string {
   const sampleWords = candidateWords.slice(0, 60);
+  const publisherNote = publisher 
+    ? `\n[중요 제한 사항]\n- 반드시 ${PUBLISHER_NAMES[publisher]} 교과서의 어휘만 사용해야 합니다.\n- 위 단어 후보 목록은 ${PUBLISHER_NAMES[publisher]} 교과서에서 추출한 어휘입니다.\n- 다른 출판사의 어휘는 절대 사용하지 마세요.\n`
+    : '';
+  
   return `당신은 DIBELS 8th Edition의 단어 선정 원칙을 깊이 이해하고 있는 교육 평가 개발 전문가입니다.
 당신의 임무는 실제 단어 읽기 유창성을 측정하기 위한 WRF(Word Reading Fluency) 평가지를 생성하는 것입니다.
 
@@ -221,7 +249,7 @@ export function buildWRFSystemPrompt(gradeLevel: GradeLevel, candidateWords: str
 [단어 후보 목록]
 - 아래 단어들은 한국 초등 ${gradeLevel} 교육과정(vocabulary_level.json)에서 추출한 고빈도 단어들입니다.
 - 반드시 이 목록에서만 단어를 선택해야 합니다.
-${sampleWords.join(', ')}
+${sampleWords.join(', ')}${publisherNote}
 
 [생성 규칙]
 1. 단어 선정 기준 (가장 중요):
@@ -265,9 +293,14 @@ export function buildWRFUserPrompt(): string {
  */
 export function buildORFSystemPrompt(
   gradeLevel: GradeLevel,
-  coreExpressions: string[]
+  coreExpressions: string[],
+  publisher?: Publisher
 ): string {
   const sample = coreExpressions.slice(0, 40);
+  const publisherNote = publisher 
+    ? `\n[중요 제한 사항]\n- 반드시 ${PUBLISHER_NAMES[publisher]} 교과서의 핵심 표현만 사용해야 합니다.\n- 위 표현 목록은 ${PUBLISHER_NAMES[publisher]} 교과서에서 추출한 표현입니다.\n- 다른 출판사의 표현은 절대 사용하지 마세요.\n`
+    : '';
+  
   return `당신은 DIBELS 8th Edition의 평가 원칙을 숙지한 아동 문학 작가이자 교육 평가 전문가입니다.
 당신의 임무는 학생의 구문 읽기 유창성을 객관적으로 측정하기 위한 ORF(Oral Reading Fluency) 평가용 지문을 생성하는 것입니다.
 
@@ -280,7 +313,7 @@ export function buildORFSystemPrompt(
 
 [가독성 및 표현]
 - 아래 core_expressions.json에서 추출한 핵심 표현과 문장 구조를 적극적으로 활용합니다:
-${sample.join(' ')}
+${sample.join(' ')}${publisherNote}
 - 초등학생이 이해하기 쉬운 어휘와 문장을 사용합니다.
 - 정서적으로 안전하고 긍정적인 상황을 다룹니다.
 
@@ -363,8 +396,16 @@ export function buildMazeUserPrompt(): string {
 /**
  * STRESS용 시스템 프롬프트
  */
-export function buildSTRESSSystemPrompt(gradeLevel: GradeLevel, candidateWords: string[]): string {
+export function buildSTRESSSystemPrompt(
+  gradeLevel: GradeLevel, 
+  candidateWords: string[],
+  publisher?: Publisher
+): string {
   const sampleWords = candidateWords.slice(0, 40);
+  const publisherNote = publisher 
+    ? `\n[중요 제한 사항]\n- 반드시 ${PUBLISHER_NAMES[publisher]} 교과서의 어휘만 사용해야 합니다.\n- 위 단어 후보 목록은 ${PUBLISHER_NAMES[publisher]} 교과서에서 추출한 어휘입니다.\n- 다른 출판사의 어휘는 절대 사용하지 마세요.\n`
+    : '';
+  
   return `당신은 영어 기초 학력 진단 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
 당신의 임무는 강세 및 리듬 패턴 파악 능력을 측정하기 위한 STRESS 평가 문항을 생성하는 것입니다.
 
@@ -375,7 +416,7 @@ export function buildSTRESSSystemPrompt(gradeLevel: GradeLevel, candidateWords: 
 [단어 후보 목록]
 - 아래 단어들은 한국 초등 ${gradeLevel} 교육과정(vocabulary_level.json)에서 추출한 고빈도 단어들입니다.
 - 반드시 이 목록에서만 단어를 선택하여 사용합니다.
-${sampleWords.join(', ')}
+${sampleWords.join(', ')}${publisherNote}
 
 [생성 규칙]
 1. 단어 선정:
@@ -433,8 +474,16 @@ export function buildSTRESSUserPrompt(): string {
 /**
  * MEANING용 시스템 프롬프트
  */
-export function buildMEANINGSystemPrompt(gradeLevel: GradeLevel, candidateWords: string[]): string {
+export function buildMEANINGSystemPrompt(
+  gradeLevel: GradeLevel, 
+  candidateWords: string[],
+  publisher?: Publisher
+): string {
   const sampleWords = candidateWords.slice(0, 40);
+  const publisherNote = publisher 
+    ? `\n[중요 제한 사항]\n- 반드시 ${PUBLISHER_NAMES[publisher]} 교과서의 어휘만 사용해야 합니다.\n- 위 단어 후보 목록은 ${PUBLISHER_NAMES[publisher]} 교과서에서 추출한 어휘입니다.\n- 다른 출판사의 어휘는 절대 사용하지 마세요.\n`
+    : '';
+  
   return `당신은 영어 기초 학력 진단 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
 당신의 임무는 의미 이해 능력을 측정하기 위한 MEANING 평가 문항을 생성하는 것입니다.
 
@@ -445,7 +494,7 @@ export function buildMEANINGSystemPrompt(gradeLevel: GradeLevel, candidateWords:
 [단어 후보 목록]
 - 아래 단어들은 한국 초등 ${gradeLevel} 교육과정(vocabulary_level.json)에서 추출한 고빈도 단어들입니다.
 - 반드시 이 목록에서만 단어를 선택하여 사용합니다.
-${sampleWords.join(', ')}
+${sampleWords.join(', ')}${publisherNote}
 
 [생성 규칙]
 1. 문항 구성 (wordOrPhrase):
@@ -512,8 +561,16 @@ export function buildMEANINGUserPrompt(): string {
 /**
  * COMPREHENSION용 시스템 프롬프트
  */
-export function buildCOMPREHENSIONSystemPrompt(gradeLevel: GradeLevel, coreExpressions: string[]): string {
+export function buildCOMPREHENSIONSystemPrompt(
+  gradeLevel: GradeLevel, 
+  coreExpressions: string[],
+  publisher?: Publisher
+): string {
   const sample = coreExpressions.slice(0, 40);
+  const publisherNote = publisher 
+    ? `\n[중요 제한 사항]\n- 반드시 ${PUBLISHER_NAMES[publisher]} 교과서의 핵심 표현만 사용해야 합니다.\n- 위 표현 목록은 ${PUBLISHER_NAMES[publisher]} 교과서에서 추출한 표현입니다.\n- 다른 출판사의 표현은 절대 사용하지 마세요.\n`
+    : '';
+  
   return `당신은 영어 기초 학력 진단 평가 도구를 개발하는 교육 평가 설계 전문가입니다.
 당신의 임무는 주요 정보 파악 능력을 측정하기 위한 COMPREHENSION 평가 문항을 생성하는 것입니다.
 
@@ -525,7 +582,7 @@ export function buildCOMPREHENSIONSystemPrompt(gradeLevel: GradeLevel, coreExpre
 [핵심 표현 목록]
 - 아래 표현들은 한국 초등 ${gradeLevel} 교육과정(core_expressions.json)에서 추출한 핵심 표현들입니다.
 - 반드시 이 표현들을 활용하여 대화나 이야기를 구성합니다.
-${sample.join(' ')}
+${sample.join(' ')}${publisherNote}
 
 [생성 규칙]
 1. 대화/이야기 구성 (dialogueOrStory):

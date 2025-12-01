@@ -12,7 +12,7 @@ interface StressItem {
   correctAnswer: string;
 }
 
-// 단어의 음절 수를 계산하는 함수 (간단한 영어 음절 규칙)
+// 단어의 음절 수를 계산하는 함수
 function countSyllables(word: string): number {
   word = word.toLowerCase();
   if (word.length <= 3) return 1;
@@ -34,14 +34,14 @@ function getStressPosition(choice: string): number {
   return syllablesBefore + 1;
 }
 
-// [폴백] STRESS 고정 문항
+// [폴백] 3교시 고정 문항: 강세 패턴 선택
 const getFixedStressItems = (): StressItem[] => {
   return [
-    { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
-    { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
-    { word: 'elephant', choices: ['ELEphant', 'elePHANT', 'elephANT'], correctAnswer: 'ELEphant' },
-    { word: 'tomorrow', choices: ['toMORrow', 'TOmorrow', 'tomorROW'], correctAnswer: 'toMORrow' },
-    { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
+    { word: 'apple', choices: ['APple', 'apPLE', 'APPLE'], correctAnswer: 'apPLE' },
+    { word: 'banana', choices: ['BAnana', 'baNAna', 'bananA'], correctAnswer: 'baNAna' },
+    { word: 'brother', choices: ['BROther', 'broTHER', 'BROTHER'], correctAnswer: 'broTHER' },
+    { word: 'carrot', choices: ['CARrot', 'carROT', 'CARROT'], correctAnswer: 'carROT' },
+    { word: 'chicken', choices: ['CHIcken', 'chiCKEN', 'CHICKEN'], correctAnswer: 'chiCKEN' },
   ];
 };
 
@@ -71,15 +71,24 @@ export default function StressTestPage() {
       setUser(user);
 
       try {
-        const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('p3_suprasegmental_phoneme', gradeLevel || undefined);
-
-        if (dbItems && Array.isArray(dbItems.items)) {
-          console.log('[p3_suprasegmental_phoneme] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setItems(dbItems.items as StressItem[]);
+        // p3_stress_items.json에서 문항 로드 시도
+        const response = await fetch('/data/p3_stress_items.json');
+        if (response.ok) {
+          const jsonItems = await response.json();
+          console.log('[p3_suprasegmental_phoneme] p3_stress_items.json에서 문항 로드:', jsonItems.length, '개');
+          setItems(jsonItems as StressItem[]);
         } else {
-          console.log('[p3_suprasegmental_phoneme] 승인된 문항이 없어 기본 문항 사용');
-          setItems(getFixedStressItems());
+          // DB에서 승인된 문항 조회 시도
+          const gradeLevel = await getUserGradeLevel(user.id);
+          const dbItems = await fetchApprovedTestItems('p3_suprasegmental_phoneme', gradeLevel || undefined);
+
+          if (dbItems && Array.isArray(dbItems.items)) {
+            console.log('[p3_suprasegmental_phoneme] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+            setItems(dbItems.items as StressItem[]);
+          } else {
+            console.log('[p3_suprasegmental_phoneme] 기본 문항 사용');
+            setItems(getFixedStressItems());
+          }
         }
       } catch (error) {
         console.error('[p3_suprasegmental_phoneme] 문항 로딩 오류, 기본 문항 사용:', error);
@@ -148,13 +157,9 @@ export default function StressTestPage() {
       return stressPos === position;
     });
     
-    // matchingChoice를 찾았으면 설정, 없으면 첫 번째 선택지를 기본값으로 사용
-    // (실제로는 항상 찾아야 하지만, 안전장치로)
     if (matchingChoice) {
       setSelectedAnswer(matchingChoice);
     } else if (currentItem.choices.length > 0) {
-      // 선택지를 찾지 못한 경우, position에 가장 가까운 선택지 사용
-      // 또는 첫 번째 선택지를 임시로 사용 (디버깅용)
       console.warn(`[p3_suprasegmental_phoneme] position ${position}에 해당하는 선택지를 찾지 못함. 첫 번째 선택지 사용.`);
       setSelectedAnswer(currentItem.choices[0]);
     }

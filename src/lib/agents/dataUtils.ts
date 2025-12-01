@@ -4,6 +4,16 @@ import fs from 'fs';
 import path from 'path';
 import type { GradeLevel } from './types';
 
+// 출판사 타입 정의 (JSON 파일의 metadata.publishers와 일치)
+export type Publisher = 
+  | 'donga_yoon' 
+  | 'icecream_park' 
+  | 'ybm_kim' 
+  | 'ybm_choi' 
+  | 'chunjae_text_kim' 
+  | 'chunjae_text_ham' 
+  | 'chunjae_edu_lee';
+
 type VocabularyLevelJson = {
   metadata: unknown;
   units: Array<{
@@ -24,8 +34,8 @@ type CoreExpressionsJson = {
  * 프로젝트 루트 기준 data 파일 경로 계산
  */
 function resolveDataPath(fileName: string): string {
-  // src/lib/agents 기준으로 상위 두 단계에서 data 디렉터리로
-  return path.join(process.cwd(), 'data', fileName);
+  // public/data 디렉터리에서 파일 로드
+  return path.join(process.cwd(), 'public', 'data', fileName);
 }
 
 /**
@@ -81,10 +91,13 @@ function getSliceSizeForGrade(gradeLevel: GradeLevel): number {
 
 /**
  * vocabulary_level.json에서 학년 수준에 맞는 고빈도 단어 후보 추출
- * - 현재는 출판사 구분 없이 모든 텍스트 컬럼에서 단어를 수집하고,
- *   빈도 기반이 아니라 등장 순서를 기준으로 상위 N개만 사용
+ * - publisher가 지정되면 해당 출판사의 어휘만 사용
+ * - publisher가 없으면 모든 출판사의 어휘를 합쳐서 사용
  */
-export function loadVocabularyByLevel(gradeLevel: GradeLevel): string[] {
+export function loadVocabularyByLevel(
+  gradeLevel: GradeLevel,
+  publisher?: Publisher
+): string[] {
   const raw = loadVocabularyRaw();
   if (!raw) return [];
 
@@ -92,14 +105,28 @@ export function loadVocabularyByLevel(gradeLevel: GradeLevel): string[] {
 
   for (const unit of raw.units) {
     for (const entry of unit.entries) {
-      for (const value of Object.values(entry)) {
-        if (typeof value === 'string') {
-          // "hello(hi)" / "goodbye/bye" 같은 형태는 토큰으로 분리
-          const tokens = value
+      // 출판사 필터링
+      if (publisher) {
+        // 지정된 출판사의 값만 사용
+        const publisherValue = entry[publisher];
+        if (typeof publisherValue === 'string') {
+          const tokens = publisherValue
             .split(/[\/(),]/)
             .map((t) => t.trim())
             .filter((t) => t.length > 0);
           words.push(...tokens);
+        }
+      } else {
+        // 모든 출판사의 값 사용 (기존 로직)
+        for (const value of Object.values(entry)) {
+          if (typeof value === 'string') {
+            // "hello(hi)" / "goodbye/bye" 같은 형태는 토큰으로 분리
+            const tokens = value
+              .split(/[\/(),]/)
+              .map((t) => t.trim())
+              .filter((t) => t.length > 0);
+            words.push(...tokens);
+          }
         }
       }
     }
@@ -115,9 +142,13 @@ export function loadVocabularyByLevel(gradeLevel: GradeLevel): string[] {
 
 /**
  * core_expressions.json에서 학년 수준에 맞는 핵심 표현 추출
- * - 현재는 모든 유닛의 표현을 평탄화하여 상위 N개 사용
+ * - publisher가 지정되면 해당 출판사의 표현만 사용
+ * - publisher가 없으면 모든 출판사의 표현을 합쳐서 사용
  */
-export function loadCoreExpressions(gradeLevel: GradeLevel): string[] {
+export function loadCoreExpressions(
+  gradeLevel: GradeLevel,
+  publisher?: Publisher
+): string[] {
   const raw = loadCoreExpressionsRaw();
   if (!raw) return [];
 
@@ -125,9 +156,19 @@ export function loadCoreExpressions(gradeLevel: GradeLevel): string[] {
 
   for (const unit of raw.units) {
     for (const entry of unit.entries) {
-      for (const value of Object.values(entry)) {
-        if (typeof value === 'string') {
-          expressions.push(value.trim());
+      // 출판사 필터링
+      if (publisher) {
+        // 지정된 출판사의 값만 사용
+        const publisherValue = entry[publisher];
+        if (typeof publisherValue === 'string') {
+          expressions.push(publisherValue.trim());
+        }
+      } else {
+        // 모든 출판사의 값 사용 (기존 로직)
+        for (const value of Object.values(entry)) {
+          if (typeof value === 'string') {
+            expressions.push(value.trim());
+          }
         }
       }
     }

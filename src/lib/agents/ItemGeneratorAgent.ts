@@ -28,7 +28,7 @@ import {
   buildCOMPREHENSIONUserPrompt,
   type PSFWordSpec,
 } from './prompts';
-import { loadVocabularyByLevel, loadCoreExpressions } from './dataUtils';
+import { loadVocabularyByLevel, loadCoreExpressions, type Publisher } from './dataUtils';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -191,9 +191,10 @@ export class ItemGeneratorAgent {
     pdfContext: string,
     request: ItemGenerationRequest
   ): Promise<GeneratedItems[keyof GeneratedItems] | undefined> {
-    // 학년 수준 기반 단어/표현 후보 로드
-    const vocabulary = loadVocabularyByLevel(gradeLevel);
-    const coreExpressions = loadCoreExpressions(gradeLevel);
+    // 학년 수준 기반 단어/표현 후보 로드 (출판사 필터 적용)
+    const publisher: Publisher | undefined = request.publisher as Publisher | undefined;
+    const vocabulary = loadVocabularyByLevel(gradeLevel, publisher);
+    const coreExpressions = loadCoreExpressions(gradeLevel, publisher);
 
     // 공통 reference / custom instruction 컨텍스트
     const referenceContext = request.referenceDocument
@@ -205,31 +206,31 @@ export class ItemGeneratorAgent {
 
     let systemPrompt = '';
     let userPrompt = '';
-
+    
     switch (testType) {
       case 'p1_alphabet':
         systemPrompt = buildLNFSystemPrompt();
         userPrompt = buildLNFUserPrompt();
         break;
       case 'p2_segmental_phoneme':
-        systemPrompt = buildPSFSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildPSFSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildPSFUserPrompt();
         break;
       case 'p3_suprasegmental_phoneme':
-        systemPrompt = buildSTRESSSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildSTRESSSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildSTRESSUserPrompt();
         break;
       case 'p4_phonics':
         // p4_phonics는 ORF 프롬프트 사용 (NWF/WRF/ORF 통합)
-        systemPrompt = buildORFSystemPrompt(gradeLevel, coreExpressions);
+        systemPrompt = buildORFSystemPrompt(gradeLevel, coreExpressions, publisher);
         userPrompt = buildORFUserPrompt();
         break;
       case 'p5_vocabulary':
-        systemPrompt = buildMEANINGSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildMEANINGSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildMEANINGUserPrompt();
         break;
       case 'p6_comprehension':
-        systemPrompt = buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions);
+        systemPrompt = buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions, publisher);
         userPrompt = buildCOMPREHENSIONUserPrompt();
         break;
       // 하위 호환성을 위한 구형 타입 지원
@@ -238,7 +239,7 @@ export class ItemGeneratorAgent {
         userPrompt = buildLNFUserPrompt();
         break;
       case 'PSF':
-        systemPrompt = buildPSFSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildPSFSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildPSFUserPrompt();
         break;
       case 'NWF':
@@ -246,23 +247,23 @@ export class ItemGeneratorAgent {
         userPrompt = buildNWFUserPrompt();
         break;
       case 'WRF':
-        systemPrompt = buildWRFSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildWRFSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildWRFUserPrompt();
         break;
       case 'ORF':
-        systemPrompt = buildORFSystemPrompt(gradeLevel, coreExpressions);
+        systemPrompt = buildORFSystemPrompt(gradeLevel, coreExpressions, publisher);
         userPrompt = buildORFUserPrompt();
         break;
       case 'STRESS':
-        systemPrompt = buildSTRESSSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildSTRESSSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildSTRESSUserPrompt();
         break;
       case 'MEANING':
-        systemPrompt = buildMEANINGSystemPrompt(gradeLevel, vocabulary);
+        systemPrompt = buildMEANINGSystemPrompt(gradeLevel, vocabulary, publisher);
         userPrompt = buildMEANINGUserPrompt();
         break;
       case 'COMPREHENSION':
-        systemPrompt = buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions);
+        systemPrompt = buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions, publisher);
         userPrompt = buildCOMPREHENSIONUserPrompt();
         break;
       default:

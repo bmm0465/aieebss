@@ -1,0 +1,530 @@
+[
+  {
+    "word": "I",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/i.mp3"
+  },
+  {
+    "word": "a",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/a.mp3"
+  },
+  {
+    "word": "and",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/and.mp3"
+  },
+  {
+    "word": "apple",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/apple.mp3"
+  },
+  {
+    "word": "at",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/at.mp3"
+  },
+  {
+    "word": "ball",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/ball.mp3"
+  },
+  {
+    "word": "banana",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/banana.mp3"
+  },
+  {
+    "word": "be",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/be.mp3"
+  },
+  {
+    "word": "big",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/big.mp3"
+  },
+  {
+    "word": "bike",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/bike.mp3"
+  },
+  {
+    "word": "bird",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/bird.mp3"
+  },
+  {
+    "word": "black",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/black.mp3"
+  },
+  {
+    "word": "blue",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/blue.mp3"
+  },
+  {
+    "word": "book",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/book.mp3"
+  },
+  {
+    "word": "brother",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/brother.mp3"
+  },
+  {
+    "word": "brush",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/brush.mp3"
+  },
+  {
+    "word": "bye",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/bye.mp3"
+  },
+  {
+    "word": "can",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/can.mp3"
+  },
+  {
+    "word": "carrot",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/carrot.mp3"
+  },
+  {
+    "word": "cat",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/cat.mp3"
+  },
+  {
+    "word": "cheese",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/cheese.mp3"
+  },
+  {
+    "word": "chicken",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/chicken.mp3"
+  },
+  {
+    "word": "close",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/close.mp3"
+  },
+  {
+    "word": "color",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/color.mp3"
+  },
+  {
+    "word": "come",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/come.mp3"
+  },
+  {
+    "word": "cow",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/cow.mp3"
+  },
+  {
+    "word": "cup",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/cup.mp3"
+  },
+  {
+    "word": "dad",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/dad.mp3"
+  },
+  {
+    "word": "dance",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/dance.mp3"
+  },
+  {
+    "word": "do",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/do.mp3"
+  },
+  {
+    "word": "dog",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/dog.mp3"
+  },
+  {
+    "word": "doll",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/doll.mp3"
+  },
+  {
+    "word": "door",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/door.mp3"
+  },
+  {
+    "word": "down",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/down.mp3"
+  },
+  {
+    "word": "egg",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/egg.mp3"
+  },
+  {
+    "word": "eight",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/eight.mp3"
+  },
+  {
+    "word": "elephant",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/elephant.mp3"
+  },
+  {
+    "word": "eraser",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/eraser.mp3"
+  },
+  {
+    "word": "fine",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/fine.mp3"
+  },
+  {
+    "word": "five",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/five.mp3"
+  },
+  {
+    "word": "flower",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/flower.mp3"
+  },
+  {
+    "word": "for",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/for.mp3"
+  },
+  {
+    "word": "four",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/four.mp3"
+  },
+  {
+    "word": "game",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/game.mp3"
+  },
+  {
+    "word": "go",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/go.mp3"
+  },
+  {
+    "word": "good",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/good.mp3"
+  },
+  {
+    "word": "grandfather",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/grandfather.mp3"
+  },
+  {
+    "word": "grandmother",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/grandmother.mp3"
+  },
+  {
+    "word": "great",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/great.mp3"
+  },
+  {
+    "word": "green",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/green.mp3"
+  },
+  {
+    "word": "hand",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/hand.mp3"
+  },
+  {
+    "word": "hat",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/hat.mp3"
+  },
+  {
+    "word": "have",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/have.mp3"
+  },
+  {
+    "word": "he",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/he.mp3"
+  },
+  {
+    "word": "hello",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/hello.mp3"
+  },
+  {
+    "word": "helmet",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/helmet.mp3"
+  },
+  {
+    "word": "here",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/here.mp3"
+  },
+  {
+    "word": "high",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/high.mp3"
+  },
+  {
+    "word": "how",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/how.mp3"
+  },
+  {
+    "word": "in",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/in.mp3"
+  },
+  {
+    "word": "it",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/it.mp3"
+  },
+  {
+    "word": "juice",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/juice.mp3"
+  },
+  {
+    "word": "jump",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/jump.mp3"
+  },
+  {
+    "word": "king",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/king.mp3"
+  },
+  {
+    "word": "like",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/like.mp3"
+  },
+  {
+    "word": "lion",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/lion.mp3"
+  },
+  {
+    "word": "look",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/look.mp3"
+  },
+  {
+    "word": "many",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/many.mp3"
+  },
+  {
+    "word": "mom",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/mom.mp3"
+  },
+  {
+    "word": "monkey",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/monkey.mp3"
+  },
+  {
+    "word": "nice",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/nice.mp3"
+  },
+  {
+    "word": "nine",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/nine.mp3"
+  },
+  {
+    "word": "no",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/no.mp3"
+  },
+  {
+    "word": "not",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/not.mp3"
+  },
+  {
+    "word": "now",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/now.mp3"
+  },
+  {
+    "word": "okay",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/okay.mp3"
+  },
+  {
+    "word": "one",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/one.mp3"
+  },
+  {
+    "word": "open",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/open.mp3"
+  },
+  {
+    "word": "orange",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/orange.mp3"
+  },
+  {
+    "word": "pen",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/pen.mp3"
+  },
+  {
+    "word": "pencil",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/pencil.mp3"
+  },
+  {
+    "word": "pig",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/pig.mp3"
+  },
+  {
+    "word": "pink",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/pink.mp3"
+  },
+  {
+    "word": "pizza",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/pizza.mp3"
+  },
+  {
+    "word": "please",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/please.mp3"
+  },
+  {
+    "word": "potato",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/potato.mp3"
+  },
+  {
+    "word": "pretty",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/pretty.mp3"
+  },
+  {
+    "word": "queen",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/queen.mp3"
+  },
+  {
+    "word": "ready",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/ready.mp3"
+  },
+  {
+    "word": "red",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/red.mp3"
+  },
+  {
+    "word": "right",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/right.mp3"
+  },
+  {
+    "word": "ring",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/ring.mp3"
+  },
+  {
+    "word": "robot",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/robot.mp3"
+  },
+  {
+    "word": "run",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/run.mp3"
+  },
+  {
+    "word": "say",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/say.mp3"
+  },
+  {
+    "word": "seven",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/seven.mp3"
+  },
+  {
+    "word": "she",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/she.mp3"
+  },
+  {
+    "word": "sing",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/sing.mp3"
+  },
+  {
+    "word": "sister",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/sister.mp3"
+  },
+  {
+    "word": "sit",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/sit.mp3"
+  },
+  {
+    "word": "six",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/six.mp3"
+  },
+  {
+    "word": "skate",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/skate.mp3"
+  },
+  {
+    "word": "small",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/small.mp3"
+  },
+  {
+    "word": "sorry",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/sorry.mp3"
+  },
+  {
+    "word": "stand",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/stand.mp3"
+  },
+  {
+    "word": "swim",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/swim.mp3"
+  },
+  {
+    "word": "tall",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/tall.mp3"
+  },
+  {
+    "word": "tape",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/tape.mp3"
+  },
+  {
+    "word": "ten",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/ten.mp3"
+  },
+  {
+    "word": "thank",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/thank.mp3"
+  },
+  {
+    "word": "that",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/that.mp3"
+  },
+  {
+    "word": "the",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/the.mp3"
+  },
+  {
+    "word": "this",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/this.mp3"
+  },
+  {
+    "word": "three",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/three.mp3"
+  },
+  {
+    "word": "tomato",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/tomato.mp3"
+  },
+  {
+    "word": "too",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/too.mp3"
+  },
+  {
+    "word": "touch",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/touch.mp3"
+  },
+  {
+    "word": "tree",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/tree.mp3"
+  },
+  {
+    "word": "two",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/two.mp3"
+  },
+  {
+    "word": "up",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/up.mp3"
+  },
+  {
+    "word": "use",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/use.mp3"
+  },
+  {
+    "word": "very",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/very.mp3"
+  },
+  {
+    "word": "violin",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/violin.mp3"
+  },
+  {
+    "word": "wash",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/wash.mp3"
+  },
+  {
+    "word": "what",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/what.mp3"
+  },
+  {
+    "word": "white",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/white.mp3"
+  },
+  {
+    "word": "who",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/who.mp3"
+  },
+  {
+    "word": "wind",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/wind.mp3"
+  },
+  {
+    "word": "yellow",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/yellow.mp3"
+  },
+  {
+    "word": "yes",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/yes.mp3"
+  },
+  {
+    "word": "you",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/you.mp3"
+  },
+  {
+    "word": "zebra",
+    "file": "/audio/p2_segmental_phoneme/chunjae-text-ham/zebra.mp3"
+  }
+]

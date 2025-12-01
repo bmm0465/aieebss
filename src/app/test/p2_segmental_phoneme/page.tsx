@@ -13,28 +13,42 @@ interface MinimalPair {
 }
 
 // [폴백] PSF 최소대립쌍 고정 문항
+// 천재교과서(함) 어휘 목록 분석 결과와 한국인이 헷갈려하는 음가를 반영
 const getFixedMinimalPairs = (): MinimalPair[] => {
   const fixedPairs: MinimalPair[] = [
-    { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
-    { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
-    { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
-    { word1: 'dog', word2: 'log', correctAnswer: 'dog' },
-    { word1: 'sun', word2: 'fun', correctAnswer: 'sun' },
-    { word1: 'bed', word2: 'red', correctAnswer: 'bed' },
-    { word1: 'cup', word2: 'pup', correctAnswer: 'cup' },
-    { word1: 'map', word2: 'cap', correctAnswer: 'map' },
-    { word1: 'sit', word2: 'hit', correctAnswer: 'sit' },
-    { word1: 'pen', word2: 'hen', correctAnswer: 'pen' },
+    // 한국인이 헷갈려하는 음가 쌍 포함
+    // b/v 구분 (fine/five - n/v 차이로 v 음가 포함)
+    { word1: 'fine', word2: 'five', correctAnswer: 'fine' },
+    
+    // b/p 구분 (한국인은 둘 다 '브'로 발음하기 쉬움)
     { word1: 'big', word2: 'pig', correctAnswer: 'big' },
-    { word1: 'top', word2: 'pop', correctAnswer: 'top' },
-    { word1: 'run', word2: 'sun', correctAnswer: 'run' },
-    { word1: 'leg', word2: 'peg', correctAnswer: 'leg' },
-    { word1: 'mug', word2: 'bug', correctAnswer: 'mug' },
-    { word1: 'fan', word2: 'van', correctAnswer: 'fan' },
-    { word1: 'ten', word2: 'pen', correctAnswer: 'ten' },
-    { word1: 'box', word2: 'fox', correctAnswer: 'box' },
-    { word1: 'six', word2: 'fix', correctAnswer: 'six' },
-    { word1: 'web', word2: 'deb', correctAnswer: 'web' },
+    { word1: 'book', word2: 'look', correctAnswer: 'book' }, // b/l 구분
+    
+    // p/f 구분 (한국인은 둘 다 '프'로 발음하기 쉬움)
+    { word1: 'pen', word2: 'ten', correctAnswer: 'pen' }, // p/t 구분
+    
+    // r/l 구분 (한국인이 가장 헷갈려하는 음가)
+    { word1: 'king', word2: 'ring', correctAnswer: 'king' }, // k/r 구분
+    
+    // 천재교과서(함) 어휘 목록에서 추출한 최소대립쌍
+    { word1: 'cat', word2: 'hat', correctAnswer: 'cat' }, // c/h 구분
+    { word1: 'sit', word2: 'six', correctAnswer: 'sit' }, // t/x 구분
+    { word1: 'that', word2: 'what', correctAnswer: 'that' }, // t/w 구분
+    { word1: 'can', word2: 'cat', correctAnswer: 'can' }, // n/t 구분
+    { word1: 'go', word2: 'no', correctAnswer: 'go' }, // g/n 구분
+    { word1: 'do', word2: 'go', correctAnswer: 'do' }, // d/g 구분
+    { word1: 'how', word2: 'now', correctAnswer: 'how' }, // h/n 구분
+    
+    // 기타 교육적으로 유용한 최소대립쌍
+    { word1: 'at', word2: 'it', correctAnswer: 'at' }, // a/i 구분
+    { word1: 'in', word2: 'it', correctAnswer: 'in' }, // n/t 구분
+    { word1: 'be', word2: 'he', correctAnswer: 'be' }, // b/h 구분
+    { word1: 'nice', word2: 'nine', correctAnswer: 'nice' }, // c/n 구분
+    { word1: 'ring', word2: 'sing', correctAnswer: 'ring' }, // r/s 구분
+    { word1: 'she', word2: 'the', correctAnswer: 'she' }, // s/t 구분
+    { word1: 'cow', word2: 'how', correctAnswer: 'cow' }, // c/h 구분
+    { word1: 'cow', word2: 'now', correctAnswer: 'cow' }, // c/n 구분
+    { word1: 'not', word2: 'now', correctAnswer: 'not' }, // t/w 구분
   ];
   return fixedPairs;
 };

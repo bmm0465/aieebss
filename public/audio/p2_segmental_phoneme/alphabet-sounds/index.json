@@ -1,0 +1,132 @@
+[
+  {
+    "letter": "a",
+    "sound": "eh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/a_sound.mp3"
+  },
+  {
+    "letter": "b",
+    "sound": "buh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/b_sound.mp3"
+  },
+  {
+    "letter": "c",
+    "sound": "kuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/c_sound.mp3"
+  },
+  {
+    "letter": "d",
+    "sound": "duh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/d_sound.mp3"
+  },
+  {
+    "letter": "e",
+    "sound": "eh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/e_sound.mp3"
+  },
+  {
+    "letter": "f",
+    "sound": "fuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/f_sound.mp3"
+  },
+  {
+    "letter": "g",
+    "sound": "guh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/g_sound.mp3"
+  },
+  {
+    "letter": "h",
+    "sound": "huh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/h_sound.mp3"
+  },
+  {
+    "letter": "i",
+    "sound": "ih",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/i_sound.mp3"
+  },
+  {
+    "letter": "j",
+    "sound": "juh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/j_sound.mp3"
+  },
+  {
+    "letter": "k",
+    "sound": "kuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/k_sound.mp3"
+  },
+  {
+    "letter": "l",
+    "sound": "luh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/l_sound.mp3"
+  },
+  {
+    "letter": "m",
+    "sound": "muh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/m_sound.mp3"
+  },
+  {
+    "letter": "n",
+    "sound": "nuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/n_sound.mp3"
+  },
+  {
+    "letter": "o",
+    "sound": "ah",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/o_sound.mp3"
+  },
+  {
+    "letter": "p",
+    "sound": "puh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/p_sound.mp3"
+  },
+  {
+    "letter": "q",
+    "sound": "kwuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/q_sound.mp3"
+  },
+  {
+    "letter": "r",
+    "sound": "ruh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/r_sound.mp3"
+  },
+  {
+    "letter": "s",
+    "sound": "suh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/s_sound.mp3"
+  },
+  {
+    "letter": "t",
+    "sound": "tuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/t_sound.mp3"
+  },
+  {
+    "letter": "u",
+    "sound": "uh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/u_sound.mp3"
+  },
+  {
+    "letter": "v",
+    "sound": "vuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/v_sound.mp3"
+  },
+  {
+    "letter": "w",
+    "sound": "wuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/w_sound.mp3"
+  },
+  {
+    "letter": "x",
+    "sound": "ks",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/x_sound.mp3"
+  },
+  {
+    "letter": "y",
+    "sound": "yuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/y_sound.mp3"
+  },
+  {
+    "letter": "z",
+    "sound": "zuh",
+    "file": "/audio/p2_segmental_phoneme/alphabet-sounds/z_sound.mp3"
+  }
+]

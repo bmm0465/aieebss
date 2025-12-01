@@ -1,0 +1,182 @@
+[
+  {
+    "word": "apple",
+    "choices": [
+      "APple",
+      "apPLE",
+      "APPLE"
+    ],
+    "correctAnswer": "apPLE"
+  },
+  {
+    "word": "banana",
+    "choices": [
+      "BANana",
+      "banANa",
+      "bananA"
+    ],
+    "correctAnswer": "banANa"
+  },
+  {
+    "word": "brother",
+    "choices": [
+      "BROther",
+      "broTHER",
+      "BROTHER"
+    ],
+    "correctAnswer": "broTHER"
+  },
+  {
+    "word": "carrot",
+    "choices": [
+      "CARrot",
+      "carROT",
+      "CARROT"
+    ],
+    "correctAnswer": "carROT"
+  },
+  {
+    "word": "chicken",
+    "choices": [
+      "CHIcken",
+      "chiCKEN",
+      "CHICKEN"
+    ],
+    "correctAnswer": "chiCKEN"
+  },
+  {
+    "word": "color",
+    "choices": [
+      "COlor",
+      "coLOR",
+      "COLOR"
+    ],
+    "correctAnswer": "coLOR"
+  },
+  {
+    "word": "elephant",
+    "choices": [
+      "ELephant",
+      "elEPHant",
+      "elephANT"
+    ],
+    "correctAnswer": "elEPHant"
+  },
+  {
+    "word": "eraser",
+    "choices": [
+      "ERaser",
+      "erASer",
+      "erasER"
+    ],
+    "correctAnswer": "erASer"
+  },
+  {
+    "word": "flower",
+    "choices": [
+      "FLOwer",
+      "floWER",
+      "FLOWER"
+    ],
+    "correctAnswer": "floWER"
+  },
+  {
+    "word": "grandfather",
+    "choices": [
+      "GRANDFather",
+      "grandfATHer",
+      "grandfathER"
+    ],
+    "correctAnswer": "grandfATHer"
+  },
+  {
+    "word": "grandmother",
+    "choices": [
+      "GRANDMother",
+      "grandmOTHer",
+      "grandmothER"
+    ],
+    "correctAnswer": "grandmOTHer"
+  },
+  {
+    "word": "hello",
+    "choices": [
+      "HEllo",
+      "heLLO",
+      "HELLO"
+    ],
+    "correctAnswer": "heLLO"
+  },
+  {
+    "word": "helmet",
+    "choices": [
+      "HELmet",
+      "helMET",
+      "HELMET"
+    ],
+    "correctAnswer": "helMET"
+  },
+  {
+    "word": "many",
+    "choices": [
+      "MAny",
+      "maNY",
+      "MANY"
+    ],
+    "correctAnswer": "maNY"
+  },
+  {
+    "word": "monkey",
+    "choices": [
+      "MONkey",
+      "monKEY",
+      "MONKEY"
+    ],
+    "correctAnswer": "monKEY"
+  },
+  {
+    "word": "okay",
+    "choices": [
+      "OKay",
+      "okAY",
+      "OKAY"
+    ],
+    "correctAnswer": "okAY"
+  },
+  {
+    "word": "open",
+    "choices": [
+      "OPen",
+      "opEN",
+      "OPEN"
+    ],
+    "correctAnswer": "opEN"
+  },
+  {
+    "word": "orange",
+    "choices": [
+      "ORAnge",
+      "oraNGE",
+      "ORANGE"
+    ],
+    "correctAnswer": "oraNGE"
+  },
+  {
+    "word": "pencil",
+    "choices": [
+      "PENcil",
+      "penCIL",
+      "PENCIL"
+    ],
+    "correctAnswer": "penCIL"
+  },
+  {
+    "word": "pizza",
+    "choices": [
+      "PIzza",
+      "piZZA",
+      "PIZZA"
+    ],
+    "correctAnswer": "piZZA"
+  }
+]

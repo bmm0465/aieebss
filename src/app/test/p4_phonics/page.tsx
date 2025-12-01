@@ -9,28 +9,33 @@ import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems
 type ReadingPhase = 'nwf' | 'wrf' | 'orf';
 type TestPhase = 'ready' | 'testing' | 'finished';
 
-// [폴백] NWF 고정 문항 (5개로 제한)
+// [폴백] NWF 고정 문항 (무의미 단어)
 const getFixedNonsenseWords = () => {
   return [
-    'kig', 'wom', 'sep', 'nem', 'dib'
+    'sep', 'het', 'tum', 'lut', 'dit', 'reg', 'fet', 'pom', 'teb', 'gid'
   ];
 };
 
-// [폴백] WRF 고정 문항 (5개로 제한)
+// [폴백] WRF 고정 문항 (천재교과서 함 - 강세 명확한 단어, 2음절 이상)
 const getFixedSightWords = () => {
   return [
-    'cat', 'sun', 'sit', 'run', 'top'
+    'apple', 'banana', 'brother', 'carrot', 'chicken', 'color', 'elephant', 'eraser', 'flower', 'grandfather'
   ];
 };
 
-// [폴백] ORF 고정 문장
+// [폴백] ORF 고정 문장 (천재교과서 함 - 핵심 표현, 2개 단어 이상)
 const getFixedSentences = () => {
   return [
-    'I see a big dog.',
-    'The cat is on the mat.',
-    'I like to play.',
-    'The sun is hot.',
-    'I have a red ball.',
+    "I'm Momo",
+    'How are you?',
+    "What's this",
+    "It's a bike",
+    "It's a robot",
+    'Sit down, please',
+    'Open the door, please',
+    'Thank you',
+    "You're welcome",
+    'How many cows?',
   ];
 };
 
@@ -68,32 +73,53 @@ export default function ReadingTestPage() {
       setUser(user);
 
       try {
-        const gradeLevel = await getUserGradeLevel(user.id);
-        
-        // p4_phonics 문항 로드 (NWF/WRF/ORF 통합)
-        const phonicsItems = await fetchApprovedTestItems('p4_phonics', gradeLevel || undefined);
-        if (phonicsItems && phonicsItems.items && typeof phonicsItems.items === 'object') {
-          const items = phonicsItems.items as { nwf?: string[]; wrf?: string[]; orf?: string[] };
-          if (items.nwf && Array.isArray(items.nwf)) {
-            setNwfWords(items.nwf.slice(0, 5));
+        // p4_items.json에서 문항 로드 시도
+        const response = await fetch('/data/p4_items.json');
+        if (response.ok) {
+          const jsonItems = await response.json();
+          console.log('[p4_phonics] p4_items.json에서 문항 로드');
+          if (jsonItems.nwf && Array.isArray(jsonItems.nwf)) {
+            setNwfWords(jsonItems.nwf.slice(0, 5));
           } else {
-            setNwfWords(getFixedNonsenseWords());
+            setNwfWords(getFixedNonsenseWords().slice(0, 5));
           }
-          if (items.wrf && Array.isArray(items.wrf)) {
-            setWrfWords(items.wrf.slice(0, 5));
+          if (jsonItems.wrf && Array.isArray(jsonItems.wrf)) {
+            setWrfWords(jsonItems.wrf.slice(0, 5));
           } else {
-            setWrfWords(getFixedSightWords());
+            setWrfWords(getFixedSightWords().slice(0, 5));
           }
-          if (items.orf && Array.isArray(items.orf)) {
-            setOrfSentences(items.orf.slice(0, 5));
+          if (jsonItems.orf && Array.isArray(jsonItems.orf)) {
+            setOrfSentences(jsonItems.orf.slice(0, 5));
           } else {
-            setOrfSentences(getFixedSentences());
+            setOrfSentences(getFixedSentences().slice(0, 5));
           }
         } else {
-          // 폴백: 고정 문항 사용
-          setNwfWords(getFixedNonsenseWords());
-          setWrfWords(getFixedSightWords());
-          setOrfSentences(getFixedSentences());
+          // DB에서 승인된 문항 조회 시도
+          const gradeLevel = await getUserGradeLevel(user.id);
+          const phonicsItems = await fetchApprovedTestItems('p4_phonics', gradeLevel || undefined);
+          if (phonicsItems && phonicsItems.items && typeof phonicsItems.items === 'object') {
+            const items = phonicsItems.items as { nwf?: string[]; wrf?: string[]; orf?: string[] };
+            if (items.nwf && Array.isArray(items.nwf)) {
+              setNwfWords(items.nwf.slice(0, 5));
+            } else {
+              setNwfWords(getFixedNonsenseWords().slice(0, 5));
+            }
+            if (items.wrf && Array.isArray(items.wrf)) {
+              setWrfWords(items.wrf.slice(0, 5));
+            } else {
+              setWrfWords(getFixedSightWords().slice(0, 5));
+            }
+            if (items.orf && Array.isArray(items.orf)) {
+              setOrfSentences(items.orf.slice(0, 5));
+            } else {
+              setOrfSentences(getFixedSentences().slice(0, 5));
+            }
+          } else {
+            // 폴백: 고정 문항 사용
+            setNwfWords(getFixedNonsenseWords().slice(0, 5));
+            setWrfWords(getFixedSightWords().slice(0, 5));
+            setOrfSentences(getFixedSentences().slice(0, 5));
+          }
         }
         
         // 기존 코드 유지 (하위 호환성)

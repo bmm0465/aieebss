@@ -98,6 +98,7 @@ export interface ItemGenerationRequest {
   pdfIds?: string[]; // 참조할 PDF ID 목록
   referenceDocument?: string; // 추가 참고 문서 (텍스트)
   customInstructions?: string; // 사용자 지정 지시사항
+  publisher?: string; // 출판사 필터 (예: 'donga_yoon', 'icecream_park' 등)
 }
 
 export interface ItemGenerationResult {
