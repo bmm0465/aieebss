@@ -250,7 +250,7 @@ async function createTeachers(
       // user_profiles에 프로필 생성
       const userId = teacherIdMap.get(teacher.email);
       if (userId && userId !== 'dry-run-user-id') {
-        const { error: profileError } = await client.from('user_profiles').upsert(
+        const { error: profileError } = await (client.from('user_profiles') as any).upsert(
           {
             id: userId,
             full_name: teacher.name,
@@ -357,7 +357,7 @@ async function createStudents(
       // user_profiles에 프로필 생성
       const userId = studentIdMap.get(student.email);
       if (userId && userId !== 'dry-run-user-id') {
-        const { error: profileError } = await client.from('user_profiles').upsert(
+        const { error: profileError } = await (client.from('user_profiles') as any).upsert(
           {
             id: userId,
             full_name: student.name,
@@ -436,8 +436,8 @@ async function createAssignments(
             continue;
           }
 
-          const { error: assignmentError } = await client
-            .from('teacher_student_assignments')
+          const { error: assignmentError } = await (client
+            .from('teacher_student_assignments') as any)
             .upsert(
               {
                 teacher_id: teacherId,
