@@ -54,9 +54,15 @@ async function analyzeDataQuality(): Promise<AnalysisResult> {
   console.log('📊 1. 사용되지 않는 컬럼 분석 중...');
   
   // session_id 컬럼이 문서에만 있고 실제로는 없는지 확인
-  const { data: testResultsColumns } = await supabase.rpc('get_table_columns', {
-    table_name: 'test_results'
-  }).catch(() => ({ data: null }));
+  let testResultsColumns = null;
+  try {
+    const result = await supabase.rpc('get_table_columns', {
+      table_name: 'test_results'
+    });
+    testResultsColumns = result.data;
+  } catch {
+    testResultsColumns = null;
+  }
 
   // test_results 테이블에서 실제로 사용되지 않는 컬럼 확인
   const { data: testResultsSample } = await supabase
@@ -123,9 +129,13 @@ async function analyzeDataQuality(): Promise<AnalysisResult> {
     const validUserIds = new Set<string>();
     
     for (const userId of userIds.slice(0, 100)) { // 샘플링
-      const { data: user } = await supabase.auth.admin.getUserById(userId).catch(() => ({ data: null }));
-      if (user?.user) {
-        validUserIds.add(userId);
+      try {
+        const { data: user } = await supabase.auth.admin.getUserById(userId);
+        if (user?.user) {
+          validUserIds.add(userId);
+        }
+      } catch {
+        // 사용자를 찾을 수 없음
       }
     }
     
@@ -153,8 +163,12 @@ async function analyzeDataQuality(): Promise<AnalysisResult> {
 
     let orphanedAssignments = 0;
     for (const userId of Array.from(allUserIds).slice(0, 50)) {
-      const { data: user } = await supabase.auth.admin.getUserById(userId).catch(() => ({ data: null }));
-      if (!user?.user) {
+      try {
+        const { data: user } = await supabase.auth.admin.getUserById(userId);
+        if (!user?.user) {
+          orphanedAssignments++;
+        }
+      } catch {
         orphanedAssignments++;
       }
     }
@@ -172,35 +186,39 @@ async function analyzeDataQuality(): Promise<AnalysisResult> {
   console.log('📊 4. 중복 데이터 분석 중...');
   
   // test_results에서 동일한 user_id, test_type, question, created_at이 같은 경우
-  const { data: duplicateTestResults } = await supabase.rpc('check_duplicates', {
-    table_name: 'test_results',
-    columns: ['user_id', 'test_type', 'question', 'created_at']
-  }).catch(async () => {
+  let duplicateTestResults = null;
+  try {
+    const result = await supabase.rpc('check_duplicates', {
+      table_name: 'test_results',
+      columns: ['user_id', 'test_type', 'question', 'created_at']
+    });
+    duplicateTestResults = result.data;
+  } catch {
     // RPC가 없으면 직접 확인
     const { data: allResults } = await supabase
       .from('test_results')
       .select('user_id, test_type, question, created_at');
     
-    if (!allResults) return { data: null };
-    
-    const seen = new Map<string, number>();
-    allResults.forEach(r => {
-      const key = `${r.user_id}-${r.test_type}-${r.question}-${r.created_at}`;
-      seen.set(key, (seen.get(key) || 0) + 1);
-    });
-    
-    const duplicates = Array.from(seen.entries())
-      .filter(([_, count]) => count > 1)
-      .length;
-    
-    return { data: duplicates };
-  });
+    if (allResults) {
+      const seen = new Map<string, number>();
+      allResults.forEach(r => {
+        const key = `${r.user_id}-${r.test_type}-${r.question}-${r.created_at}`;
+        seen.set(key, (seen.get(key) || 0) + 1);
+      });
+      
+      const duplicates = Array.from(seen.entries())
+        .filter(([_, count]) => count > 1)
+        .length;
+      
+      duplicateTestResults = duplicates;
+    }
+  }
 
-  if (duplicateTestResults?.data && duplicateTestResults.data > 0) {
+  if (duplicateTestResults && duplicateTestResults > 0) {
     result.duplicateData.push({
       table: 'test_results',
       column: 'user_id, test_type, question, created_at',
-      duplicateCount: duplicateTestResults.data,
+      duplicateCount: duplicateTestResults,
     });
   }
 
