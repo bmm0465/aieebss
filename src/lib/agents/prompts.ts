@@ -627,6 +627,20 @@ export function buildSystemPromptForTestType(
   const { candidateWords = [], coreExpressions = [] } = options;
 
   switch (testType) {
+    case 'p1_alphabet':
+      return buildLNFSystemPrompt();
+    case 'p2_segmental_phoneme':
+      return buildPSFSystemPrompt(gradeLevel, candidateWords);
+    case 'p3_suprasegmental_phoneme':
+      return buildSTRESSSystemPrompt(gradeLevel, candidateWords);
+    case 'p4_phonics':
+      // p4_phonics는 NWF, WRF, ORF를 통합하므로 ORF 프롬프트 사용
+      return buildORFSystemPrompt(gradeLevel, coreExpressions);
+    case 'p5_vocabulary':
+      return buildMEANINGSystemPrompt(gradeLevel, candidateWords);
+    case 'p6_comprehension':
+      return buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions);
+    // 하위 호환성을 위한 구형 타입 지원
     case 'LNF':
       return buildLNFSystemPrompt();
     case 'PSF':

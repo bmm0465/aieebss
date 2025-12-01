@@ -162,6 +162,13 @@ function StudentDetailContent() {
   const { student, assignment, results: testResults, stats } = studentData
 
   const testInfo = {
+    p1_alphabet: { title: '1교시', description: '고대 룬 문자 해독' },
+    p2_segmental_phoneme: { title: '2교시', description: '소리의 원소 분리' },
+    p3_suprasegmental_phoneme: { title: '3교시', description: '마법 리듬 패턴' },
+    p4_phonics: { title: '4교시', description: '파닉스 읽기' },
+    p5_vocabulary: { title: '5교시', description: '마법서 그림 해석' },
+    p6_comprehension: { title: '6교시', description: '고대 전설 이해' },
+    // 하위 호환성을 위한 구형 타입 지원
     LNF: { title: 'LNF', description: '고대 룬 문자 해독' },
     PSF: { title: 'PSF', description: '소리의 원소 분리' },
     NWF: { title: 'NWF', description: '무의미 단어 읽기' },

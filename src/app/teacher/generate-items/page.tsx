@@ -40,12 +40,12 @@ export default function GenerateItemsPage() {
   const [error, setError] = useState('');
 
   const testTypeOptions = [
-    { value: 'LNF', label: 'LNF - 알파벳 이름 말하기 (100문자)' },
-    { value: 'PSF', label: 'PSF - 음소 분리 (30단어 / 2·3음소)' },
-    { value: 'NWF', label: 'NWF - 엉터리 단어 디코딩 (75개)' },
-    { value: 'WRF', label: 'WRF - 실제 단어 읽기 (85개)' },
-    { value: 'ORF', label: 'ORF - 대화문 읽기 유창성 지문 (150~200단어)' },
-    { value: 'MAZE', label: 'MAZE - 문맥 기반 읽기 이해 (20문항 이상)' }
+    { value: 'p1_alphabet', label: '1교시 - 알파벳 이름 말하기 (100문자)' },
+    { value: 'p2_segmental_phoneme', label: '2교시 - 음소 분리 (30단어 / 2·3음소)' },
+    { value: 'p3_suprasegmental_phoneme', label: '3교시 - 강세 및 리듬 패턴 (20문항)' },
+    { value: 'p4_phonics', label: '4교시 - 파닉스 읽기 (NWF/WRF/ORF 통합)' },
+    { value: 'p5_vocabulary', label: '5교시 - 의미 이해 (20문항)' },
+    { value: 'p6_comprehension', label: '6교시 - 주요 정보 파악 (15문항)' }
   ];
 
   // PDF 목록 로드

@@ -89,41 +89,79 @@ export class ItemGeneratorAgent {
       if (itemsForType === undefined) return;
 
       switch (testType) {
+        case 'p1_alphabet':
+          aggregatedItems.p1_alphabet = itemsForType as string[];
+          break;
+        case 'p2_segmental_phoneme':
+          aggregatedItems.p2_segmental_phoneme = itemsForType as Array<{
+            word1: string;
+            word2: string;
+            correctAnswer: string;
+          }>;
+          break;
+        case 'p3_suprasegmental_phoneme':
+          aggregatedItems.p3_suprasegmental_phoneme = itemsForType as Array<{
+            word: string;
+            choices: string[];
+            correctAnswer: string;
+          }>;
+          break;
+        case 'p4_phonics':
+          aggregatedItems.p4_phonics = itemsForType as { nwf?: string[]; wrf?: string[]; orf?: string[] };
+          break;
+        case 'p5_vocabulary':
+          aggregatedItems.p5_vocabulary = itemsForType as Array<{
+            wordOrPhrase: string;
+            imageOptions: string[];
+            correctAnswer: string;
+          }>;
+          break;
+        case 'p6_comprehension':
+          aggregatedItems.p6_comprehension = itemsForType as Array<{
+            dialogueOrStory: string;
+            question: string;
+            options: Array<{
+              type: 'image' | 'word';
+              content: string;
+            }>;
+            correctAnswer: string;
+          }>;
+          break;
+        // 하위 호환성을 위한 구형 타입 지원
         case 'LNF':
-          aggregatedItems.LNF = itemsForType as string[];
+          aggregatedItems.p1_alphabet = itemsForType as string[];
           break;
         case 'PSF':
-          aggregatedItems.PSF = itemsForType as Array<{
+          aggregatedItems.p2_segmental_phoneme = itemsForType as Array<{
             word1: string;
             word2: string;
             correctAnswer: string;
           }>;
           break;
         case 'NWF':
-          aggregatedItems.NWF = itemsForType as string[];
-          break;
         case 'WRF':
-          aggregatedItems.WRF = itemsForType as string[];
-          break;
         case 'ORF':
-          aggregatedItems.ORF = itemsForType as string[];
+          if (!aggregatedItems.p4_phonics) aggregatedItems.p4_phonics = {};
+          if (testType === 'NWF') aggregatedItems.p4_phonics.nwf = itemsForType as string[];
+          else if (testType === 'WRF') aggregatedItems.p4_phonics.wrf = itemsForType as string[];
+          else aggregatedItems.p4_phonics.orf = itemsForType as string[];
           break;
         case 'STRESS':
-          aggregatedItems.STRESS = itemsForType as Array<{
+          aggregatedItems.p3_suprasegmental_phoneme = itemsForType as Array<{
             word: string;
             choices: string[];
             correctAnswer: string;
           }>;
           break;
         case 'MEANING':
-          aggregatedItems.MEANING = itemsForType as Array<{
+          aggregatedItems.p5_vocabulary = itemsForType as Array<{
             wordOrPhrase: string;
             imageOptions: string[];
             correctAnswer: string;
           }>;
           break;
         case 'COMPREHENSION':
-          aggregatedItems.COMPREHENSION = itemsForType as Array<{
+          aggregatedItems.p6_comprehension = itemsForType as Array<{
             dialogueOrStory: string;
             question: string;
             options: Array<{
@@ -169,6 +207,32 @@ export class ItemGeneratorAgent {
     let userPrompt = '';
 
     switch (testType) {
+      case 'p1_alphabet':
+        systemPrompt = buildLNFSystemPrompt();
+        userPrompt = buildLNFUserPrompt();
+        break;
+      case 'p2_segmental_phoneme':
+        systemPrompt = buildPSFSystemPrompt(gradeLevel, vocabulary);
+        userPrompt = buildPSFUserPrompt();
+        break;
+      case 'p3_suprasegmental_phoneme':
+        systemPrompt = buildSTRESSSystemPrompt(gradeLevel, vocabulary);
+        userPrompt = buildSTRESSUserPrompt();
+        break;
+      case 'p4_phonics':
+        // p4_phonics는 ORF 프롬프트 사용 (NWF/WRF/ORF 통합)
+        systemPrompt = buildORFSystemPrompt(gradeLevel, coreExpressions);
+        userPrompt = buildORFUserPrompt();
+        break;
+      case 'p5_vocabulary':
+        systemPrompt = buildMEANINGSystemPrompt(gradeLevel, vocabulary);
+        userPrompt = buildMEANINGUserPrompt();
+        break;
+      case 'p6_comprehension':
+        systemPrompt = buildCOMPREHENSIONSystemPrompt(gradeLevel, coreExpressions);
+        userPrompt = buildCOMPREHENSIONUserPrompt();
+        break;
+      // 하위 호환성을 위한 구형 타입 지원
       case 'LNF':
         systemPrompt = buildLNFSystemPrompt();
         userPrompt = buildLNFUserPrompt();
@@ -246,10 +310,60 @@ ${userPrompt}`;
     const parsed = JSON.parse(raw) as ParsedResponse;
 
     switch (testType) {
+      case 'p1_alphabet':
+        return parsed.p1_alphabet || parsed.LNF as string[];
+      case 'p2_segmental_phoneme':
+        if (Array.isArray(parsed.p2_segmental_phoneme)) {
+          return parsed.p2_segmental_phoneme as Array<{ word1: string; word2: string; correctAnswer: string }>;
+        }
+        if (Array.isArray(parsed.PSF)) {
+          return parsed.PSF as Array<{ word1: string; word2: string; correctAnswer: string }>;
+        }
+        return undefined;
+      case 'p3_suprasegmental_phoneme':
+        if (Array.isArray(parsed.p3_suprasegmental_phoneme)) {
+          return parsed.p3_suprasegmental_phoneme as Array<{ word: string; choices: string[]; correctAnswer: string }>;
+        }
+        if (Array.isArray(parsed.STRESS)) {
+          return parsed.STRESS as Array<{ word: string; choices: string[]; correctAnswer: string }>;
+        }
+        return undefined;
+      case 'p4_phonics':
+        return parsed.p4_phonics || {
+          nwf: parsed.NWF ? (Array.isArray(parsed.NWF) ? parsed.NWF.map((item: { word: string }) => item.word) : []) : undefined,
+          wrf: parsed.WRF ? (Array.isArray(parsed.WRF) ? parsed.WRF.map((item: { word: string } | string) => typeof item === 'string' ? item : item.word) : []) : undefined,
+          orf: parsed.ORF ? (typeof parsed.ORF === 'string' ? parsed.ORF.split(/[.!?]+/).filter((s: string) => s.trim().length > 0).map((s: string) => s.trim() + '.') : (Array.isArray(parsed.ORF) ? parsed.ORF : [])) : undefined
+        };
+      case 'p5_vocabulary':
+        if (Array.isArray(parsed.p5_vocabulary)) {
+          return parsed.p5_vocabulary as Array<{ wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }>;
+        }
+        if (Array.isArray(parsed.MEANING)) {
+          return parsed.MEANING as Array<{ wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }>;
+        }
+        return undefined;
+      case 'p6_comprehension':
+        if (Array.isArray(parsed.p6_comprehension)) {
+          return parsed.p6_comprehension as Array<{
+            dialogueOrStory: string;
+            question: string;
+            options: Array<{ type: 'image' | 'word'; content: string }>;
+            correctAnswer: string;
+          }>;
+        }
+        if (Array.isArray(parsed.COMPREHENSION)) {
+          return parsed.COMPREHENSION as Array<{
+            dialogueOrStory: string;
+            question: string;
+            options: Array<{ type: 'image' | 'word'; content: string }>;
+            correctAnswer: string;
+          }>;
+        }
+        return undefined;
+      // 하위 호환성을 위한 구형 타입 지원
       case 'LNF':
         return parsed.LNF as string[];
       case 'PSF':
-        // PSF는 최소대립쌍 형식
         if (Array.isArray(parsed.PSF)) {
           return parsed.PSF as Array<{ word1: string; word2: string; correctAnswer: string }>;
         }
@@ -269,11 +383,9 @@ ${userPrompt}`;
         }
         return undefined;
       case 'ORF':
-        // ORF는 문장 배열로 변경
         if (typeof parsed.ORF === 'string') {
-          // 기존 형식(전체 지문)을 문장 배열로 변환
-          const sentences = parsed.ORF.split(/[.!?]+/).filter(s => s.trim().length > 0);
-          return sentences.map(s => s.trim() + '.');
+          const sentences = parsed.ORF.split(/[.!?]+/).filter((s: string) => s.trim().length > 0);
+          return sentences.map((s: string) => s.trim() + '.');
         }
         if (Array.isArray(parsed.ORF)) {
           return parsed.ORF as string[];

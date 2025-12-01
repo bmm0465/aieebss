@@ -64,7 +64,7 @@ async function getDifficultWords(supabase: Awaited<ReturnType<typeof createClien
     const { data: results, error: queryError } = await supabase
       .from('test_results')
       .select('question_word, correct_segments, target_segments')
-      .eq('test_type', 'PSF');
+      .eq('test_type', 'p2_segmental_phoneme');
 
     if (queryError) throw queryError;
 

@@ -58,29 +58,44 @@ export async function GET(request: NextRequest) {
     // 테스트 유형에 맞는 문항 추출
     let testItems: unknown = null;
     switch (testType) {
+      case 'p1_alphabet':
+        testItems = items.p1_alphabet;
+        break;
+      case 'p2_segmental_phoneme':
+        testItems = items.p2_segmental_phoneme;
+        break;
+      case 'p3_suprasegmental_phoneme':
+        testItems = items.p3_suprasegmental_phoneme;
+        break;
+      case 'p4_phonics':
+        testItems = items.p4_phonics;
+        break;
+      case 'p5_vocabulary':
+        testItems = items.p5_vocabulary;
+        break;
+      case 'p6_comprehension':
+        testItems = items.p6_comprehension;
+        break;
+      // 하위 호환성을 위한 구형 타입 지원
       case 'LNF':
-        testItems = items.LNF;
+        testItems = items.LNF || items.p1_alphabet;
         break;
       case 'PSF':
-        testItems = items.PSF;
+        testItems = items.PSF || items.p2_segmental_phoneme;
         break;
       case 'NWF':
-        testItems = items.NWF;
-        break;
       case 'WRF':
-        testItems = items.WRF;
-        break;
       case 'ORF':
-        testItems = items.ORF;
+        testItems = items[testType] || items.p4_phonics;
         break;
       case 'STRESS':
-        testItems = items.STRESS;
+        testItems = items.STRESS || items.p3_suprasegmental_phoneme;
         break;
       case 'MEANING':
-        testItems = items.MEANING;
+        testItems = items.MEANING || items.p5_vocabulary;
         break;
       case 'COMPREHENSION':
-        testItems = items.COMPREHENSION;
+        testItems = items.COMPREHENSION || items.p6_comprehension;
         break;
       default:
         testItems = null;

@@ -94,7 +94,7 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
     const totalTests = sessionResults.length;
     
     // 완료율 계산 (6개 테스트 중 몇 개를 완료했는지)
-    const expectedTests = ['LNF', 'PSF', 'NWF', 'WRF', 'ORF', 'MAZE'];
+    const expectedTests = ['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'];
     const completedTests = expectedTests.filter(testType => 
       testTypes.includes(testType)
     );

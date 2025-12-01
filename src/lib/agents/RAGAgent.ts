@@ -173,6 +173,13 @@ export class RAGAgent {
    */
   private getKeywordsForTestType(testType: string): string[] {
     const keywordMap: Record<string, string[]> = {
+      'p1_alphabet': ['알파벳', 'letter', 'alphabet', '문자'],
+      'p2_segmental_phoneme': ['음소', 'phoneme', 'sound', '발음', '음성', '최소대립쌍'],
+      'p3_suprasegmental_phoneme': ['강세', 'stress', '리듬', 'rhythm', '억양', 'intonation'],
+      'p4_phonics': ['파닉스', 'phonics', '디코딩', 'decoding', '무의미 단어', '읽기', 'reading', '유창성', 'fluency'],
+      'p5_vocabulary': ['단어', 'word', '어휘', 'vocabulary', '의미', 'meaning'],
+      'p6_comprehension': ['독해', 'comprehension', '이해', '문맥', 'context', '읽기 이해'],
+      // 하위 호환성을 위한 구형 타입 지원
       'LNF': ['알파벳', 'letter', 'alphabet', '문자'],
       'PSF': ['음소', 'phoneme', 'sound', '발음', '음성'],
       'NWF': ['파닉스', 'phonics', '디코딩', 'decoding', '무의미 단어'],
