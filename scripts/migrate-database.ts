@@ -35,7 +35,7 @@ interface MigrationConfig {
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY
  */
-async function migrateDatabase(config: MigrationConfig) {
+async function migrateDatabase(config: MigrationConfig, tables: string[]) {
   console.log('🔄 데이터베이스 마이그레이션 시작...\n');
   console.log(`모드: ${config.dryRun ? '👀 Dry-run (실제 마이그레이션 없음)' : '✅ 실행 모드'}\n`);
 
@@ -46,17 +46,6 @@ async function migrateDatabase(config: MigrationConfig) {
   const targetClient = createSupabaseClient(config.targetUrl, config.targetServiceKey, {
     auth: { autoRefreshToken: false, persistSession: false }
   });
-
-  // 마이그레이션 순서 (외래키 의존성 고려)
-  const tables = [
-    'user_profiles',
-    'teacher_student_assignments',
-    'curriculum_pdfs',
-    'curriculum_pdf_chunks',
-    'generated_test_items',
-    'item_approval_workflow',
-    'test_results',
-  ];
 
   const migrationStats: Record<string, { total: number; migrated: number; errors: number }> = {};
 
@@ -258,6 +247,8 @@ async function main() {
   const args = process.argv.slice(2);
   const execute = args.includes('--execute') || args.includes('-e');
   const batchSize = parseInt(args.find(arg => arg.startsWith('--batch-size='))?.split('=')[1] || '100');
+  
+  // 테이블 목록은 migrateDatabase 함수 내에서 처리
 
   const config: MigrationConfig = {
     sourceUrl,
@@ -268,11 +259,26 @@ async function main() {
     batchSize,
   };
 
+  // 테이블 목록 추출
+  const tablesIndex = args.indexOf('--tables');
+  const tables = tablesIndex >= 0 && args[tablesIndex + 1]
+    ? args[tablesIndex + 1].split(',').map(t => t.trim())
+    : [
+        'user_profiles',
+        'teacher_student_assignments',
+        'curriculum_pdfs',
+        'curriculum_pdf_chunks',
+        'generated_test_items',
+        'item_approval_workflow',
+        'test_results',
+      ];
+
   console.log(`소스 프로젝트: ${sourceUrl.substring(0, 30)}...`);
   console.log(`타겟 프로젝트: ${targetUrl.substring(0, 30)}...`);
-  console.log(`배치 크기: ${batchSize}\n`);
+  console.log(`배치 크기: ${batchSize}`);
+  console.log(`마이그레이션 대상 테이블: ${tables.join(', ')}\n`);
 
-  await migrateDatabase(config);
+  await migrateDatabase(config, tables);
 }
 
 main().catch((error) => {
