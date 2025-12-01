@@ -8,14 +8,12 @@ import AudioResultTable from './AudioResultTable';
 
 // UI 컴포넌트가 받을 데이터의 타입을 명확하게 정의
 export interface ProcessedResults {
-  LNF: { correct: number; total: number; accuracy: number };
-  PSF: { correct: number; total: number; accuracy: number };
-  NWF: { phonemes_correct: number; whole_word_correct: number; total: number; phoneme_accuracy: number; whole_word_accuracy: number };
-  WRF: { correct: number; total: number; accuracy: number };
-  ORF: { total_wcpm: number; total_accuracy: number; count: number; avg_wcpm: number; avg_accuracy: number };
-  STRESS: { correct: number; total: number; accuracy: number };
-  MEANING: { correct: number; total: number; accuracy: number };
-  COMPREHENSION: { correct: number; total: number; accuracy: number };
+  p1_alphabet: { correct: number; total: number; accuracy: number };
+  p2_segmental_phoneme: { correct: number; total: number; accuracy: number };
+  p3_suprasegmental_phoneme: { correct: number; total: number; accuracy: number };
+  p4_phonics: { correct: number; total: number; accuracy: number; total_wcpm?: number; total_accuracy?: number; avg_wcpm?: number; avg_accuracy?: number };
+  p5_vocabulary: { correct: number; total: number; accuracy: number };
+  p6_comprehension: { correct: number; total: number; accuracy: number };
 }
 
 interface ResultProps {
@@ -25,14 +23,12 @@ interface ResultProps {
 
 // 각 시험별 제목과 설명
 const testInfo = {
-  LNF: { title: "1교시: 고대 룬 문자 해독 시험", description: "알파벳 이름 인지 정확도" },
-  PSF: { title: "2교시: 소리의 원소 분리 시험", description: "최소대립쌍 듣고 식별 능력" },
-  NWF: { title: "3교시: 마법 주문 읽기 시험 (무의미 단어)", description: "파닉스 규칙 적용 능력" },
-  WRF: { title: "3교시: 마법 주문 읽기 시험 (실제 단어)", description: "주요 단어 인지 정확도" },
-  ORF: { title: "3교시: 마법 주문 읽기 시험 (문장)", description: "문장 유창성 및 정확도" },
-  STRESS: { title: "4교시: 마법 리듬 패턴 시험", description: "강세 패턴 식별 능력" },
-  MEANING: { title: "5교시: 마법서 그림 해석 시험", description: "단어/문장 의미 이해 능력" },
-  COMPREHENSION: { title: "6교시: 고대 전설 이해 시험", description: "주요 정보 파악 능력" },
+  p1_alphabet: { title: "1교시: 고대 룬 문자 해독 시험", description: "알파벳 이름 인지 정확도" },
+  p2_segmental_phoneme: { title: "2교시: 소리의 원소 분리 시험", description: "최소대립쌍 듣고 식별 능력" },
+  p3_suprasegmental_phoneme: { title: "3교시: 마법 리듬 패턴 시험", description: "강세 패턴 식별 능력" },
+  p4_phonics: { title: "4교시: 마법 주문 읽기 시험", description: "파닉스 규칙 적용 및 유창성" },
+  p5_vocabulary: { title: "5교시: 마법서 그림 해석 시험", description: "단어/문장 의미 이해 능력" },
+  p6_comprehension: { title: "6교시: 고대 전설 이해 시험", description: "주요 정보 파악 능력" },
 };
 
 export default function ResultReport({ results, sessionId }: ResultProps) {
@@ -107,86 +103,66 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
         </div>
 
         <div style={resultGridStyle}>
-            {/* LNF */}
+            {/* p1_alphabet */}
             <div 
-              style={getCardStyle('LNF')}
-              onClick={() => handleTestCardClick('LNF')}
+              style={getCardStyle('p1_alphabet')}
+              onClick={() => handleTestCardClick('p1_alphabet')}
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
-                <h3>{testInfo.LNF.title}</h3>
-                <p>{testInfo.LNF.description}: <strong>{results.LNF.accuracy.toFixed(1)}%</strong> ({results.LNF.correct}/{results.LNF.total})</p>
+                <h3>{testInfo.p1_alphabet.title}</h3>
+                <p>{testInfo.p1_alphabet.description}: <strong>{results.p1_alphabet.accuracy.toFixed(1)}%</strong> ({results.p1_alphabet.correct}/{results.p1_alphabet.total})</p>
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
-            {/* PSF */}
+            {/* p2_segmental_phoneme */}
             <div 
-              style={getCardStyle('PSF')}
-              onClick={() => handleTestCardClick('PSF')}
+              style={getCardStyle('p2_segmental_phoneme')}
+              onClick={() => handleTestCardClick('p2_segmental_phoneme')}
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
-                <h3>{testInfo.PSF.title}</h3>
-                <p>{testInfo.PSF.description}: <strong>{results.PSF.accuracy.toFixed(1)}%</strong> ({results.PSF.correct}/{results.PSF.total})</p>
+                <h3>{testInfo.p2_segmental_phoneme.title}</h3>
+                <p>{testInfo.p2_segmental_phoneme.description}: <strong>{results.p2_segmental_phoneme.accuracy.toFixed(1)}%</strong> ({results.p2_segmental_phoneme.correct}/{results.p2_segmental_phoneme.total})</p>
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
             </div>
-            {/* NWF */}
+            {/* p3_suprasegmental_phoneme */}
             <div 
-              style={getCardStyle('NWF')}
-              onClick={() => handleTestCardClick('NWF')}
+              style={getCardStyle('p3_suprasegmental_phoneme')}
+              onClick={() => handleTestCardClick('p3_suprasegmental_phoneme')}
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
-                <h3>{testInfo.NWF.title}</h3>
-                <p>CLS (Correct Letter Sounds): <strong>{results.NWF.phoneme_accuracy.toFixed(0)}점</strong></p>
-                <p>WRC (Words Read Correctly): <strong>{results.NWF.whole_word_accuracy.toFixed(1)}%</strong> ({results.NWF.whole_word_correct}/{results.NWF.total})</p>
-                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
-            </div>
-            {/* WRF */}
-            <div 
-              style={getCardStyle('WRF')}
-              onClick={() => handleTestCardClick('WRF')}
-              title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
-            >
-                <h3>{testInfo.WRF.title}</h3>
-                <p>{testInfo.WRF.description}: <strong>{results.WRF.accuracy.toFixed(1)}%</strong> ({results.WRF.correct}/{results.WRF.total})</p>
-                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
-            </div>
-            {/* ORF */}
-            <div 
-              style={getCardStyle('ORF')}
-              onClick={() => handleTestCardClick('ORF')}
-              title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
-            >
-                <h3>{testInfo.ORF.title}</h3>
-                <p>평균 WCPM: <strong>{results.ORF.avg_wcpm.toFixed(0)}</strong></p>
-                <p>평균 정확도: <strong>{results.ORF.avg_accuracy.toFixed(1)}%</strong></p>
-                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
-            </div>
-            {/* STRESS */}
-            <div 
-              style={getCardStyle('STRESS')}
-              onClick={() => handleTestCardClick('STRESS')}
-              title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
-            >
-                <h3>{testInfo.STRESS.title}</h3>
-                <p>{testInfo.STRESS.description}: <strong>{results.STRESS.accuracy.toFixed(1)}%</strong> ({results.STRESS.correct}/{results.STRESS.total})</p>
+                <h3>{testInfo.p3_suprasegmental_phoneme.title}</h3>
+                <p>{testInfo.p3_suprasegmental_phoneme.description}: <strong>{results.p3_suprasegmental_phoneme.accuracy.toFixed(1)}%</strong> ({results.p3_suprasegmental_phoneme.correct}/{results.p3_suprasegmental_phoneme.total})</p>
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
             </div>
-            {/* MEANING */}
+            {/* p4_phonics */}
             <div 
-              style={getCardStyle('MEANING')}
-              onClick={() => handleTestCardClick('MEANING')}
+              style={getCardStyle('p4_phonics')}
+              onClick={() => handleTestCardClick('p4_phonics')}
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
-                <h3>{testInfo.MEANING.title}</h3>
-                <p>{testInfo.MEANING.description}: <strong>{results.MEANING.accuracy.toFixed(1)}%</strong> ({results.MEANING.correct}/{results.MEANING.total})</p>
+                <h3>{testInfo.p4_phonics.title}</h3>
+                <p>파닉스 규칙 적용 및 유창성: <strong>{results.p4_phonics.accuracy.toFixed(1)}%</strong></p>
+                {results.p4_phonics.avg_wcpm !== undefined && <p>평균 WCPM: <strong>{results.p4_phonics.avg_wcpm.toFixed(0)}</strong></p>}
+                {results.p4_phonics.avg_accuracy !== undefined && <p>평균 정확도: <strong>{results.p4_phonics.avg_accuracy.toFixed(1)}%</strong></p>}
+                {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
+            </div>
+            {/* p5_vocabulary */}
+            <div 
+              style={getCardStyle('p5_vocabulary')}
+              onClick={() => handleTestCardClick('p5_vocabulary')}
+              title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
+            >
+                <h3>{testInfo.p5_vocabulary.title}</h3>
+                <p>{testInfo.p5_vocabulary.description}: <strong>{results.p5_vocabulary.accuracy.toFixed(1)}%</strong> ({results.p5_vocabulary.correct}/{results.p5_vocabulary.total})</p>
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
             </div>
-            {/* COMPREHENSION */}
+            {/* p6_comprehension */}
             <div 
-              style={getCardStyle('COMPREHENSION')}
-              onClick={() => handleTestCardClick('COMPREHENSION')}
+              style={getCardStyle('p6_comprehension')}
+              onClick={() => handleTestCardClick('p6_comprehension')}
               title={sessionId ? "클릭하여 상세 결과 보기" : undefined}
             >
-                <h3>{testInfo.COMPREHENSION.title}</h3>
-                <p>{testInfo.COMPREHENSION.description}: <strong>{results.COMPREHENSION.accuracy.toFixed(1)}%</strong> ({results.COMPREHENSION.correct}/{results.COMPREHENSION.total})</p>
+                <h3>{testInfo.p6_comprehension.title}</h3>
+                <p>{testInfo.p6_comprehension.description}: <strong>{results.p6_comprehension.accuracy.toFixed(1)}%</strong> ({results.p6_comprehension.correct}/{results.p6_comprehension.total})</p>
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 상세 결과 확인</small>}
             </div>
         </div>

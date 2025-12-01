@@ -70,29 +70,35 @@ export default function ReadingTestPage() {
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
         
-        // NWF 문항 로드 (5개로 제한)
-        const nwfItems = await fetchApprovedTestItems('NWF', gradeLevel || undefined);
-        if (nwfItems && Array.isArray(nwfItems.items)) {
-          setNwfWords((nwfItems.items as string[]).slice(0, 5));
+        // p4_phonics 문항 로드 (NWF/WRF/ORF 통합)
+        const phonicsItems = await fetchApprovedTestItems('p4_phonics', gradeLevel || undefined);
+        if (phonicsItems && phonicsItems.items && typeof phonicsItems.items === 'object') {
+          const items = phonicsItems.items as { nwf?: string[]; wrf?: string[]; orf?: string[] };
+          if (items.nwf && Array.isArray(items.nwf)) {
+            setNwfWords(items.nwf.slice(0, 5));
+          } else {
+            setNwfWords(getFixedNonsenseWords());
+          }
+          if (items.wrf && Array.isArray(items.wrf)) {
+            setWrfWords(items.wrf.slice(0, 5));
+          } else {
+            setWrfWords(getFixedSightWords());
+          }
+          if (items.orf && Array.isArray(items.orf)) {
+            setOrfSentences(items.orf.slice(0, 5));
+          } else {
+            setOrfSentences(getFixedSentences());
+          }
         } else {
+          // 폴백: 고정 문항 사용
           setNwfWords(getFixedNonsenseWords());
-        }
-
-        // WRF 문항 로드 (5개로 제한)
-        const wrfItems = await fetchApprovedTestItems('WRF', gradeLevel || undefined);
-        if (wrfItems && Array.isArray(wrfItems.items)) {
-          setWrfWords((wrfItems.items as string[]).slice(0, 5));
-        } else {
           setWrfWords(getFixedSightWords());
-        }
-
-        // ORF 문항 로드 (5개로 제한)
-        const orfItems = await fetchApprovedTestItems('ORF', gradeLevel || undefined);
-        if (orfItems && Array.isArray(orfItems.items)) {
-          setOrfSentences((orfItems.items as string[]).slice(0, 5));
-        } else {
           setOrfSentences(getFixedSentences());
         }
+        
+        // 기존 코드 유지 (하위 호환성)
+        const orfItems = null;
+        // orfItems는 위에서 처리됨
       } catch (error) {
         console.error('[Reading] 문항 로딩 오류, 기본 문항 사용:', error);
         setNwfWords(getFixedNonsenseWords());
@@ -181,7 +187,7 @@ export default function ReadingTestPage() {
     formData.append('authToken', authUser.id);
     
     try {
-      fetch('/api/submit-reading', { method: 'POST', body: formData })
+      fetch('/api/submit-p4_phonics', { method: 'POST', body: formData })
         .catch(error => {
           console.error('Reading 요청 전송 실패:', error);
         });
@@ -300,7 +306,7 @@ export default function ReadingTestPage() {
   };
 
   const getPhaseTitle = () => {
-    return '3교시: 마법 주문 읽기 시험';
+    return '4교시: 마법 주문 읽기 시험';
   };
 
   const getPhaseDescription = () => {
@@ -463,7 +469,7 @@ export default function ReadingTestPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button
                 style={{ ...buttonStyle, maxWidth: '250px' }}
-                onClick={() => router.push('/test/stress')}
+                onClick={() => router.push('/test/p3_suprasegmental_phoneme')}
               >
                 다음 시험으로 이동
               </button>

@@ -1,6 +1,6 @@
 // Agent 시스템 타입 정의
 
-export type TestType = 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'STRESS' | 'MEANING' | 'COMPREHENSION';
+export type TestType = 'p1_alphabet' | 'p2_segmental_phoneme' | 'p3_suprasegmental_phoneme' | 'p4_phonics' | 'p5_vocabulary' | 'p6_comprehension';
 
 export type GradeLevel = '초등 1학년' | '초등 2학년' | '초등 3학년' | '초등 4학년' | '초등 5학년' | '초등 6학년';
 
@@ -9,26 +9,28 @@ export type ItemStatus = 'pending' | 'reviewed' | 'approved' | 'rejected';
 export type WorkflowAction = 'review' | 'approve' | 'reject' | 'request_revision';
 
 export interface GeneratedItems {
-  LNF?: string[];
-  PSF?: Array<{
+  p1_alphabet?: string[];
+  p2_segmental_phoneme?: Array<{
     word1: string;
     word2: string;
     correctAnswer: string; // 'word1' or 'word2'
   }>;
-  NWF?: string[];
-  WRF?: string[];
-  ORF?: string[];
-  STRESS?: Array<{
+  p3_suprasegmental_phoneme?: Array<{
     word: string;
     choices: string[]; // 강세 패턴 표시된 단어들
     correctAnswer: string;
   }>;
-  MEANING?: Array<{
+  p4_phonics?: {
+    nwf?: string[];
+    wrf?: string[];
+    orf?: string[];
+  };
+  p5_vocabulary?: Array<{
     wordOrPhrase: string;
     imageOptions: string[]; // 이미지 URL 또는 설명
     correctAnswer: string;
   }>;
-  COMPREHENSION?: Array<{
+  p6_comprehension?: Array<{
     dialogueOrStory: string;
     question: string;
     options: Array<{

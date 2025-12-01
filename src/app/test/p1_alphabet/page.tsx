@@ -6,50 +6,47 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [폴백] WRF 표준 규격에 맞는 85개 고정된 단어 문항
-const getFixedSightWords = () => {
-    // WRF 표준: 85개 1음절 단어, 난이도별 구간
-    const fixedWords = [
-        // 1-15번: 가장 고빈도 사이트 워드
-        "the", "a", "is", "it", "in", "and", "see", "my", "to", "me",
-        "up", "no", "go", "he", "do",
-        // 16-50번: 중간 빈도 단어
-        "big", "can", "dad", "hat", "cat", "sit", "mom", "dog", "pig", "pen",
-        "leg", "pan", "red", "ten", "sun", "six", "run", "not", "yes", "car",
-        "zoo", "one", "she", "who", "how", "this", "that", "what", "like", "nice",
-        "here", "said", "look", "good", "book",
-        // 51-85번: 상대적으로 낮은 빈도 단어
-        "door", "ball", "tall", "two", "too", "down", "open", "have", "come", "love",
-        "blue", "green", "white", "swim", "jump", "stand", "help", "fast", "six", "red",
-        "jump", "help", "fast", "six", "red", "jump", "help", "fast", "six", "red",
-        "jump", "help", "fast", "six", "red"
+// [폴백] LNF 표준 규격에 맞는 100개 고정된 알파벳 문항
+const getFixedAlphabet = () => {
+    // LNF 표준: 100개 알파벳, 대소문자 균형, 빈도 반영, 특정 문자 제외 (W, 소문자 l)
+    const fixedLetters = [
+        'T', 'a', 'S', 'o', 'r', 'E', 'i', 'n', 'D', 'h',
+        'f', 'P', 'm', 'C', 'u', 'L', 'd', 'G', 'H', 'R',
+        's', 'N', 'I', 'O', 'A', 'e', 'T', 'c', 'b', 'F',
+        'v', 'p', 'Y', 'k', 'g', 'M', 'u', 'a', 'R', 'I',
+        'E', 'S', 'd', 'o', 'T', 'j', 'n', 'q', 'C', 'b',
+        'h', 'L', 'A', 'P', 'r', 'f', 'e', 'K', 'V', 'z',
+        'O', 't', 'i', 's', 'N', 'G', 'c', 'u', 'M', 'D',
+        'a', 'E', 'H', 'k', 'Y', 'r', 'T', 'B', 'p', 'F',
+        'g', 'v', 'I', 'o', 'e', 'n', 's', 'L', 'J', 'q',
+        'x', 'C', 'a', 'P', 'd', 'R', 'i', 'A', 'm', 'U'
     ];
-    
-    return fixedWords;
+    return fixedLetters;
 };
 
-export default function WrfTestPage() {
-  const supabase = createClient();
-  const router = useRouter();
+export default function LnfTestPage() {
+  const supabase = createClient() // [수정] 함수 호출 방식으로 변경
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
-  const [shuffledWords, setShuffledWords] = useState<string[]>([]);
-  const [wordIndex, setWordIndex] = useState(0);
-  const [currentWord, setCurrentWord] = useState('');
+  const [shuffledAlphabet, setShuffledAlphabet] = useState<string[]>([]);
+  const [letterIndex, setLetterIndex] = useState(0);
+  const [currentLetter, setCurrentLetter] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
-  const [isMediaReady, setIsMediaReady] = useState(false);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
-  // const [firstRowCorrectCount, setFirstRowCorrectCount] = useState(0);
-  // const [isHesitation, setIsHesitation] = useState(false);
+  // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
+  const [isMediaReady, setIsMediaReady] = useState(false);
+
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const setup = async () => {
@@ -64,20 +61,20 @@ export default function WrfTestPage() {
       // DB에서 승인된 문항 조회 시도
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('WRF', gradeLevel || undefined);
+        const dbItems = await fetchApprovedTestItems('p1_alphabet', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
           // DB에서 가져온 문항 사용
-          console.log('[WRF] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setShuffledWords(dbItems.items as string[]);
+          console.log('[p1_alphabet] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setShuffledAlphabet(dbItems.items as string[]);
         } else {
           // 폴백: 고정 문항 사용
-          console.log('[WRF] 승인된 문항이 없어 기본 문항 사용');
-          setShuffledWords(getFixedSightWords());
+          console.log('[p1_alphabet] 승인된 문항이 없어 기본 문항 사용');
+          setShuffledAlphabet(getFixedAlphabet());
         }
       } catch (error) {
-        console.error('[WRF] 문항 로딩 오류, 기본 문항 사용:', error);
-        setShuffledWords(getFixedSightWords());
+        console.error('[p1_alphabet] 문항 로딩 오류, 기본 문항 사용:', error);
+        setShuffledAlphabet(getFixedAlphabet());
       }
 
       // 미리 마이크 권한 요청 및 MediaRecorder 준비
@@ -99,6 +96,19 @@ export default function WrfTestPage() {
       }
     }
   };
+  
+
+  const goToNextLetter = useCallback(() => {
+    // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
+    const nextIndex = letterIndex + 1;
+    
+    if (nextIndex >= shuffledAlphabet.length) {
+      setPhase('finished');
+    } else {
+      setLetterIndex(nextIndex);
+      setCurrentLetter(shuffledAlphabet[nextIndex]);
+    }
+  }, [letterIndex, shuffledAlphabet]);
 
   const stopRecording = useCallback(() => {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
@@ -110,49 +120,47 @@ export default function WrfTestPage() {
       setFeedback('🎵 녹음 완료! 처리 중...');
     }
   }, []);
-  
-  useEffect(() => {
-    if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
-    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
-    return () => clearInterval(timerId);
-  }, [phase, timeLeft, isSubmitting]);
 
-  useEffect(() => {
-    if (timeLeft <= 0 && phase === 'testing') {
-      if (isRecording) {
-        stopRecording();
-        // 녹음이 완료되고 제출될 때까지 기다리기 위해 약간의 딜레이
-        setTimeout(() => {
-          setPhase('finished');
-        }, 2000);
-      } else {
-        setPhase('finished');
-      }
+  const submitRecordingInBackground = useCallback(async (audioBlob: Blob) => {
+    if (!user || !currentLetter) {
+      setIsSubmitting(false);
+      return;
     }
-  }, [timeLeft, phase, isRecording, stopRecording]);
 
-  // [개선] 자동 제출 기능 - 시간 만료 카운트다운
-  useEffect(() => {
-    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
-      setFeedback(`${timeLeft}초 후 종료됩니다.`);
-    } else if (timeLeft <= 0 && phase === 'testing') {
-      setFeedback('');
+    // 사용자 인증 확인
+    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+    if (userError || !authUser) {
+      setFeedback("인증이 필요합니다.");
+      setIsSubmitting(false);
+      return;
     }
-  }, [timeLeft, phase]);
 
-  const goToNextWord = () => {
-    // [핵심 수정] 실시간 채점 결과에 의존하는 시험 중단 규칙 제거
-    const nextIndex = wordIndex + 1;
-    if (nextIndex >= shuffledWords.length) {
-      setPhase('finished');
-    } else {
-      setWordIndex(nextIndex);
-      setCurrentWord(shuffledWords[nextIndex]);
-      setFeedback("다음 마법 단어를 읽어주세요.");
+    const formData = new FormData();
+    formData.append('audio', audioBlob);
+    formData.append('question', currentLetter);
+    formData.append('userId', user.id);
+    
+    // [핵심 수정] API 호출 후 결과를 기다리지 않고, UI를 즉시 업데이트
+    try {
+        fetch('/api/submit-p1_alphabet', { method: 'POST', body: formData });
+        
+      // 피드백을 일반적인 긍정 메시지로 변경
+      setFeedback("좋아요! 다음 룬 문자를 해독해 보세요!");
+      
+      
+      
+      // 즉시 다음 문제로 이동
+      goToNextLetter();
+
+    } catch (error) {
+      console.error('p1_alphabet 요청 전송 실패:', error);
+      setFeedback("요청 전송 중 오류가 발생했습니다.");
+    } finally {
+      setIsSubmitting(false);
     }
-  };
+  }, [user, currentLetter, supabase.auth, goToNextLetter]);
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     setFeedback('');
     
     try {
@@ -194,7 +202,7 @@ export default function WrfTestPage() {
       
       mediaRecorder.start();
       setIsRecording(true);
-      setFeedback('🎤 녹음 중... 단어를 읽어주세요!');
+      setFeedback('🎤 녹음 중... 룬 문자를 읽어주세요!');
       
       // 5초로 늘리고, 더 명확한 피드백 제공
       silenceTimeoutRef.current = setTimeout(() => {
@@ -206,51 +214,70 @@ export default function WrfTestPage() {
       console.error("마이크 접근 에러:", err);
       setFeedback("마이크를 사용할 수 없어요. 브라우저 설정을 확인해주세요.");
     }
-  };
+  }, [stopRecording, submitRecordingInBackground]);
 
-  const submitRecordingInBackground = async (audioBlob: Blob) => {
-    if (!user || !currentWord) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    // 사용자 인증 확인
-    const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
-    if (userError || !authUser) {
-      setFeedback("인증이 필요합니다.");
-      setIsSubmitting(false);
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('audio', audioBlob);
-    formData.append('question', currentWord);
-    formData.append('userId', user.id);
-    formData.append('authToken', authUser.id);
-    
-    try {
-      // [핵심 수정] API 호출 후 결과를 기다리지 않음
-      fetch('/api/submit-wrf', { method: 'POST', body: formData });
-      
-      // UI를 즉시 업데이트
-      setFeedback("좋아요!");
-      goToNextWord();
-
-    } catch (error) {
-      console.error('WRF 요청 전송 실패:', error);
-      setFeedback("요청 전송 중 오류가 발생했습니다.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  
   const handleStartTest = () => {
     setPhase('testing');
-    setWordIndex(0);
-    setCurrentWord(shuffledWords[0]);
+    setLetterIndex(0);
+    setCurrentLetter(shuffledAlphabet[0]);
     setTimeLeft(60);
-    setFeedback("두루마리에 나타난 마법 단어를 읽어주세요.");
+    setFeedback("화면에 나타나는 룬 문자의 이름을 말해주세요.");
   };
+
+  // useEffect들 - 모든 함수 선언 후에 배치
+  useEffect(() => {
+    if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
+    const timerId = setInterval(() => setTimeLeft((t) => t - 1), 1000);
+    return () => clearInterval(timerId);
+  }, [phase, timeLeft, isSubmitting]);
+
+  useEffect(() => {
+    if (timeLeft <= 0 && phase === 'testing') {
+      if (isRecording) {
+        stopRecording();
+        // 녹음이 완료되고 제출될 때까지 기다리기 위해 약간의 딜레이
+        setTimeout(() => {
+          setPhase('finished');
+        }, 2000);
+      } else {
+        setPhase('finished');
+      }
+    }
+  }, [timeLeft, phase, isRecording, stopRecording]);
+
+  // [개선] 자동 제출 기능 - 시간 만료 카운트다운
+  useEffect(() => {
+    if (timeLeft <= 10 && timeLeft > 0 && phase === 'testing') {
+      setFeedback(`${timeLeft}초 후 종료됩니다.`);
+    } else if (timeLeft <= 0 && phase === 'testing') {
+      setFeedback('');
+    }
+  }, [timeLeft, phase]);
+
+  // 키보드 단축키 지원
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if (phase === 'testing' && !isSubmitting) {
+        if (event.key === ' ' || event.key === 'Enter') {
+          event.preventDefault();
+          if (!isRecording) {
+            startRecording();
+          } else {
+            stopRecording();
+          }
+        } else if (event.key === 'Escape') {
+          if (isRecording) {
+            stopRecording();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [phase, isRecording, isSubmitting, startRecording, stopRecording]);
+
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = { backgroundColor: '#ffffff', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh', padding: '2rem', color: '#171717', fontFamily: 'sans-serif', display: 'flex', justifyContent: 'center', alignItems: 'center' };
@@ -258,27 +285,39 @@ export default function WrfTestPage() {
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 'bold' };
   const paragraphStyle: React.CSSProperties = { fontSize: '1.05rem', lineHeight: 1.8, color: '#4b5563', marginBottom: '2.5rem' };
   const buttonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '16px 24px', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '1.1rem', textAlign: 'center', transition: 'all 0.3s ease', boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)' };
-  const wordBoxStyle: React.CSSProperties = { fontSize: '8rem', fontWeight: 'bold', margin: '2rem 0', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center' };
-  const feedbackStyle: React.CSSProperties = { minHeight: '2.5em', fontSize: '1.1rem', color: '#171717', padding: '0 1rem' };
+  const letterBoxStyle: React.CSSProperties = { fontSize: '12rem', fontWeight: 'bold', margin: '2rem 0', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'var(--font-lexend)' };
+  const feedbackStyle: React.CSSProperties = { minHeight: '2.5em', fontSize: '1.05rem', color: '#1f2937', padding: '0 1rem', transition: 'color 0.3s', fontWeight: '500' };
   const timerStyle: React.CSSProperties = { fontSize: '1.75rem', color: '#6366f1', marginBottom: '1rem', fontFamily: 'monospace', fontWeight: '600' };
-
-  if (!user) { return (<div style={pageStyle}><h2 style={{color: '#171717'}}>사용자 정보를 불러오는 중...</h2></div>); }
+  
+  // CSS 애니메이션 스타일
+  const animationStyles = `
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+  `;
+  
+  if (!user) { return (<div style={pageStyle}><h2 style={{color: 'white'}}>사용자 정보를 불러오는 중...</h2></div>); }
 
   return (
     <div style={pageStyle}>
+      <style>{animationStyles}</style>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>4교시: 마법 단어 활성화 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>1교시: 고대 룬 문자 해독 시험</h1>}
         
         {phase === 'testing' && (
-          <div style={timerStyle}>
-            남은 시간: {timeLeft}초
-            {isSubmitting && <span style={{ marginLeft: '1rem', color: '#ccc' }}>(일시정지)</span>}
+          <div>
+            <div style={timerStyle}>남은 시간: {timeLeft}초</div>
           </div>
         )}
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>지식의 두루마리에 나타나는 마법 단어들을 정확하고 빠르게 읽어내야 합니다.<br/>단어를 성공적으로 읽으면 두루마리에 마력이 충전됩니다.</p>
+            <p style={paragraphStyle}>비석에 나타나는 고대 룬 문자의 이름을 정확하고 빠르게 읽어내야 합니다.<br/></p>
             <p style={{...feedbackStyle, color: isMediaReady ? '#90EE90' : '#FFB6C1'}}>
               {isMediaReady ? '🎤 마이크가 준비되었습니다!' : '🎤 마이크를 준비하고 있습니다...'}
             </p>
@@ -290,19 +329,39 @@ export default function WrfTestPage() {
 
         {phase === 'testing' && (
           <div>
-            <div style={wordBoxStyle}>{currentWord}</div>
+            <div style={letterBoxStyle}>{currentLetter}</div>
             <p style={feedbackStyle}>{feedback}</p>
-            {!isRecording ? (<button onClick={startRecording} style={buttonStyle} disabled={isSubmitting}>{isSubmitting ? '처리 중...' : '단어 읽기'}</button>) : (<button onClick={stopRecording} style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}>녹음 끝내기</button>)}
+            
+            {!isRecording ? (
+              <button 
+                onClick={startRecording} 
+                style={buttonStyle} 
+                disabled={isSubmitting}
+                aria-label={`${currentLetter} 문자 녹음하기`}
+                title="스페이스바 또는 엔터키로도 녹음할 수 있습니다"
+              >
+                {isSubmitting ? '처리 중...' : '녹음하기'}
+              </button>
+            ) : (
+              <button 
+                onClick={stopRecording} 
+                style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}
+                aria-label="녹음 중지하기"
+                title="스페이스바, 엔터키 또는 ESC키로도 중지할 수 있습니다"
+              >
+                녹음 끝내기
+              </button>
+            )}
           </div>
         )}
 
         {phase === 'finished' && (
             <div>
                 <h1 style={titleStyle}>시험 종료!</h1>
-                <p style={paragraphStyle}>{feedback || "4교시 '마법 단어 활성화 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
+                <p style={paragraphStyle}>{feedback || "1교시 '고대 룬 문자 해독 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
-                  <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/reading')}>
-                    통합 읽기 평가로 이동
+                  <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/p2_segmental_phoneme')}>
+                    다음 시험으로 이동
                   </button>
                   <button 
                     style={{

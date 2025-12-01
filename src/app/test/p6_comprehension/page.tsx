@@ -6,52 +6,118 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-interface MinimalPair {
-  word1: string;
-  word2: string;
+interface ComprehensionOption {
+  type: 'image' | 'word';
+  content: string;
+}
+
+interface ComprehensionItem {
+  dialogueOrStory: string;
+  question: string;
+  questionKr?: string; // 한국어 질문 (선택적)
+  options: ComprehensionOption[];
   correctAnswer: string;
 }
 
-// [폴백] PSF 최소대립쌍 고정 문항
-const getFixedMinimalPairs = (): MinimalPair[] => {
-  const fixedPairs: MinimalPair[] = [
-    { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
-    { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
-    { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
-    { word1: 'dog', word2: 'log', correctAnswer: 'dog' },
-    { word1: 'sun', word2: 'fun', correctAnswer: 'sun' },
-    { word1: 'bed', word2: 'red', correctAnswer: 'bed' },
-    { word1: 'cup', word2: 'pup', correctAnswer: 'cup' },
-    { word1: 'map', word2: 'cap', correctAnswer: 'map' },
-    { word1: 'sit', word2: 'hit', correctAnswer: 'sit' },
-    { word1: 'pen', word2: 'hen', correctAnswer: 'pen' },
-    { word1: 'big', word2: 'pig', correctAnswer: 'big' },
-    { word1: 'top', word2: 'pop', correctAnswer: 'top' },
-    { word1: 'run', word2: 'sun', correctAnswer: 'run' },
-    { word1: 'leg', word2: 'peg', correctAnswer: 'leg' },
-    { word1: 'mug', word2: 'bug', correctAnswer: 'mug' },
-    { word1: 'fan', word2: 'van', correctAnswer: 'fan' },
-    { word1: 'ten', word2: 'pen', correctAnswer: 'ten' },
-    { word1: 'box', word2: 'fox', correctAnswer: 'box' },
-    { word1: 'six', word2: 'fix', correctAnswer: 'six' },
-    { word1: 'web', word2: 'deb', correctAnswer: 'web' },
-  ];
-  return fixedPairs;
+// 영어 보기를 한국어로 번역하는 매핑
+const optionTranslations: Record<string, string> = {
+  'blue ball': '파란 공',
+  'red car': '빨간 자동차',
+  'small yellow cat': '작은 노란 고양이',
+  'blue': '파란색',
+  'red': '빨간색',
+  'yellow': '노란색',
+  'white': '하얀색',
+  'black': '검은색',
+  'brown': '갈색',
+  'big': '큰',
+  'small': '작은',
+  'tiny': '아주 작은',
 };
 
-export default function PsfTestPage() {
+function translateOption(option: string): string {
+  return optionTranslations[option] || option;
+}
+
+// 영어 질문을 한국어로 번역하는 간단한 매핑
+const questionTranslations: Record<string, string> = {
+  'What does Tom have?': 'Tom은 무엇을 가지고 있나요?',
+  'What color is the ball?': '공은 무슨 색인가요?',
+  'What color is the cat?': '고양이는 무슨 색인가요?',
+  'How big is the dog?': '강아지의 크기는 어떠한가요?',
+  'What does he have?': '그는 무엇을 가지고 있나요?',
+  'What color is it?': '그것은 무슨 색인가요?',
+  'How big is it?': '그것의 크기는 어떠한가요?',
+};
+
+function translateQuestion(question: string): string {
+  return questionTranslations[question] || question;
+}
+
+// [폴백] COMPREHENSION 고정 문항
+const getFixedComprehensionItems = (): ComprehensionItem[] => {
+  return [
+    {
+      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
+      question: 'What does Tom have?',
+      questionKr: 'Tom은 무엇을 가지고 있나요?',
+      options: [
+        { type: 'word' as const, content: 'blue ball' },
+        { type: 'word' as const, content: 'red car' },
+        { type: 'word' as const, content: 'small yellow cat' },
+      ],
+      correctAnswer: 'blue ball',
+    },
+    {
+      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
+      question: 'What color is the ball?',
+      questionKr: '공은 무슨 색인가요?',
+      options: [
+        { type: 'word' as const, content: 'blue' },
+        { type: 'word' as const, content: 'red' },
+        { type: 'word' as const, content: 'yellow' },
+      ],
+      correctAnswer: 'blue',
+    },
+    {
+      dialogueOrStory: 'I see a cat. It is small and white.',
+      question: 'What color is the cat?',
+      questionKr: '고양이는 무슨 색인가요?',
+      options: [
+        { type: 'word' as const, content: 'white' },
+        { type: 'word' as const, content: 'black' },
+        { type: 'word' as const, content: 'brown' },
+      ],
+      correctAnswer: 'white',
+    },
+    {
+      dialogueOrStory: 'Look at the dog. It is big and brown.',
+      question: 'How big is the dog?',
+      questionKr: '강아지의 크기는 어떠한가요?',
+      options: [
+        { type: 'word' as const, content: 'big' },
+        { type: 'word' as const, content: 'small' },
+        { type: 'word' as const, content: 'tiny' },
+      ],
+      correctAnswer: 'big',
+    },
+  ];
+};
+
+export default function ComprehensionTestPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
-  const [pairs, setPairs] = useState<MinimalPair[]>([]);
-  const [pairIndex, setPairIndex] = useState(0);
-  const [currentPair, setCurrentPair] = useState<MinimalPair | null>(null);
+  const [items, setItems] = useState<ComprehensionItem[]>([]);
+  const [itemIndex, setItemIndex] = useState(0);
+  const [currentItem, setCurrentItem] = useState<ComprehensionItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const [showText, setShowText] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
@@ -63,33 +129,31 @@ export default function PsfTestPage() {
 
       setUser(user);
 
-      // DB에서 승인된 문항 조회 시도
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('PSF', gradeLevel || undefined);
+        const dbItems = await fetchApprovedTestItems('p6_comprehension', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
-          // DB에서 가져온 문항 사용
-          console.log('[PSF] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setPairs(dbItems.items as MinimalPair[]);
+          console.log('[p6_comprehension] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setItems(dbItems.items as ComprehensionItem[]);
         } else {
-          // 폴백: 고정 문항 사용
-          console.log('[PSF] 승인된 문항이 없어 기본 문항 사용');
-          setPairs(getFixedMinimalPairs());
+          console.log('[p6_comprehension] 승인된 문항이 없어 기본 문항 사용');
+          setItems(getFixedComprehensionItems());
         }
       } catch (error) {
-        console.error('[PSF] 문항 로딩 오류, 기본 문항 사용:', error);
-        setPairs(getFixedMinimalPairs());
+        console.error('[p6_comprehension] 문항 로딩 오류, 기본 문항 사용:', error);
+        setItems(getFixedComprehensionItems());
       }
     };
     setup();
   }, [router, supabase.auth]);
 
-  const playWordAudio = useCallback(async (word: string) => {
+  const playStoryAudio = useCallback(async (story: string) => {
     setIsAudioLoading(true);
     try {
       // 사전 생성된 오디오 파일 사용 시도
-      const audioPath = `/audio/psf/${word}.mp3`;
+      const safeFileName = story.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
+      const audioPath = `/audio/comprehension/${safeFileName}.mp3`;
       const audio = new Audio(audioPath);
       
       await new Promise<void>((resolve, reject) => {
@@ -101,7 +165,7 @@ export default function PsfTestPage() {
           fetch('/api/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: word }),
+            body: JSON.stringify({ text: story }),
           })
             .then(response => {
               if (!response.ok) throw new Error('음성 생성 실패');
@@ -132,20 +196,8 @@ export default function PsfTestPage() {
     }
   }, []);
 
-  const playCorrectAnswer = useCallback(async () => {
-    if (!currentPair) return;
-    setFeedback('정답 단어를 들어보세요...');
-    setIsAudioLoading(true);
-    
-    // 정답 단어만 재생
-    await playWordAudio(currentPair.correctAnswer);
-    
-    setFeedback('들어본 단어를 선택해주세요.');
-    setIsAudioLoading(false);
-  }, [currentPair, playWordAudio]);
-
   const handleAnswerSelect = async (answer: string) => {
-    if (isSubmitting || !currentPair || !user) return;
+    if (isSubmitting || !currentItem || !user) return;
     
     setSelectedAnswer(answer);
     setIsSubmitting(true);
@@ -159,13 +211,15 @@ export default function PsfTestPage() {
         return;
       }
 
-      const response = await fetch('/api/submit-psf', {
+      const response = await fetch('/api/submit-p6_comprehension', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          question: `${currentPair.word1}|${currentPair.word2}`,
+          dialogueOrStory: currentItem.dialogueOrStory,
+          question: currentItem.question,
           selectedAnswer: answer,
-          correctAnswer: currentPair.correctAnswer,
+          correctAnswer: currentItem.correctAnswer,
+          options: currentItem.options,
           userId: user.id,
           authToken: authUser.id,
         }),
@@ -173,42 +227,43 @@ export default function PsfTestPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[PSF] 제출 실패:', response.status, errorData);
+        console.error('[p6_comprehension] 제출 실패:', response.status, errorData);
         throw new Error(errorData.error || '제출 실패');
       }
 
       const result = await response.json();
-      console.log('[PSF] 제출 성공:', result);
+      console.log('[p6_comprehension] 제출 성공:', result);
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
-        goToNextPair();
+        goToNextItem();
       }, 500);
     } catch (error) {
-      console.error('[PSF] 제출 오류:', error);
+      console.error('[p6_comprehension] 제출 오류:', error);
       setFeedback(`제출 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setIsSubmitting(false);
     }
   };
 
-  const goToNextPair = () => {
-    const nextIndex = pairIndex + 1;
-    if (nextIndex >= pairs.length) {
+  const goToNextItem = () => {
+    const nextIndex = itemIndex + 1;
+    if (nextIndex >= items.length) {
       setPhase('finished');
     } else {
-      setPairIndex(nextIndex);
-      setCurrentPair(pairs[nextIndex]);
+      setItemIndex(nextIndex);
+      setCurrentItem(items[nextIndex]);
       setSelectedAnswer(null);
       setIsSubmitting(false);
       setFeedback('');
+      setShowText(false);
     }
   };
 
   useEffect(() => {
-    if (phase === 'testing' && pairs.length > 0 && pairIndex < pairs.length) {
-      setCurrentPair(pairs[pairIndex]);
+    if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
+      setCurrentItem(items[itemIndex]);
     }
-  }, [phase, pairs, pairIndex]);
+  }, [phase, items, itemIndex]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -232,9 +287,9 @@ export default function PsfTestPage() {
 
   const handleStartTest = () => {
     setPhase('testing');
-    setPairIndex(0);
+    setItemIndex(0);
     setTimeLeft(60);
-    setCurrentPair(pairs[0]);
+    setCurrentItem(items[0]);
   };
 
   // --- 스타일 정의 ---
@@ -293,9 +348,9 @@ export default function PsfTestPage() {
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const wordButtonStyle: React.CSSProperties = {
+  const choiceButtonStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: '250px',
+    maxWidth: '300px',
     padding: '20px 24px',
     margin: '0.5rem',
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
@@ -304,13 +359,13 @@ export default function PsfTestPage() {
     borderRadius: '12px',
     cursor: 'pointer',
     fontWeight: '600',
-    fontSize: '1.5rem',
+    fontSize: '1.2rem',
     textAlign: 'center',
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const selectedWordButtonStyle: React.CSSProperties = {
-    ...wordButtonStyle,
+  const selectedChoiceButtonStyle: React.CSSProperties = {
+    ...choiceButtonStyle,
     background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
     boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
   };
@@ -328,6 +383,21 @@ export default function PsfTestPage() {
     fontFamily: 'monospace',
     fontWeight: '600',
   };
+  const storyDisplayStyle: React.CSSProperties = {
+    fontSize: '1.5rem',
+    fontWeight: 'bold',
+    margin: '1rem 0',
+    color: '#6366f1',
+    lineHeight: 1.6,
+    minHeight: '60px',
+  };
+  const questionDisplayStyle: React.CSSProperties = {
+    fontSize: '1.8rem',
+    fontWeight: 'bold',
+    margin: '1.5rem 0',
+    color: '#1f2937',
+    minHeight: '50px',
+  };
 
   if (!user) {
     return (
@@ -340,7 +410,7 @@ export default function PsfTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리의 원소 분리 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 고대 전설 이해 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -354,9 +424,9 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              단어를 들려드립니다. 들려준 단어를 선택해주세요.
+              짧은 대화나 이야기를 듣거나 읽고, 질문에 맞는 답을 선택해주세요.
               <br />
-              (예: &quot;pin&quot;을 들려주면, &quot;pin&quot;을 선택합니다)
+              (예: &quot;Tom has a big, blue ball&quot;을 듣고, &quot;What color is the ball?&quot;에 &quot;blue&quot;를 선택)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -364,38 +434,60 @@ export default function PsfTestPage() {
           </div>
         )}
 
-        {phase === 'testing' && currentPair && (
+        {phase === 'testing' && currentItem && (
           <div>
-            <button
-              onClick={playCorrectAnswer}
+            <div style={{ marginBottom: '2rem' }}>
+              <button
+                onClick={() => playStoryAudio(currentItem.dialogueOrStory)}
+                style={{
+                  ...buttonStyle,
+                  fontSize: '2rem',
+                  minHeight: '80px',
+                  marginBottom: '1rem',
+                  opacity: isAudioLoading ? 0.5 : 1,
+                }}
+                disabled={isAudioLoading || isSubmitting}
+              >
+                {isAudioLoading ? '재생 중...' : '🔊 듣기'}
+              </button>
+              <button
+                onClick={() => setShowText(!showText)}
+                style={{
+                  ...buttonStyle,
+                  maxWidth: '200px',
+                  fontSize: '1rem',
+                  background: showText
+                    ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
+                    : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                }}
+              >
+                {showText ? '텍스트 숨기기' : '텍스트 보기'}
+              </button>
+            </div>
+            {showText && <div style={storyDisplayStyle}>{currentItem.dialogueOrStory}</div>}
+            <div style={questionDisplayStyle}>
+              {currentItem.questionKr || translateQuestion(currentItem.question)}
+            </div>
+            <p style={feedbackStyle}>{feedback || '알맞은 답을 선택해주세요.'}</p>
+            <div
               style={{
-                ...buttonStyle,
-                fontSize: '3rem',
-                minHeight: '100px',
-                marginBottom: '2rem',
-                opacity: isAudioLoading ? 0.5 : 1,
-                whiteSpace: 'nowrap',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem',
+                alignItems: 'center',
+                marginTop: '2rem',
               }}
-              disabled={isAudioLoading || isSubmitting}
             >
-              {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
-            </button>
-            <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
-              <button
-                onClick={() => handleAnswerSelect(currentPair.word1)}
-                style={selectedAnswer === currentPair.word1 ? selectedWordButtonStyle : wordButtonStyle}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {currentPair.word1}
-              </button>
-              <button
-                onClick={() => handleAnswerSelect(currentPair.word2)}
-                style={selectedAnswer === currentPair.word2 ? selectedWordButtonStyle : wordButtonStyle}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {currentPair.word2}
-              </button>
+              {currentItem.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswerSelect(option.content)}
+                  style={selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle}
+                  disabled={isSubmitting || isAudioLoading}
+                >
+                  {translateOption(option.content)}
+                </button>
+              ))}
             </div>
           </div>
         )}
@@ -404,12 +496,9 @@ export default function PsfTestPage() {
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "2교시 '소리의 원소 분리 시험'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "6교시 '고대 전설 이해 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/reading')}>
-                다음 시험으로 이동
-              </button>
               <button
                 style={{
                   ...buttonStyle,
@@ -448,3 +537,4 @@ export default function PsfTestPage() {
     </div>
   );
 }
+

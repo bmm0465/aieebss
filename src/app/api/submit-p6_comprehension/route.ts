@@ -4,9 +4,9 @@ import { createServiceClient } from '@/lib/supabase/server';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { question, selectedAnswer, correctAnswer, userId, authToken } = body;
+    const { dialogueOrStory, question, selectedAnswer, correctAnswer, userId, authToken } = body;
 
-    if (!question || !selectedAnswer || !correctAnswer || !userId || !authToken) {
+    if (!dialogueOrStory || !question || !selectedAnswer || !correctAnswer || !userId || !authToken) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
     }
 
@@ -26,8 +26,8 @@ export async function POST(request: Request) {
 
     const { data: insertData, error: insertError } = await serviceClient.from('test_results').insert({
       user_id: userId,
-      test_type: 'STRESS',
-      question: question,
+      test_type: 'p6_comprehension',
+      question: `${dialogueOrStory} | ${question}`,
       student_answer: selectedAnswer,
       correct_answer: correctAnswer,
       is_correct: isCorrect,
@@ -35,12 +35,12 @@ export async function POST(request: Request) {
     }).select();
 
     if (insertError) {
-      console.error('[STRESS 저장 오류]', insertError);
+      console.error('[p6_comprehension 저장 오류]', insertError);
       throw new Error(`데이터베이스 저장 실패: ${insertError.message}`);
     }
 
     console.log(
-      `[STRESS 제출 완료] 사용자: ${userId}, 문제: ${question}, 선택: ${selectedAnswer}, 정답: ${correctAnswer}, 결과: ${isCorrect ? '정답' : '오답'}, 저장된 ID: ${insertData?.[0]?.id || 'N/A'}`,
+      `[p6_comprehension 제출 완료] 사용자: ${userId}, 질문: ${question}, 선택: ${selectedAnswer}, 정답: ${correctAnswer}, 결과: ${isCorrect ? '정답' : '오답'}, 저장된 ID: ${insertData?.[0]?.id || 'N/A'}`,
     );
 
     return NextResponse.json(
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error('STRESS API 요청 접수 에러:', error);
+    console.error('p6_comprehension API 요청 접수 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

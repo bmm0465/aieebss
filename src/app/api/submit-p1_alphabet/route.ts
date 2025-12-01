@@ -61,37 +61,37 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     // 스토리지 경로 생성 (오류가 발생해도 계속 진행)
     let storagePath;
     try {
-      storagePath = await generateStoragePath(userId, 'LNF');
+      storagePath = await generateStoragePath(userId, 'p1_alphabet');
     } catch (storagePathError) {
-      console.error('[LNF] 스토리지 경로 생성 실패:', storagePathError);
-      storagePath = `lnf/${userId}/${Date.now()}.webm`; // 대체 경로 사용
+      console.error('[p1_alphabet] 스토리지 경로 생성 실패:', storagePathError);
+      storagePath = `p1_alphabet/${userId}/${Date.now()}.webm`; // 대체 경로 사용
     }
     // 빈 오디오 파일 처리
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
-          user_id: userId, test_type: 'LNF', question: questionLetter,
+          user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
           is_correct: false, error_type: 'Hesitation'
       });
-      console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
+      console.log(`[p1_alphabet 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
       return;
     }
 
     // 오디오 파일 크기 검증 (최소 1KB, 최대 10MB)
     if (arrayBuffer.byteLength < 1024) {
       await supabase.from('test_results').insert({
-          user_id: userId, test_type: 'LNF', question: questionLetter,
+          user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
           is_correct: false, error_type: 'insufficient_audio'
       });
-      console.log(`[LNF 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
+      console.log(`[p1_alphabet 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
       return;
     }
 
     if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
       await supabase.from('test_results').insert({
-          user_id: userId, test_type: 'LNF', question: questionLetter,
+          user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
           is_correct: false, error_type: 'audio_too_large'
       });
-      console.log(`[LNF 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
+      console.log(`[p1_alphabet 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
       return;
     }
 
@@ -105,7 +105,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
         }),
       transcribeAll(arrayBuffer, {
         language: 'en',
-        prompt: `This is a DIBELS 8th edition Letter Naming Fluency (LNF) test for Korean EFL students. The student will name individual English letters.
+        prompt: `This is a DIBELS 8th edition Letter Naming Fluency (p1_alphabet) test for Korean EFL students. The student will name individual English letters.
 
 CRITICAL INSTRUCTIONS:
 1. Target letter: "${questionLetter}"
@@ -165,7 +165,7 @@ CRITICAL INSTRUCTIONS:
           messages: [
             {
               role: 'system',
-              content: `You are a DIBELS 8th edition Letter Naming Fluency (LNF) scorer for Korean EFL students.
+              content: `You are a DIBELS 8th edition Letter Naming Fluency (p1_alphabet) scorer for Korean EFL students.
 
 Scoring rules:
 - ONLY letter NAMES are correct. Letter sounds must be categorised as "Letter sounds".
@@ -229,7 +229,7 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
               : undefined,
         };
       } catch (scoringError) {
-        console.warn('[LNF 평가 경고]', scoringError);
+        console.warn('[p1_alphabet 평가 경고]', scoringError);
       }
     }
 
@@ -289,7 +289,7 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
     
     const { error: insertError } = await supabase.from('test_results').insert({
       user_id: userId,
-      test_type: 'LNF',
+      test_type: 'p1_alphabet',
       question: questionLetter,
       student_answer: studentAnswerRaw,
       is_correct: isCorrect,
@@ -299,31 +299,31 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
     });
 
     if (insertError) {
-      console.error(`[LNF 데이터베이스 저장 실패] 사용자: ${userId}, 문제: ${questionLetter}, 에러:`, insertError);
+      console.error(`[p1_alphabet 데이터베이스 저장 실패] 사용자: ${userId}, 문제: ${questionLetter}, 에러:`, insertError);
       throw insertError;
     }
 
     const logLabel = evaluation.error_category ? `${evaluation.final_score} (${evaluation.error_category})` : evaluation.final_score;
-    console.log(`[LNF 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${logLabel}, Self-correction: ${evaluation.used_self_correction}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
+    console.log(`[p1_alphabet 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${logLabel}, Self-correction: ${evaluation.used_self_correction}, 처리시간: ${processingTime}ms, 신뢰도: ${confidence}`);
     if (evaluation.notes) {
-      console.log(`[LNF 채점 노트] ${evaluation.notes}`);
+      console.log(`[p1_alphabet 채점 노트] ${evaluation.notes}`);
     }
 
   } catch (error) {
     const processingTime = Date.now() - startTime;
-    console.error(`[LNF 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionLetter}, 처리시간: ${processingTime}ms`, error);
+    console.error(`[p1_alphabet 비동기 처리 에러] 사용자: ${userId}, 문제: ${questionLetter}, 처리시간: ${processingTime}ms`, error);
     
     // 오류 발생 시에도 데이터베이스에 기록
     try {
       await supabase.from('test_results').insert({
         user_id: userId,
-        test_type: 'LNF',
+        test_type: 'p1_alphabet',
         question: questionLetter,
         is_correct: false,
         error_type: 'processing_error'
       });
     } catch (dbError) {
-      console.error(`[LNF 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
+      console.error(`[p1_alphabet 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
     }
   }
 }
@@ -361,7 +361,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
 
   } catch (error) {
-    console.error('LNF API 요청 처리 에러:', error);
+    console.error('p1_alphabet API 요청 처리 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

@@ -26,70 +26,52 @@ type TestResult = {
 
 const calculateResults = (results: TestResult[]): ProcessedResults => {
   const summary: ProcessedResults = {
-    LNF: { correct: 0, total: 0, accuracy: 0 },
-    PSF: { correct: 0, total: 0, accuracy: 0 },
-    NWF: { phonemes_correct: 0, whole_word_correct: 0, total: 0, phoneme_accuracy: 0, whole_word_accuracy: 0 },
-    WRF: { correct: 0, total: 0, accuracy: 0 },
-    ORF: { total_wcpm: 0, total_accuracy: 0, count: 0, avg_wcpm: 0, avg_accuracy: 0 },
-    STRESS: { correct: 0, total: 0, accuracy: 0 },
-    MEANING: { correct: 0, total: 0, accuracy: 0 },
-    COMPREHENSION: { correct: 0, total: 0, accuracy: 0 },
+    p1_alphabet: { correct: 0, total: 0, accuracy: 0 },
+    p2_segmental_phoneme: { correct: 0, total: 0, accuracy: 0 },
+    p3_suprasegmental_phoneme: { correct: 0, total: 0, accuracy: 0 },
+    p4_phonics: { correct: 0, total: 0, accuracy: 0, total_wcpm: 0, total_accuracy: 0, avg_wcpm: 0, avg_accuracy: 0 },
+    p5_vocabulary: { correct: 0, total: 0, accuracy: 0 },
+    p6_comprehension: { correct: 0, total: 0, accuracy: 0 },
   };
 
   results.forEach(res => {
-    if (res.test_type === 'LNF') {
-      summary.LNF.total++;
-      if (res.is_correct) summary.LNF.correct++;
-    } else if (res.test_type === 'PSF') {
-      summary.PSF.total++;
-      if (res.is_correct) summary.PSF.correct++;
-    } else if (res.test_type === 'NWF') {
-      summary.NWF.total++;
-      // 이미지 규칙에 따라: CLS는 correct_letter_sounds 필드 사용, WRC는 is_whole_word_correct 사용
-      summary.NWF.phonemes_correct += res.correct_letter_sounds || 0;
-      if (res.is_whole_word_correct) summary.NWF.whole_word_correct++;
-    } else if (res.test_type === 'WRF') {
-      summary.WRF.total++;
-      if (res.is_correct) summary.WRF.correct++;
-    } else if (res.test_type === 'ORF') {
-      summary.ORF.count++;
-      summary.ORF.total_wcpm += res.wcpm || 0;
-      summary.ORF.total_accuracy += res.accuracy || 0;
-    } else if (res.test_type === 'STRESS') {
-      summary.STRESS.total++;
-      if (res.is_correct) summary.STRESS.correct++;
-    } else if (res.test_type === 'MEANING') {
-      summary.MEANING.total++;
-      if (res.is_correct) summary.MEANING.correct++;
-    } else if (res.test_type === 'COMPREHENSION') {
-      summary.COMPREHENSION.total++;
-      if (res.is_correct) summary.COMPREHENSION.correct++;
+    if (res.test_type === 'p1_alphabet') {
+      summary.p1_alphabet.total++;
+      if (res.is_correct) summary.p1_alphabet.correct++;
+    } else if (res.test_type === 'p2_segmental_phoneme') {
+      summary.p2_segmental_phoneme.total++;
+      if (res.is_correct) summary.p2_segmental_phoneme.correct++;
+    } else if (res.test_type === 'p3_suprasegmental_phoneme') {
+      summary.p3_suprasegmental_phoneme.total++;
+      if (res.is_correct) summary.p3_suprasegmental_phoneme.correct++;
+    } else if (res.test_type === 'p4_phonics') {
+      summary.p4_phonics.total++;
+      // p4_phonics는 읽기 테스트이므로 wcpm과 accuracy 사용
+      summary.p4_phonics.total_wcpm += res.wcpm || 0;
+      summary.p4_phonics.total_accuracy += res.accuracy || 0;
+      if (res.is_correct) summary.p4_phonics.correct++;
+    } else if (res.test_type === 'p5_vocabulary') {
+      summary.p5_vocabulary.total++;
+      if (res.is_correct) summary.p5_vocabulary.correct++;
+    } else if (res.test_type === 'p6_comprehension') {
+      summary.p6_comprehension.total++;
+      if (res.is_correct) summary.p6_comprehension.correct++;
     }
   });
 
   // 정확도 및 점수 계산
-  if (summary.LNF.total > 0) summary.LNF.accuracy = (summary.LNF.correct / summary.LNF.total) * 100;
-  if (summary.PSF.total > 0) summary.PSF.accuracy = (summary.PSF.correct / summary.PSF.total) * 100;
-  if (summary.NWF.total > 0) {
-    // 이미지 규칙에 따라: CLS는 총 음소 점수, WRC는 단어 정답률
-    // CLS 정확도는 총 CLS 점수 대비 방식으로 계산 (실제로는 raw 점수를 사용)
-    summary.NWF.phoneme_accuracy = summary.NWF.phonemes_correct; // CLS 총 점수
-    summary.NWF.whole_word_accuracy = (summary.NWF.whole_word_correct / summary.NWF.total) * 100; // WRC 정답률
+  if (summary.p1_alphabet.total > 0) summary.p1_alphabet.accuracy = (summary.p1_alphabet.correct / summary.p1_alphabet.total) * 100;
+  if (summary.p2_segmental_phoneme.total > 0) summary.p2_segmental_phoneme.accuracy = (summary.p2_segmental_phoneme.correct / summary.p2_segmental_phoneme.total) * 100;
+  if (summary.p3_suprasegmental_phoneme.total > 0) summary.p3_suprasegmental_phoneme.accuracy = (summary.p3_suprasegmental_phoneme.correct / summary.p3_suprasegmental_phoneme.total) * 100;
+  if (summary.p4_phonics.total > 0) {
+    summary.p4_phonics.accuracy = (summary.p4_phonics.correct / summary.p4_phonics.total) * 100;
+    if (summary.p4_phonics.total_wcpm && summary.p4_phonics.total_wcpm > 0) {
+      summary.p4_phonics.avg_wcpm = summary.p4_phonics.total_wcpm / summary.p4_phonics.total;
+      summary.p4_phonics.avg_accuracy = (summary.p4_phonics.total_accuracy! / summary.p4_phonics.total) * 100;
+    }
   }
-  if (summary.WRF.total > 0) summary.WRF.accuracy = (summary.WRF.correct / summary.WRF.total) * 100;
-  if (summary.ORF.count > 0) {
-    summary.ORF.avg_wcpm = summary.ORF.total_wcpm / summary.ORF.count;
-    summary.ORF.avg_accuracy = (summary.ORF.total_accuracy / summary.ORF.count) * 100;
-  }
-  if (summary.STRESS.total > 0) {
-    summary.STRESS.accuracy = (summary.STRESS.correct / summary.STRESS.total) * 100;
-  }
-  if (summary.MEANING.total > 0) {
-    summary.MEANING.accuracy = (summary.MEANING.correct / summary.MEANING.total) * 100;
-  }
-  if (summary.COMPREHENSION.total > 0) {
-    summary.COMPREHENSION.accuracy = (summary.COMPREHENSION.correct / summary.COMPREHENSION.total) * 100;
-  }
+  if (summary.p5_vocabulary.total > 0) summary.p5_vocabulary.accuracy = (summary.p5_vocabulary.correct / summary.p5_vocabulary.total) * 100;
+  if (summary.p6_comprehension.total > 0) summary.p6_comprehension.accuracy = (summary.p6_comprehension.correct / summary.p6_comprehension.total) * 100;
 
   return summary;
 };

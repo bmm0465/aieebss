@@ -148,7 +148,7 @@ export default async function TeacherDashboard() {
       
       // 테스트 타입별 개수
       const testTypes = [...new Set(studentTests.map(t => t.test_type))];
-      const completionRate = Math.round((testTypes.length / 6) * 100);
+      const completionRate = Math.round((testTypes.length / 6) * 100); // 6개 교시 기준
       
       // 평균 정확도 계산
       const accuracyTests = studentTests.filter(t => t.accuracy !== null);

@@ -6,118 +6,59 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-interface ComprehensionOption {
-  type: 'image' | 'word';
-  content: string;
-}
-
-interface ComprehensionItem {
-  dialogueOrStory: string;
-  question: string;
-  questionKr?: string; // 한국어 질문 (선택적)
-  options: ComprehensionOption[];
+interface StressItem {
+  word: string;
+  choices: string[];
   correctAnswer: string;
 }
 
-// 영어 보기를 한국어로 번역하는 매핑
-const optionTranslations: Record<string, string> = {
-  'blue ball': '파란 공',
-  'red car': '빨간 자동차',
-  'small yellow cat': '작은 노란 고양이',
-  'blue': '파란색',
-  'red': '빨간색',
-  'yellow': '노란색',
-  'white': '하얀색',
-  'black': '검은색',
-  'brown': '갈색',
-  'big': '큰',
-  'small': '작은',
-  'tiny': '아주 작은',
-};
-
-function translateOption(option: string): string {
-  return optionTranslations[option] || option;
+// 단어의 음절 수를 계산하는 함수 (간단한 영어 음절 규칙)
+function countSyllables(word: string): number {
+  word = word.toLowerCase();
+  if (word.length <= 3) return 1;
+  
+  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+  word = word.replace(/^y/, '');
+  const matches = word.match(/[aeiouy]{1,2}/g);
+  return matches ? matches.length : 1;
 }
 
-// 영어 질문을 한국어로 번역하는 간단한 매핑
-const questionTranslations: Record<string, string> = {
-  'What does Tom have?': 'Tom은 무엇을 가지고 있나요?',
-  'What color is the ball?': '공은 무슨 색인가요?',
-  'What color is the cat?': '고양이는 무슨 색인가요?',
-  'How big is the dog?': '강아지의 크기는 어떠한가요?',
-  'What does he have?': '그는 무엇을 가지고 있나요?',
-  'What color is it?': '그것은 무슨 색인가요?',
-  'How big is it?': '그것의 크기는 어떠한가요?',
-};
-
-function translateQuestion(question: string): string {
-  return questionTranslations[question] || question;
+// 선택지에서 강세 위치 추출
+function getStressPosition(choice: string): number {
+  const match = choice.match(/[A-Z]+/);
+  if (!match) return 1;
+  
+  const stressedPart = match[0];
+  const beforeStressed = choice.substring(0, choice.indexOf(stressedPart));
+  const syllablesBefore = countSyllables(beforeStressed);
+  return syllablesBefore + 1;
 }
 
-// [폴백] COMPREHENSION 고정 문항
-const getFixedComprehensionItems = (): ComprehensionItem[] => {
+// [폴백] STRESS 고정 문항
+const getFixedStressItems = (): StressItem[] => {
   return [
-    {
-      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-      question: 'What does Tom have?',
-      questionKr: 'Tom은 무엇을 가지고 있나요?',
-      options: [
-        { type: 'word' as const, content: 'blue ball' },
-        { type: 'word' as const, content: 'red car' },
-        { type: 'word' as const, content: 'small yellow cat' },
-      ],
-      correctAnswer: 'blue ball',
-    },
-    {
-      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-      question: 'What color is the ball?',
-      questionKr: '공은 무슨 색인가요?',
-      options: [
-        { type: 'word' as const, content: 'blue' },
-        { type: 'word' as const, content: 'red' },
-        { type: 'word' as const, content: 'yellow' },
-      ],
-      correctAnswer: 'blue',
-    },
-    {
-      dialogueOrStory: 'I see a cat. It is small and white.',
-      question: 'What color is the cat?',
-      questionKr: '고양이는 무슨 색인가요?',
-      options: [
-        { type: 'word' as const, content: 'white' },
-        { type: 'word' as const, content: 'black' },
-        { type: 'word' as const, content: 'brown' },
-      ],
-      correctAnswer: 'white',
-    },
-    {
-      dialogueOrStory: 'Look at the dog. It is big and brown.',
-      question: 'How big is the dog?',
-      questionKr: '강아지의 크기는 어떠한가요?',
-      options: [
-        { type: 'word' as const, content: 'big' },
-        { type: 'word' as const, content: 'small' },
-        { type: 'word' as const, content: 'tiny' },
-      ],
-      correctAnswer: 'big',
-    },
+    { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
+    { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
+    { word: 'elephant', choices: ['ELEphant', 'elePHANT', 'elephANT'], correctAnswer: 'ELEphant' },
+    { word: 'tomorrow', choices: ['toMORrow', 'TOmorrow', 'tomorROW'], correctAnswer: 'toMORrow' },
+    { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
   ];
 };
 
-export default function ComprehensionTestPage() {
+export default function StressTestPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
-  const [items, setItems] = useState<ComprehensionItem[]>([]);
+  const [items, setItems] = useState<StressItem[]>([]);
   const [itemIndex, setItemIndex] = useState(0);
-  const [currentItem, setCurrentItem] = useState<ComprehensionItem | null>(null);
+  const [currentItem, setCurrentItem] = useState<StressItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedStressPosition, setSelectedStressPosition] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
-  const [showText, setShowText] = useState(false);
 
   useEffect(() => {
     const setup = async () => {
@@ -131,29 +72,28 @@ export default function ComprehensionTestPage() {
 
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('COMPREHENSION', gradeLevel || undefined);
+        const dbItems = await fetchApprovedTestItems('p3_suprasegmental_phoneme', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
-          console.log('[COMPREHENSION] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setItems(dbItems.items as ComprehensionItem[]);
+          console.log('[p3_suprasegmental_phoneme] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setItems(dbItems.items as StressItem[]);
         } else {
-          console.log('[COMPREHENSION] 승인된 문항이 없어 기본 문항 사용');
-          setItems(getFixedComprehensionItems());
+          console.log('[p3_suprasegmental_phoneme] 승인된 문항이 없어 기본 문항 사용');
+          setItems(getFixedStressItems());
         }
       } catch (error) {
-        console.error('[COMPREHENSION] 문항 로딩 오류, 기본 문항 사용:', error);
-        setItems(getFixedComprehensionItems());
+        console.error('[p3_suprasegmental_phoneme] 문항 로딩 오류, 기본 문항 사용:', error);
+        setItems(getFixedStressItems());
       }
     };
     setup();
   }, [router, supabase.auth]);
 
-  const playStoryAudio = useCallback(async (story: string) => {
+  const playWordAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
       // 사전 생성된 오디오 파일 사용 시도
-      const safeFileName = story.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
-      const audioPath = `/audio/comprehension/${safeFileName}.mp3`;
+      const audioPath = `/audio/stress/${word.toLowerCase()}.mp3`;
       const audio = new Audio(audioPath);
       
       await new Promise<void>((resolve, reject) => {
@@ -165,7 +105,7 @@ export default function ComprehensionTestPage() {
           fetch('/api/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: story }),
+            body: JSON.stringify({ text: word }),
           })
             .then(response => {
               if (!response.ok) throw new Error('음성 생성 실패');
@@ -196,10 +136,34 @@ export default function ComprehensionTestPage() {
     }
   }, []);
 
-  const handleAnswerSelect = async (answer: string) => {
+  // 음절 클릭 핸들러
+  const handleSyllableClick = (position: number) => {
     if (isSubmitting || !currentItem || !user) return;
     
-    setSelectedAnswer(answer);
+    setSelectedStressPosition(position);
+    
+    // 선택된 위치에 해당하는 선택지 찾기
+    const matchingChoice = currentItem.choices.find(choice => {
+      const stressPos = getStressPosition(choice);
+      return stressPos === position;
+    });
+    
+    // matchingChoice를 찾았으면 설정, 없으면 첫 번째 선택지를 기본값으로 사용
+    // (실제로는 항상 찾아야 하지만, 안전장치로)
+    if (matchingChoice) {
+      setSelectedAnswer(matchingChoice);
+    } else if (currentItem.choices.length > 0) {
+      // 선택지를 찾지 못한 경우, position에 가장 가까운 선택지 사용
+      // 또는 첫 번째 선택지를 임시로 사용 (디버깅용)
+      console.warn(`[p3_suprasegmental_phoneme] position ${position}에 해당하는 선택지를 찾지 못함. 첫 번째 선택지 사용.`);
+      setSelectedAnswer(currentItem.choices[0]);
+    }
+  };
+
+  // 제출 핸들러
+  const handleSubmit = async () => {
+    if (isSubmitting || !currentItem || !user || !selectedAnswer) return;
+    
     setIsSubmitting(true);
     setFeedback('제출 중...');
 
@@ -211,15 +175,14 @@ export default function ComprehensionTestPage() {
         return;
       }
 
-      const response = await fetch('/api/submit-comprehension', {
+      const response = await fetch('/api/submit-p3_suprasegmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          dialogueOrStory: currentItem.dialogueOrStory,
-          question: currentItem.question,
-          selectedAnswer: answer,
+          question: currentItem.word,
+          selectedAnswer: selectedAnswer,
           correctAnswer: currentItem.correctAnswer,
-          options: currentItem.options,
+          choices: currentItem.choices,
           userId: user.id,
           authToken: authUser.id,
         }),
@@ -227,19 +190,19 @@ export default function ComprehensionTestPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[COMPREHENSION] 제출 실패:', response.status, errorData);
+        console.error('[p3_suprasegmental_phoneme] 제출 실패:', response.status, errorData);
         throw new Error(errorData.error || '제출 실패');
       }
 
       const result = await response.json();
-      console.log('[COMPREHENSION] 제출 성공:', result);
+      console.log('[p3_suprasegmental_phoneme] 제출 성공:', result);
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
         goToNextItem();
       }, 500);
     } catch (error) {
-      console.error('[COMPREHENSION] 제출 오류:', error);
+      console.error('[p3_suprasegmental_phoneme] 제출 오류:', error);
       setFeedback(`제출 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setIsSubmitting(false);
     }
@@ -253,9 +216,9 @@ export default function ComprehensionTestPage() {
       setItemIndex(nextIndex);
       setCurrentItem(items[nextIndex]);
       setSelectedAnswer(null);
+      setSelectedStressPosition(null);
       setIsSubmitting(false);
       setFeedback('');
-      setShowText(false);
     }
   };
 
@@ -348,27 +311,6 @@ export default function ComprehensionTestPage() {
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
-  const choiceButtonStyle: React.CSSProperties = {
-    width: '100%',
-    maxWidth: '300px',
-    padding: '20px 24px',
-    margin: '0.5rem',
-    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-    color: 'white',
-    border: 'none',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    fontWeight: '600',
-    fontSize: '1.2rem',
-    textAlign: 'center',
-    transition: 'all 0.3s ease',
-    boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
-  };
-  const selectedChoiceButtonStyle: React.CSSProperties = {
-    ...choiceButtonStyle,
-    background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
-    boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
-  };
   const feedbackStyle: React.CSSProperties = {
     minHeight: '2.5em',
     fontSize: '1.05rem',
@@ -383,21 +325,6 @@ export default function ComprehensionTestPage() {
     fontFamily: 'monospace',
     fontWeight: '600',
   };
-  const storyDisplayStyle: React.CSSProperties = {
-    fontSize: '1.5rem',
-    fontWeight: 'bold',
-    margin: '1rem 0',
-    color: '#6366f1',
-    lineHeight: 1.6,
-    minHeight: '60px',
-  };
-  const questionDisplayStyle: React.CSSProperties = {
-    fontSize: '1.8rem',
-    fontWeight: 'bold',
-    margin: '1.5rem 0',
-    color: '#1f2937',
-    minHeight: '50px',
-  };
 
   if (!user) {
     return (
@@ -410,7 +337,7 @@ export default function ComprehensionTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 고대 전설 이해 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>3교시: 마법 리듬 패턴 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -424,9 +351,9 @@ export default function ComprehensionTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              짧은 대화나 이야기를 듣거나 읽고, 질문에 맞는 답을 선택해주세요.
+              단어를 듣고 강세가 있는 위치를 클릭해주세요.
               <br />
-              (예: &quot;Tom has a big, blue ball&quot;을 듣고, &quot;What color is the ball?&quot;에 &quot;blue&quot;를 선택)
+              (예: &quot;computer&quot;를 들려주면, 강세가 있는 음절을 클릭합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -434,71 +361,116 @@ export default function ComprehensionTestPage() {
           </div>
         )}
 
-        {phase === 'testing' && currentItem && (
-          <div>
-            <div style={{ marginBottom: '2rem' }}>
+        {phase === 'testing' && currentItem && (() => {
+          const totalSyllables = countSyllables(currentItem.word);
+          
+          return (
+            <div>
               <button
-                onClick={() => playStoryAudio(currentItem.dialogueOrStory)}
+                onClick={() => playWordAudio(currentItem.word)}
                 style={{
                   ...buttonStyle,
-                  fontSize: '2rem',
-                  minHeight: '80px',
-                  marginBottom: '1rem',
+                  fontSize: '3rem',
+                  minHeight: '100px',
+                  marginBottom: '2rem',
                   opacity: isAudioLoading ? 0.5 : 1,
+                  whiteSpace: 'nowrap',
                 }}
                 disabled={isAudioLoading || isSubmitting}
               >
-                {isAudioLoading ? '재생 중...' : '🔊 듣기'}
+                {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
               </button>
-              <button
-                onClick={() => setShowText(!showText)}
-                style={{
-                  ...buttonStyle,
-                  maxWidth: '200px',
-                  fontSize: '1rem',
-                  background: showText
-                    ? 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
-                    : 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                }}
-              >
-                {showText ? '텍스트 숨기기' : '텍스트 보기'}
-              </button>
-            </div>
-            {showText && <div style={storyDisplayStyle}>{currentItem.dialogueOrStory}</div>}
-            <div style={questionDisplayStyle}>
-              {currentItem.questionKr || translateQuestion(currentItem.question)}
-            </div>
-            <p style={feedbackStyle}>{feedback || '알맞은 답을 선택해주세요.'}</p>
-            <div
-              style={{
+              <p style={feedbackStyle}>{feedback || '강세가 있는 위치를 클릭해주세요.'}</p>
+              
+              {/* 클릭 가능한 강세 패턴 표시 (O O O) - 단어 위에 배치 */}
+              <div style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '1rem',
+                justifyContent: 'center',
                 alignItems: 'center',
-                marginTop: '2rem',
-              }}
-            >
-              {currentItem.options.map((option, index) => (
+                gap: '1rem',
+                margin: '2rem 0',
+                flexWrap: 'wrap',
+              }}>
+                {Array.from({ length: totalSyllables }, (_, index) => {
+                  const position = index + 1;
+                  const isSelected = selectedStressPosition === position;
+                  
+                  return (
+                    <div
+                      key={index}
+                      onClick={() => handleSyllableClick(position)}
+                      style={{
+                        cursor: isSubmitting || isAudioLoading ? 'not-allowed' : 'pointer',
+                        width: '4rem',
+                        height: '4rem',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '2rem',
+                        fontWeight: 'bold',
+                        color: isSelected ? '#ffffff' : '#6366f1',
+                        backgroundColor: isSelected ? '#6366f1' : 'transparent',
+                        border: `3px solid #6366f1`,
+                        transition: 'all 0.2s ease',
+                        opacity: isSubmitting || isAudioLoading ? 0.5 : 1,
+                        userSelect: 'none',
+                        boxShadow: isSelected 
+                          ? '0 4px 12px rgba(99, 102, 241, 0.3)'
+                          : 'none',
+                      }}
+                    >
+                      {isSelected ? '●' : '○'}
+                    </div>
+                  );
+                })}
+              </div>
+              
+              {/* 단어 표시 - 음절 아래에 배치 */}
+              <div style={{
+                fontSize: '3rem',
+                fontWeight: 'bold',
+                margin: '2rem 0',
+                color: '#6366f1',
+                textAlign: 'center',
+              }}>
+                {currentItem.word}
+              </div>
+              
+              {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
+              {selectedStressPosition !== null && (
                 <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(option.content)}
-                  style={selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle}
-                  disabled={isSubmitting || isAudioLoading}
+                  onClick={handleSubmit}
+                  style={{
+                    ...buttonStyle,
+                    maxWidth: '300px',
+                    marginTop: '2rem',
+                    backgroundColor: selectedAnswer === currentItem.correctAnswer 
+                      ? '#10b981' 
+                      : '#6366f1',
+                  }}
+                  disabled={isSubmitting || isAudioLoading || !selectedAnswer}
                 >
-                  {translateOption(option.content)}
+                  {isSubmitting ? '제출 중...' : '제출하기'}
                 </button>
-              ))}
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
 
         {phase === 'finished' && (
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "6교시 '고대 전설 이해 시험'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "3교시 '마법 리듬 패턴 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+              <button
+                style={{ ...buttonStyle, maxWidth: '250px' }}
+                onClick={() => router.push('/test/p5_vocabulary')}
+              >
+                다음 시험으로 이동
+              </button>
               <button
                 style={{
                   ...buttonStyle,

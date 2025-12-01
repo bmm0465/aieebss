@@ -13,7 +13,7 @@ async function processReadingInBackground(
   supabase: SupabaseClient,
   userId: string,
   question: string,
-  testType: 'NWF' | 'WRF' | 'ORF',
+  testType: 'nwf' | 'wrf' | 'orf',
   arrayBuffer: ArrayBuffer,
 ) {
   const startTime = Date.now();
@@ -22,7 +22,7 @@ async function processReadingInBackground(
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
         user_id: userId,
-        test_type: testType,
+        test_type: 'p4_phonics',
         question: question,
         is_correct: false,
         error_type: 'Hesitation',
@@ -34,7 +34,7 @@ async function processReadingInBackground(
     if (arrayBuffer.byteLength < 1024 || arrayBuffer.byteLength > 10 * 1024 * 1024) {
       await supabase.from('test_results').insert({
         user_id: userId,
-        test_type: testType,
+        test_type: 'p4_phonics',
         question: question,
         is_correct: false,
         error_type: 'insufficient_audio',
@@ -54,7 +54,7 @@ async function processReadingInBackground(
         }),
       transcribeAll(arrayBuffer, {
         language: 'en',
-        prompt: `This is a reading fluency test for Korean EFL students. The student will read ${testType === 'NWF' ? 'a nonsense word' : testType === 'WRF' ? 'a real word' : 'a sentence'}.
+        prompt: `This is a reading fluency test for Korean EFL students. The student will read ${testType === 'nwf' ? 'a nonsense word' : testType === 'wrf' ? 'a real word' : 'a sentence'}.
 
 TARGET: "${question}"
 
@@ -135,7 +135,7 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
     try {
       await supabase.from('test_results').insert({
         user_id: userId,
-        test_type: testType,
+        test_type: 'p4_phonics',
         question: question,
         is_correct: false,
         error_type: 'processing_error',
@@ -153,7 +153,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const audioBlob = formData.get('audio') as Blob;
     const question = formData.get('question') as string;
-    const testType = formData.get('testType') as 'NWF' | 'WRF' | 'ORF';
+    const testType = formData.get('testType') as 'nwf' | 'wrf' | 'orf';
     const userId = formData.get('userId') as string;
 
     if (!audioBlob || !question || !testType || !userId) {

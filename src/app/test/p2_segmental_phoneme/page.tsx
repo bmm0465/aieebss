@@ -6,55 +6,48 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-interface StressItem {
-  word: string;
-  choices: string[];
+interface MinimalPair {
+  word1: string;
+  word2: string;
   correctAnswer: string;
 }
 
-// 단어의 음절 수를 계산하는 함수 (간단한 영어 음절 규칙)
-function countSyllables(word: string): number {
-  word = word.toLowerCase();
-  if (word.length <= 3) return 1;
-  
-  word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
-  word = word.replace(/^y/, '');
-  const matches = word.match(/[aeiouy]{1,2}/g);
-  return matches ? matches.length : 1;
-}
-
-// 선택지에서 강세 위치 추출
-function getStressPosition(choice: string): number {
-  const match = choice.match(/[A-Z]+/);
-  if (!match) return 1;
-  
-  const stressedPart = match[0];
-  const beforeStressed = choice.substring(0, choice.indexOf(stressedPart));
-  const syllablesBefore = countSyllables(beforeStressed);
-  return syllablesBefore + 1;
-}
-
-// [폴백] STRESS 고정 문항
-const getFixedStressItems = (): StressItem[] => {
-  return [
-    { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
-    { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
-    { word: 'elephant', choices: ['ELEphant', 'elePHANT', 'elephANT'], correctAnswer: 'ELEphant' },
-    { word: 'tomorrow', choices: ['toMORrow', 'TOmorrow', 'tomorROW'], correctAnswer: 'toMORrow' },
-    { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
+// [폴백] PSF 최소대립쌍 고정 문항
+const getFixedMinimalPairs = (): MinimalPair[] => {
+  const fixedPairs: MinimalPair[] = [
+    { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
+    { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
+    { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
+    { word1: 'dog', word2: 'log', correctAnswer: 'dog' },
+    { word1: 'sun', word2: 'fun', correctAnswer: 'sun' },
+    { word1: 'bed', word2: 'red', correctAnswer: 'bed' },
+    { word1: 'cup', word2: 'pup', correctAnswer: 'cup' },
+    { word1: 'map', word2: 'cap', correctAnswer: 'map' },
+    { word1: 'sit', word2: 'hit', correctAnswer: 'sit' },
+    { word1: 'pen', word2: 'hen', correctAnswer: 'pen' },
+    { word1: 'big', word2: 'pig', correctAnswer: 'big' },
+    { word1: 'top', word2: 'pop', correctAnswer: 'top' },
+    { word1: 'run', word2: 'sun', correctAnswer: 'run' },
+    { word1: 'leg', word2: 'peg', correctAnswer: 'leg' },
+    { word1: 'mug', word2: 'bug', correctAnswer: 'mug' },
+    { word1: 'fan', word2: 'van', correctAnswer: 'fan' },
+    { word1: 'ten', word2: 'pen', correctAnswer: 'ten' },
+    { word1: 'box', word2: 'fox', correctAnswer: 'box' },
+    { word1: 'six', word2: 'fix', correctAnswer: 'six' },
+    { word1: 'web', word2: 'deb', correctAnswer: 'web' },
   ];
+  return fixedPairs;
 };
 
-export default function StressTestPage() {
+export default function PsfTestPage() {
   const supabase = createClient();
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
-  const [items, setItems] = useState<StressItem[]>([]);
-  const [itemIndex, setItemIndex] = useState(0);
-  const [currentItem, setCurrentItem] = useState<StressItem | null>(null);
+  const [pairs, setPairs] = useState<MinimalPair[]>([]);
+  const [pairIndex, setPairIndex] = useState(0);
+  const [currentPair, setCurrentPair] = useState<MinimalPair | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
-  const [selectedStressPosition, setSelectedStressPosition] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
@@ -70,20 +63,23 @@ export default function StressTestPage() {
 
       setUser(user);
 
+      // DB에서 승인된 문항 조회 시도
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('STRESS', gradeLevel || undefined);
+        const dbItems = await fetchApprovedTestItems('p2_segmental_phoneme', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
-          console.log('[STRESS] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setItems(dbItems.items as StressItem[]);
+          // DB에서 가져온 문항 사용
+          console.log('[p2_segmental_phoneme] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setPairs(dbItems.items as MinimalPair[]);
         } else {
-          console.log('[STRESS] 승인된 문항이 없어 기본 문항 사용');
-          setItems(getFixedStressItems());
+          // 폴백: 고정 문항 사용
+          console.log('[p2_segmental_phoneme] 승인된 문항이 없어 기본 문항 사용');
+          setPairs(getFixedMinimalPairs());
         }
       } catch (error) {
-        console.error('[STRESS] 문항 로딩 오류, 기본 문항 사용:', error);
-        setItems(getFixedStressItems());
+        console.error('[p2_segmental_phoneme] 문항 로딩 오류, 기본 문항 사용:', error);
+        setPairs(getFixedMinimalPairs());
       }
     };
     setup();
@@ -93,7 +89,7 @@ export default function StressTestPage() {
     setIsAudioLoading(true);
     try {
       // 사전 생성된 오디오 파일 사용 시도
-      const audioPath = `/audio/stress/${word.toLowerCase()}.mp3`;
+      const audioPath = `/audio/psf/${word}.mp3`;
       const audio = new Audio(audioPath);
       
       await new Promise<void>((resolve, reject) => {
@@ -136,34 +132,22 @@ export default function StressTestPage() {
     }
   }, []);
 
-  // 음절 클릭 핸들러
-  const handleSyllableClick = (position: number) => {
-    if (isSubmitting || !currentItem || !user) return;
+  const playCorrectAnswer = useCallback(async () => {
+    if (!currentPair) return;
+    setFeedback('정답 단어를 들어보세요...');
+    setIsAudioLoading(true);
     
-    setSelectedStressPosition(position);
+    // 정답 단어만 재생
+    await playWordAudio(currentPair.correctAnswer);
     
-    // 선택된 위치에 해당하는 선택지 찾기
-    const matchingChoice = currentItem.choices.find(choice => {
-      const stressPos = getStressPosition(choice);
-      return stressPos === position;
-    });
-    
-    // matchingChoice를 찾았으면 설정, 없으면 첫 번째 선택지를 기본값으로 사용
-    // (실제로는 항상 찾아야 하지만, 안전장치로)
-    if (matchingChoice) {
-      setSelectedAnswer(matchingChoice);
-    } else if (currentItem.choices.length > 0) {
-      // 선택지를 찾지 못한 경우, position에 가장 가까운 선택지 사용
-      // 또는 첫 번째 선택지를 임시로 사용 (디버깅용)
-      console.warn(`[STRESS] position ${position}에 해당하는 선택지를 찾지 못함. 첫 번째 선택지 사용.`);
-      setSelectedAnswer(currentItem.choices[0]);
-    }
-  };
+    setFeedback('들어본 단어를 선택해주세요.');
+    setIsAudioLoading(false);
+  }, [currentPair, playWordAudio]);
 
-  // 제출 핸들러
-  const handleSubmit = async () => {
-    if (isSubmitting || !currentItem || !user || !selectedAnswer) return;
+  const handleAnswerSelect = async (answer: string) => {
+    if (isSubmitting || !currentPair || !user) return;
     
+    setSelectedAnswer(answer);
     setIsSubmitting(true);
     setFeedback('제출 중...');
 
@@ -175,14 +159,13 @@ export default function StressTestPage() {
         return;
       }
 
-      const response = await fetch('/api/submit-stress', {
+      const response = await fetch('/api/submit-p2_segmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          question: currentItem.word,
-          selectedAnswer: selectedAnswer,
-          correctAnswer: currentItem.correctAnswer,
-          choices: currentItem.choices,
+          question: `${currentPair.word1}|${currentPair.word2}`,
+          selectedAnswer: answer,
+          correctAnswer: currentPair.correctAnswer,
           userId: user.id,
           authToken: authUser.id,
         }),
@@ -190,43 +173,42 @@ export default function StressTestPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[STRESS] 제출 실패:', response.status, errorData);
+        console.error('[p2_segmental_phoneme] 제출 실패:', response.status, errorData);
         throw new Error(errorData.error || '제출 실패');
       }
 
       const result = await response.json();
-      console.log('[STRESS] 제출 성공:', result);
+      console.log('[p2_segmental_phoneme] 제출 성공:', result);
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
-        goToNextItem();
+        goToNextPair();
       }, 500);
     } catch (error) {
-      console.error('[STRESS] 제출 오류:', error);
+      console.error('[p2_segmental_phoneme] 제출 오류:', error);
       setFeedback(`제출 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setIsSubmitting(false);
     }
   };
 
-  const goToNextItem = () => {
-    const nextIndex = itemIndex + 1;
-    if (nextIndex >= items.length) {
+  const goToNextPair = () => {
+    const nextIndex = pairIndex + 1;
+    if (nextIndex >= pairs.length) {
       setPhase('finished');
     } else {
-      setItemIndex(nextIndex);
-      setCurrentItem(items[nextIndex]);
+      setPairIndex(nextIndex);
+      setCurrentPair(pairs[nextIndex]);
       setSelectedAnswer(null);
-      setSelectedStressPosition(null);
       setIsSubmitting(false);
       setFeedback('');
     }
   };
 
   useEffect(() => {
-    if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
-      setCurrentItem(items[itemIndex]);
+    if (phase === 'testing' && pairs.length > 0 && pairIndex < pairs.length) {
+      setCurrentPair(pairs[pairIndex]);
     }
-  }, [phase, items, itemIndex]);
+  }, [phase, pairs, pairIndex]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -250,9 +232,9 @@ export default function StressTestPage() {
 
   const handleStartTest = () => {
     setPhase('testing');
-    setItemIndex(0);
+    setPairIndex(0);
     setTimeLeft(60);
-    setCurrentItem(items[0]);
+    setCurrentPair(pairs[0]);
   };
 
   // --- 스타일 정의 ---
@@ -311,6 +293,27 @@ export default function StressTestPage() {
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
+  const wordButtonStyle: React.CSSProperties = {
+    width: '100%',
+    maxWidth: '250px',
+    padding: '20px 24px',
+    margin: '0.5rem',
+    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+    color: 'white',
+    border: 'none',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '1.5rem',
+    textAlign: 'center',
+    transition: 'all 0.3s ease',
+    boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
+  };
+  const selectedWordButtonStyle: React.CSSProperties = {
+    ...wordButtonStyle,
+    background: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+    boxShadow: '0 10px 15px -3px rgba(16, 185, 129, 0.3)',
+  };
   const feedbackStyle: React.CSSProperties = {
     minHeight: '2.5em',
     fontSize: '1.05rem',
@@ -337,7 +340,7 @@ export default function StressTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>4교시: 마법 리듬 패턴 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리의 원소 분리 시험</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -351,9 +354,9 @@ export default function StressTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              단어를 듣고 강세가 있는 위치를 클릭해주세요.
+              단어를 들려드립니다. 들려준 단어를 선택해주세요.
               <br />
-              (예: &quot;computer&quot;를 들려주면, 강세가 있는 음절을 클릭합니다)
+              (예: &quot;pin&quot;을 들려주면, &quot;pin&quot;을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -361,114 +364,50 @@ export default function StressTestPage() {
           </div>
         )}
 
-        {phase === 'testing' && currentItem && (() => {
-          const totalSyllables = countSyllables(currentItem.word);
-          
-          return (
-            <div>
-              <button
-                onClick={() => playWordAudio(currentItem.word)}
-                style={{
-                  ...buttonStyle,
-                  fontSize: '3rem',
-                  minHeight: '100px',
-                  marginBottom: '2rem',
-                  opacity: isAudioLoading ? 0.5 : 1,
-                  whiteSpace: 'nowrap',
-                }}
-                disabled={isAudioLoading || isSubmitting}
-              >
-                {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
-              </button>
-              <p style={feedbackStyle}>{feedback || '강세가 있는 위치를 클릭해주세요.'}</p>
-              
-              {/* 클릭 가능한 강세 패턴 표시 (O O O) - 단어 위에 배치 */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '1rem',
-                margin: '2rem 0',
-                flexWrap: 'wrap',
-              }}>
-                {Array.from({ length: totalSyllables }, (_, index) => {
-                  const position = index + 1;
-                  const isSelected = selectedStressPosition === position;
-                  
-                  return (
-                    <div
-                      key={index}
-                      onClick={() => handleSyllableClick(position)}
-                      style={{
-                        cursor: isSubmitting || isAudioLoading ? 'not-allowed' : 'pointer',
-                        width: '4rem',
-                        height: '4rem',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '2rem',
-                        fontWeight: 'bold',
-                        color: isSelected ? '#ffffff' : '#6366f1',
-                        backgroundColor: isSelected ? '#6366f1' : 'transparent',
-                        border: `3px solid #6366f1`,
-                        transition: 'all 0.2s ease',
-                        opacity: isSubmitting || isAudioLoading ? 0.5 : 1,
-                        userSelect: 'none',
-                        boxShadow: isSelected 
-                          ? '0 4px 12px rgba(99, 102, 241, 0.3)'
-                          : 'none',
-                      }}
-                    >
-                      {isSelected ? '●' : '○'}
-                    </div>
-                  );
-                })}
-              </div>
-              
-              {/* 단어 표시 - 음절 아래에 배치 */}
-              <div style={{
+        {phase === 'testing' && currentPair && (
+          <div>
+            <button
+              onClick={playCorrectAnswer}
+              style={{
+                ...buttonStyle,
                 fontSize: '3rem',
-                fontWeight: 'bold',
-                margin: '2rem 0',
-                color: '#6366f1',
-                textAlign: 'center',
-              }}>
-                {currentItem.word}
-              </div>
-              
-              {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
-              {selectedStressPosition !== null && (
-                <button
-                  onClick={handleSubmit}
-                  style={{
-                    ...buttonStyle,
-                    maxWidth: '300px',
-                    marginTop: '2rem',
-                    backgroundColor: selectedAnswer === currentItem.correctAnswer 
-                      ? '#10b981' 
-                      : '#6366f1',
-                  }}
-                  disabled={isSubmitting || isAudioLoading || !selectedAnswer}
-                >
-                  {isSubmitting ? '제출 중...' : '제출하기'}
-                </button>
-              )}
+                minHeight: '100px',
+                marginBottom: '2rem',
+                opacity: isAudioLoading ? 0.5 : 1,
+                whiteSpace: 'nowrap',
+              }}
+              disabled={isAudioLoading || isSubmitting}
+            >
+              {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
+            </button>
+            <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
+              <button
+                onClick={() => handleAnswerSelect(currentPair.word1)}
+                style={selectedAnswer === currentPair.word1 ? selectedWordButtonStyle : wordButtonStyle}
+                disabled={isSubmitting || isAudioLoading}
+              >
+                {currentPair.word1}
+              </button>
+              <button
+                onClick={() => handleAnswerSelect(currentPair.word2)}
+                style={selectedAnswer === currentPair.word2 ? selectedWordButtonStyle : wordButtonStyle}
+                disabled={isSubmitting || isAudioLoading}
+              >
+                {currentPair.word2}
+              </button>
             </div>
-          );
-        })()}
+          </div>
+        )}
 
         {phase === 'finished' && (
           <div>
             <h1 style={titleStyle}>시험 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "4교시 '마법 리듬 패턴 시험'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "2교시 '소리의 원소 분리 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <button
-                style={{ ...buttonStyle, maxWidth: '250px' }}
-                onClick={() => router.push('/test/meaning')}
-              >
+              <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/p4_phonics')}>
                 다음 시험으로 이동
               </button>
               <button
@@ -509,4 +448,3 @@ export default function StressTestPage() {
     </div>
   );
 }
-

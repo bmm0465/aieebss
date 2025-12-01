@@ -19,12 +19,12 @@ interface FeedbackSectionProps {
 // 테스트 타입별 제목 매핑
 const getTestTypeTitle = (testType: string): string => {
   const testTitles: Record<string, string> = {
-    'LNF': '1교시 고대 룬 문자 해독',
-    'PSF': '2교시 소리의 원소 분리',
-    'NWF': '3교시 초급 주문 시전',
-    'WRF': '4교시 마법 단어 활성화',
-    'ORF': '5교시 고대 이야기 소생술',
-    'MAZE': '6교시 지혜의 미로 탈출'
+    'p1_alphabet': '1교시 고대 룬 문자 해독',
+    'p2_segmental_phoneme': '2교시 소리의 원소 분리',
+    'p3_suprasegmental_phoneme': '3교시 마법 리듬 패턴',
+    'p4_phonics': '4교시 마법 주문 읽기',
+    'p5_vocabulary': '5교시 마법서 그림 해석',
+    'p6_comprehension': '6교시 고대 전설 이해'
   };
   return testTitles[testType] || testType;
 };

@@ -234,44 +234,34 @@ export default function StudentDetailPage({ params }: Props) {
 
   // 테스트별 통계 계산
   const statistics = {
-    LNF: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'LNF').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'LNF' && !!r.is_correct).length || 0,
+    p1_alphabet: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'p1_alphabet').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'p1_alphabet' && !!r.is_correct).length || 0,
       accuracy: 0
     },
-    PSF: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'PSF').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'PSF' && !!r.is_correct).length || 0,
+    p2_segmental_phoneme: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'p2_segmental_phoneme').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'p2_segmental_phoneme' && !!r.is_correct).length || 0,
       accuracy: 0
     },
-    NWF: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'NWF').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'NWF' && !!r.is_correct).length || 0,
+    p3_suprasegmental_phoneme: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'p3_suprasegmental_phoneme').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'p3_suprasegmental_phoneme' && !!r.is_correct).length || 0,
       accuracy: 0
     },
-    WRF: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'WRF').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'WRF' && !!r.is_correct).length || 0,
+    p4_phonics: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'p4_phonics').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'p4_phonics' && !!r.is_correct).length || 0,
       accuracy: 0
     },
-    ORF: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'ORF').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'ORF' && !!r.is_correct).length || 0,
+    p5_vocabulary: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'p5_vocabulary').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'p5_vocabulary' && !!r.is_correct).length || 0,
       accuracy: 0
     },
-    STRESS: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'STRESS').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'STRESS' && !!r.is_correct).length || 0,
-      accuracy: 0
-    },
-    MEANING: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'MEANING').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'MEANING' && !!r.is_correct).length || 0,
-      accuracy: 0
-    },
-    COMPREHENSION: {
-      total: testResults?.filter((r: TestResultRow) => r.test_type === 'COMPREHENSION').length || 0,
-      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'COMPREHENSION' && !!r.is_correct).length || 0,
+    p6_comprehension: {
+      total: testResults?.filter((r: TestResultRow) => r.test_type === 'p6_comprehension').length || 0,
+      correct: testResults?.filter((r: TestResultRow) => r.test_type === 'p6_comprehension' && !!r.is_correct).length || 0,
       accuracy: 0
     }
   };
@@ -285,12 +275,12 @@ export default function StudentDetailPage({ params }: Props) {
   });
 
   const testInfo = {
-    LNF: { title: 'LNF', description: '고대 룬 문자 해독' },
-    PSF: { title: 'PSF', description: '소리의 원소 분리' },
-    NWF: { title: 'NWF', description: '무의미 단어 읽기' },
-    WRF: { title: 'WRF', description: '단어 읽기' },
-    ORF: { title: 'ORF', description: '구두 읽기 유창성' },
-    MAZE: { title: 'MAZE', description: '미로 이해도' }
+    p1_alphabet: { title: 'p1_alphabet', description: '고대 룬 문자 해독' },
+    p2_segmental_phoneme: { title: 'p2_segmental_phoneme', description: '소리의 원소 분리' },
+    p3_suprasegmental_phoneme: { title: 'p3_suprasegmental_phoneme', description: '마법 리듬 패턴' },
+    p4_phonics: { title: 'p4_phonics', description: '파닉스 읽기 (무의미 단어, 실제 단어, 문장)' },
+    p5_vocabulary: { title: 'p5_vocabulary', description: '마법서 그림 해석' },
+    p6_comprehension: { title: 'p6_comprehension', description: '고대 전설 이해' }
   };
 
   return (

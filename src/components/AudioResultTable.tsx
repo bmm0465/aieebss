@@ -34,7 +34,7 @@ interface AudioResultTableProps {
 }
 
 // 선택형 테스트 목록
-const choiceTests = ['PSF', 'STRESS', 'MEANING', 'COMPREHENSION'];
+const choiceTests = ['p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p5_vocabulary', 'p6_comprehension'];
 
 export default function AudioResultTable({ testType, sessionId, studentId }: AudioResultTableProps) {
   const [results, setResults] = useState<AudioResult[]>([]);
@@ -57,7 +57,7 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 
     try {
       const supabase = createClient();
-      // 선택형 테스트(PSF, STRESS, MEANING, COMPREHENSION)는 audio_url이 없으므로 필터 제거
+      // 선택형 테스트(p2_segmental_phoneme, p3_suprasegmental_phoneme, p5_vocabulary, p6_comprehension)는 audio_url이 없으므로 필터 제거
       const isChoiceTest = choiceTests.includes(testType);
       
       let query = supabase
@@ -169,14 +169,12 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
 
   const getTestTypeName = (type: string): string => {
     const testNames: Record<string, string> = {
-      'LNF': '1교시: 고대 룬 문자 해독 시험',
-      'PSF': '2교시: 소리의 원소 분리 시험',
-      'NWF': '3교시: 마법 주문 읽기 시험 (무의미 단어)',
-      'WRF': '3교시: 마법 주문 읽기 시험 (실제 단어)',
-      'ORF': '3교시: 마법 주문 읽기 시험 (문장)',
-      'STRESS': '4교시: 마법 리듬 패턴 시험',
-      'MEANING': '5교시: 마법서 그림 해석 시험',
-      'COMPREHENSION': '6교시: 고대 전설 이해 시험'
+      'p1_alphabet': '1교시: 고대 룬 문자 해독 시험',
+      'p2_segmental_phoneme': '2교시: 소리의 원소 분리 시험',
+      'p3_suprasegmental_phoneme': '3교시: 마법 리듬 패턴 시험',
+      'p4_phonics': '4교시: 마법 주문 읽기 시험',
+      'p5_vocabulary': '5교시: 마법서 그림 해석 시험',
+      'p6_comprehension': '6교시: 고대 전설 이해 시험'
     };
     return testNames[type] || type;
   };

@@ -26,7 +26,7 @@ export async function POST(request: Request) {
 
     const { data: insertData, error: insertError } = await serviceClient.from('test_results').insert({
       user_id: userId,
-      test_type: 'MEANING',
+      test_type: 'p5_vocabulary',
       question: question,
       student_answer: selectedAnswer,
       correct_answer: correctAnswer,
@@ -35,12 +35,12 @@ export async function POST(request: Request) {
     }).select();
 
     if (insertError) {
-      console.error('[MEANING 저장 오류]', insertError);
+      console.error('[p5_vocabulary 저장 오류]', insertError);
       throw new Error(`데이터베이스 저장 실패: ${insertError.message}`);
     }
 
     console.log(
-      `[MEANING 제출 완료] 사용자: ${userId}, 문제: ${question}, 선택: ${selectedAnswer}, 정답: ${correctAnswer}, 결과: ${isCorrect ? '정답' : '오답'}, 저장된 ID: ${insertData?.[0]?.id || 'N/A'}`,
+      `[p5_vocabulary 제출 완료] 사용자: ${userId}, 문제: ${question}, 선택: ${selectedAnswer}, 정답: ${correctAnswer}, 결과: ${isCorrect ? '정답' : '오답'}, 저장된 ID: ${insertData?.[0]?.id || 'N/A'}`,
     );
 
     return NextResponse.json(
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       { status: 200 },
     );
   } catch (error) {
-    console.error('MEANING API 요청 접수 에러:', error);
+    console.error('p5_vocabulary API 요청 접수 에러:', error);
     const errorMessage = error instanceof Error ? error.message : '알 수 없는 에러';
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }

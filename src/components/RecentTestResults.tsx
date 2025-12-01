@@ -44,14 +44,12 @@ export default function RecentTestResults({ results }: RecentTestResultsProps) {
 
   const getTestTypeEmoji = (testType: string) => {
     const emojis: Record<string, string> = {
-      'LNF': '🔤',
-      'PSF': '👂',
-      'NWF': '🔀',
-      'WRF': '📖',
-      'ORF': '🗣️',
-      'STRESS': '🎵',
-      'MEANING': '🖼️',
-      'COMPREHENSION': '💭'
+      'p1_alphabet': '🔤',
+      'p2_segmental_phoneme': '👂',
+      'p3_suprasegmental_phoneme': '🎵',
+      'p4_phonics': '📖',
+      'p5_vocabulary': '🖼️',
+      'p6_comprehension': '💭'
     };
     return emojis[testType] || '📝';
   };

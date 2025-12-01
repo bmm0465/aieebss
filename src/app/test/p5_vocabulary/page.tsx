@@ -73,17 +73,17 @@ export default function MeaningTestPage() {
 
       try {
         const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('MEANING', gradeLevel || undefined);
+        const dbItems = await fetchApprovedTestItems('p5_vocabulary', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
-          console.log('[MEANING] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          console.log('[p5_vocabulary] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
           setItems(dbItems.items as MeaningItem[]);
         } else {
-          console.log('[MEANING] 승인된 문항이 없어 기본 문항 사용');
+          console.log('[p5_vocabulary] 승인된 문항이 없어 기본 문항 사용');
           setItems(getFixedMeaningItems());
         }
       } catch (error) {
-        console.error('[MEANING] 문항 로딩 오류, 기본 문항 사용:', error);
+        console.error('[p5_vocabulary] 문항 로딩 오류, 기본 문항 사용:', error);
         setItems(getFixedMeaningItems());
       }
     };
@@ -153,7 +153,7 @@ export default function MeaningTestPage() {
         return;
       }
 
-      const response = await fetch('/api/submit-meaning', {
+      const response = await fetch('/api/submit-p5_vocabulary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -168,19 +168,19 @@ export default function MeaningTestPage() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[MEANING] 제출 실패:', response.status, errorData);
+        console.error('[p5_vocabulary] 제출 실패:', response.status, errorData);
         throw new Error(errorData.error || '제출 실패');
       }
 
       const result = await response.json();
-      console.log('[MEANING] 제출 성공:', result);
+      console.log('[p5_vocabulary] 제출 성공:', result);
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
         goToNextItem();
       }, 500);
     } catch (error) {
-      console.error('[MEANING] 제출 오류:', error);
+      console.error('[p5_vocabulary] 제출 오류:', error);
       setFeedback(`제출 중 오류가 발생했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`);
       setIsSubmitting(false);
     }
@@ -205,14 +205,14 @@ export default function MeaningTestPage() {
       });
       
       if (cachedOptions.length > 0) {
-        console.log(`[MEANING] 캐시된 이미지 사용: ${cachedOptions.join(', ')}`);
+        console.log(`[p5_vocabulary] 캐시된 이미지 사용: ${cachedOptions.join(', ')}`);
         // 캐시된 이미지는 즉시 상태 업데이트
         setImageUrls(prev => ({ ...prev, ...newImageUrls }));
       }
       
       // 캐시되지 않은 이미지들을 병렬로 로드
       if (uncachedOptions.length > 0) {
-        console.log(`[MEANING] 병렬 이미지 로드 시작: ${uncachedOptions.join(', ')}`);
+        console.log(`[p5_vocabulary] 병렬 이미지 로드 시작: ${uncachedOptions.join(', ')}`);
         
         const imagePromises = uncachedOptions.map(async (option) => {
           try {
@@ -225,13 +225,13 @@ export default function MeaningTestPage() {
             if (response.ok) {
               const data = await response.json();
               if (data.error) {
-                console.error(`[MEANING] 이미지 생성 API 에러 (${option}):`, data.error);
+                console.error(`[p5_vocabulary] 이미지 생성 API 에러 (${option}):`, data.error);
                 return { option, url: null, error: data.error };
               } else if (data.imageUrl) {
-                console.log(`[MEANING] 이미지 생성 성공: ${option}${data.cached ? ' (캐시됨)' : ''}`);
+                console.log(`[p5_vocabulary] 이미지 생성 성공: ${option}${data.cached ? ' (캐시됨)' : ''}`);
                 return { option, url: data.imageUrl, cached: data.cached };
               } else {
-                console.warn(`[MEANING] 이미지 URL이 응답에 없음: ${option}`, data);
+                console.warn(`[p5_vocabulary] 이미지 URL이 응답에 없음: ${option}`, data);
                 return { option, url: null, error: 'URL 없음' };
               }
             } else {
@@ -242,11 +242,11 @@ export default function MeaningTestPage() {
               } catch {
                 // JSON 파싱 실패 시 빈 객체 사용
               }
-              console.error(`[MEANING] 이미지 생성 실패 (${option}):`, response.status, errorData);
+              console.error(`[p5_vocabulary] 이미지 생성 실패 (${option}):`, response.status, errorData);
               return { option, url: null, error: `HTTP ${response.status}` };
             }
           } catch (error) {
-            console.error(`[MEANING] 이미지 생성 실패 (${option}):`, error);
+            console.error(`[p5_vocabulary] 이미지 생성 실패 (${option}):`, error);
             return { option, url: null, error: String(error) };
           }
         });
@@ -261,13 +261,13 @@ export default function MeaningTestPage() {
           }
         });
         
-        console.log(`[MEANING] 병렬 로드 완료: ${results.filter(r => r.url).length}/${uncachedOptions.length}개 성공`);
+        console.log(`[p5_vocabulary] 병렬 로드 완료: ${results.filter(r => r.url).length}/${uncachedOptions.length}개 성공`);
       }
       
       // 최종 상태 업데이트
       setImageUrls(prev => ({ ...prev, ...newImageUrls }));
     } catch (error) {
-      console.error('[MEANING] 이미지 로드 오류:', error);
+      console.error('[p5_vocabulary] 이미지 로드 오류:', error);
     } finally {
       setIsLoadingImages(false);
     }
@@ -313,7 +313,7 @@ export default function MeaningTestPage() {
                 setImageUrls(prev => ({ ...prev, [option]: data.imageUrl }));
               }
             })
-                .catch(err => console.log(`[MEANING] 사전 로드 실패 (${option}):`, err));
+                .catch(err => console.log(`[p5_vocabulary] 사전 로드 실패 (${option}):`, err));
             }
           });
         }
@@ -552,11 +552,11 @@ export default function MeaningTestPage() {
                           }}
                           onError={() => {
                             // 이미지 로드 실패 시 실패 목록에 추가
-                            console.error(`[MEANING] 이미지 로드 실패: ${option}, URL: ${imageUrls[option]}`);
+                            console.error(`[p5_vocabulary] 이미지 로드 실패: ${option}, URL: ${imageUrls[option]}`);
                             setFailedImages(prev => new Set(prev).add(option));
                           }}
                           onLoad={() => {
-                            console.log(`[MEANING] 이미지 로드 성공: ${option}, URL: ${imageUrls[option]}`);
+                            console.log(`[p5_vocabulary] 이미지 로드 성공: ${option}, URL: ${imageUrls[option]}`);
                           }}
                         />
                       </div>
@@ -596,7 +596,7 @@ export default function MeaningTestPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button
                 style={{ ...buttonStyle, maxWidth: '250px' }}
-                onClick={() => router.push('/test/comprehension')}
+                onClick={() => router.push('/test/p6_comprehension')}
               >
                 다음 시험으로 이동
               </button>

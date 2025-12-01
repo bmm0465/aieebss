@@ -13,37 +13,37 @@ const tests = [
     period: 1,
     title: '고대 룬 문자 해독 시험',
     description: '고대의 마법 비석 앞에 섭니다. 비석에는 수많은 룬 문자(알파벳 대문자/소문자)가 무작위로 새겨져 있습니다. 1분 동안 이 룬 문자를 최대한 많이, 그리고 정확하게 읽어내야 합니다.',
-    path: '/test/lnf'
+    path: '/test/p1_alphabet'
   },
   {
     period: 2,
     title: '소리의 원소 분리 시험',
     description: '마법의 소리 파편이 공중에 떠다닙니다. 두 가지 비슷한 마법 주문이 들려오는데, 그 중 한 가지를 정확히 식별해야 합니다. 소리의 미묘한 차이를 듣는 능력이 마법사의 기본 소양입니다. (예: "pin"과 "fin"을 들려주면, 들려준 주문을 선택합니다)',
-    path: '/test/psf'
+    path: '/test/p2_segmental_phoneme'
   },
   {
     period: 3,
-    title: '마법 주문 읽기 시험',
-    description: '고대 마법서 앞에 섭니다. 책장을 넘기면 초급 주문(무의미 단어)부터 강력한 마법 단어, 그리고 고대 이야기까지 순차적으로 나타납니다. 소리와 철자의 관계를 이해하며 마법 주문을 읽어내는 능력이 시험됩니다.',
-    path: '/test/reading'
+    title: '마법 리듬 패턴 시험',
+    description: '마법 주문을 올바르게 시전하려면 리듬과 강세를 정확히 알아야 합니다. 들려오는 주문의 리듬 패턴을 듣고, 올바른 강세가 표시된 마법 진동을 선택해야 합니다. (예: "computer"를 들려주면, 강세가 올바르게 표시된 패턴을 선택합니다)',
+    path: '/test/p3_suprasegmental_phoneme'
   },
   {
     period: 4,
-    title: '마법 리듬 패턴 시험',
-    description: '마법 주문을 올바르게 시전하려면 리듬과 강세를 정확히 알아야 합니다. 들려오는 주문의 리듬 패턴을 듣고, 올바른 강세가 표시된 마법 진동을 선택해야 합니다. (예: "computer"를 들려주면, 강세가 올바르게 표시된 패턴을 선택합니다)',
-    path: '/test/stress'
+    title: '마법 주문 읽기 시험',
+    description: '고대 마법서 앞에 섭니다. 책장을 넘기면 초급 주문(무의미 단어)부터 강력한 마법 단어, 그리고 고대 이야기까지 순차적으로 나타납니다. 소리와 철자의 관계를 이해하며 마법 주문을 읽어내는 능력이 시험됩니다.',
+    path: '/test/p4_phonics'
   },
   {
     period: 5,
     title: '마법서 그림 해석 시험',
     description: '고대 마법서에는 그림과 주문이 함께 기록되어 있습니다. 들려오거나 보이는 마법 주문의 의미를 파악하여, 그에 맞는 그림을 찾아내야 합니다. 마법 언어의 의미를 이해하는 능력이 평가됩니다. (예: "a red apple"을 들려주거나 보여주면, 빨간 사과 그림을 선택합니다)',
-    path: '/test/meaning'
+    path: '/test/p5_vocabulary'
   },
   {
     period: 6,
     title: '고대 전설 이해 시험',
     description: '마법사들의 구전으로 전해 내려오는 고대 전설이 들려옵니다. 또는 마법서에 기록된 이야기를 읽게 됩니다. 이야기의 핵심을 파악하여 질문에 답해야 합니다. 마법 세계의 지혜를 이해하는 능력이 최종적으로 평가됩니다. (예: "Tom has a big, blue ball"을 듣고, "What color is the ball?"에 "blue"를 선택)',
-    path: '/test/comprehension'
+    path: '/test/p6_comprehension'
   },
 ];
 
