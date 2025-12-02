@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AIEEBSS 사용자 가이드 - 선생님과 학생을 위한 활용 매뉴얼</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.8;
+            color: #1f2937;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .nav {
+            background: #f9fafb;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #e5e7eb;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .nav a {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: #6366f1;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            border: 2px solid #6366f1;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .content {
+            padding: 3rem 2rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            color: #6366f1;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #6366f1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            color: #4b5563;
+            margin: 2rem 0 1rem 0;
+            padding-left: 1rem;
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .section h4 {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        .step-box {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .step-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .step-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 2rem;
+            font-weight: bold;
+            margin-right: 0.75rem;
+        }
+
+        .test-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .test-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+
+        .test-card h4 {
+            color: #6366f1;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .test-card p {
+            color: #4b5563;
+            margin: 0.5rem 0;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #6366f1;
+            margin: 1rem 0;
+        }
+
+        .warning {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background: #d1fae5;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            margin: 1rem 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin: 1rem 0;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        .icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+
+        .button-demo {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 0.25rem;
+            box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);
+        }
+
+        .screenshot-placeholder {
+            background: #f3f4f6;
+            border: 2px dashed #9ca3af;
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            color: #6b7280;
+            margin: 1rem 0;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .nav {
+                flex-direction: column;
+            }
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        th {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+
+        .badge-student {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-teacher {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AIEEBSS 사용자 가이드</h1>
+            <p>AI 기반 영어 읽기 평가 시스템 활용 매뉴얼</p>
+            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.9;">
+                선생님과 학생을 위한 상세한 사용 설명서
+            </p>
+        </div>
+
+        <div class="nav">
+            <a href="#intro">시작하기</a>
+            <a href="#student-guide">학생 가이드</a>
+            <a href="#teacher-guide">교사 가이드</a>
+            <a href="#tests">테스트 종류</a>
+            <a href="#faq">자주 묻는 질문</a>
+        </div>
+
+        <div class="content">
+            <!-- 소개 섹션 -->
+            <section id="intro" class="section">
+                <h2>📌 시작하기</h2>
+                
+                <div class="step-box">
+                    <h3>AIEEBSS란?</h3>
+                    <p>
+                        <strong>AIEEBSS (AI for Elementary English Basic Skills Support)</strong>는 
+                        AI 기반 영어 읽기 평가 시스템입니다. 음성 인식과 인공지능을 활용하여 
+                        학생들의 영어 읽기 능력을 자동으로 평가하고 분석합니다.
+                    </p>
+                </div>
+
+                <div class="highlight">
+                    <h4>✨ 주요 특징</h4>
+                    <ul>
+                        <li><strong>6가지 DIBELS 테스트</strong>: 알파벳부터 이해력까지 단계별 평가</li>
+                        <li><strong>AI 음성 인식</strong>: OpenAI Whisper로 정확한 음성 전사</li>
+                        <li><strong>자동 채점</strong>: GPT-4o-mini를 활용한 지능형 평가</li>
+                        <li><strong>교사 대시보드</strong>: 담당 학생들의 결과를 한눈에 확인</li>
+                        <li><strong>EFL 환경 최적화</strong>: 한국 학생 발음 특성 반영</li>
+                    </ul>
+                </div>
+
+                <div class="info-box">
+                    <h4>💡 시스템 요구사항</h4>
+                    <ul>
+                        <li>최신 웹 브라우저 (Chrome, Edge, Safari 권장)</li>
+                        <li>마이크 권한 허용</li>
+                        <li>안정적인 인터넷 연결</li>
+                        <li>학생 계정 (교사가 발급)</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 학생 가이드 -->
+            <section id="student-guide" class="section">
+                <h2>👨‍🎓 학생 가이드</h2>
+
+                <h3>1. 로그인하기</h3>
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">1</span>
+                        <strong>웹사이트 접속</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        선생님이 제공한 웹사이트 주소로 접속합니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">2</span>
+                        <strong>이메일과 비밀번호 입력</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        선생님이 발급해준 이메일 주소와 비밀번호를 입력합니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">3</span>
+                        <strong>로비 페이지 확인</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        로그인 성공 시 "달빛 마법학교" 로비 페이지가 나타납니다. 
+                        여섯 가지 시험 과목을 확인할 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ 주의사항</strong>
+                    <ul>
+                        <li>비밀번호는 다른 사람과 공유하지 마세요</li>
+                        <li>로그아웃 후에는 반드시 브라우저를 닫아주세요</li>
+                    </ul>
+                </div>
+
+                <h3>2. 테스트 시작하기</h3>
+                
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">1</span>
+                        <strong>테스트 선택</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        로비 페이지에서 원하는 테스트를 클릭하거나, 
+                        <span class="button-demo">🎯 첫 번째 시험 시작하기</span> 버튼을 클릭합니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">2</span>
+                        <strong>마이크 권한 허용</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        브라우저에서 마이크 사용 권한을 요청하면 <strong>"허용"</strong>을 선택합니다.
+                        <span class="badge badge-student">필수</span>
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">3</span>
+                        <strong>시험 시작</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        <span class="button-demo">시험 시작하기</span> 버튼을 클릭합니다.
+                        마이크가 준비되지 않았다면 "마이크 준비 중..." 메시지가 표시됩니다.
+                    </p>
+                </div>
+
+                <h3>3. 테스트 진행 방법</h3>
+
+                <div class="test-card">
+                    <h4>🎤 음성 녹음 테스트 (p1, p4)</h4>
+                    <p><strong>예시:</strong> 알파벳 읽기, 단어 읽기</p>
+                    <ol>
+                        <li>화면에 나타나는 문자나 단어를 확인합니다</li>
+                        <li><span class="button-demo">녹음하기</span> 버튼을 클릭합니다</li>
+                        <li>명확하게 읽어줍니다 (최대 5초)</li>
+                        <li><span class="button-demo">녹음 끝내기</span> 버튼을 클릭합니다</li>
+                        <li>자동으로 다음 문제로 넘어갑니다</li>
+                    </ol>
+                    <div class="info-box">
+                        <strong>💡 팁:</strong> 스페이스바나 엔터키로도 녹음을 시작/중지할 수 있습니다.
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>🎧 듣기 테스트 (p2, p3)</h4>
+                    <p><strong>예시:</strong> 소리 구분, 강세 패턴</p>
+                    <ol>
+                        <li><span class="button-demo">🔊 재생</span> 버튼을 클릭하여 오디오를 듣습니다</li>
+                        <li>들려준 내용을 기억합니다</li>
+                        <li>정답이라고 생각하는 선택지를 클릭합니다</li>
+                        <li>자동으로 다음 문제로 넘어갑니다</li>
+                    </ol>
+                </div>
+
+                <div class="test-card">
+                    <h4>🖼️ 선택형 테스트 (p5, p6)</h4>
+                    <p><strong>예시:</strong> 그림 선택, 이해력 문제</p>
+                    <ol>
+                        <li>문제를 읽거나 오디오를 듣습니다</li>
+                        <li>정답이라고 생각하는 그림이나 선택지를 클릭합니다</li>
+                        <li>자동으로 다음 문제로 넘어갑니다</li>
+                    </ol>
+                </div>
+
+                <div class="highlight">
+                    <h4>⏱️ 시간 제한</h4>
+                    <ul>
+                        <li><strong>p1~p5:</strong> 각 1분 (60초)</li>
+                        <li><strong>p6:</strong> 3분 (180초)</li>
+                        <li>시간이 끝나면 자동으로 시험이 종료됩니다</li>
+                    </ul>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ 테스트 중 주의사항</strong>
+                    <ul>
+                        <li>조용한 환경에서 테스트를 진행하세요</li>
+                        <li>마이크에 가까이 말하되, 너무 크게 말하지 마세요</li>
+                        <li>문제를 넘어가고 싶다면 <span class="button-demo" style="background: #f97316;">⏭️ 넘어가기</span> 버튼을 사용하세요</li>
+                        <li>테스트 중에는 페이지를 새로고침하거나 닫지 마세요</li>
+                    </ul>
+                </div>
+
+                <h3>4. 결과 확인하기</h3>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">1</span>
+                        <strong>테스트 완료</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        모든 테스트를 완료하면 "시험 종료!" 메시지가 나타납니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">2</span>
+                        <strong>결과 페이지 접속</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        로비 페이지에서 <span class="button-demo" style="background: #10b981;">📊 이전 평가 결과 보기</span> 
+                        버튼을 클릭합니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">3</span>
+                        <strong>세션별 결과 확인</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        각 테스트 세션별로 정확도, 정답/오답 현황을 확인할 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="success">
+                    <strong>✅ 완료!</strong>
+                    <p>테스트 결과는 자동으로 저장되며, 선생님도 확인할 수 있습니다.</p>
+                </div>
+            </section>
+
+            <!-- 교사 가이드 -->
+            <section id="teacher-guide" class="section">
+                <h2>👩‍🏫 교사 가이드</h2>
+
+                <h3>1. 교사 대시보드 접속</h3>
+                
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">1</span>
+                        <strong>로그인</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        교사 계정으로 로그인합니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">2</span>
+                        <strong>대시보드 버튼 클릭</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        로비 페이지에서 <span class="button-demo" style="background: #8b5cf6;">🎓 교사 관리 대시보드</span> 
+                        버튼을 클릭합니다.
+                    </p>
+                </div>
+
+                <div class="info-box">
+                    <strong>💡 참고:</strong> 교사 계정은 관리자가 설정합니다. 
+                    교사 권한이 없다면 관리자에게 문의하세요.
+                </div>
+
+                <h3>2. 대시보드 주요 기능</h3>
+
+                <div class="two-column">
+                    <div class="test-card">
+                        <h4>📊 통계 요약</h4>
+                        <p>대시보드 상단에 다음 통계가 표시됩니다:</p>
+                        <ul>
+                            <li>총 학생 수</li>
+                            <li>담당 반 수</li>
+                            <li>전체 테스트 수</li>
+                            <li>평균 정확도</li>
+                        </ul>
+                    </div>
+
+                    <div class="test-card">
+                        <h4>👥 반별 학생 목록</h4>
+                        <p>담당 학생들이 반별로 그룹화되어 표시됩니다:</p>
+                        <ul>
+                            <li>학생 이름 및 번호</li>
+                            <li>완료한 테스트 수</li>
+                            <li>완료율 (%)</li>
+                            <li>평균 정확도 (%)</li>
+                            <li>마지막 테스트 날짜</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>3. 학생 상세 결과 확인</h3>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">1</span>
+                        <strong>학생 카드 클릭</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        대시보드에서 확인하고 싶은 학생의 카드를 클릭합니다.
+                    </p>
+                </div>
+
+                <div class="step-box">
+                    <div>
+                        <span class="step-number">2</span>
+                        <strong>상세 결과 페이지</strong>
+                    </div>
+                    <p style="margin-top: 0.75rem; margin-left: 3rem;">
+                        학생의 상세 평가 결과 페이지가 열립니다.
+                    </p>
+                </div>
+
+                <div class="test-card">
+                    <h4>📈 제공되는 정보</h4>
+                    <ul>
+                        <li><strong>전체 평가 현황:</strong> 6가지 테스트별 정확도 및 정답/오답 수</li>
+                        <li><strong>최근 테스트 결과:</strong> 개별 문제별 정답/오답 상세 내역</li>
+                        <li><strong>시각화 차트:</strong> 막대 차트, 레이더 차트로 역량 시각화</li>
+                        <li><strong>AI 평가 코멘트:</strong> 자동 생성된 종합 평가 및 개선 제안</li>
+                    </ul>
+                </div>
+
+                <h3>4. 교사 대시보드 추가 기능</h3>
+
+                <div class="test-card">
+                    <h4>📋 평가 문항 및 정답 확인</h4>
+                    <p>
+                        대시보드 상단의 <span class="button-demo" style="background: #3b82f6;">📋 평가 문항 및 정답 확인</span> 
+                        버튼을 클릭하면 각 테스트의 문항과 정답을 확인할 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="test-card">
+                    <h4>🤖 AI 문항 생성기</h4>
+                    <p>
+                        <span class="button-demo" style="background: #8b5cf6;">🤖 AI 문항 생성기</span> 
+                        버튼을 통해 새로운 평가 문항을 AI로 생성할 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="test-card">
+                    <h4>📚 교육과정 데이터</h4>
+                    <p>
+                        <span class="button-demo" style="background: #10b981;">📚 교육과정 데이터</span> 
+                        버튼으로 교육과정 관련 데이터를 관리할 수 있습니다.
+                    </p>
+                </div>
+
+                <div class="highlight">
+                    <h4>💡 활용 팁</h4>
+                    <ul>
+                        <li>정기적으로 대시보드를 확인하여 학생들의 진도를 파악하세요</li>
+                        <li>평균 정확도가 낮은 학생에게는 추가 지도가 필요할 수 있습니다</li>
+                        <li>완료율이 낮은 학생에게는 테스트 완료를 독려하세요</li>
+                        <li>AI 평가 코멘트를 참고하여 학생별 맞춤 지도 계획을 수립하세요</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 테스트 종류 -->
+            <section id="tests" class="section">
+                <h2>📚 6가지 테스트 종류</h2>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>테스트</th>
+                                <th>이름</th>
+                                <th>평가 내용</th>
+                                <th>시간</th>
+                                <th>방식</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>p1</strong></td>
+                                <td>고대 룬 문자 해독<br>(Letter Naming)</td>
+                                <td>알파벳 대소문자 이름 인식 속도</td>
+                                <td>1분</td>
+                                <td>음성 녹음</td>
+                            </tr>
+                            <tr>
+                                <td><strong>p2</strong></td>
+                                <td>소리의 원소 분리<br>(Segmental Phoneme)</td>
+                                <td>비슷한 소리를 듣고 구분하는 능력</td>
+                                <td>1분</td>
+                                <td>듣기 + 선택</td>
+                            </tr>
+                            <tr>
+                                <td><strong>p3</strong></td>
+                                <td>마법 리듬 패턴<br>(Suprasegmental Phoneme)</td>
+                                <td>단어의 강세 패턴을 듣고 선택</td>
+                                <td>1분</td>
+                                <td>듣기 + 선택</td>
+                            </tr>
+                            <tr>
+                                <td><strong>p4</strong></td>
+                                <td>마법 주문 읽기<br>(Phonics)</td>
+                                <td>무의미 단어, 실제 단어, 문장 읽기</td>
+                                <td>1분</td>
+                                <td>음성 녹음</td>
+                            </tr>
+                            <tr>
+                                <td><strong>p5</strong></td>
+                                <td>마법서 그림 해석<br>(Vocabulary)</td>
+                                <td>단어나 구문의 의미를 그림으로 선택</td>
+                                <td>1분</td>
+                                <td>듣기/읽기 + 선택</td>
+                            </tr>
+                            <tr>
+                                <td><strong>p6</strong></td>
+                                <td>고대 전설 이해<br>(Comprehension)</td>
+                                <td>이야기를 듣고/읽고 질문에 답하기</td>
+                                <td>3분</td>
+                                <td>듣기/읽기 + 선택</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="test-card">
+                    <h4>🎯 테스트 순서</h4>
+                    <p>
+                        테스트는 p1부터 p6까지 순서대로 진행하는 것을 권장하지만, 
+                        원하는 테스트를 선택하여 진행할 수도 있습니다.
+                    </p>
+                </div>
+
+                <div class="info-box">
+                    <strong>📖 DIBELS 기반 평가</strong>
+                    <p>
+                        모든 테스트는 DIBELS 8th Edition을 기반으로 하며, 
+                        영어 읽기 능력을 단계별로 종합적으로 평가합니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- FAQ -->
+            <section id="faq" class="section">
+                <h2>❓ 자주 묻는 질문 (FAQ)</h2>
+
+                <div class="test-card">
+                    <h4>Q1. 마이크가 작동하지 않아요</h4>
+                    <div class="info-box">
+                        <strong>해결 방법:</strong>
+                        <ol>
+                            <li>브라우저 설정에서 마이크 권한을 확인하세요</li>
+                            <li>다른 프로그램이 마이크를 사용 중인지 확인하세요</li>
+                            <li>브라우저를 재시작한 후 다시 시도하세요</li>
+                            <li>Chrome 또는 Edge 브라우저 사용을 권장합니다</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>Q2. 테스트 중 오디오가 재생되지 않아요</h4>
+                    <div class="info-box">
+                        <strong>해결 방법:</strong>
+                        <ol>
+                            <li>스피커 볼륨을 확인하세요</li>
+                            <li>브라우저에서 오디오 자동 재생이 허용되어 있는지 확인하세요</li>
+                            <li>다른 탭에서 오디오가 재생 중인지 확인하세요</li>
+                            <li>페이지를 새로고침한 후 다시 시도하세요</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>Q3. 테스트 결과가 저장되지 않았어요</h4>
+                    <div class="info-box">
+                        <strong>확인 사항:</strong>
+                        <ol>
+                            <li>인터넷 연결 상태를 확인하세요</li>
+                            <li>테스트를 완료했는지 확인하세요 (시간이 끝나거나 모든 문제를 풀었는지)</li>
+                            <li>결과 페이지에서 세션 목록을 확인하세요</li>
+                            <li>문제가 계속되면 선생님에게 문의하세요</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>Q4. 교사 대시보드에 학생이 보이지 않아요</h4>
+                    <div class="info-box">
+                        <strong>확인 사항:</strong>
+                        <ol>
+                            <li>교사 계정으로 로그인했는지 확인하세요</li>
+                            <li>학생이 테스트를 완료했는지 확인하세요</li>
+                            <li>학생이 올바르게 배정되었는지 관리자에게 확인하세요</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>Q5. 테스트를 중간에 중단할 수 있나요?</h4>
+                    <div class="info-box">
+                        <p>
+                            네, 가능합니다. 테스트 중에 <span class="button-demo" style="background: rgba(108, 117, 125, 0.8);">🏠 홈으로 가기</span> 
+                            버튼을 클릭하면 로비로 돌아갈 수 있습니다. 
+                            다만, 중단한 테스트의 결과는 저장되지 않을 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>Q6. 같은 테스트를 여러 번 할 수 있나요?</h4>
+                    <div class="info-box">
+                        <p>
+                            네, 가능합니다. 같은 테스트를 여러 번 진행할 수 있으며, 
+                            각 시도는 별도의 세션으로 저장됩니다. 
+                            선생님은 모든 세션의 결과를 확인할 수 있습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>Q7. 테스트 결과는 어떻게 확인하나요?</h4>
+                    <div class="info-box">
+                        <p>
+                            <strong>학생:</strong> 로비 페이지의 "이전 평가 결과 보기" 버튼 클릭<br>
+                            <strong>교사:</strong> 대시보드에서 학생 카드 클릭하여 상세 결과 확인
+                        </p>
+                    </div>
+                </div>
+
+                <div class="warning">
+                    <strong>⚠️ 추가 도움이 필요하신가요?</strong>
+                    <p>
+                        문제가 해결되지 않거나 추가 도움이 필요하시면 
+                        관리자나 시스템 담당자에게 문의하세요.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 마무리 -->
+            <section class="section">
+                <div class="success" style="text-align: center; padding: 2rem;">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">🎉 수고하셨습니다!</h3>
+                    <p style="font-size: 1.1rem;">
+                        이 가이드를 참고하여 AIEEBSS를 효과적으로 활용하시기 바랍니다.<br>
+                        궁금한 점이 있으시면 언제든지 문의해주세요.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <div style="background: #f9fafb; padding: 2rem; text-align: center; border-top: 2px solid #e5e7eb; color: #6b7280;">
+            <p>© 2025 AIEEBSS - AI 기반 영어 읽기 평가 시스템</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                이 가이드는 시스템 업데이트에 따라 변경될 수 있습니다.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+
