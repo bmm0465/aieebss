@@ -11,7 +11,7 @@ export interface ProcessedResults {
   p1_alphabet: { correct: number; total: number; accuracy: number };
   p2_segmental_phoneme: { correct: number; total: number; accuracy: number };
   p3_suprasegmental_phoneme: { correct: number; total: number; accuracy: number };
-  p4_phonics: { correct: number; total: number; accuracy: number; total_wcpm?: number; total_accuracy?: number; avg_wcpm?: number; avg_accuracy?: number };
+  p4_phonics: { correct: number; total: number; accuracy: number; total_wcpm: number; total_accuracy: number; avg_wcpm: number; avg_accuracy: number };
   p5_vocabulary: { correct: number; total: number; accuracy: number };
   p6_comprehension: { correct: number; total: number; accuracy: number };
 }
@@ -141,8 +141,8 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
             >
                 <h3>{testInfo.p4_phonics.title}</h3>
                 <p>파닉스 규칙 적용 및 유창성: <strong>{results.p4_phonics.accuracy.toFixed(1)}%</strong></p>
-                {results.p4_phonics.avg_wcpm !== undefined && <p>평균 WCPM: <strong>{results.p4_phonics.avg_wcpm.toFixed(0)}</strong></p>}
-                {results.p4_phonics.avg_accuracy !== undefined && <p>평균 정확도: <strong>{results.p4_phonics.avg_accuracy.toFixed(1)}%</strong></p>}
+                {results.p4_phonics.avg_wcpm > 0 && <p>평균 WCPM: <strong>{results.p4_phonics.avg_wcpm.toFixed(0)}</strong></p>}
+                {results.p4_phonics.avg_accuracy > 0 && <p>평균 정확도: <strong>{results.p4_phonics.avg_accuracy.toFixed(1)}%</strong></p>}
                 {sessionId && <small style={{ color: '#6366f1', fontSize: '0.85rem', fontWeight: '500' }}>💡 클릭하여 음성 결과 확인</small>}
             </div>
             {/* p5_vocabulary */}

@@ -65,9 +65,9 @@ const calculateResults = (results: TestResult[]): ProcessedResults => {
   if (summary.p3_suprasegmental_phoneme.total > 0) summary.p3_suprasegmental_phoneme.accuracy = (summary.p3_suprasegmental_phoneme.correct / summary.p3_suprasegmental_phoneme.total) * 100;
   if (summary.p4_phonics.total > 0) {
     summary.p4_phonics.accuracy = (summary.p4_phonics.correct / summary.p4_phonics.total) * 100;
-    if (summary.p4_phonics.total_wcpm && summary.p4_phonics.total_wcpm > 0) {
+    if (summary.p4_phonics.total_wcpm > 0) {
       summary.p4_phonics.avg_wcpm = summary.p4_phonics.total_wcpm / summary.p4_phonics.total;
-      summary.p4_phonics.avg_accuracy = (summary.p4_phonics.total_accuracy! / summary.p4_phonics.total) * 100;
+      summary.p4_phonics.avg_accuracy = (summary.p4_phonics.total_accuracy / summary.p4_phonics.total) * 100;
     }
   }
   if (summary.p5_vocabulary.total > 0) summary.p5_vocabulary.accuracy = (summary.p5_vocabulary.correct / summary.p5_vocabulary.total) * 100;
