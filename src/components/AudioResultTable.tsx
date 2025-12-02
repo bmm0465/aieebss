@@ -60,72 +60,62 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
       // 선택형 테스트(p2_segmental_phoneme, p3_suprasegmental_phoneme, p5_vocabulary, p6_comprehension)는 audio_url이 없으므로 필터 제거
       const isChoiceTest = choiceTests.includes(testType);
       
-      let query = supabase
-        .from('test_results')
-        .select('*')
-        .eq('test_type', testType)
-        .order('created_at', { ascending: false });
-      
-      // 음성 파일이 있는 테스트만 audio_url 필터 적용
-      if (!isChoiceTest) {
-        query = query.not('audio_url', 'is', null);
-      }
+      let filteredData: AudioResult[] | null = null;
 
       if (sessionId) {
-        // 세션별 결과 조회
+        // 세션별 결과 조회 - 먼저 모든 test_type의 결과를 가져온 후 세션 필터링
         const { data: { user }, error: userError } = await supabase.auth.getUser();
         if (userError || !user) throw new Error('인증이 필요합니다.');
         
         const [dateStr] = sessionId.split('_');
         const sessionDate = new Date(dateStr);
         
-        // 먼저 해당 날짜의 모든 결과를 가져온 후 클라이언트에서 필터링
-        query = query
+        // 먼저 해당 날짜의 모든 결과를 가져옴 (test_type 필터링 없이)
+        const { data: allData, error: fetchError } = await supabase
+          .from('test_results')
+          .select('*')
           .eq('user_id', user.id)
           .gte('created_at', sessionDate.toISOString().split('T')[0])
-          .lt('created_at', new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0]);
-      } else if (studentId) {
-        // 교사가 특정 학생의 결과 조회
-        query = query.eq('user_id', studentId);
-      } else {
-        // 현재 로그인한 사용자의 결과 조회
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) throw new Error('인증이 필요합니다.');
-        query = query.eq('user_id', user.id);
-      }
+          .lt('created_at', new Date(sessionDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0])
+          .order('created_at', { ascending: false });
 
-      const { data, error: fetchError } = await query;
-
-      if (fetchError) throw fetchError;
-      
-      let filteredData = data;
-      
-      // 세션 필터링이 필요한 경우 클라이언트에서 처리
-      if (sessionId && filteredData) {
+        if (fetchError) throw fetchError;
+        
+        // 세션 필터링 (모든 test_type 포함)
         const [, sessionNumStr] = sessionId.split('_');
         const sessionNumber = parseInt(sessionNumStr || '0');
         
         // 시간순으로 정렬
-        const sortedData = [...filteredData].sort((a, b) => 
+        const sortedData = [...(allData || [])].sort((a, b) => 
           new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
         );
         
-        // 30분 간격으로 세션 구분
-        const sessionGroups: typeof filteredData[] = [];
-        let currentGroup: typeof filteredData = [];
+        // 세션 구분: 같은 test_type 내에서는 10분, 다른 test_type으로 변경되거나 30분 이상 차이면 새로운 세션
+        const sessionGroups: (typeof allData)[] = [];
+        let currentGroup: typeof allData = [];
         let lastTime = 0;
+        let lastTestType = '';
         
         sortedData.forEach(result => {
           const resultTime = new Date(result.created_at || 0).getTime();
+          const currentTestType = result.test_type || '';
           
-          // 30분(1800000ms) 이상 차이나면 새로운 세션
-          if (resultTime - lastTime > 1800000 && currentGroup.length > 0) {
+          const timeGap = resultTime - lastTime;
+          const isSameTestType = currentTestType === lastTestType;
+          
+          // 같은 test_type 내에서는 10분(600000ms), 다른 test_type으로 변경되거나 30분(1800000ms) 이상 차이면 새로운 세션
+          const shouldStartNewSession = (isSameTestType && timeGap > 600000 && currentGroup.length > 0) ||
+                                        (!isSameTestType && timeGap > 1800000 && currentGroup.length > 0);
+          
+          if (shouldStartNewSession) {
             sessionGroups.push(currentGroup);
             currentGroup = [];
+            lastTime = 0; // 새로운 그룹 시작 시 초기화
           }
           
           currentGroup.push(result);
           lastTime = resultTime;
+          lastTestType = currentTestType;
         });
         
         if (currentGroup.length > 0) {
@@ -133,7 +123,36 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
         }
         
         // 요청된 세션 번호의 결과 사용
-        filteredData = sessionGroups[sessionNumber] || [];
+        const sessionResults = sessionGroups[sessionNumber] || [];
+        
+        // 세션 필터링 후 특정 test_type만 필터링
+        filteredData = sessionResults.filter(result => result.test_type === testType) as AudioResult[];
+      } else {
+        // 세션이 없는 경우 - 바로 test_type으로 필터링
+        let query = supabase
+          .from('test_results')
+          .select('*')
+          .eq('test_type', testType)
+          .order('created_at', { ascending: false });
+        
+        // 음성 파일이 있는 테스트만 audio_url 필터 적용
+        if (!isChoiceTest) {
+          query = query.not('audio_url', 'is', null);
+        }
+
+        if (studentId) {
+          // 교사가 특정 학생의 결과 조회
+          query = query.eq('user_id', studentId);
+        } else {
+          // 현재 로그인한 사용자의 결과 조회
+          const { data: { user }, error: userError } = await supabase.auth.getUser();
+          if (userError || !user) throw new Error('인증이 필요합니다.');
+          query = query.eq('user_id', user.id);
+        }
+
+        const { data, error: fetchError } = await query;
+        if (fetchError) throw fetchError;
+        filteredData = data as AudioResult[];
       }
       
       console.log('[AudioResultTable] 조회된 결과:', filteredData?.length || 0, '개');
@@ -649,40 +668,41 @@ function AudioPlayer({
               // Signed URL 실패 시 Public URL 시도
               console.log('[AudioPlayer] Signed URL 실패, Public URL 시도:', signedError?.message);
               
-              const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/student-recordings/${tryPath}`;
-              
-              // Public URL이 실제로 작동하는지 확인
-              try {
-                const response = await fetch(publicUrl, { method: 'HEAD' });
-                if (response.ok) {
-                  console.log('[AudioPlayer] ✅ Public URL 성공:', publicUrl);
-                  setAudioUrl(publicUrl);
-                  setError(null);
-                  setLoading(false);
-                  foundValidPath = true;
-                  return;
-                } else {
-                  console.log('[AudioPlayer] ❌ Public URL 실패:', response.status);
-                  lastError = `Public URL failed: ${response.status}`;
+              // Public URL 생성 (NEXT_PUBLIC_SUPABASE_URL 환경변수 사용)
+              const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+              if (supabaseUrl) {
+                const publicUrl = `${supabaseUrl}/storage/v1/object/public/student-recordings/${tryPath}`;
+                
+                // Public URL이 실제로 작동하는지 확인 (HEAD 요청)
+                try {
+                  const response = await fetch(publicUrl, { method: 'HEAD' });
+                  if (response.ok) {
+                    console.log('[AudioPlayer] ✅ Public URL 성공:', publicUrl);
+                    setAudioUrl(publicUrl);
+                    setError(null);
+                    setLoading(false);
+                    foundValidPath = true;
+                    return;
+                  } else {
+                    console.log('[AudioPlayer] ❌ Public URL 실패:', response.status, response.statusText);
+                    lastError = `Public URL failed: ${response.status} ${response.statusText}`;
+                  }
+                } catch (fetchError) {
+                  console.log('[AudioPlayer] ❌ Public URL fetch 실패:', fetchError);
+                  lastError = `Public URL fetch failed: ${fetchError instanceof Error ? fetchError.message : String(fetchError)}`;
                 }
-              } catch (fetchError) {
-                console.log('[AudioPlayer] ❌ Public URL fetch 실패:', fetchError);
-                lastError = `Public URL fetch failed: ${fetchError}`;
+              } else {
+                console.warn('[AudioPlayer] NEXT_PUBLIC_SUPABASE_URL 환경변수가 설정되지 않음');
+                lastError = 'NEXT_PUBLIC_SUPABASE_URL not configured';
               }
               
               lastError = signedError?.message || lastError || 'Unknown error';
               console.log('[AudioPlayer] ❌ 경로 실패:', tryPath, lastError);
               
-              // 기존 형식의 첫 번째 시도가 실패한 경우, 다른 경로들을 계속 시도
-              if (i === 0 && isOldFormat) {
-                console.log('[AudioPlayer] 기존 형식 첫 번째 시도 실패, 다른 경로들을 계속 시도');
+              // 첫 번째 시도가 실패한 경우, 다른 경로들을 계속 시도
+              if (i === 0) {
+                console.log('[AudioPlayer] 첫 번째 시도 실패, 다른 경로들을 계속 시도');
                 continue;
-              }
-              
-              // 새로운 형식의 첫 번째 시도가 실패한 경우, 조기 종료
-              if (i === 0 && !isOldFormat) {
-                console.log('[AudioPlayer] 새로운 형식 첫 번째 시도 실패, 조기 종료');
-                break;
               }
             }
           } catch (tryError) {

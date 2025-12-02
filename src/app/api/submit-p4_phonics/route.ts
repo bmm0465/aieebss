@@ -5,7 +5,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import {
   hasHesitation,
 } from '@/lib/utils/dibelsTranscription';
-import { transcribeAll, getPrimaryTranscription } from '@/lib/services/transcriptionService';
+import { transcribeWithOpenAI } from '@/lib/services/transcriptionAdapters/openaiAdapter';
 
 const HESITATION_THRESHOLD_SECONDS = 5;
 
@@ -44,14 +44,14 @@ async function processReadingInBackground(
 
     const storagePath = await generateStoragePath(userId, testType);
 
-    const [storageResult, allTranscriptions] = await Promise.all([
+    const [storageResult, transcriptionData] = await Promise.all([
       supabase.storage
         .from('student-recordings')
         .upload(storagePath, arrayBuffer, {
           contentType: 'audio/webm',
           upsert: false,
         }),
-      transcribeAll(arrayBuffer, {
+      transcribeWithOpenAI(arrayBuffer, {
         language: 'en',
         prompt: `This is a reading fluency test for Korean EFL students. The student will read ${testType === 'nwf' ? 'a nonsense word' : testType === 'wrf' ? 'a real word' : 'a sentence'}.
 
@@ -67,12 +67,6 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
     if (storageError) throw storageError;
     const audioUrl = storageData.path;
 
-    // Use OpenAI result as primary for backward compatibility
-    const transcriptionData = getPrimaryTranscription(allTranscriptions);
-    if (!transcriptionData) {
-      throw new Error('OpenAI transcription failed - primary transcription is required');
-    }
-
     const timeline = transcriptionData.timeline;
     const studentAnswer = transcriptionData.text?.trim() || 'no_response';
     const hesitationDetected = hasHesitation(timeline, HESITATION_THRESHOLD_SECONDS);
@@ -80,36 +74,13 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
     // 간단한 정확도 평가
     const isCorrect = !hesitationDetected && studentAnswer.toLowerCase().includes(question.toLowerCase().split(' ')[0]);
 
-    // Prepare transcription_results JSONB data
+    // Prepare transcription_results JSONB data (OpenAI only)
     const transcriptionResults = {
-      openai: allTranscriptions.openai.success && allTranscriptions.openai.result
-        ? {
-            text: allTranscriptions.openai.result.text,
-            confidence: allTranscriptions.openai.result.confidence,
-            timeline: allTranscriptions.openai.result.timeline,
-          }
-        : { error: allTranscriptions.openai.error },
-      gemini: allTranscriptions.gemini.success && allTranscriptions.gemini.result
-        ? {
-            text: allTranscriptions.gemini.result.text,
-            confidence: allTranscriptions.gemini.result.confidence,
-            timeline: allTranscriptions.gemini.result.timeline,
-          }
-        : { error: allTranscriptions.gemini.error },
-      aws: allTranscriptions.aws.success && allTranscriptions.aws.result
-        ? {
-            text: allTranscriptions.aws.result.text,
-            confidence: allTranscriptions.aws.result.confidence,
-            timeline: allTranscriptions.aws.result.timeline,
-          }
-        : { error: allTranscriptions.aws.error },
-      azure: allTranscriptions.azure.success && allTranscriptions.azure.result
-        ? {
-            text: allTranscriptions.azure.result.text,
-            confidence: allTranscriptions.azure.result.confidence,
-            timeline: allTranscriptions.azure.result.timeline,
-          }
-        : { error: allTranscriptions.azure.error },
+      openai: {
+        text: transcriptionData.text,
+        confidence: transcriptionData.confidence,
+        timeline: transcriptionData.timeline,
+      },
     };
 
     await supabase.from('test_results').insert({
