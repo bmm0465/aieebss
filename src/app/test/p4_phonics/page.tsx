@@ -121,10 +121,6 @@ export default function ReadingTestPage() {
             setOrfSentences(getFixedSentences().slice(0, 5));
           }
         }
-        
-        // 기존 코드 유지 (하위 호환성)
-        const orfItems = null;
-        // orfItems는 위에서 처리됨
       } catch (error) {
         console.error('[Reading] 문항 로딩 오류, 기본 문항 사용:', error);
         setNwfWords(getFixedNonsenseWords());
