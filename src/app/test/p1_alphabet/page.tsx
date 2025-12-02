@@ -6,22 +6,26 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-// [폴백] LNF 표준 규격에 맞는 100개 고정된 알파벳 문항
+// [폴백] 테스트용 알파벳 목록: 대문자 A~Z 26개, 소문자 a~z 26개 (총 52개)
 const getFixedAlphabet = () => {
-    // LNF 표준: 100개 알파벳, 대소문자 균형, 빈도 반영, 특정 문자 제외 (W, 소문자 l)
+    // 1번: 대문자 I (아이), 2번: 소문자 l (엘) - 폰트 구분 확인용
+    // 나머지: 대문자 A~Z (I 제외), 소문자 a~z (l 제외)
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''); // I 포함
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz'.split(''); // l 포함
+    
+    // I와 l을 제외한 나머지 대소문자
+    const uppercaseWithoutI = uppercase.filter(letter => letter !== 'I');
+    const lowercaseWithoutL = lowercase.filter(letter => letter !== 'l');
+    
+    // 순서: I(1번), l(2번), 나머지 대문자, 나머지 소문자
     const fixedLetters = [
-        'T', 'a', 'S', 'o', 'r', 'E', 'i', 'n', 'D', 'h',
-        'f', 'P', 'm', 'C', 'u', 'L', 'd', 'G', 'H', 'R',
-        's', 'N', 'I', 'O', 'A', 'e', 'T', 'c', 'b', 'F',
-        'v', 'p', 'Y', 'k', 'g', 'M', 'u', 'a', 'R', 'I',
-        'E', 'S', 'd', 'o', 'T', 'j', 'n', 'q', 'C', 'b',
-        'h', 'L', 'A', 'P', 'r', 'f', 'e', 'K', 'V', 'z',
-        'O', 't', 'i', 's', 'N', 'G', 'c', 'u', 'M', 'D',
-        'a', 'E', 'H', 'k', 'Y', 'r', 'T', 'B', 'p', 'F',
-        'g', 'v', 'I', 'o', 'e', 'n', 's', 'L', 'J', 'q',
-        'x', 'C', 'a', 'P', 'd', 'R', 'i', 'A', 'm', 'U'
+        'I', // 1번: 대문자 아이
+        'l', // 2번: 소문자 엘
+        ...uppercaseWithoutI, // 3~28번: 나머지 대문자 (25개)
+        ...lowercaseWithoutL  // 29~52번: 나머지 소문자 (25개)
     ];
-    return fixedLetters;
+    
+    return fixedLetters; // 총 52개: I, l, 대문자 25개, 소문자 25개
 };
 
 export default function LnfTestPage() {
@@ -327,7 +331,7 @@ export default function LnfTestPage() {
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-nanum-pen)', fontSize: '2.8rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 'bold' };
   const paragraphStyle: React.CSSProperties = { fontSize: '1.05rem', lineHeight: 1.8, color: '#4b5563', marginBottom: '2.5rem' };
   const buttonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '16px 24px', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '1.1rem', textAlign: 'center', transition: 'all 0.3s ease', boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)' };
-  const letterBoxStyle: React.CSSProperties = { fontSize: '12rem', fontWeight: 'bold', margin: '2rem 0', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'var(--font-lexend)' };
+  const letterBoxStyle: React.CSSProperties = { fontSize: '12rem', fontWeight: 'bold', margin: '2rem 0', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'Verdana, Tahoma, sans-serif' };
   const feedbackStyle: React.CSSProperties = { minHeight: '2.5em', fontSize: '1.05rem', color: '#1f2937', padding: '0 1rem', transition: 'color 0.3s', fontWeight: '500' };
   const timerStyle: React.CSSProperties = { fontSize: '1.75rem', color: '#6366f1', marginBottom: '1rem', fontFamily: 'monospace', fontWeight: '600' };
   
