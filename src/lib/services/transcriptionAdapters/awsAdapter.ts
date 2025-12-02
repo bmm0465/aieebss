@@ -71,7 +71,7 @@ export async function transcribeWithAWS(
       LanguageCode: languageCode,
       Settings: {
         ShowSpeakerLabels: false,
-        MaxAlternatives: 1,
+        MaxAlternatives: 2, // AWS requires minimum value of 2
       },
     });
 
@@ -180,7 +180,7 @@ export async function transcribeWithAWSS3(
     LanguageCode: languageCode,
     Settings: {
       ShowSpeakerLabels: false,
-      MaxAlternatives: 1,
+      MaxAlternatives: 2, // AWS requires minimum value of 2
     },
   });
 
