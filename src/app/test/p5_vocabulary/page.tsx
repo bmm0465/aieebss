@@ -788,7 +788,16 @@ export default function MeaningTestPage() {
                   color: 'white',
                   fontSize: '1rem',
                 }}
-                onClick={() => router.push('/lobby')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    router.push('/lobby');
+                  } catch (error) {
+                    console.error('[p5_vocabulary] 라우터 오류:', error);
+                    window.location.href = '/lobby';
+                  }
+                }}
               >
                 🏠 홈으로 가기
               </button>
@@ -797,18 +806,38 @@ export default function MeaningTestPage() {
         )}
 
         {phase === 'testing' && (
-          <div style={{ marginTop: '2rem' }}>
+          <div style={{ marginTop: '2rem', textAlign: 'center' }}>
             <button
               style={{
-                backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                backgroundColor: 'rgba(108, 117, 125, 0.8)',
                 color: 'white',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 padding: '0.7rem 1.5rem',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '0.9rem',
+                fontWeight: '500',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
-              onClick={() => router.push('/lobby')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  router.push('/lobby');
+                } catch (error) {
+                  console.error('[p5_vocabulary] 라우터 오류:', error);
+                  window.location.href = '/lobby';
+                }
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(108, 117, 125, 1)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(108, 117, 125, 0.8)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
             >
               🏠 홈으로 가기
             </button>
