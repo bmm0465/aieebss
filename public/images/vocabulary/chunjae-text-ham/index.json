@@ -1,15 +1,7 @@
 [
   {
-    "word": "and",
-    "file": "/images/vocabulary/chunjae-text-ham/and.png"
-  },
-  {
     "word": "apple",
     "file": "/images/vocabulary/chunjae-text-ham/apple.png"
-  },
-  {
-    "word": "at",
-    "file": "/images/vocabulary/chunjae-text-ham/at.png"
   },
   {
     "word": "ball",
@@ -18,5 +10,385 @@
   {
     "word": "banana",
     "file": "/images/vocabulary/chunjae-text-ham/banana.png"
+  },
+  {
+    "word": "big",
+    "file": "/images/vocabulary/chunjae-text-ham/big.png"
+  },
+  {
+    "word": "bike",
+    "file": "/images/vocabulary/chunjae-text-ham/bike.png"
+  },
+  {
+    "word": "bird",
+    "file": "/images/vocabulary/chunjae-text-ham/bird.png"
+  },
+  {
+    "word": "black",
+    "file": "/images/vocabulary/chunjae-text-ham/black.png"
+  },
+  {
+    "word": "blue",
+    "file": "/images/vocabulary/chunjae-text-ham/blue.png"
+  },
+  {
+    "word": "book",
+    "file": "/images/vocabulary/chunjae-text-ham/book.png"
+  },
+  {
+    "word": "brother",
+    "file": "/images/vocabulary/chunjae-text-ham/brother.png"
+  },
+  {
+    "word": "brush",
+    "file": "/images/vocabulary/chunjae-text-ham/brush.png"
+  },
+  {
+    "word": "carrot",
+    "file": "/images/vocabulary/chunjae-text-ham/carrot.png"
+  },
+  {
+    "word": "cat",
+    "file": "/images/vocabulary/chunjae-text-ham/cat.png"
+  },
+  {
+    "word": "cheese",
+    "file": "/images/vocabulary/chunjae-text-ham/cheese.png"
+  },
+  {
+    "word": "chicken",
+    "file": "/images/vocabulary/chunjae-text-ham/chicken.png"
+  },
+  {
+    "word": "close",
+    "file": "/images/vocabulary/chunjae-text-ham/close.png"
+  },
+  {
+    "word": "color",
+    "file": "/images/vocabulary/chunjae-text-ham/color.png"
+  },
+  {
+    "word": "come",
+    "file": "/images/vocabulary/chunjae-text-ham/come.png"
+  },
+  {
+    "word": "cow",
+    "file": "/images/vocabulary/chunjae-text-ham/cow.png"
+  },
+  {
+    "word": "cup",
+    "file": "/images/vocabulary/chunjae-text-ham/cup.png"
+  },
+  {
+    "word": "dad",
+    "file": "/images/vocabulary/chunjae-text-ham/dad.png"
+  },
+  {
+    "word": "dance",
+    "file": "/images/vocabulary/chunjae-text-ham/dance.png"
+  },
+  {
+    "word": "dog",
+    "file": "/images/vocabulary/chunjae-text-ham/dog.png"
+  },
+  {
+    "word": "doll",
+    "file": "/images/vocabulary/chunjae-text-ham/doll.png"
+  },
+  {
+    "word": "door",
+    "file": "/images/vocabulary/chunjae-text-ham/door.png"
+  },
+  {
+    "word": "egg",
+    "file": "/images/vocabulary/chunjae-text-ham/egg.png"
+  },
+  {
+    "word": "eight",
+    "file": "/images/vocabulary/chunjae-text-ham/eight.png"
+  },
+  {
+    "word": "elephant",
+    "file": "/images/vocabulary/chunjae-text-ham/elephant.png"
+  },
+  {
+    "word": "eraser",
+    "file": "/images/vocabulary/chunjae-text-ham/eraser.png"
+  },
+  {
+    "word": "fine",
+    "file": "/images/vocabulary/chunjae-text-ham/fine.png"
+  },
+  {
+    "word": "five",
+    "file": "/images/vocabulary/chunjae-text-ham/five.png"
+  },
+  {
+    "word": "flower",
+    "file": "/images/vocabulary/chunjae-text-ham/flower.png"
+  },
+  {
+    "word": "four",
+    "file": "/images/vocabulary/chunjae-text-ham/four.png"
+  },
+  {
+    "word": "game",
+    "file": "/images/vocabulary/chunjae-text-ham/game.png"
+  },
+  {
+    "word": "go",
+    "file": "/images/vocabulary/chunjae-text-ham/go.png"
+  },
+  {
+    "word": "good",
+    "file": "/images/vocabulary/chunjae-text-ham/good.png"
+  },
+  {
+    "word": "grandfather",
+    "file": "/images/vocabulary/chunjae-text-ham/grandfather.png"
+  },
+  {
+    "word": "grandmother",
+    "file": "/images/vocabulary/chunjae-text-ham/grandmother.png"
+  },
+  {
+    "word": "great",
+    "file": "/images/vocabulary/chunjae-text-ham/great.png"
+  },
+  {
+    "word": "green",
+    "file": "/images/vocabulary/chunjae-text-ham/green.png"
+  },
+  {
+    "word": "hand",
+    "file": "/images/vocabulary/chunjae-text-ham/hand.png"
+  },
+  {
+    "word": "hat",
+    "file": "/images/vocabulary/chunjae-text-ham/hat.png"
+  },
+  {
+    "word": "helmet",
+    "file": "/images/vocabulary/chunjae-text-ham/helmet.png"
+  },
+  {
+    "word": "high",
+    "file": "/images/vocabulary/chunjae-text-ham/high.png"
+  },
+  {
+    "word": "juice",
+    "file": "/images/vocabulary/chunjae-text-ham/juice.png"
+  },
+  {
+    "word": "jump",
+    "file": "/images/vocabulary/chunjae-text-ham/jump.png"
+  },
+  {
+    "word": "king",
+    "file": "/images/vocabulary/chunjae-text-ham/king.png"
+  },
+  {
+    "word": "like",
+    "file": "/images/vocabulary/chunjae-text-ham/like.png"
+  },
+  {
+    "word": "lion",
+    "file": "/images/vocabulary/chunjae-text-ham/lion.png"
+  },
+  {
+    "word": "look",
+    "file": "/images/vocabulary/chunjae-text-ham/look.png"
+  },
+  {
+    "word": "many",
+    "file": "/images/vocabulary/chunjae-text-ham/many.png"
+  },
+  {
+    "word": "mom",
+    "file": "/images/vocabulary/chunjae-text-ham/mom.png"
+  },
+  {
+    "word": "monkey",
+    "file": "/images/vocabulary/chunjae-text-ham/monkey.png"
+  },
+  {
+    "word": "nice",
+    "file": "/images/vocabulary/chunjae-text-ham/nice.png"
+  },
+  {
+    "word": "nine",
+    "file": "/images/vocabulary/chunjae-text-ham/nine.png"
+  },
+  {
+    "word": "one",
+    "file": "/images/vocabulary/chunjae-text-ham/one.png"
+  },
+  {
+    "word": "open",
+    "file": "/images/vocabulary/chunjae-text-ham/open.png"
+  },
+  {
+    "word": "orange",
+    "file": "/images/vocabulary/chunjae-text-ham/orange.png"
+  },
+  {
+    "word": "pen",
+    "file": "/images/vocabulary/chunjae-text-ham/pen.png"
+  },
+  {
+    "word": "pencil",
+    "file": "/images/vocabulary/chunjae-text-ham/pencil.png"
+  },
+  {
+    "word": "pig",
+    "file": "/images/vocabulary/chunjae-text-ham/pig.png"
+  },
+  {
+    "word": "pink",
+    "file": "/images/vocabulary/chunjae-text-ham/pink.png"
+  },
+  {
+    "word": "pizza",
+    "file": "/images/vocabulary/chunjae-text-ham/pizza.png"
+  },
+  {
+    "word": "potato",
+    "file": "/images/vocabulary/chunjae-text-ham/potato.png"
+  },
+  {
+    "word": "pretty",
+    "file": "/images/vocabulary/chunjae-text-ham/pretty.png"
+  },
+  {
+    "word": "queen",
+    "file": "/images/vocabulary/chunjae-text-ham/queen.png"
+  },
+  {
+    "word": "ready",
+    "file": "/images/vocabulary/chunjae-text-ham/ready.png"
+  },
+  {
+    "word": "red",
+    "file": "/images/vocabulary/chunjae-text-ham/red.png"
+  },
+  {
+    "word": "right",
+    "file": "/images/vocabulary/chunjae-text-ham/right.png"
+  },
+  {
+    "word": "ring",
+    "file": "/images/vocabulary/chunjae-text-ham/ring.png"
+  },
+  {
+    "word": "robot",
+    "file": "/images/vocabulary/chunjae-text-ham/robot.png"
+  },
+  {
+    "word": "run",
+    "file": "/images/vocabulary/chunjae-text-ham/run.png"
+  },
+  {
+    "word": "say",
+    "file": "/images/vocabulary/chunjae-text-ham/say.png"
+  },
+  {
+    "word": "seven",
+    "file": "/images/vocabulary/chunjae-text-ham/seven.png"
+  },
+  {
+    "word": "sing",
+    "file": "/images/vocabulary/chunjae-text-ham/sing.png"
+  },
+  {
+    "word": "sister",
+    "file": "/images/vocabulary/chunjae-text-ham/sister.png"
+  },
+  {
+    "word": "sit",
+    "file": "/images/vocabulary/chunjae-text-ham/sit.png"
+  },
+  {
+    "word": "six",
+    "file": "/images/vocabulary/chunjae-text-ham/six.png"
+  },
+  {
+    "word": "skate",
+    "file": "/images/vocabulary/chunjae-text-ham/skate.png"
+  },
+  {
+    "word": "small",
+    "file": "/images/vocabulary/chunjae-text-ham/small.png"
+  },
+  {
+    "word": "sorry",
+    "file": "/images/vocabulary/chunjae-text-ham/sorry.png"
+  },
+  {
+    "word": "stand",
+    "file": "/images/vocabulary/chunjae-text-ham/stand.png"
+  },
+  {
+    "word": "swim",
+    "file": "/images/vocabulary/chunjae-text-ham/swim.png"
+  },
+  {
+    "word": "tall",
+    "file": "/images/vocabulary/chunjae-text-ham/tall.png"
+  },
+  {
+    "word": "tape",
+    "file": "/images/vocabulary/chunjae-text-ham/tape.png"
+  },
+  {
+    "word": "ten",
+    "file": "/images/vocabulary/chunjae-text-ham/ten.png"
+  },
+  {
+    "word": "three",
+    "file": "/images/vocabulary/chunjae-text-ham/three.png"
+  },
+  {
+    "word": "tomato",
+    "file": "/images/vocabulary/chunjae-text-ham/tomato.png"
+  },
+  {
+    "word": "touch",
+    "file": "/images/vocabulary/chunjae-text-ham/touch.png"
+  },
+  {
+    "word": "tree",
+    "file": "/images/vocabulary/chunjae-text-ham/tree.png"
+  },
+  {
+    "word": "two",
+    "file": "/images/vocabulary/chunjae-text-ham/two.png"
+  },
+  {
+    "word": "use",
+    "file": "/images/vocabulary/chunjae-text-ham/use.png"
+  },
+  {
+    "word": "violin",
+    "file": "/images/vocabulary/chunjae-text-ham/violin.png"
+  },
+  {
+    "word": "wash",
+    "file": "/images/vocabulary/chunjae-text-ham/wash.png"
+  },
+  {
+    "word": "white",
+    "file": "/images/vocabulary/chunjae-text-ham/white.png"
+  },
+  {
+    "word": "wind",
+    "file": "/images/vocabulary/chunjae-text-ham/wind.png"
+  },
+  {
+    "word": "yellow",
+    "file": "/images/vocabulary/chunjae-text-ham/yellow.png"
+  },
+  {
+    "word": "zebra",
+    "file": "/images/vocabulary/chunjae-text-ham/zebra.png"
   }
 ]

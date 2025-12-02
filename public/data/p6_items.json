@@ -1,0 +1,1362 @@
+[
+  {
+    "id": "p6_color_size_001",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 공을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this ball.",
+      "speaker2": "Wow! It is big. It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 빨간색 공",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 빨간색 공",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 파란색 공",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 파란색 공",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_002",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 공을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this ball.",
+      "speaker2": "Wow! It is small. It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 파란색 공",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 파란색 공",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 초록색 공",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 초록색 공",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_003",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 책을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this book.",
+      "speaker2": "Wow! It is big. It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 초록색 책",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 초록색 책",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 노란색 책",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 노란색 책",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_004",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 책을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this book.",
+      "speaker2": "Wow! It is small. It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 노란색 책",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 노란색 책",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 분홍색 책",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 분홍색 책",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_005",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 연필을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this pencil.",
+      "speaker2": "Wow! It is big. It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 분홍색 연필",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 분홍색 연필",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 빨간색 연필",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 빨간색 연필",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_006",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 연필을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this pencil.",
+      "speaker2": "Wow! It is small. It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 빨간색 연필",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 빨간색 연필",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 파란색 연필",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 파란색 연필",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_007",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 컵을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this cup.",
+      "speaker2": "Wow! It is big. It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 파란색 컵",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 파란색 컵",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 초록색 컵",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 초록색 컵",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_008",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 컵을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this cup.",
+      "speaker2": "Wow! It is small. It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 초록색 컵",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 초록색 컵",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 노란색 컵",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 노란색 컵",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_009",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 모자을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this hat.",
+      "speaker2": "Wow! It is big. It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 노란색 모자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 노란색 모자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 분홍색 모자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 분홍색 모자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_010",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 모자을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this hat.",
+      "speaker2": "Wow! It is small. It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 분홍색 모자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 분홍색 모자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 빨간색 모자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 빨간색 모자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_011",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 고양이을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this cat.",
+      "speaker2": "Wow! It is big. It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 빨간색 고양이",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 빨간색 고양이",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 파란색 고양이",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 파란색 고양이",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_012",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 고양이을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this cat.",
+      "speaker2": "Wow! It is small. It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 파란색 고양이",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 파란색 고양이",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 초록색 고양이",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 초록색 고양이",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_013",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 강아지을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this dog.",
+      "speaker2": "Wow! It is big. It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 초록색 강아지",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 초록색 강아지",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 노란색 강아지",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 노란색 강아지",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_014",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 강아지을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this dog.",
+      "speaker2": "Wow! It is small. It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 노란색 강아지",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 노란색 강아지",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 분홍색 강아지",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 분홍색 강아지",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_015",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 사과을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this apple.",
+      "speaker2": "Wow! It is big. It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 분홍색 사과",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 분홍색 사과",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 빨간색 사과",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 빨간색 사과",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_016",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 사과을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this apple.",
+      "speaker2": "Wow! It is small. It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 빨간색 사과",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 빨간색 사과",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 파란색 사과",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 파란색 사과",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_017",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 바나나을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this banana.",
+      "speaker2": "Wow! It is big. It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 파란색 바나나",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 파란색 바나나",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 초록색 바나나",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 초록색 바나나",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_018",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 바나나을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this banana.",
+      "speaker2": "Wow! It is small. It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 초록색 바나나",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 초록색 바나나",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 노란색 바나나",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 노란색 바나나",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_019",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 오렌지을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this orange.",
+      "speaker2": "Wow! It is big. It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 노란색 오렌지",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 노란색 오렌지",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 분홍색 오렌지",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 분홍색 오렌지",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_020",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 오렌지을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this orange.",
+      "speaker2": "Wow! It is small. It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 분홍색 오렌지",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 분홍색 오렌지",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 빨간색 오렌지",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 빨간색 오렌지",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_021",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 펜을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this pen.",
+      "speaker2": "Wow! It is big. It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 빨간색 펜",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 빨간색 펜",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 파란색 펜",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 파란색 펜",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_022",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 펜을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this pen.",
+      "speaker2": "Wow! It is small. It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 파란색 펜",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 파란색 펜",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 초록색 펜",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 초록색 펜",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_023",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인형을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this doll.",
+      "speaker2": "Wow! It is big. It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 초록색 인형",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 초록색 인형",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 노란색 인형",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 노란색 인형",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_024",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인형을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this doll.",
+      "speaker2": "Wow! It is small. It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 노란색 인형",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 노란색 인형",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 분홍색 인형",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 분홍색 인형",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_025",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 로봇을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this robot.",
+      "speaker2": "Wow! It is big. It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 분홍색 로봇",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 분홍색 로봇",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 빨간색 로봇",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 빨간색 로봇",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_026",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 로봇을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this robot.",
+      "speaker2": "Wow! It is small. It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 빨간색 로봇",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 빨간색 로봇",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 파란색 로봇",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 파란색 로봇",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_027",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 자전거을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this bike.",
+      "speaker2": "Wow! It is big. It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 파란색 자전거",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 파란색 자전거",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 초록색 자전거",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 초록색 자전거",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_028",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 자전거을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this bike.",
+      "speaker2": "Wow! It is small. It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 초록색 자전거",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 초록색 자전거",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 노란색 자전거",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 노란색 자전거",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_029",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 꽃을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this flower.",
+      "speaker2": "Wow! It is big. It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "작은 노란색 꽃",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "큰 노란색 꽃",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "큰 분홍색 꽃",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "작은 분홍색 꽃",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_size_030",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 꽃을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Look at this flower.",
+      "speaker2": "Wow! It is small. It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "큰 분홍색 꽃",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "작은 분홍색 꽃",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "작은 빨간색 꽃",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "큰 빨간색 꽃",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔과 크기",
+      "description": "사물의 색깔과 크기를 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_appearance_031",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인물을 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Who is he?",
+      "speaker2": "He is my dad. He is tall."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "키가 작은 남자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "키가 큰 남자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "키가 작은 여자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "키가 큰 여자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "인물의 모습",
+      "description": "인물의 모습을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_appearance_032",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인물을 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Who is she?",
+      "speaker2": "She is my mom. She is tall."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "키가 작은 여자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "키가 큰 여자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "키가 작은 남자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "키가 큰 남자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "인물의 모습",
+      "description": "인물의 모습을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_appearance_033",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인물을 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Who is he?",
+      "speaker2": "He is my brother. He is tall."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "키가 작은 남자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "키가 큰 남자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "키가 작은 여자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "키가 큰 여자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "인물의 모습",
+      "description": "인물의 모습을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_appearance_034",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인물을 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Who is she?",
+      "speaker2": "She is my sister. She is pretty."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "키가 작은 여자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "예쁜 여자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "키가 작은 남자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "키가 큰 남자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "인물의 모습",
+      "description": "인물의 모습을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_appearance_035",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 인물을 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "Who is he?",
+      "speaker2": "He is my grandpa. He is tall."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "키가 작은 남자",
+        "isCorrect": false
+      },
+      {
+        "number": 2,
+        "description": "키가 큰 남자",
+        "isCorrect": true
+      },
+      {
+        "number": 3,
+        "description": "키가 작은 여자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "키가 큰 여자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "인물의 모습",
+      "description": "인물의 모습을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_only_036",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 달걀을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "What color is this egg?",
+      "speaker2": "It is red."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "빨간색 달걀",
+        "isCorrect": true
+      },
+      {
+        "number": 2,
+        "description": "파란색 달걀",
+        "isCorrect": false
+      },
+      {
+        "number": 3,
+        "description": "초록색 달걀",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "노란색 달걀",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔",
+      "description": "사물의 색깔을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_only_037",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 사자을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "What color is this lion?",
+      "speaker2": "It is green."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "초록색 사자",
+        "isCorrect": true
+      },
+      {
+        "number": 2,
+        "description": "노란색 사자",
+        "isCorrect": false
+      },
+      {
+        "number": 3,
+        "description": "분홍색 사자",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "빨간색 사자",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔",
+      "description": "사물의 색깔을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_only_038",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 원숭이을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "What color is this monkey?",
+      "speaker2": "It is pink."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "분홍색 원숭이",
+        "isCorrect": true
+      },
+      {
+        "number": 2,
+        "description": "빨간색 원숭이",
+        "isCorrect": false
+      },
+      {
+        "number": 3,
+        "description": "파란색 원숭이",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "초록색 원숭이",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔",
+      "description": "사물의 색깔을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_only_039",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 얼룩말을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "What color is this zebra?",
+      "speaker2": "It is blue."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "파란색 얼룩말",
+        "isCorrect": true
+      },
+      {
+        "number": 2,
+        "description": "초록색 얼룩말",
+        "isCorrect": false
+      },
+      {
+        "number": 3,
+        "description": "노란색 얼룩말",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "분홍색 얼룩말",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔",
+      "description": "사물의 색깔을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  },
+  {
+    "id": "p6_color_only_040",
+    "question": "다음을 듣고, 묘사하는 내용에 알맞은 새을(를) 고르시오. (들려주는 말은 2회 반복됩니다.)",
+    "script": {
+      "speaker1": "What color is this bird?",
+      "speaker2": "It is yellow."
+    },
+    "options": [
+      {
+        "number": 1,
+        "description": "노란색 새",
+        "isCorrect": true
+      },
+      {
+        "number": 2,
+        "description": "분홍색 새",
+        "isCorrect": false
+      },
+      {
+        "number": 3,
+        "description": "빨간색 새",
+        "isCorrect": false
+      },
+      {
+        "number": 4,
+        "description": "파란색 새",
+        "isCorrect": false
+      }
+    ],
+    "evaluation": {
+      "target": "색깔",
+      "description": "사물의 색깔을 묘사하는 말을 듣고 대상을 식별할 수 있다."
+    }
+  }
+]
