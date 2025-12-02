@@ -88,7 +88,7 @@ export class ItemGeneratorAgent {
       const testType = testTypes[index];
       if (itemsForType === undefined) return;
 
-      switch (testType) {
+      switch (testType as string) {
         case 'p1_alphabet':
           aggregatedItems.p1_alphabet = itemsForType as string[];
           break;
@@ -142,8 +142,8 @@ export class ItemGeneratorAgent {
         case 'WRF':
         case 'ORF':
           if (!aggregatedItems.p4_phonics) aggregatedItems.p4_phonics = {};
-          if (testType === 'NWF') aggregatedItems.p4_phonics.nwf = itemsForType as string[];
-          else if (testType === 'WRF') aggregatedItems.p4_phonics.wrf = itemsForType as string[];
+          if ((testType as string) === 'NWF') aggregatedItems.p4_phonics.nwf = itemsForType as string[];
+          else if ((testType as string) === 'WRF') aggregatedItems.p4_phonics.wrf = itemsForType as string[];
           else aggregatedItems.p4_phonics.orf = itemsForType as string[];
           break;
         case 'STRESS':
@@ -186,7 +186,7 @@ export class ItemGeneratorAgent {
    * 평가 유형별 문항 생성 헬퍼
    */
   private async generateItemsForTestType(
-    testType: TestType,
+    testType: TestType | 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'STRESS' | 'MEANING' | 'COMPREHENSION',
     gradeLevel: GradeLevel,
     pdfContext: string,
     request: ItemGenerationRequest
