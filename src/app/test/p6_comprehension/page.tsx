@@ -19,6 +19,27 @@ interface ComprehensionItem {
   correctAnswer: string;
 }
 
+// p6_items.json 형식
+interface P6JsonOption {
+  number: number;
+  description: string;
+  isCorrect: boolean;
+}
+
+interface P6JsonItem {
+  id: string;
+  question: string;
+  script: {
+    speaker1: string;
+    speaker2: string;
+  };
+  options: P6JsonOption[];
+  evaluation: {
+    target: string;
+    description: string;
+  };
+}
+
 // 영어 보기를 한국어로 번역하는 매핑
 const optionTranslations: Record<string, string> = {
   'blue ball': '파란 공',
@@ -137,15 +158,15 @@ export default function ComprehensionTestPage() {
           console.log('[p6_comprehension] p6_items.json에서 문항 로드:', jsonItems.length, '개');
           
           // p6_items.json 형식을 ComprehensionItem 형식으로 변환
-          const convertedItems: ComprehensionItem[] = jsonItems.map((item: any) => {
-            const correctOption = item.options.find((opt: any) => opt.isCorrect);
+          const convertedItems: ComprehensionItem[] = (jsonItems as P6JsonItem[]).map((item: P6JsonItem) => {
+            const correctOption = item.options.find((opt: P6JsonOption) => opt.isCorrect);
             return {
               dialogueOrStory: `${item.script.speaker1} ${item.script.speaker2}`,
               question: item.question.includes('묘사하는 내용') 
                 ? 'What is being described?' 
                 : item.question,
               questionKr: item.question,
-              options: item.options.map((opt: any) => ({
+              options: item.options.map((opt: P6JsonOption) => ({
                 type: 'word' as const,
                 content: opt.description
               })),
