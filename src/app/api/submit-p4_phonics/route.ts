@@ -17,8 +17,6 @@ async function processReadingInBackground(
   arrayBuffer: ArrayBuffer,
   isSkip: boolean = false,
 ) {
-  const startTime = Date.now();
-
   try {
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
@@ -76,7 +74,6 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
     }
 
     const timeline = transcriptionData.timeline;
-    const confidence = transcriptionData.confidence ?? 'medium';
     const studentAnswer = transcriptionData.text?.trim() || 'no_response';
     const hesitationDetected = hasHesitation(timeline, HESITATION_THRESHOLD_SECONDS);
 
