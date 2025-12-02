@@ -207,7 +207,7 @@ export class ItemGeneratorAgent {
     let systemPrompt = '';
     let userPrompt = '';
     
-    switch (testType) {
+    switch (testType as string) {
       case 'p1_alphabet':
         systemPrompt = buildLNFSystemPrompt();
         userPrompt = buildLNFUserPrompt();
@@ -323,7 +323,7 @@ ${userPrompt}`;
 
     const parsed = JSON.parse(raw) as ParsedResponse;
 
-    switch (testType) {
+    switch (testType as string) {
       case 'p1_alphabet':
         return parsed.p1_alphabet || parsed.LNF as string[];
       case 'p2_segmental_phoneme':

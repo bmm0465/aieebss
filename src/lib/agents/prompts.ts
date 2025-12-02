@@ -674,7 +674,7 @@ export function buildCOMPREHENSIONUserPrompt(): string {
  * - 필요 시 Orchestrator/Validator 등에서 재사용 가능하도록 타입 제공
  */
 export function buildSystemPromptForTestType(
-  testType: TestType,
+  testType: TestType | 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'STRESS' | 'MEANING' | 'COMPREHENSION',
   gradeLevel: GradeLevel,
   options: {
     candidateWords?: string[];
@@ -683,7 +683,7 @@ export function buildSystemPromptForTestType(
 ): string {
   const { candidateWords = [], coreExpressions = [] } = options;
 
-  switch (testType) {
+  switch (testType as string) {
     case 'p1_alphabet':
       return buildLNFSystemPrompt();
     case 'p2_segmental_phoneme':
