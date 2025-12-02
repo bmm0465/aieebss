@@ -15,6 +15,7 @@ async function processReadingInBackground(
   question: string,
   testType: 'nwf' | 'wrf' | 'orf',
   arrayBuffer: ArrayBuffer,
+  isSkip: boolean = false,
 ) {
   const startTime = Date.now();
 
@@ -26,7 +27,7 @@ async function processReadingInBackground(
         question: question,
         correct_answer: question,
         is_correct: false,
-        error_type: 'Hesitation',
+        error_type: isSkip ? 'Skipped' : 'Hesitation',
         processing_time_ms: Date.now() - startTime,
       });
       return;
@@ -123,7 +124,7 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
       correct_answer: question,
       student_answer: studentAnswer,
       is_correct: isCorrect,
-      error_type: hesitationDetected ? 'Hesitation' : (isCorrect ? null : 'Other'),
+      error_type: isSkip ? 'Skipped' : (hesitationDetected ? 'Hesitation' : (isCorrect ? null : 'Other')),
       audio_url: audioUrl,
       confidence_level: confidence,
       processing_time_ms: Date.now() - startTime,
@@ -142,7 +143,7 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
         question: question,
         correct_answer: question,
         is_correct: false,
-        error_type: 'processing_error',
+        error_type: isSkip ? 'Skipped' : 'processing_error',
         processing_time_ms: Date.now() - startTime,
         error_details: error instanceof Error ? error.message : 'Unknown error',
       });
@@ -159,6 +160,7 @@ export async function POST(request: Request) {
     const question = formData.get('question') as string;
     const testType = formData.get('testType') as 'nwf' | 'wrf' | 'orf';
     const userId = formData.get('userId') as string;
+    const isSkip = formData.get('skip') === 'true'; // 넘어가기 플래그
 
     if (!audioBlob || !question || !testType || !userId) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
@@ -178,7 +180,7 @@ export async function POST(request: Request) {
     const serviceClient = createServiceClient();
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    await processReadingInBackground(serviceClient, userId, question, testType, arrayBuffer);
+    await processReadingInBackground(serviceClient, userId, question, testType, arrayBuffer, isSkip);
 
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
   } catch (error) {

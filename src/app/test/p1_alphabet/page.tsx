@@ -110,6 +110,48 @@ export default function LnfTestPage() {
     }
   }, [letterIndex, shuffledAlphabet]);
 
+  const handleSkip = useCallback(async () => {
+    if (isSubmitting || !user || !currentLetter || isRecording) return;
+    
+    setIsSubmitting(true);
+    setFeedback('넘어가는 중...');
+    
+    try {
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !authUser) {
+        setFeedback('인증이 필요합니다.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 빈 오디오 Blob을 보내서 오답으로 저장 (넘어가기 플래그 포함)
+      const emptyBlob = new Blob([], { type: 'audio/webm' });
+      const formData = new FormData();
+      formData.append('audio', emptyBlob);
+      formData.append('question', currentLetter);
+      formData.append('userId', user.id);
+      formData.append('skip', 'true'); // 넘어가기 플래그
+      
+      // API 호출 (결과를 기다리지 않음)
+      fetch('/api/submit-p1_alphabet', { method: 'POST', body: formData })
+        .catch(error => {
+          console.error('[p1_alphabet] 넘어가기 저장 실패:', error);
+        });
+      
+      setFeedback('다음 문제로 넘어갑니다.');
+      
+      setTimeout(() => {
+        goToNextLetter();
+        setIsSubmitting(false);
+        setFeedback('');
+      }, 500);
+    } catch (error) {
+      console.error('[p1_alphabet] 넘어가기 오류:', error);
+      setFeedback('오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  }, [user, currentLetter, isSubmitting, isRecording, supabase, goToNextLetter]);
+
   const stopRecording = useCallback(() => {
     if (silenceTimeoutRef.current) clearTimeout(silenceTimeoutRef.current);
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
@@ -332,26 +374,45 @@ export default function LnfTestPage() {
             <div style={letterBoxStyle}>{currentLetter}</div>
             <p style={feedbackStyle}>{feedback}</p>
             
-            {!isRecording ? (
-              <button 
-                onClick={startRecording} 
-                style={buttonStyle} 
-                disabled={isSubmitting}
-                aria-label={`${currentLetter} 문자 녹음하기`}
-                title="스페이스바 또는 엔터키로도 녹음할 수 있습니다"
-              >
-                {isSubmitting ? '처리 중...' : '녹음하기'}
-              </button>
-            ) : (
-              <button 
-                onClick={stopRecording} 
-                style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}
-                aria-label="녹음 중지하기"
-                title="스페이스바, 엔터키 또는 ESC키로도 중지할 수 있습니다"
-              >
-                녹음 끝내기
-              </button>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+              {!isRecording ? (
+                <button 
+                  onClick={startRecording} 
+                  style={buttonStyle} 
+                  disabled={isSubmitting}
+                  aria-label={`${currentLetter} 문자 녹음하기`}
+                  title="스페이스바 또는 엔터키로도 녹음할 수 있습니다"
+                >
+                  {isSubmitting ? '처리 중...' : '녹음하기'}
+                </button>
+              ) : (
+                <button 
+                  onClick={stopRecording} 
+                  style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}
+                  aria-label="녹음 중지하기"
+                  title="스페이스바, 엔터키 또는 ESC키로도 중지할 수 있습니다"
+                >
+                  녹음 끝내기
+                </button>
+              )}
+              
+              {!isRecording && (
+                <button 
+                  onClick={handleSkip} 
+                  style={{
+                    ...buttonStyle,
+                    backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                    color: 'white',
+                    maxWidth: '300px',
+                    opacity: isSubmitting ? 0.6 : 1
+                  }}
+                  disabled={isSubmitting}
+                  aria-label="이 문제 넘어가기"
+                >
+                  {isSubmitting ? '처리 중...' : '넘어가기'}
+                </button>
+              )}
+            </div>
           </div>
         )}
 

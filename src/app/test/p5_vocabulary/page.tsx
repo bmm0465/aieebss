@@ -278,6 +278,56 @@ export default function MeaningTestPage() {
     }
   };
 
+  const handleSkip = async () => {
+    if (isSubmitting || !currentItem || !user) return;
+    
+    setIsSubmitting(true);
+    setFeedback('넘어가는 중...');
+    
+    try {
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !authUser) {
+        setFeedback('인증이 필요합니다.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 잘못된 답안으로 저장 (첫 번째 선택지를 선택한 것으로 처리)
+      const wrongAnswer = currentItem.imageOptions[0] === currentItem.correctAnswer 
+        ? currentItem.imageOptions[1] || currentItem.imageOptions[0]
+        : currentItem.imageOptions[0];
+      
+      const response = await fetch('/api/submit-p5_vocabulary', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          question: currentItem.wordOrPhrase,
+          selectedAnswer: wrongAnswer,
+          correctAnswer: currentItem.correctAnswer,
+          options: currentItem.imageOptions,
+          userId: user.id,
+          authToken: authUser.id,
+          skip: true, // 넘어가기 플래그
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[p5_vocabulary] 넘어가기 저장 실패:', response.status, errorData);
+      }
+
+      setFeedback('다음 문제로 넘어갑니다.');
+      
+      setTimeout(() => {
+        goToNextItem();
+      }, 500);
+    } catch (error) {
+      console.error('[p5_vocabulary] 넘어가기 오류:', error);
+      setFeedback('오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
       const item = items[itemIndex];
@@ -574,6 +624,21 @@ export default function MeaningTestPage() {
                   )}
                 </button>
               ))}
+              
+              <button
+                onClick={handleSkip}
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                  color: 'white',
+                  maxWidth: '300px',
+                  marginTop: '1rem',
+                  opacity: isSubmitting ? 0.6 : 1
+                }}
+                disabled={isSubmitting || isAudioLoading || isLoadingImages}
+              >
+                {isSubmitting ? '처리 중...' : '넘어가기'}
+              </button>
             </div>
           </div>
         )}

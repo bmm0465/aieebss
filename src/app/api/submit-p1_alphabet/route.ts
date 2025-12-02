@@ -54,7 +54,7 @@ const normalizeResponse = (value: string | null | undefined) =>
 const HESITATION_THRESHOLD_SECONDS = 5;
 
 // [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
-async function processLnfInBackground(supabase: SupabaseClient, userId: string, questionLetter: string, arrayBuffer: ArrayBuffer) {
+async function processLnfInBackground(supabase: SupabaseClient, userId: string, questionLetter: string, arrayBuffer: ArrayBuffer, isSkip: boolean = false) {
   const startTime = Date.now();
   
   try {
@@ -70,9 +70,10 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength === 0) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
-          is_correct: false, error_type: 'Hesitation'
+          correct_answer: questionLetter,
+          is_correct: false, error_type: isSkip ? 'Skipped' : 'Hesitation'
       });
-      console.log(`[p1_alphabet 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: hesitation, 처리시간: ${Date.now() - startTime}ms`);
+      console.log(`[p1_alphabet 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${isSkip ? 'skipped' : 'hesitation'}, 처리시간: ${Date.now() - startTime}ms`);
       return;
     }
 
@@ -251,7 +252,7 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
     }
 
     const isCorrect = evaluation.final_score === 'correct';
-    const errorType = isCorrect ? null : evaluation.error_category;
+    const errorType = isSkip ? 'Skipped' : (isCorrect ? null : evaluation.error_category);
 
     const processingTime = Date.now() - startTime;
     
@@ -322,7 +323,7 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
         question: questionLetter,
         correct_answer: questionLetter,
         is_correct: false,
-        error_type: 'processing_error'
+        error_type: isSkip ? 'Skipped' : 'processing_error'
       });
     } catch (dbError) {
       console.error(`[p1_alphabet 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
@@ -336,6 +337,7 @@ export async function POST(request: Request) {
     const audioBlob = formData.get('audio') as Blob;
     const questionLetter = formData.get('question') as string;
     const userId = formData.get('userId') as string;
+    const isSkip = formData.get('skip') === 'true'; // 넘어가기 플래그
 
     if (!audioBlob || !questionLetter || !userId) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
@@ -357,7 +359,7 @@ export async function POST(request: Request) {
     const arrayBuffer = await audioBlob.arrayBuffer();
 
     // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달하고, 작업이 끝날 때까지 기다립니다.
-    await processLnfInBackground(serviceClient, userId, questionLetter, arrayBuffer);
+    await processLnfInBackground(serviceClient, userId, questionLetter, arrayBuffer, isSkip);
 
     // 백그라운드 작업이 성공적으로 완료된 후 응답을 반환합니다.
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });

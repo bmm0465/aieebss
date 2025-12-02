@@ -307,6 +307,57 @@ export default function ComprehensionTestPage() {
     }
   };
 
+  const handleSkip = async () => {
+    if (isSubmitting || !currentItem || !user) return;
+    
+    setIsSubmitting(true);
+    setFeedback('넘어가는 중...');
+    
+    try {
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !authUser) {
+        setFeedback('인증이 필요합니다.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 잘못된 답안으로 저장 (첫 번째 선택지를 선택한 것으로 처리)
+      const wrongAnswer = currentItem.options[0]?.content === currentItem.correctAnswer 
+        ? currentItem.options[1]?.content || currentItem.options[0]?.content || ''
+        : currentItem.options[0]?.content || '';
+      
+      const response = await fetch('/api/submit-p6_comprehension', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dialogueOrStory: currentItem.dialogueOrStory,
+          question: currentItem.question,
+          selectedAnswer: wrongAnswer,
+          correctAnswer: currentItem.correctAnswer,
+          options: currentItem.options,
+          userId: user.id,
+          authToken: authUser.id,
+          skip: true, // 넘어가기 플래그
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[p6_comprehension] 넘어가기 저장 실패:', response.status, errorData);
+      }
+
+      setFeedback('다음 문제로 넘어갑니다.');
+      
+      setTimeout(() => {
+        goToNextItem();
+      }, 500);
+    } catch (error) {
+      console.error('[p6_comprehension] 넘어가기 오류:', error);
+      setFeedback('오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
       setCurrentItem(items[itemIndex]);
@@ -536,6 +587,21 @@ export default function ComprehensionTestPage() {
                   {translateOption(option.content)}
                 </button>
               ))}
+              
+              <button
+                onClick={handleSkip}
+                style={{
+                  ...buttonStyle,
+                  backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                  color: 'white',
+                  maxWidth: '300px',
+                  marginTop: '1rem',
+                  opacity: isSubmitting ? 0.6 : 1
+                }}
+                disabled={isSubmitting || isAudioLoading}
+              >
+                {isSubmitting ? '처리 중...' : '넘어가기'}
+              </button>
             </div>
           </div>
         )}

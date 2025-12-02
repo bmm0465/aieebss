@@ -188,6 +188,50 @@ export default function ReadingTestPage() {
     }
   }, [readingPhase, nwfWords, wrfWords, orfSentences, currentIndex]);
 
+  const handleSkip = useCallback(async () => {
+    if (isSubmitting || !user || !currentItem || isRecording) return;
+    
+    setIsSubmitting(true);
+    setFeedback('넘어가는 중...');
+    
+    try {
+      const { data: { user: authUser }, error: userError } = await supabase.auth.getUser();
+      if (userError || !authUser) {
+        setFeedback('인증이 필요합니다.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 빈 오디오 Blob을 보내서 오답으로 저장 (넘어가기 플래그 포함)
+      const emptyBlob = new Blob([], { type: 'audio/webm' });
+      const formData = new FormData();
+      formData.append('audio', emptyBlob);
+      formData.append('question', currentItem);
+      formData.append('testType', readingPhase.toUpperCase());
+      formData.append('userId', user.id);
+      formData.append('authToken', authUser.id);
+      formData.append('skip', 'true'); // 넘어가기 플래그
+      
+      // API 호출 (결과를 기다리지 않음)
+      fetch('/api/submit-p4_phonics', { method: 'POST', body: formData })
+        .catch(error => {
+          console.error('[p4_phonics] 넘어가기 저장 실패:', error);
+        });
+      
+      setFeedback('다음 문제로 넘어갑니다.');
+      
+      setTimeout(() => {
+        goToNextItem();
+        setIsSubmitting(false);
+        setFeedback('');
+      }, 500);
+    } catch (error) {
+      console.error('[p4_phonics] 넘어가기 오류:', error);
+      setFeedback('오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  }, [user, currentItem, readingPhase, isSubmitting, isRecording, supabase, goToNextItem]);
+
   const submitRecording = useCallback(async (audioBlob: Blob) => {
     if (!user || !currentItem) {
       setIsSubmitting(false);
@@ -467,18 +511,36 @@ export default function ReadingTestPage() {
           <div>
             <div style={wordBoxStyle}>{currentItem}</div>
             <p style={feedbackStyle}>{feedback || getPhaseDescription()}</p>
-            {!isRecording ? (
-              <button onClick={startRecording} style={buttonStyle} disabled={isSubmitting}>
-                {isSubmitting ? '처리 중...' : '읽기 시작'}
-              </button>
-            ) : (
-              <button
-                onClick={stopRecording}
-                style={{ ...buttonStyle, backgroundColor: '#dc3545', color: 'white' }}
-              >
-                읽기 끝내기
-              </button>
-            )}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+              {!isRecording ? (
+                <button onClick={startRecording} style={buttonStyle} disabled={isSubmitting}>
+                  {isSubmitting ? '처리 중...' : '읽기 시작'}
+                </button>
+              ) : (
+                <button
+                  onClick={stopRecording}
+                  style={{ ...buttonStyle, backgroundColor: '#dc3545', color: 'white' }}
+                >
+                  읽기 끝내기
+                </button>
+              )}
+              
+              {!isRecording && (
+                <button
+                  onClick={handleSkip}
+                  style={{
+                    ...buttonStyle,
+                    backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                    color: 'white',
+                    maxWidth: '300px',
+                    opacity: isSubmitting ? 0.6 : 1
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? '처리 중...' : '넘어가기'}
+                </button>
+              )}
+            </div>
           </div>
         )}
 
