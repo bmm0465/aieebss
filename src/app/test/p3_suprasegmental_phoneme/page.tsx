@@ -425,11 +425,14 @@ export default function StressTestPage() {
                 onClick={() => playWordAudio(currentItem.word)}
                 style={{
                   ...buttonStyle,
-                  fontSize: '3rem',
-                  minHeight: '100px',
+                  fontSize: '1.5rem',
+                  minHeight: '80px',
                   marginBottom: '2rem',
                   opacity: isAudioLoading ? 0.5 : 1,
                   whiteSpace: 'nowrap',
+                  color: 'white',
+                  fontWeight: '600',
+                  textShadow: '0 1px 3px rgba(0, 0, 0, 0.3)',
                 }}
                 disabled={isAudioLoading || isSubmitting}
               >
