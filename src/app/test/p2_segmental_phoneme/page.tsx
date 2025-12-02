@@ -442,34 +442,55 @@ export default function PsfTestPage() {
               {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
             </button>
             <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
-              <button
-                onClick={() => handleAnswerSelect(currentPair.word1)}
-                style={selectedAnswer === currentPair.word1 ? selectedWordButtonStyle : wordButtonStyle}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {currentPair.word1}
-              </button>
-              <button
-                onClick={() => handleAnswerSelect(currentPair.word2)}
-                style={selectedAnswer === currentPair.word2 ? selectedWordButtonStyle : wordButtonStyle}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {currentPair.word2}
-              </button>
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
+                <button
+                  onClick={() => handleAnswerSelect(currentPair.word1)}
+                  style={selectedAnswer === currentPair.word1 ? selectedWordButtonStyle : wordButtonStyle}
+                  disabled={isSubmitting || isAudioLoading}
+                >
+                  {currentPair.word1}
+                </button>
+                <button
+                  onClick={() => handleAnswerSelect(currentPair.word2)}
+                  style={selectedAnswer === currentPair.word2 ? selectedWordButtonStyle : wordButtonStyle}
+                  disabled={isSubmitting || isAudioLoading}
+                >
+                  {currentPair.word2}
+                </button>
+              </div>
+              
               <button
                 onClick={handleSkip}
                 style={{
-                  ...buttonStyle,
-                  backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                  position: 'absolute',
+                  bottom: '-60px',
+                  right: '0',
+                  padding: '8px 16px',
+                  backgroundColor: '#f97316',
                   color: 'white',
-                  maxWidth: '250px',
-                  marginTop: '1rem',
-                  opacity: isSubmitting ? 0.6 : 1
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  opacity: isSubmitting ? 0.6 : 1,
+                  boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
+                  transition: 'all 0.2s ease',
                 }}
                 disabled={isSubmitting || isAudioLoading}
+                onMouseEnter={(e) => {
+                  if (!isSubmitting && !isAudioLoading) {
+                    e.currentTarget.style.backgroundColor = '#ea580c';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f97316';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
               >
-                {isSubmitting ? '처리 중...' : '넘어가기'}
+                {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
               </button>
             </div>
           </div>

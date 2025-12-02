@@ -564,82 +564,109 @@ export default function MeaningTestPage() {
                 marginTop: '2rem',
               }}
             >
-              {currentItem.imageOptions.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(option)}
-                  style={{
-                    ...(selectedAnswer === option ? selectedChoiceButtonStyle : choiceButtonStyle),
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    minHeight: '200px',
-                  }}
-                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
-                >
-                  {imageUrls[option] && !failedImages.has(option) ? (
-                    <>
-                      <div style={{ position: 'relative', width: '150px', height: '150px' }}>
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img 
-                          src={imageUrls[option]} 
-                          alt={option}
-                          style={{
-                            width: '150px',
-                            height: '150px',
-                            objectFit: 'contain',
-                            borderRadius: '8px',
-                          }}
-                          onError={() => {
-                            // 이미지 로드 실패 시 실패 목록에 추가
-                            console.error(`[p5_vocabulary] 이미지 로드 실패: ${option}, URL: ${imageUrls[option]}`);
-                            setFailedImages(prev => new Set(prev).add(option));
-                          }}
-                          onLoad={() => {
-                            console.log(`[p5_vocabulary] 이미지 로드 성공: ${option}, URL: ${imageUrls[option]}`);
-                          }}
-                        />
-                      </div>
-                      <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{option}</div>
-                    </>
-                  ) : (
-                    <div style={{ 
-                      fontSize: '1rem',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      minHeight: '150px',
-                    }}>
-                      {isLoadingImages ? (
+              <div style={{ position: 'relative', width: '100%' }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  alignItems: 'center',
+                  marginTop: '2rem',
+                }}>
+                  {currentItem.imageOptions.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleAnswerSelect(option)}
+                      style={{
+                        ...(selectedAnswer === option ? selectedChoiceButtonStyle : choiceButtonStyle),
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.5rem',
+                        minHeight: '200px',
+                      }}
+                      disabled={isSubmitting || isAudioLoading || isLoadingImages}
+                    >
+                      {imageUrls[option] && !failedImages.has(option) ? (
                         <>
-                          <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
-                          <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{option}</div>
+                          <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img 
+                              src={imageUrls[option]} 
+                              alt={option}
+                              style={{
+                                width: '150px',
+                                height: '150px',
+                                objectFit: 'contain',
+                                borderRadius: '8px',
+                              }}
+                              onError={() => {
+                                // 이미지 로드 실패 시 실패 목록에 추가
+                                console.error(`[p5_vocabulary] 이미지 로드 실패: ${option}, URL: ${imageUrls[option]}`);
+                                setFailedImages(prev => new Set(prev).add(option));
+                              }}
+                              onLoad={() => {
+                                console.log(`[p5_vocabulary] 이미지 로드 성공: ${option}, URL: ${imageUrls[option]}`);
+                              }}
+                            />
+                          </div>
+                          <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{option}</div>
                         </>
                       ) : (
-                        option
+                        <div style={{ 
+                          fontSize: '1rem',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          minHeight: '150px',
+                        }}>
+                          {isLoadingImages ? (
+                            <>
+                              <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
+                              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{option}</div>
+                            </>
+                          ) : (
+                            option
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
+                    </button>
+                  ))}
+                </div>
+                
+                <button
+                  onClick={handleSkip}
+                  style={{
+                    position: 'absolute',
+                    bottom: '-60px',
+                    right: '0',
+                    padding: '8px 16px',
+                    backgroundColor: '#f97316',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    opacity: isSubmitting ? 0.6 : 1,
+                    boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
+                    transition: 'all 0.2s ease',
+                  }}
+                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
+                  onMouseEnter={(e) => {
+                    if (!isSubmitting && !isAudioLoading && !isLoadingImages) {
+                      e.currentTarget.style.backgroundColor = '#ea580c';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f97316';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
+                >
+                  {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
                 </button>
-              ))}
-              
-              <button
-                onClick={handleSkip}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: 'rgba(108, 117, 125, 0.8)',
-                  color: 'white',
-                  maxWidth: '300px',
-                  marginTop: '1rem',
-                  opacity: isSubmitting ? 0.6 : 1
-                }}
-                disabled={isSubmitting || isAudioLoading || isLoadingImages}
-              >
-                {isSubmitting ? '처리 중...' : '넘어가기'}
-              </button>
-            </div>
+              </div>
           </div>
         )}
 

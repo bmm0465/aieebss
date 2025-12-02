@@ -492,39 +492,58 @@ export default function StressTestPage() {
                 {currentItem.word}
               </div>
               
-              {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
-              {selectedStressPosition !== null && (
+              <div style={{ position: 'relative', width: '100%', marginTop: '2rem' }}>
+                {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
+                {selectedStressPosition !== null && (
+                  <button
+                    onClick={handleSubmit}
+                    style={{
+                      ...buttonStyle,
+                      maxWidth: '300px',
+                      backgroundColor: selectedAnswer === currentItem.correctAnswer 
+                        ? '#10b981' 
+                        : '#6366f1',
+                    }}
+                    disabled={isSubmitting || isAudioLoading || !selectedAnswer}
+                  >
+                    {isSubmitting ? '제출 중...' : '제출하기'}
+                  </button>
+                )}
+                
+                {/* 넘어가기 버튼 - 오른쪽 하단에 고정 */}
                 <button
-                  onClick={handleSubmit}
+                  onClick={handleSkip}
                   style={{
-                    ...buttonStyle,
-                    maxWidth: '300px',
-                    marginTop: '2rem',
-                    backgroundColor: selectedAnswer === currentItem.correctAnswer 
-                      ? '#10b981' 
-                      : '#6366f1',
+                    position: 'absolute',
+                    bottom: selectedStressPosition !== null ? '-60px' : '0',
+                    right: '0',
+                    padding: '8px 16px',
+                    backgroundColor: '#f97316',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    opacity: isSubmitting ? 0.6 : 1,
+                    boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
+                    transition: 'all 0.2s ease',
                   }}
-                  disabled={isSubmitting || isAudioLoading || !selectedAnswer}
+                  disabled={isSubmitting || isAudioLoading}
+                  onMouseEnter={(e) => {
+                    if (!isSubmitting && !isAudioLoading) {
+                      e.currentTarget.style.backgroundColor = '#ea580c';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f97316';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 >
-                  {isSubmitting ? '제출 중...' : '제출하기'}
+                  {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
                 </button>
-              )}
-              
-              {/* 넘어가기 버튼 */}
-              <button
-                onClick={handleSkip}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: 'rgba(108, 117, 125, 0.8)',
-                  color: 'white',
-                  maxWidth: '300px',
-                  marginTop: '1rem',
-                  opacity: isSubmitting ? 0.6 : 1
-                }}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {isSubmitting ? '처리 중...' : '넘어가기'}
-              </button>
+              </div>
             </div>
           );
         })()}

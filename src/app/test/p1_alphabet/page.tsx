@@ -374,42 +374,63 @@ export default function LnfTestPage() {
             <div style={letterBoxStyle}>{currentLetter}</div>
             <p style={feedbackStyle}>{feedback}</p>
             
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              {!isRecording ? (
-                <button 
-                  onClick={startRecording} 
-                  style={buttonStyle} 
-                  disabled={isSubmitting}
-                  aria-label={`${currentLetter} 문자 녹음하기`}
-                  title="스페이스바 또는 엔터키로도 녹음할 수 있습니다"
-                >
-                  {isSubmitting ? '처리 중...' : '녹음하기'}
-                </button>
-              ) : (
-                <button 
-                  onClick={stopRecording} 
-                  style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}
-                  aria-label="녹음 중지하기"
-                  title="스페이스바, 엔터키 또는 ESC키로도 중지할 수 있습니다"
-                >
-                  녹음 끝내기
-                </button>
-              )}
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+                {!isRecording ? (
+                  <button 
+                    onClick={startRecording} 
+                    style={buttonStyle} 
+                    disabled={isSubmitting}
+                    aria-label={`${currentLetter} 문자 녹음하기`}
+                    title="스페이스바 또는 엔터키로도 녹음할 수 있습니다"
+                  >
+                    {isSubmitting ? '처리 중...' : '녹음하기'}
+                  </button>
+                ) : (
+                  <button 
+                    onClick={stopRecording} 
+                    style={{...buttonStyle, backgroundColor: '#dc3545', color: 'white'}}
+                    aria-label="녹음 중지하기"
+                    title="스페이스바, 엔터키 또는 ESC키로도 중지할 수 있습니다"
+                  >
+                    녹음 끝내기
+                  </button>
+                )}
+              </div>
               
               {!isRecording && (
                 <button 
                   onClick={handleSkip} 
                   style={{
-                    ...buttonStyle,
-                    backgroundColor: 'rgba(108, 117, 125, 0.8)',
+                    position: 'absolute',
+                    bottom: '-60px',
+                    right: '0',
+                    padding: '8px 16px',
+                    backgroundColor: '#f97316',
                     color: 'white',
-                    maxWidth: '300px',
-                    opacity: isSubmitting ? 0.6 : 1
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    opacity: isSubmitting ? 0.6 : 1,
+                    boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
+                    transition: 'all 0.2s ease',
                   }}
                   disabled={isSubmitting}
                   aria-label="이 문제 넘어가기"
+                  onMouseEnter={(e) => {
+                    if (!isSubmitting) {
+                      e.currentTarget.style.backgroundColor = '#ea580c';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f97316';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 >
-                  {isSubmitting ? '처리 중...' : '넘어가기'}
+                  {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
                 </button>
               )}
             </div>

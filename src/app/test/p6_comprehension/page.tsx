@@ -577,31 +577,59 @@ export default function ComprehensionTestPage() {
                 marginTop: '2rem',
               }}
             >
-              {currentItem.options.map((option, index) => (
+              <div style={{ position: 'relative', width: '100%' }}>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '1rem',
+                  alignItems: 'center',
+                  marginTop: '2rem',
+                }}>
+                  {currentItem.options.map((option, index) => (
+                    <button
+                      key={index}
+                      onClick={() => handleAnswerSelect(option.content)}
+                      style={selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle}
+                      disabled={isSubmitting || isAudioLoading}
+                    >
+                      {translateOption(option.content)}
+                    </button>
+                  ))}
+                </div>
+                
                 <button
-                  key={index}
-                  onClick={() => handleAnswerSelect(option.content)}
-                  style={selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle}
+                  onClick={handleSkip}
+                  style={{
+                    position: 'absolute',
+                    bottom: '-60px',
+                    right: '0',
+                    padding: '8px 16px',
+                    backgroundColor: '#f97316',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: '500',
+                    opacity: isSubmitting ? 0.6 : 1,
+                    boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
+                    transition: 'all 0.2s ease',
+                  }}
                   disabled={isSubmitting || isAudioLoading}
+                  onMouseEnter={(e) => {
+                    if (!isSubmitting && !isAudioLoading) {
+                      e.currentTarget.style.backgroundColor = '#ea580c';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f97316';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 >
-                  {translateOption(option.content)}
+                  {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
                 </button>
-              ))}
-              
-              <button
-                onClick={handleSkip}
-                style={{
-                  ...buttonStyle,
-                  backgroundColor: 'rgba(108, 117, 125, 0.8)',
-                  color: 'white',
-                  maxWidth: '300px',
-                  marginTop: '1rem',
-                  opacity: isSubmitting ? 0.6 : 1
-                }}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                {isSubmitting ? '처리 중...' : '넘어가기'}
-              </button>
+              </div>
             </div>
           </div>
         )}
