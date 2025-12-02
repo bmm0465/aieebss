@@ -8,24 +8,26 @@ import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems
 
 // [폴백] 테스트용 알파벳 목록: 대문자 A~Z 26개, 소문자 a~z 26개 (총 52개)
 const getFixedAlphabet = () => {
-    // 1번: 대문자 I (아이), 2번: 소문자 l (엘) - 폰트 구분 확인용
-    // 나머지: 대문자 A~Z (I 제외), 소문자 a~z (l 제외)
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''); // I 포함
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz'.split(''); // l 포함
+    // 폰트 구분 확인용: I, l, i, L을 앞에 배치
+    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+    const lowercase = 'abcdefghijklmnopqrstuvwxyz'.split('');
     
-    // I와 l을 제외한 나머지 대소문자
-    const uppercaseWithoutI = uppercase.filter(letter => letter !== 'I');
-    const lowercaseWithoutL = lowercase.filter(letter => letter !== 'l');
+    // I와 L을 제외한 나머지 대문자
+    const uppercaseWithoutIL = uppercase.filter(letter => letter !== 'I' && letter !== 'L');
+    // i와 l을 제외한 나머지 소문자
+    const lowercaseWithoutIL = lowercase.filter(letter => letter !== 'i' && letter !== 'l');
     
-    // 순서: I(1번), l(2번), 나머지 대문자, 나머지 소문자
+    // 순서: I(1번), l(2번), i(3번), L(4번), 나머지 대문자, 나머지 소문자
     const fixedLetters = [
         'I', // 1번: 대문자 아이
         'l', // 2번: 소문자 엘
-        ...uppercaseWithoutI, // 3~28번: 나머지 대문자 (25개)
-        ...lowercaseWithoutL  // 29~52번: 나머지 소문자 (25개)
+        'i', // 3번: 소문자 아이
+        'L', // 4번: 대문자 엘
+        ...uppercaseWithoutIL, // 5~28번: 나머지 대문자 (24개)
+        ...lowercaseWithoutIL  // 29~52번: 나머지 소문자 (24개)
     ];
     
-    return fixedLetters; // 총 52개: I, l, 대문자 25개, 소문자 25개
+    return fixedLetters; // 총 52개: I, l, i, L, 대문자 24개, 소문자 24개
 };
 
 export default function LnfTestPage() {
