@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AIEEBSS 사용자 가이드 - 선생님과 학생을 위한 활용 매뉴얼</title>
+    <title>AIDTPEL 사용자 가이드 - 선생님과 학생을 위한 활용 매뉴얼</title>
     <style>
         * {
             margin: 0;
@@ -309,8 +309,8 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🎓 AIEEBSS 사용자 가이드</h1>
-            <p>AI 기반 영어 읽기 평가 시스템 활용 매뉴얼</p>
+            <h1>🎓 AIDTPEL 사용자 가이드</h1>
+            <p>AI 기반 초등 영어 기초 학력 진단 평가 시스템 활용 매뉴얼</p>
             <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.9;">
                 선생님과 학생을 위한 상세한 사용 설명서
             </p>
@@ -320,7 +320,7 @@
             <a href="#intro">시작하기</a>
             <a href="#student-guide">학생 가이드</a>
             <a href="#teacher-guide">교사 가이드</a>
-            <a href="#tests">테스트 종류</a>
+            <a href="#tests">평가 종류</a>
             <a href="#faq">자주 묻는 질문</a>
         </div>
 
@@ -330,20 +330,20 @@
                 <h2>📌 시작하기</h2>
                 
                 <div class="step-box">
-                    <h3>AIEEBSS란?</h3>
+                    <h3>AIDTPEL이란?</h3>
                     <p>
-                        <strong>AIEEBSS (AI for Elementary English Basic Skills Support)</strong>는 
-                        AI 기반 영어 읽기 평가 시스템입니다. 음성 인식과 인공지능을 활용하여 
-                        학생들의 영어 읽기 능력을 자동으로 평가하고 분석합니다.
+                        <strong>AIDTPEL (AI-based Diagnostic Test for Primary English Literacy)</strong>는 
+                        AI 기반 초등 영어 기초 학력 진단 평가 시스템입니다. 인공지능을 활용하여 국가기초학력지원센터에서 설정한 초등학교 3~4학년군 영어과 최소한의 성취기준(이해)을 바탕으로
+                        학생들의 기초적인 영어 읽기 능력을 평가하고 분석합니다.
                     </p>
                 </div>
 
                 <div class="highlight">
                     <h4>✨ 주요 특징</h4>
                     <ul>
-                        <li><strong>6가지 DIBELS 테스트</strong>: 알파벳부터 이해력까지 단계별 평가</li>
-                        <li><strong>AI 음성 인식</strong>: OpenAI Whisper로 정확한 음성 전사</li>
-                        <li><strong>자동 채점</strong>: GPT-4o-mini를 활용한 지능형 평가</li>
+                        <li><strong>6가지 최소한의 성취기준 도달 파악</strong>: 알파벳부터 이해력까지 단계별 평가</li>
+                        <li><strong>AI 음성 인식</strong>: gpt-4o-transcribe 모델을 활용한 정확한 음성 전사</li>
+                        <li><strong>자동 채점</strong>: gpt-4o를 활용한 LLM 기반 채점</li>
                         <li><strong>교사 대시보드</strong>: 담당 학생들의 결과를 한눈에 확인</li>
                         <li><strong>EFL 환경 최적화</strong>: 한국 학생 발음 특성 반영</li>
                     </ul>
@@ -371,7 +371,7 @@
                         <strong>웹사이트 접속</strong>
                     </div>
                     <p style="margin-top: 0.75rem; margin-left: 3rem;">
-                        선생님이 제공한 웹사이트 주소로 접속합니다.
+                        선생님이 알려주시는 웹사이트 주소로 접속합니다.
                     </p>
                 </div>
 
@@ -399,8 +399,8 @@
                 <div class="warning">
                     <strong>⚠️ 주의사항</strong>
                     <ul>
-                        <li>비밀번호는 다른 사람과 공유하지 마세요</li>
-                        <li>로그아웃 후에는 반드시 브라우저를 닫아주세요</li>
+                        <li>비밀번호는 다른 사람과 공유하지 마세요!</li>
+                        <li>로그아웃 후에는 반드시 브라우저를 닫아주세요!</li>
                     </ul>
                 </div>
 
@@ -439,15 +439,15 @@
                     </p>
                 </div>
 
-                <h3>3. 테스트 진행 방법</h3>
+                <h3>3. 평가 진행 방법</h3>
 
                 <div class="test-card">
-                    <h4>🎤 음성 녹음 테스트 (p1, p4)</h4>
+                    <h4>🎤 음성 녹음 평가 (1교시, 4교시)</h4>
                     <p><strong>예시:</strong> 알파벳 읽기, 단어 읽기</p>
                     <ol>
-                        <li>화면에 나타나는 문자나 단어를 확인합니다</li>
+                        <li>화면에 나타나는 알파벳이나 단어를 확인합니다</li>
                         <li><span class="button-demo">녹음하기</span> 버튼을 클릭합니다</li>
-                        <li>명확하게 읽어줍니다 (최대 5초)</li>
+                        <li>명확하게 읽습니다 (최대 5초)</li>
                         <li><span class="button-demo">녹음 끝내기</span> 버튼을 클릭합니다</li>
                         <li>자동으로 다음 문제로 넘어갑니다</li>
                     </ol>
@@ -457,7 +457,7 @@
                 </div>
 
                 <div class="test-card">
-                    <h4>🎧 듣기 테스트 (p2, p3)</h4>
+                    <h4>🎧 듣기 평가 (2교시, 3교시)</h4>
                     <p><strong>예시:</strong> 소리 구분, 강세 패턴</p>
                     <ol>
                         <li><span class="button-demo">🔊 재생</span> 버튼을 클릭하여 오디오를 듣습니다</li>
@@ -468,7 +468,7 @@
                 </div>
 
                 <div class="test-card">
-                    <h4>🖼️ 선택형 테스트 (p5, p6)</h4>
+                    <h4>🖼️ 선택형 평가 (5교시, 6교시)</h4>
                     <p><strong>예시:</strong> 그림 선택, 이해력 문제</p>
                     <ol>
                         <li>문제를 읽거나 오디오를 듣습니다</li>
@@ -480,7 +480,7 @@
                 <div class="highlight">
                     <h4>⏱️ 시간 제한</h4>
                     <ul>
-                        <li><strong>p1~p6:</strong> 각 1분 (60초)</li>
+                        <li><strong>1교시~6교시:</strong> 각 1분 (60초)</li>
                         <li>시간이 끝나면 자동으로 시험이 종료됩니다</li>
                     </ul>
                 </div>
@@ -490,7 +490,7 @@
                     <ul>
                         <li>조용한 환경에서 테스트를 진행하세요</li>
                         <li>마이크에 가까이 말하되, 너무 크게 말하지 마세요</li>
-                        <li>문제를 넘어가고 싶다면 <span class="button-demo" style="background: #f97316;">⏭️ 넘어가기</span> 버튼을 사용하세요</li>
+                        <li>문제를 넘어가고 싶다면 <span class="button-demo" style="background: #f97316;">⏭️ 넘어가기</span> 버튼을 사용하세요(단! 넘어가기를 누르면 그 문제는 오답으로 처리가 됩니다.)</li>
                         <li>테스트 중에는 페이지를 새로고침하거나 닫지 마세요</li>
                     </ul>
                 </div>
@@ -500,10 +500,10 @@
                 <div class="step-box">
                     <div>
                         <span class="step-number">1</span>
-                        <strong>테스트 완료</strong>
+                        <strong>평가 완료</strong>
                     </div>
                     <p style="margin-top: 0.75rem; margin-left: 3rem;">
-                        모든 테스트를 완료하면 "시험 종료!" 메시지가 나타납니다.
+                        모든 평가를 완료하면 "시험 종료!" 메시지가 나타납니다.
                     </p>
                 </div>
 
@@ -664,7 +664,7 @@
 
             <!-- 테스트 종류 -->
             <section id="tests" class="section">
-                <h2>📚 6가지 테스트 종류</h2>
+                <h2>📚 6가지 평가 종류</h2>
 
                 <div class="table-container">
                     <table>
@@ -679,42 +679,42 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><strong>p1</strong></td>
+                                <td><strong>1교시</strong></td>
                                 <td>고대 룬 문자 해독<br>(Letter Naming)</td>
                                 <td>알파벳 대소문자 이름 인식 속도</td>
                                 <td>1분</td>
-                                <td>음성 녹음</td>
+                                <td>읽기 + 음성 녹음</td>
                             </tr>
                             <tr>
-                                <td><strong>p2</strong></td>
+                                <td><strong>2교시</strong></td>
                                 <td>소리의 원소 분리<br>(Segmental Phoneme)</td>
                                 <td>비슷한 소리를 듣고 구분하는 능력</td>
                                 <td>1분</td>
                                 <td>듣기 + 선택</td>
                             </tr>
                             <tr>
-                                <td><strong>p3</strong></td>
+                                <td><strong>3교시</strong></td>
                                 <td>마법 리듬 패턴<br>(Suprasegmental Phoneme)</td>
                                 <td>단어의 강세 패턴을 듣고 선택</td>
                                 <td>1분</td>
                                 <td>듣기 + 선택</td>
                             </tr>
                             <tr>
-                                <td><strong>p4</strong></td>
+                                <td><strong>4교시</strong></td>
                                 <td>마법 주문 읽기<br>(Phonics)</td>
                                 <td>무의미 단어, 실제 단어, 문장 읽기</td>
                                 <td>1분</td>
-                                <td>음성 녹음</td>
+                                <td>읽기 + 음성 녹음</td>
                             </tr>
                             <tr>
-                                <td><strong>p5</strong></td>
+                                <td><strong>5교시</strong></td>
                                 <td>마법서 그림 해석<br>(Vocabulary)</td>
                                 <td>단어나 구문의 의미를 그림으로 선택</td>
                                 <td>1분</td>
                                 <td>듣기/읽기 + 선택</td>
                             </tr>
                             <tr>
-                                <td><strong>p6</strong></td>
+                                <td><strong>6교시</strong></td>
                                 <td>고대 전설 이해<br>(Comprehension)</td>
                                 <td>이야기를 듣고/읽고 질문에 답하기</td>
                                 <td>1분</td>
@@ -727,18 +727,12 @@
                 <div class="test-card">
                     <h4>🎯 테스트 순서</h4>
                     <p>
-                        테스트는 p1부터 p6까지 순서대로 진행하는 것을 권장하지만, 
+                        테스트는 1교시부터 6교시까지 순서대로 진행하는 것을 권장하지만, 
                         원하는 테스트를 선택하여 진행할 수도 있습니다.
                     </p>
                 </div>
 
-                <div class="info-box">
-                    <strong>📖 DIBELS 기반 평가</strong>
-                    <p>
-                        모든 테스트는 DIBELS 8th Edition을 기반으로 하며, 
-                        영어 읽기 능력을 단계별로 종합적으로 평가합니다.
-                    </p>
-                </div>
+                
             </section>
 
             <!-- FAQ -->
@@ -842,7 +836,7 @@
                 <div class="success" style="text-align: center; padding: 2rem;">
                     <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">🎉 수고하셨습니다!</h3>
                     <p style="font-size: 1.1rem;">
-                        이 가이드를 참고하여 AIEEBSS를 효과적으로 활용하시기 바랍니다.<br>
+                        이 가이드를 참고하여 AIDTPEL을 효과적으로 활용하시기 바랍니다.<br>
                         궁금한 점이 있으시면 언제든지 문의해주세요.
                     </p>
                 </div>
@@ -850,7 +844,7 @@
         </div>
 
         <div style="background: #f9fafb; padding: 2rem; text-align: center; border-top: 2px solid #e5e7eb; color: #6b7280;">
-            <p>© 2025 AIEEBSS - AI 기반 영어 읽기 평가 시스템</p>
+            <p>© 2025 AIDTPEL - AI 기반 초등 영어 기초 학력 진단 평가 시스템</p>
             <p style="margin-top: 0.5rem; font-size: 0.9rem;">
                 이 가이드는 시스템 업데이트에 따라 변경될 수 있습니다.
             </p>

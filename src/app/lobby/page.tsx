@@ -54,6 +54,7 @@ export default function LobbyPage() {
   const [hasTestResults, setHasTestResults] = useState(false);
   const [isTeacher, setIsTeacher] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
   const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
@@ -75,14 +76,15 @@ export default function LobbyPage() {
         
         setHasTestResults(Boolean(results && results.length > 0));
 
-        // 교사 권한 확인
+        // 교사 권한 확인 및 사용자 이름 가져오기
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('role')
+          .select('role, full_name')
           .eq('id', user.id)
           .single();
         
         setIsTeacher(profile?.role === 'teacher');
+        setUserName(profile?.full_name || '');
         
         setLoading(false);
         success('환영합니다!', '마법학교 입학 허가가 확인되었습니다.');
@@ -188,8 +190,15 @@ export default function LobbyPage() {
           borderRadius: '12px',
           border: '1px solid #e5e7eb'
         }}>
-          <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
-            로그인: <strong style={{ color: '#1f2937' }}>{userEmail}</strong>
+          <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <div>
+              로그인 ID: <strong style={{ color: '#1f2937' }}>{userEmail}</strong>
+            </div>
+            {userName && (
+              <div>
+                사용자: <strong style={{ color: '#1f2937' }}>{userName}</strong>
+              </div>
+            )}
           </div>
           <button
             onClick={handleLogout}
