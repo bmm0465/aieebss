@@ -130,15 +130,42 @@ export default function ComprehensionTestPage() {
       setUser(user);
 
       try {
-        const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('p6_comprehension', gradeLevel || undefined);
-
-        if (dbItems && Array.isArray(dbItems.items)) {
-          console.log('[p6_comprehension] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setItems(dbItems.items as ComprehensionItem[]);
+        // p6_items.json에서 문항 로드 시도
+        const response = await fetch('/data/p6_items.json');
+        if (response.ok) {
+          const jsonItems = await response.json();
+          console.log('[p6_comprehension] p6_items.json에서 문항 로드:', jsonItems.length, '개');
+          
+          // p6_items.json 형식을 ComprehensionItem 형식으로 변환
+          const convertedItems: ComprehensionItem[] = jsonItems.map((item: any) => {
+            const correctOption = item.options.find((opt: any) => opt.isCorrect);
+            return {
+              dialogueOrStory: `${item.script.speaker1} ${item.script.speaker2}`,
+              question: item.question.includes('묘사하는 내용') 
+                ? 'What is being described?' 
+                : item.question,
+              questionKr: item.question,
+              options: item.options.map((opt: any) => ({
+                type: 'word' as const,
+                content: opt.description
+              })),
+              correctAnswer: correctOption ? correctOption.description : ''
+            };
+          });
+          
+          setItems(convertedItems);
         } else {
-          console.log('[p6_comprehension] 승인된 문항이 없어 기본 문항 사용');
-          setItems(getFixedComprehensionItems());
+          // DB에서 승인된 문항 조회 시도
+          const gradeLevel = await getUserGradeLevel(user.id);
+          const dbItems = await fetchApprovedTestItems('p6_comprehension', gradeLevel || undefined);
+
+          if (dbItems && Array.isArray(dbItems.items)) {
+            console.log('[p6_comprehension] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+            setItems(dbItems.items as ComprehensionItem[]);
+          } else {
+            console.log('[p6_comprehension] 승인된 문항이 없어 기본 문항 사용');
+            setItems(getFixedComprehensionItems());
+          }
         }
       } catch (error) {
         console.error('[p6_comprehension] 문항 로딩 오류, 기본 문항 사용:', error);

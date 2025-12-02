@@ -216,37 +216,28 @@ export default function MeaningTestPage() {
         
         const imagePromises = uncachedOptions.map(async (option) => {
           try {
-            const response = await fetch('/api/generate-meaning-image', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ phrase: option }),
-            });
+            // public/images/vocabulary/chunjae-text-ham 폴더의 png 파일 사용
+            // option에서 단어 추출 (예: "red apple" -> "apple", "a red apple" -> "apple", "pizza" -> "pizza")
+            const words = option.toLowerCase().split(/\s+/).filter(w => w !== 'a' && w !== 'an' && w !== 'the' && w.length > 0);
+            // 마지막 단어를 명사로 간주 (일반적으로 형용사 + 명사 형태)
+            const word = words.length > 0 ? words[words.length - 1] : option.toLowerCase().replace(/[^a-z]/g, '');
+            const imagePath = `/images/vocabulary/chunjae-text-ham/${word}.png`;
             
-            if (response.ok) {
-              const data = await response.json();
-              if (data.error) {
-                console.error(`[p5_vocabulary] 이미지 생성 API 에러 (${option}):`, data.error);
-                return { option, url: null, error: data.error };
-              } else if (data.imageUrl) {
-                console.log(`[p5_vocabulary] 이미지 생성 성공: ${option}${data.cached ? ' (캐시됨)' : ''}`);
-                return { option, url: data.imageUrl, cached: data.cached };
-              } else {
-                console.warn(`[p5_vocabulary] 이미지 URL이 응답에 없음: ${option}`, data);
-                return { option, url: null, error: 'URL 없음' };
-              }
-            } else {
-              const errorText = await response.text().catch(() => '');
-              let errorData = {};
-              try {
-                errorData = errorText ? JSON.parse(errorText) : {};
-              } catch {
-                // JSON 파싱 실패 시 빈 객체 사용
-              }
-              console.error(`[p5_vocabulary] 이미지 생성 실패 (${option}):`, response.status, errorData);
-              return { option, url: null, error: `HTTP ${response.status}` };
-            }
+            // 이미지 파일 존재 여부 확인
+            const img = new Image();
+            return new Promise<{ option: string; url: string | null; error?: string }>((resolve) => {
+              img.onload = () => {
+                console.log(`[p5_vocabulary] 이미지 로드 성공: ${option} -> ${imagePath}`);
+                resolve({ option, url: imagePath });
+              };
+              img.onerror = () => {
+                console.warn(`[p5_vocabulary] 이미지 파일 없음: ${option} -> ${imagePath}`);
+                resolve({ option, url: null, error: '파일 없음' });
+              };
+              img.src = imagePath;
+            });
           } catch (error) {
-            console.error(`[p5_vocabulary] 이미지 생성 실패 (${option}):`, error);
+            console.error(`[p5_vocabulary] 이미지 로드 실패 (${option}):`, error);
             return { option, url: null, error: String(error) };
           }
         });
@@ -573,7 +564,7 @@ export default function MeaningTestPage() {
                     }}>
                       {isLoadingImages ? (
                         <>
-                          <div style={{ marginBottom: '0.5rem' }}>이미지 생성 중...</div>
+                          <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
                           <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{option}</div>
                         </>
                       ) : (

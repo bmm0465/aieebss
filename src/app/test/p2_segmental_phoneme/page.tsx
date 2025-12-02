@@ -102,8 +102,8 @@ export default function PsfTestPage() {
   const playWordAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
-      // 사전 생성된 오디오 파일 사용 시도
-      const audioPath = `/audio/psf/${word}.mp3`;
+      // p2_segmental_phoneme 폴더의 mp3 파일 사용
+      const audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
       const audio = new Audio(audioPath);
       
       await new Promise<void>((resolve, reject) => {
