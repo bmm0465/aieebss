@@ -335,8 +335,16 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                   >
                   <td style={{ padding: '1rem' }}>
                     {choiceTests.includes(testType) ? (
-                      <div style={{ maxWidth: '200px', wordBreak: 'break-word', color: '#e9ecef' }}>
-                        {result.question || '문제 없음'}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <div style={{ maxWidth: '200px', wordBreak: 'break-word', color: '#e9ecef' }}>
+                          {result.question || '문제 없음'}
+                        </div>
+                        {result.correct_answer && (
+                          <ChoiceTestAudioPlayer 
+                            word={result.correct_answer}
+                            testType={testType}
+                          />
+                        )}
                       </div>
                     ) : (
                       result.audio_url ? (
@@ -786,6 +794,181 @@ function AudioPlayer({
       <source src={audioUrl} type="audio/webm" />
       브라우저가 오디오 재생을 지원하지 않습니다.
     </audio>
+  );
+}
+
+// 선택형 테스트용 음성 재생 컴포넌트 (2교시, 3교시 등)
+function ChoiceTestAudioPlayer({
+  word,
+  testType
+}: {
+  word: string;
+  testType: string;
+}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+
+  const playAudio = React.useCallback(async () => {
+    if (!word) return;
+    
+    setIsLoading(true);
+    setError(null);
+    setIsPlaying(true);
+
+    try {
+      // 테스트 타입에 따라 음성 파일 경로 결정
+      let audioPath = '';
+      if (testType === 'p2_segmental_phoneme') {
+        audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
+      } else if (testType === 'p3_suprasegmental_phoneme') {
+        audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`; // 3교시도 같은 폴더 사용
+      } else if (testType === 'p5_vocabulary') {
+        const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+        audioPath = `/audio/meaning/${safeFileName}.mp3`;
+      } else if (testType === 'p6_comprehension') {
+        const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
+        audioPath = `/audio/comprehension/${safeFileName}.mp3`;
+      }
+
+      if (audioPath) {
+        const audio = new Audio(audioPath);
+        audioRef.current = audio;
+
+        // 재생 완료 시 상태 초기화
+        audio.onended = () => {
+          setIsPlaying(false);
+          setIsLoading(false);
+        };
+
+        // 에러 발생 시 TTS API 사용 (폴백)
+        audio.onerror = async () => {
+          console.log(`[ChoiceTestAudioPlayer] 음성 파일 없음, TTS API 사용: ${word}`);
+          
+          try {
+            const response = await fetch('/api/tts', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ text: word }),
+            });
+
+            if (!response.ok) throw new Error('TTS API 호출 실패');
+
+            const audioBlob = await response.blob();
+            const audioUrl = URL.createObjectURL(audioBlob);
+            const fallbackAudio = new Audio(audioUrl);
+            
+            fallbackAudio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              setIsPlaying(false);
+              setIsLoading(false);
+            };
+
+            fallbackAudio.onerror = () => {
+              URL.revokeObjectURL(audioUrl);
+              setError('재생 실패');
+              setIsPlaying(false);
+              setIsLoading(false);
+            };
+
+            await fallbackAudio.play();
+          } catch (ttsError) {
+            console.error('[ChoiceTestAudioPlayer] TTS API 에러:', ttsError);
+            setError('재생 실패');
+            setIsPlaying(false);
+            setIsLoading(false);
+          }
+        };
+
+        await audio.play();
+      } else {
+        // 경로가 없으면 바로 TTS API 사용
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: word }),
+        });
+
+        if (!response.ok) throw new Error('TTS API 호출 실패');
+
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const fallbackAudio = new Audio(audioUrl);
+        
+        fallbackAudio.onended = () => {
+          URL.revokeObjectURL(audioUrl);
+          setIsPlaying(false);
+          setIsLoading(false);
+        };
+
+        fallbackAudio.onerror = () => {
+          URL.revokeObjectURL(audioUrl);
+          setError('재생 실패');
+          setIsPlaying(false);
+          setIsLoading(false);
+        };
+
+        await fallbackAudio.play();
+      }
+    } catch (error) {
+      console.error('[ChoiceTestAudioPlayer] 오디오 재생 에러:', error);
+      setError('재생 실패');
+      setIsPlaying(false);
+      setIsLoading(false);
+    }
+  }, [word, testType]);
+
+  // 컴포넌트 언마운트 시 오디오 정리
+  React.useEffect(() => {
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+    };
+  }, []);
+
+  if (error) {
+    return (
+      <span style={{ color: '#dc3545', fontSize: '0.8rem' }}>❌ 재생 불가</span>
+    );
+  }
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation(); // 행 클릭 이벤트 전파 방지
+        if (!isPlaying && !isLoading) {
+          playAudio();
+        }
+      }}
+      disabled={isLoading || isPlaying}
+      style={{
+        backgroundColor: isPlaying || isLoading ? '#6366f1' : 'rgba(99, 102, 241, 0.1)',
+        color: isPlaying || isLoading ? 'white' : '#6366f1',
+        border: '1px solid #6366f1',
+        borderRadius: '8px',
+        padding: '0.4rem 0.8rem',
+        fontSize: '0.85rem',
+        fontWeight: '500',
+        cursor: isLoading || isPlaying ? 'wait' : 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        transition: 'all 0.2s ease',
+        opacity: isLoading || isPlaying ? 0.7 : 1,
+      }}
+      title={`정답 단어 "${word}" 음성 재생`}
+    >
+      {isLoading ? (
+        <>⏳ 재생 중...</>
+      ) : isPlaying ? (
+        <>🔊 재생 중...</>
+      ) : (
+        <>🔊 정답 음성 듣기</>
+      )}
+    </button>
   );
 }
 
