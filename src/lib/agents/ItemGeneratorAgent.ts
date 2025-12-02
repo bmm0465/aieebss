@@ -293,6 +293,19 @@ ${userPrompt}`;
     type NwfItem = { index?: number; pattern?: string; word: string };
     type WrfItem = { index?: number; word: string };
     type ParsedResponse = {
+      // 새로운 타입
+      p1_alphabet?: string[];
+      p2_segmental_phoneme?: Array<{ word1: string; word2: string; correctAnswer: string }>;
+      p3_suprasegmental_phoneme?: Array<{ word: string; choices: string[]; correctAnswer: string }>;
+      p4_phonics?: { nwf?: string[]; wrf?: string[]; orf?: string[] };
+      p5_vocabulary?: Array<{ wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }>;
+      p6_comprehension?: Array<{
+        dialogueOrStory: string;
+        question: string;
+        options: Array<{ type: 'image' | 'word'; content: string }>;
+        correctAnswer: string;
+      }>;
+      // 하위 호환성을 위한 구형 타입
       LNF?: string[];
       PSF?: PSFWordSpec[] | string[] | Array<{ word1: string; word2: string; correctAnswer: string }>;
       NWF?: NwfItem[];
