@@ -147,7 +147,39 @@ ${contextInfo}
    * prompts.ts의 실제 규격에 맞춰 작성됨
    */
   private getTestTypeRequirements(testType: TestType): string {
-    const requirements: Record<TestType, string> = {
+    const requirements: Record<TestType | 'LNF' | 'PSF' | 'NWF' | 'WRF' | 'ORF' | 'STRESS' | 'MEANING' | 'COMPREHENSION', string> = {
+      'p1_alphabet': `- 정확히 100개의 알파벳이 있어야 함
+- 대문자와 소문자가 균형 있게 분포
+- 첫 10개는 고빈도 문자만 사용
+- 단어 형성 방지 (cat, run, the 등 연속 단어 형성 금지)
+- 연속 중복 방지 (동일 문자가 바로 옆에 오지 않음)
+- 허용 문자만 사용 (W, w, 소문자 l 제외)`,
+      'p2_segmental_phoneme': `- 정확히 20개의 최소대립쌍 문항
+- 각 문항: { word1, word2, correctAnswer } 형식
+- 두 단어는 하나의 음소만 다른 최소대립쌍이어야 함 (예: pin/fin, bat/pat)
+- vocabulary_level.json의 어휘 수준 준수`,
+      'p3_suprasegmental_phoneme': `- 정확히 20개의 문항
+- 각 문항: { word, choices, correctAnswer } 형식
+- 2음절 이상의 단어 사용
+- 강세 패턴이 명확한 단어
+- vocabulary_level.json의 어휘 수준 준수`,
+      'p4_phonics': `- NWF/WRF/ORF 통합 테스트
+- NWF: 정확히 75개의 무의미 단어
+- WRF: 정확히 85개의 1음절 단어
+- ORF: 문장 배열 형식 (한 문장씩 평가)
+- core_expressions.json의 표현 사용
+- vocabulary_level.json의 어휘 수준 준수`,
+      'p5_vocabulary': `- 정확히 20개의 문항
+- 각 문항: { wordOrPhrase, imageOptions, correctAnswer } 형식
+- 단어나 간단한 어구 제시
+- 3개의 그림 선택지 제공
+- vocabulary_level.json의 어휘 수준 준수`,
+      'p6_comprehension': `- 정확히 15개의 문항
+- 각 문항: { dialogueOrStory, question, options, correctAnswer } 형식
+- 매우 쉽고 간단한 대화나 이야기
+- 모습, 크기, 색깔, 인물 등 주요 정보 포함
+- core_expressions.json의 표현 사용
+- vocabulary_level.json의 어휘 수준 준수`,
       'LNF': `- 정확히 100개의 알파벳이 있어야 함
 - 대문자와 소문자가 균형 있게 분포
 - 첫 10개는 고빈도 문자만 사용
