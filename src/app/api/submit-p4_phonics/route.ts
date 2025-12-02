@@ -28,7 +28,6 @@ async function processReadingInBackground(
         correct_answer: question,
         is_correct: false,
         error_type: isSkip ? 'Skipped' : 'Hesitation',
-        processing_time_ms: Date.now() - startTime,
       });
       return;
     }
@@ -41,7 +40,6 @@ async function processReadingInBackground(
         correct_answer: question,
         is_correct: false,
         error_type: 'insufficient_audio',
-        processing_time_ms: Date.now() - startTime,
       });
       return;
     }
@@ -119,15 +117,13 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
 
     await supabase.from('test_results').insert({
       user_id: userId,
-      test_type: testType,
+      test_type: 'p4_phonics',
       question: question,
       correct_answer: question,
       student_answer: studentAnswer,
       is_correct: isCorrect,
       error_type: isSkip ? 'Skipped' : (hesitationDetected ? 'Hesitation' : (isCorrect ? null : 'Other')),
       audio_url: audioUrl,
-      confidence_level: confidence,
-      processing_time_ms: Date.now() - startTime,
       transcription_results: transcriptionResults,
     });
 
@@ -144,8 +140,6 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
         correct_answer: question,
         is_correct: false,
         error_type: isSkip ? 'Skipped' : 'processing_error',
-        processing_time_ms: Date.now() - startTime,
-        error_details: error instanceof Error ? error.message : 'Unknown error',
       });
     } catch (dbError) {
       console.error(`[${testType} 데이터베이스 오류 기록 실패]`, dbError);

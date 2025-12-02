@@ -59,18 +59,30 @@ function groupResultsBySession(results: TestResult[]): SessionInfo[] {
     const sessionGroups: TestResult[][] = [];
     let currentGroup: TestResult[] = [];
     let lastTime = 0;
+    let lastTestType = '';
 
     dayResults.forEach(result => {
       const resultTime = new Date(result.created_at || 0).getTime();
+      const currentTestType = result.test_type || '';
       
-      // 30분(1800000ms) 이상 차이나면 새로운 세션
-      if (resultTime - lastTime > 1800000 && currentGroup.length > 0) {
+      // 10분(600000ms) 이상 차이나면 새로운 세션
+      // 같은 test_type 내에서 중단 후 재시작을 더 잘 감지하기 위해 간격을 줄임
+      const timeGap = resultTime - lastTime;
+      const isSameTestType = currentTestType === lastTestType;
+      
+      // 같은 test_type 내에서는 10분, 다른 test_type로 변경되거나 30분 이상 차이면 새로운 세션
+      const shouldStartNewSession = (isSameTestType && timeGap > 600000 && currentGroup.length > 0) ||
+                                    (!isSameTestType && timeGap > 1800000 && currentGroup.length > 0);
+      
+      if (shouldStartNewSession) {
         sessionGroups.push(currentGroup);
         currentGroup = [];
+        lastTime = 0; // 새로운 그룹 시작 시 초기화
       }
       
       currentGroup.push(result);
       lastTime = resultTime;
+      lastTestType = currentTestType;
     });
     
     if (currentGroup.length > 0) {

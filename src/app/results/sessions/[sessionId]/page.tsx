@@ -94,22 +94,31 @@ function filterResultsBySession(results: TestResult[], sessionId: string): TestR
     new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
   );
   
-  // 30분 간격으로 세션 구분
+  // 세션 구분 (같은 테스트 타입 내에서 중단 후 재시작 감지)
   const sessionGroups: TestResult[][] = [];
   let currentGroup: TestResult[] = [];
   let lastTime = 0;
+  let lastTestType = '';
 
   sortedResults.forEach(result => {
     const resultTime = new Date(result.created_at || 0).getTime();
+    const currentTestType = result.test_type || '';
     
-    // 30분(1800000ms) 이상 차이나면 새로운 세션
-    if (resultTime - lastTime > 1800000 && currentGroup.length > 0) {
+    // 같은 test_type 내에서는 10분, 다른 test_type로 변경되거나 30분 이상 차이면 새로운 세션
+    const timeGap = resultTime - lastTime;
+    const isSameTestType = currentTestType === lastTestType;
+    const shouldStartNewSession = (isSameTestType && timeGap > 600000 && currentGroup.length > 0) ||
+                                  (!isSameTestType && timeGap > 1800000 && currentGroup.length > 0);
+    
+    if (shouldStartNewSession) {
       sessionGroups.push(currentGroup);
       currentGroup = [];
+      lastTime = 0; // 새로운 그룹 시작 시 초기화
     }
     
     currentGroup.push(result);
     lastTime = resultTime;
+    lastTestType = currentTestType;
   });
   
   if (currentGroup.length > 0) {
