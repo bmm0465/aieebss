@@ -134,13 +134,40 @@ const extractImageWord = (phrase: string): string | null => {
 
 // 문장/어구에서 핵심 이미지 단어 찾기 (더 정교한 추출)
 const findImageWordForExpression = (expression: string, availableWords: string[]): string | null => {
-  // 직접 매칭 시도
   const lowerExpr = expression.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
   const words = lowerExpr.split(/\s+/).filter(w => w.length > 0);
   
-  // 사용 가능한 단어 중에서 찾기
+  // 이미지로 표현할 수 없는 표현들 필터링
+  const nonImageExpressions = [
+    "i'm", "im", "i am", "my name is", "how are you", "thank you", "you're welcome", 
+    "that's okay", "that's right", "here you are", "yes i do", "no i don't", 
+    "yes i can", "no i can't", "i'm sorry", "i'm fine", "how about you"
+  ];
+  
+  const exprLower = lowerExpr.trim();
+  for (const nonImg of nonImageExpressions) {
+    if (exprLower.includes(nonImg)) {
+      // 특정 케이스는 예외 처리
+      if (exprLower.includes("i'm momo") || exprLower.includes("im momo")) {
+        // "I'm Momo"는 이름이므로 이미지로 표현 불가
+        return null;
+      }
+      // "I'm sorry" 같은 경우는 "sorry" 이미지 사용 가능
+      if (nonImg === "i'm sorry" && availableWords.includes('sorry')) {
+        return 'sorry';
+      }
+      // 나머지는 이미지로 표현 불가
+      if (!nonImg.includes('sorry')) {
+        return null;
+      }
+    }
+  }
+  
+  // 직접 매칭 시도 (불용어 제외)
+  const stopWords = ['i', 'am', 'is', 'are', 'do', 'does', 'can', 'can\'t', 'don\'t', 'what', 'how', 'many', 'my', 'you', 'he', 'she', 'it', 'they', 'we', 'this', 'that', 'please', 'yes', 'no', 'right', 'welcome', 'fine', 'nice', 'great', 'good', 'big', 'small', 'tall', 'pretty', 'pink', 'red', 'blue', 'green', 'yellow', 'black', 'white', 'orange', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'one', 'a', 'an', 'the'];
+  
   for (const word of words) {
-    if (availableWords.includes(word)) {
+    if (!stopWords.includes(word) && availableWords.includes(word)) {
       return word;
     }
   }
@@ -156,6 +183,10 @@ const findImageWordForExpression = (expression: string, availableWords: string[]
     return availableWords.includes('dad') ? 'dad' : (availableWords.includes('grandfather') ? 'grandfather' : null);
   }
   if (expression.toLowerCase().includes('mom') || expression.toLowerCase().includes('mother')) {
+    // "I'm Momo" 같은 경우는 제외 (이미 위에서 처리됨)
+    if (expression.toLowerCase().includes("i'm momo") || expression.toLowerCase().includes("im momo")) {
+      return null;
+    }
     return availableWords.includes('mom') ? 'mom' : (availableWords.includes('grandmother') ? 'grandmother' : null);
   }
   if (expression.toLowerCase().includes('brother')) {
@@ -363,45 +394,52 @@ export default function MeaningTestPage() {
   const playPhraseAudio = useCallback(async (phrase: string) => {
     setIsAudioLoading(true);
     try {
-      // 사전 생성된 오디오 파일 사용 시도
+      // 사전 생성된 오디오 파일 사용 (우선)
       const safeFileName = phrase.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
       const audioPath = `/audio/meaning/${safeFileName}.mp3`;
-      const audio = new Audio(audioPath);
       
-      await new Promise<void>((resolve, reject) => {
-        audio.onended = () => {
-          resolve();
-        };
-        audio.onerror = () => {
-          // 파일이 없으면 TTS API 사용 (폴백)
-          fetch('/api/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: phrase }),
-          })
-            .then(response => {
-              if (!response.ok) throw new Error('음성 생성 실패');
-              return response.blob();
-            })
-            .then(audioBlob => {
-              const audioUrl = URL.createObjectURL(audioBlob);
-              const fallbackAudio = new Audio(audioUrl);
-              return new Promise<void>((resolveFallback, rejectFallback) => {
-                fallbackAudio.onended = () => {
-                  URL.revokeObjectURL(audioUrl);
-                  resolveFallback();
-                };
-                fallbackAudio.onerror = rejectFallback;
-                fallbackAudio.play();
-              });
-            })
-            .then(() => resolve())
-            .catch(reject);
-        };
-        audio.play();
-      });
+      // 먼저 파일 존재 여부 확인
+      const response = await fetch(audioPath, { method: 'HEAD' });
+      
+      if (response.ok) {
+        // 사전 생성된 파일이 있으면 사용
+        const audio = new Audio(audioPath);
+        await new Promise<void>((resolve, reject) => {
+          audio.onended = () => resolve();
+          audio.onerror = () => {
+            console.warn(`[p5_vocabulary] 오디오 파일 재생 실패: ${audioPath}`);
+            reject(new Error('오디오 재생 실패'));
+          };
+          audio.play().catch(reject);
+        });
+      } else {
+        // 파일이 없으면 TTS API 사용 (폴백)
+        console.log(`[p5_vocabulary] 사전 생성된 오디오 없음, TTS 사용: ${phrase}`);
+        const ttsResponse = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: phrase }),
+        });
+        
+        if (!ttsResponse.ok) {
+          throw new Error('음성 생성 실패');
+        }
+        
+        const audioBlob = await ttsResponse.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const fallbackAudio = new Audio(audioUrl);
+        
+        await new Promise<void>((resolve, reject) => {
+          fallbackAudio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            resolve();
+          };
+          fallbackAudio.onerror = reject;
+          fallbackAudio.play().catch(reject);
+        });
+      }
     } catch (error) {
-      console.error('오디오 재생 에러:', error);
+      console.error('[p5_vocabulary] 오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
     } finally {
       setIsAudioLoading(false);
@@ -881,7 +919,6 @@ export default function MeaningTestPage() {
                             }}
                           />
                         </div>
-                        <div style={{ fontSize: '0.9rem', opacity: 0.8 }}>{option}</div>
                       </>
                     ) : (
                       <div style={{ 
@@ -893,12 +930,9 @@ export default function MeaningTestPage() {
                         minHeight: '150px',
                       }}>
                         {isLoadingImages ? (
-                          <>
-                            <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
-                            <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>{option}</div>
-                          </>
+                          <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
                         ) : (
-                          option
+                          <div style={{ fontSize: '0.9rem', opacity: 0.6 }}>이미지 준비 중...</div>
                         )}
                       </div>
                     )}

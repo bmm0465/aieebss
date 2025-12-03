@@ -6,17 +6,24 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
+interface ImageWord {
+  word: string;
+  file: string;
+}
+
 interface ComprehensionOption {
   type: 'image' | 'word';
-  content: string;
+  content: string; // 영어 단어 (이미지 파일명)
+  displayText?: string; // 한국어 표시 텍스트 (선택적)
 }
 
 interface ComprehensionItem {
   dialogueOrStory: string;
   question: string;
-  questionKr?: string; // 한국어 질문 (선택적)
+  questionKr?: string;
   options: ComprehensionOption[];
-  correctAnswer: string;
+  correctAnswer: string; // 영어 단어 (이미지 파일명)
+  isDialogue?: boolean; // 대화 형식인지 여부
 }
 
 // p6_items.json 형식
@@ -40,89 +47,158 @@ interface P6JsonItem {
   };
 }
 
-// 영어 보기를 한국어로 번역하는 매핑
-const optionTranslations: Record<string, string> = {
-  'blue ball': '파란 공',
-  'red car': '빨간 자동차',
-  'small yellow cat': '작은 노란 고양이',
-  'blue': '파란색',
-  'red': '빨간색',
-  'yellow': '노란색',
-  'white': '하얀색',
-  'black': '검은색',
-  'brown': '갈색',
-  'big': '큰',
-  'small': '작은',
-  'tiny': '아주 작은',
+// 한국어 보기를 영어 단어(이미지 파일명)로 변환하는 매핑
+const koreanToEnglishWord: Record<string, string> = {
+  // 색상
+  '빨간색': 'red',
+  '파란색': 'blue',
+  '노란색': 'yellow',
+  '초록색': 'green',
+  '분홍색': 'pink',
+  '하얀색': 'white',
+  '검은색': 'black',
+  '빨간색 공': 'ball',
+  '파란색 공': 'ball',
+  '작은 빨간색 공': 'ball',
+  '큰 빨간색 공': 'ball',
+  '작은 파란색 공': 'ball',
+  '큰 파란색 공': 'ball',
+  '작은 초록색 공': 'ball',
+  '큰 초록색 공': 'ball',
+  '작은 노란색 공': 'ball',
+  '큰 노란색 공': 'ball',
+  '작은 분홍색 공': 'ball',
+  '큰 분홍색 공': 'ball',
+  // 크기
+  '큰': 'big',
+  '작은': 'small',
+  // 인물
+  '키가 큰 남자': 'tall',
+  '키가 작은 남자': 'small',
+  '키가 큰 여자': 'tall',
+  '키가 작은 여자': 'small',
+  '예쁜 여자': 'pretty',
+  // 동작
+  '수영': 'swim',
+  '춤': 'dance',
+  '노래': 'sing',
+  // 가족
+  '아빠': 'dad',
+  '엄마': 'mom',
+  '형제': 'brother',
+  '자매': 'sister',
+  '할아버지': 'grandfather',
+  '할머니': 'grandmother',
 };
 
-function translateOption(option: string): string {
-  return optionTranslations[option] || option;
-}
-
-// 영어 질문을 한국어로 번역하는 간단한 매핑
-const questionTranslations: Record<string, string> = {
-  'What does Tom have?': 'Tom은 무엇을 가지고 있나요?',
-  'What color is the ball?': '공은 무슨 색인가요?',
-  'What color is the cat?': '고양이는 무슨 색인가요?',
-  'How big is the dog?': '강아지의 크기는 어떠한가요?',
-  'What does he have?': '그는 무엇을 가지고 있나요?',
-  'What color is it?': '그것은 무슨 색인가요?',
-  'How big is it?': '그것의 크기는 어떠한가요?',
+// 한국어 보기에서 핵심 단어 추출
+const extractWordFromKorean = (korean: string): string | null => {
+  // 직접 매칭
+  if (koreanToEnglishWord[korean]) {
+    return koreanToEnglishWord[korean];
+  }
+  
+  // 부분 매칭
+  for (const [kr, en] of Object.entries(koreanToEnglishWord)) {
+    if (korean.includes(kr)) {
+      return en;
+    }
+  }
+  
+  // 특수 케이스: "큰 빨간색 공" → "ball"
+  if (korean.includes('공')) return 'ball';
+  if (korean.includes('책')) return 'book';
+  if (korean.includes('연필')) return 'pencil';
+  if (korean.includes('컵')) return 'cup';
+  if (korean.includes('모자')) return 'hat';
+  if (korean.includes('고양이')) return 'cat';
+  if (korean.includes('강아지')) return 'dog';
+  if (korean.includes('사과')) return 'apple';
+  if (korean.includes('바나나')) return 'banana';
+  if (korean.includes('오렌지')) return 'orange';
+  if (korean.includes('펜')) return 'pen';
+  if (korean.includes('인형')) return 'doll';
+  if (korean.includes('로봇')) return 'robot';
+  if (korean.includes('자전거')) return 'bike';
+  if (korean.includes('꽃')) return 'flower';
+  if (korean.includes('달걀')) return 'egg';
+  if (korean.includes('사자')) return 'lion';
+  if (korean.includes('원숭이')) return 'monkey';
+  if (korean.includes('얼룩말')) return 'zebra';
+  if (korean.includes('새')) return 'bird';
+  
+  return null;
 };
 
-function translateQuestion(question: string): string {
-  return questionTranslations[question] || question;
-}
+// 사용 가능한 이미지 단어 목록 로드
+const loadAvailableWords = async (): Promise<string[]> => {
+  try {
+    const response = await fetch('/images/vocabulary/chunjae-text-ham/index.json');
+    if (!response.ok) {
+      console.warn('[p6_comprehension] index.json 로드 실패');
+      return [];
+    }
+    const data: ImageWord[] = await response.json();
+    return data.map(item => item.word);
+  } catch (error) {
+    console.error('[p6_comprehension] index.json 로드 오류:', error);
+    return [];
+  }
+};
 
-// [폴백] COMPREHENSION 고정 문항
-const getFixedComprehensionItems = (): ComprehensionItem[] => {
-  return [
-    {
-      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-      question: 'What does Tom have?',
-      questionKr: 'Tom은 무엇을 가지고 있나요?',
+// [폴백] COMPREHENSION 고정 문항 (천재교과서 함 기반)
+const getFixedComprehensionItems = async (availableWords: string[]): Promise<ComprehensionItem[]> => {
+  const items: ComprehensionItem[] = [];
+  
+  // 예시 1: 말 (2~3문장)
+  if (availableWords.includes('swim')) {
+    items.push({
+      dialogueOrStory: "Hello, I'm Kate. I can swim.",
+      question: 'What can Kate do?',
+      questionKr: 'Kate는 무엇을 할 수 있나요?',
       options: [
-        { type: 'word' as const, content: 'blue ball' },
-        { type: 'word' as const, content: 'red car' },
-        { type: 'word' as const, content: 'small yellow cat' },
+        { type: 'image', content: 'swim', displayText: '수영' },
+        { type: 'image', content: 'dance', displayText: '춤' },
+        { type: 'image', content: 'sing', displayText: '노래' },
       ],
-      correctAnswer: 'blue ball',
-    },
-    {
-      dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-      question: 'What color is the ball?',
-      questionKr: '공은 무슨 색인가요?',
+      correctAnswer: 'swim',
+      isDialogue: false,
+    });
+  }
+  
+  // 예시 2: 대화 (A-B 형식)
+  if (availableWords.includes('brother')) {
+    items.push({
+      dialogueOrStory: "B: Who's he?\nG: He's my brother.",
+      question: "Who is he?",
+      questionKr: '그는 누구인가요?',
       options: [
-        { type: 'word' as const, content: 'blue' },
-        { type: 'word' as const, content: 'red' },
-        { type: 'word' as const, content: 'yellow' },
+        { type: 'image', content: 'brother', displayText: '형제' },
+        { type: 'image', content: 'dad', displayText: '아빠' },
+        { type: 'image', content: 'mom', displayText: '엄마' },
       ],
-      correctAnswer: 'blue',
-    },
-    {
-      dialogueOrStory: 'I see a cat. It is small and white.',
-      question: 'What color is the cat?',
-      questionKr: '고양이는 무슨 색인가요?',
+      correctAnswer: 'brother',
+      isDialogue: true,
+    });
+  }
+  
+  // 추가 예시들
+  if (availableWords.includes('ball') && availableWords.includes('red')) {
+    items.push({
+      dialogueOrStory: "Look at this ball. It is big. It is red.",
+      question: "What is being described?",
+      questionKr: '묘사하는 내용에 알맞은 공을 고르시오.',
       options: [
-        { type: 'word' as const, content: 'white' },
-        { type: 'word' as const, content: 'black' },
-        { type: 'word' as const, content: 'brown' },
+        { type: 'image', content: 'ball', displayText: '큰 빨간색 공' },
+        { type: 'image', content: 'ball', displayText: '작은 파란색 공' },
+        { type: 'image', content: 'ball', displayText: '큰 노란색 공' },
       ],
-      correctAnswer: 'white',
-    },
-    {
-      dialogueOrStory: 'Look at the dog. It is big and brown.',
-      question: 'How big is the dog?',
-      questionKr: '강아지의 크기는 어떠한가요?',
-      options: [
-        { type: 'word' as const, content: 'big' },
-        { type: 'word' as const, content: 'small' },
-        { type: 'word' as const, content: 'tiny' },
-      ],
-      correctAnswer: 'big',
-    },
-  ];
+      correctAnswer: 'ball',
+      isDialogue: false,
+    });
+  }
+  
+  return items;
 };
 
 export default function ComprehensionTestPage() {
@@ -139,6 +215,10 @@ export default function ComprehensionTestPage() {
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [showText, setShowText] = useState(false);
+  const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
+  const [isLoadingImages, setIsLoadingImages] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const [repeatCount, setRepeatCount] = useState(0); // 반복 재생 횟수
 
   useEffect(() => {
     const setup = async () => {
@@ -151,6 +231,9 @@ export default function ComprehensionTestPage() {
       setUser(user);
 
       try {
+        const availableWords = await loadAvailableWords();
+        console.log('[p6_comprehension] 사용 가능한 이미지 단어:', availableWords.length, '개');
+
         // p6_items.json에서 문항 로드 시도
         const response = await fetch('/data/p6_items.json');
         if (response.ok) {
@@ -160,21 +243,38 @@ export default function ComprehensionTestPage() {
           // p6_items.json 형식을 ComprehensionItem 형식으로 변환
           const convertedItems: ComprehensionItem[] = (jsonItems as P6JsonItem[]).map((item: P6JsonItem) => {
             const correctOption = item.options.find((opt: P6JsonOption) => opt.isCorrect);
+            const correctWord = correctOption ? extractWordFromKorean(correctOption.description) : null;
+            
+            // 보기를 이미지로 변환
+            const imageOptions: ComprehensionOption[] = item.options.map((opt: P6JsonOption) => {
+              const word = extractWordFromKorean(opt.description);
+              return {
+                type: 'image' as const,
+                content: word || opt.description.toLowerCase().replace(/\s+/g, '_'),
+                displayText: opt.description,
+              };
+            });
+            
             return {
-              dialogueOrStory: `${item.script.speaker1} ${item.script.speaker2}`,
+              dialogueOrStory: item.script.speaker2 ? 
+                `${item.script.speaker1}\n${item.script.speaker2}` : 
+                item.script.speaker1,
               question: item.question.includes('묘사하는 내용') 
                 ? 'What is being described?' 
                 : item.question,
               questionKr: item.question,
-              options: item.options.map((opt: P6JsonOption) => ({
-                type: 'word' as const,
-                content: opt.description
-              })),
-              correctAnswer: correctOption ? correctOption.description : ''
+              options: imageOptions,
+              correctAnswer: correctWord || (correctOption ? correctOption.description : ''),
+              isDialogue: !!item.script.speaker2,
             };
-          });
+          }).filter(item => item.correctAnswer && availableWords.includes(item.correctAnswer));
           
-          setItems(convertedItems);
+          if (convertedItems.length > 0) {
+            setItems(convertedItems);
+          } else {
+            const fixedItems = await getFixedComprehensionItems(availableWords);
+            setItems(fixedItems);
+          }
         } else {
           // DB에서 승인된 문항 조회 시도
           const gradeLevel = await getUserGradeLevel(user.id);
@@ -185,64 +285,120 @@ export default function ComprehensionTestPage() {
             setItems(dbItems.items as ComprehensionItem[]);
           } else {
             console.log('[p6_comprehension] 승인된 문항이 없어 기본 문항 사용');
-            setItems(getFixedComprehensionItems());
+            const fixedItems = await getFixedComprehensionItems(availableWords);
+            setItems(fixedItems);
           }
         }
       } catch (error) {
         console.error('[p6_comprehension] 문항 로딩 오류, 기본 문항 사용:', error);
-        setItems(getFixedComprehensionItems());
+        const availableWords = await loadAvailableWords();
+        const fixedItems = await getFixedComprehensionItems(availableWords);
+        setItems(fixedItems);
       }
     };
     setup();
   }, [router, supabase.auth]);
 
-  const playStoryAudio = useCallback(async (story: string) => {
+  const playStoryAudio = useCallback(async (story: string, repeat: number = 1) => {
     setIsAudioLoading(true);
     try {
-      // 사전 생성된 오디오 파일 사용 시도
+      // 사전 생성된 오디오 파일 사용 (우선)
       const safeFileName = story.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
       const audioPath = `/audio/comprehension/${safeFileName}.mp3`;
-      const audio = new Audio(audioPath);
       
-      await new Promise<void>((resolve, reject) => {
-        audio.onended = () => {
-          resolve();
-        };
-        audio.onerror = () => {
+      // 먼저 파일 존재 여부 확인
+      const response = await fetch(audioPath, { method: 'HEAD' });
+      
+      const playAudio = async (): Promise<void> => {
+        if (response.ok) {
+          // 사전 생성된 파일이 있으면 사용
+          const audio = new Audio(audioPath);
+          return new Promise<void>((resolve, reject) => {
+            audio.onended = () => resolve();
+            audio.onerror = () => {
+              console.warn(`[p6_comprehension] 오디오 파일 재생 실패: ${audioPath}`);
+              reject(new Error('오디오 재생 실패'));
+            };
+            audio.play().catch(reject);
+          });
+        } else {
           // 파일이 없으면 TTS API 사용 (폴백)
-          fetch('/api/tts', {
+          console.log(`[p6_comprehension] 사전 생성된 오디오 없음, TTS 사용: ${story}`);
+          const ttsResponse = await fetch('/api/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: story }),
-          })
-            .then(response => {
-              if (!response.ok) throw new Error('음성 생성 실패');
-              return response.blob();
-            })
-            .then(audioBlob => {
-              const audioUrl = URL.createObjectURL(audioBlob);
-              const fallbackAudio = new Audio(audioUrl);
-              return new Promise<void>((resolveFallback, rejectFallback) => {
-                fallbackAudio.onended = () => {
-                  URL.revokeObjectURL(audioUrl);
-                  resolveFallback();
-                };
-                fallbackAudio.onerror = rejectFallback;
-                fallbackAudio.play();
-              });
-            })
-            .then(() => resolve())
-            .catch(reject);
-        };
-        audio.play();
-      });
+          });
+          
+          if (!ttsResponse.ok) {
+            throw new Error('음성 생성 실패');
+          }
+          
+          const audioBlob = await ttsResponse.blob();
+          const audioUrl = URL.createObjectURL(audioBlob);
+          const fallbackAudio = new Audio(audioUrl);
+          
+          return new Promise<void>((resolve, reject) => {
+            fallbackAudio.onended = () => {
+              URL.revokeObjectURL(audioUrl);
+              resolve();
+            };
+            fallbackAudio.onerror = reject;
+            fallbackAudio.play().catch(reject);
+          });
+        }
+      };
+      
+      // 반복 재생
+      for (let i = 0; i < repeat; i++) {
+        await playAudio();
+        if (i < repeat - 1) {
+          // 반복 사이에 짧은 간격
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
     } catch (error) {
-      console.error('오디오 재생 에러:', error);
+      console.error('[p6_comprehension] 오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
     } finally {
       setIsAudioLoading(false);
     }
   }, []);
+
+  const loadImagesForItem = useCallback(async (item: ComprehensionItem) => {
+    setIsLoadingImages(true);
+    const newImageUrls: Record<string, string> = {};
+    
+    try {
+      item.options.forEach(option => {
+        if (option.type === 'image') {
+          const word = option.content.toLowerCase();
+          const imagePath = `/images/vocabulary/chunjae-text-ham/${word}.png`;
+          
+          if (imageUrls[word]) {
+            newImageUrls[word] = imageUrls[word];
+          } else {
+            // 이미지 로드 시도
+            const img = new Image();
+            img.onload = () => {
+              setImageUrls(prev => ({ ...prev, [word]: imagePath }));
+            };
+            img.onerror = () => {
+              console.warn(`[p6_comprehension] 이미지 파일 없음: ${word} -> ${imagePath}`);
+            };
+            img.src = imagePath;
+            newImageUrls[word] = imagePath;
+          }
+        }
+      });
+      
+      setImageUrls(prev => ({ ...prev, ...newImageUrls }));
+    } catch (error) {
+      console.error('[p6_comprehension] 이미지 로드 오류:', error);
+    } finally {
+      setIsLoadingImages(false);
+    }
+  }, [imageUrls]);
 
   const handleAnswerSelect = async (answer: string) => {
     if (isSubmitting || !currentItem || !user) return;
@@ -304,6 +460,7 @@ export default function ComprehensionTestPage() {
       setIsSubmitting(false);
       setFeedback('');
       setShowText(false);
+      setRepeatCount(0);
     }
   };
 
@@ -321,7 +478,6 @@ export default function ComprehensionTestPage() {
         return;
       }
 
-      // 잘못된 답안으로 저장 (첫 번째 선택지를 선택한 것으로 처리)
       const wrongAnswer = currentItem.options[0]?.content === currentItem.correctAnswer 
         ? currentItem.options[1]?.content || currentItem.options[0]?.content || ''
         : currentItem.options[0]?.content || '';
@@ -337,7 +493,7 @@ export default function ComprehensionTestPage() {
           options: currentItem.options,
           userId: user.id,
           authToken: authUser.id,
-          skip: true, // 넘어가기 플래그
+          skip: true,
         }),
       });
 
@@ -360,9 +516,13 @@ export default function ComprehensionTestPage() {
 
   useEffect(() => {
     if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
-      setCurrentItem(items[itemIndex]);
+      const item = items[itemIndex];
+      setCurrentItem(item);
+      if (item) {
+        loadImagesForItem(item);
+      }
     }
-  }, [phase, items, itemIndex]);
+  }, [phase, items, itemIndex, loadImagesForItem]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -389,6 +549,7 @@ export default function ComprehensionTestPage() {
     setItemIndex(0);
     setTimeLeft(60);
     setCurrentItem(items[0]);
+    setRepeatCount(0);
   };
 
   // --- 스타일 정의 ---
@@ -449,7 +610,7 @@ export default function ComprehensionTestPage() {
   };
   const choiceButtonStyle: React.CSSProperties = {
     width: '100%',
-    maxWidth: '300px',
+    maxWidth: '250px',
     padding: '20px 24px',
     margin: '0.5rem',
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
@@ -462,6 +623,11 @@ export default function ComprehensionTestPage() {
     textAlign: 'center',
     transition: 'all 0.3s ease',
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '0.5rem',
+    minHeight: '200px',
   };
   const selectedChoiceButtonStyle: React.CSSProperties = {
     ...choiceButtonStyle,
@@ -487,8 +653,9 @@ export default function ComprehensionTestPage() {
     fontWeight: 'bold',
     margin: '1rem 0',
     color: '#6366f1',
-    lineHeight: 1.6,
+    lineHeight: 1.8,
     minHeight: '60px',
+    whiteSpace: 'pre-line',
   };
   const questionDisplayStyle: React.CSSProperties = {
     fontSize: '1.8rem',
@@ -523,9 +690,11 @@ export default function ComprehensionTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              짧은 대화나 이야기를 듣거나 읽고, 질문에 맞는 답을 선택해주세요.
+              말이나 대화를 듣거나 읽고, 한국어 질문에 맞는 답을 이미지로 선택해주세요.
               <br />
-              (예: &quot;Tom has a big, blue ball&quot;을 듣고, &quot;What color is the ball?&quot;에 &quot;blue&quot;를 선택)
+              말은 2~3문장, 대화는 최대 A-B-A 형식으로 제시됩니다.
+              <br />
+              (예: &quot;Hello, I'm Kate. I can swim.&quot;을 듣고, &quot;Kate는 무엇을 할 수 있나요?&quot;에 수영 이미지를 선택)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
@@ -537,7 +706,11 @@ export default function ComprehensionTestPage() {
           <div>
             <div style={{ marginBottom: '2rem' }}>
               <button
-                onClick={() => playStoryAudio(currentItem.dialogueOrStory)}
+                onClick={() => {
+                  const repeat = repeatCount < 2 ? repeatCount + 1 : 1;
+                  setRepeatCount(repeat);
+                  playStoryAudio(currentItem.dialogueOrStory, repeat);
+                }}
                 style={{
                   ...buttonStyle,
                   fontSize: '2rem',
@@ -547,7 +720,7 @@ export default function ComprehensionTestPage() {
                 }}
                 disabled={isAudioLoading || isSubmitting}
               >
-                {isAudioLoading ? '재생 중...' : '🔊 듣기'}
+                {isAudioLoading ? '재생 중...' : `🔊 듣기${repeatCount > 0 ? ` (${repeatCount}회 반복)` : ''}`}
               </button>
               <button
                 onClick={() => setShowText(!showText)}
@@ -563,73 +736,112 @@ export default function ComprehensionTestPage() {
                 {showText ? '텍스트 숨기기' : '텍스트 보기'}
               </button>
             </div>
-            {showText && <div style={storyDisplayStyle}>{currentItem.dialogueOrStory}</div>}
+            {showText && (
+              <div style={storyDisplayStyle}>
+                {currentItem.isDialogue ? (
+                  currentItem.dialogueOrStory.split('\n').map((line, idx) => (
+                    <div key={idx} style={{ marginBottom: '0.5rem' }}>
+                      {line}
+                    </div>
+                  ))
+                ) : (
+                  currentItem.dialogueOrStory
+                )}
+              </div>
+            )}
             <div style={questionDisplayStyle}>
-              {currentItem.questionKr || translateQuestion(currentItem.question)}
+              {currentItem.questionKr || currentItem.question}
             </div>
-            <p style={feedbackStyle}>{feedback || '알맞은 답을 선택해주세요.'}</p>
-            <div
-              style={{
+            <p style={feedbackStyle}>{feedback || '알맞은 이미지를 선택해주세요.'}</p>
+            <div style={{ position: 'relative', width: '100%' }}>
+              <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '1rem',
                 alignItems: 'center',
                 marginTop: '2rem',
-              }}
-            >
-              <div style={{ position: 'relative', width: '100%' }}>
-                <div style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '1rem',
-                  alignItems: 'center',
-                  marginTop: '2rem',
-                }}>
-                  {currentItem.options.map((option, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handleAnswerSelect(option.content)}
-                      style={selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle}
-                      disabled={isSubmitting || isAudioLoading}
-                    >
-                      {translateOption(option.content)}
-                    </button>
-                  ))}
-                </div>
-                
-                <button
-                  onClick={handleSkip}
-                  style={{
-                    position: 'absolute',
-                    bottom: '-60px',
-                    right: '0',
-                    padding: '8px 16px',
-                    backgroundColor: '#f97316',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontSize: '0.9rem',
-                    fontWeight: '500',
-                    opacity: isSubmitting ? 0.6 : 1,
-                    boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
-                    transition: 'all 0.2s ease',
-                  }}
-                  disabled={isSubmitting || isAudioLoading}
-                  onMouseEnter={(e) => {
-                    if (!isSubmitting && !isAudioLoading) {
-                      e.currentTarget.style.backgroundColor = '#ea580c';
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#f97316';
-                    e.currentTarget.style.transform = 'scale(1)';
-                  }}
-                >
-                  {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
-                </button>
+              }}>
+                {currentItem.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswerSelect(option.content)}
+                    style={{
+                      ...(selectedAnswer === option.content ? selectedChoiceButtonStyle : choiceButtonStyle),
+                    }}
+                    disabled={isSubmitting || isAudioLoading || isLoadingImages}
+                  >
+                    {option.type === 'image' && imageUrls[option.content] && !failedImages.has(option.content) ? (
+                      <>
+                        <div style={{ position: 'relative', width: '150px', height: '150px' }}>
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img 
+                            src={imageUrls[option.content]} 
+                            alt={option.displayText || option.content}
+                            style={{
+                              width: '150px',
+                              height: '150px',
+                              objectFit: 'contain',
+                              borderRadius: '8px',
+                            }}
+                            onError={() => {
+                              console.error(`[p6_comprehension] 이미지 로드 실패: ${option.content}`);
+                              setFailedImages(prev => new Set(prev).add(option.content));
+                            }}
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <div style={{ 
+                        fontSize: '1rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: '150px',
+                      }}>
+                        {isLoadingImages ? (
+                          <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
+                        ) : (
+                          <div style={{ fontSize: '0.9rem', opacity: 0.6 }}>이미지 준비 중...</div>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
+              
+              <button
+                onClick={handleSkip}
+                style={{
+                  position: 'absolute',
+                  bottom: '-60px',
+                  right: '0',
+                  padding: '8px 16px',
+                  backgroundColor: '#f97316',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  opacity: isSubmitting ? 0.6 : 1,
+                  boxShadow: '0 2px 8px rgba(249, 115, 22, 0.3)',
+                  transition: 'all 0.2s ease',
+                }}
+                disabled={isSubmitting || isAudioLoading || isLoadingImages}
+                onMouseEnter={(e) => {
+                  if (!isSubmitting && !isAudioLoading && !isLoadingImages) {
+                    e.currentTarget.style.backgroundColor = '#ea580c';
+                    e.currentTarget.style.transform = 'scale(1.05)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.backgroundColor = '#f97316';
+                  e.currentTarget.style.transform = 'scale(1)';
+                }}
+              >
+                {isSubmitting ? '처리 중...' : '⏭️ 넘어가기'}
+              </button>
             </div>
           </div>
         )}
@@ -649,7 +861,16 @@ export default function ComprehensionTestPage() {
                   color: 'white',
                   fontSize: '1rem',
                 }}
-                onClick={() => router.push('/lobby')}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  try {
+                    router.push('/lobby');
+                  } catch (error) {
+                    console.error('[p6_comprehension] 라우터 오류:', error);
+                    window.location.href = '/lobby';
+                  }
+                }}
               >
                 🏠 홈으로 가기
               </button>
@@ -661,15 +882,35 @@ export default function ComprehensionTestPage() {
           <div style={{ marginTop: '2rem' }}>
             <button
               style={{
-                backgroundColor: 'rgba(108, 117, 125, 0.5)',
+                backgroundColor: 'rgba(108, 117, 125, 0.8)',
                 color: 'white',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 padding: '0.7rem 1.5rem',
                 borderRadius: '6px',
                 cursor: 'pointer',
                 fontSize: '0.9rem',
+                fontWeight: '500',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
-              onClick={() => router.push('/lobby')}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                try {
+                  router.push('/lobby');
+                } catch (error) {
+                  console.error('[p6_comprehension] 라우터 오류:', error);
+                  window.location.href = '/lobby';
+                }
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(108, 117, 125, 1)';
+                e.currentTarget.style.transform = 'scale(1.05)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'rgba(108, 117, 125, 0.8)';
+                e.currentTarget.style.transform = 'scale(1)';
+              }}
             >
               🏠 홈으로 가기
             </button>
@@ -679,4 +920,3 @@ export default function ComprehensionTestPage() {
     </div>
   );
 }
-
