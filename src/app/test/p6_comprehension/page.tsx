@@ -694,7 +694,7 @@ export default function ComprehensionTestPage() {
               <br />
               말은 2~3문장, 대화는 최대 A-B-A 형식으로 제시됩니다.
               <br />
-              (예: &quot;Hello, I'm Kate. I can swim.&quot;을 듣고, &quot;Kate는 무엇을 할 수 있나요?&quot;에 수영 이미지를 선택)
+              (예: &quot;Hello, I&apos;m Kate. I can swim.&quot;을 듣고, &quot;Kate는 무엇을 할 수 있나요?&quot;에 수영 이미지를 선택)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               시험 시작하기
