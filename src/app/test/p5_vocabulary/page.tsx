@@ -399,48 +399,93 @@ export default function MeaningTestPage() {
       const audioPath = `/audio/meaning/${safeFileName}.mp3`;
       
       // 먼저 파일 존재 여부 확인
-      const response = await fetch(audioPath, { method: 'HEAD' });
-      
-      if (response.ok) {
-        // 사전 생성된 파일이 있으면 사용
-        const audio = new Audio(audioPath);
-        await new Promise<void>((resolve, reject) => {
-          audio.onended = () => resolve();
-          audio.onerror = () => {
-            console.warn(`[p5_vocabulary] 오디오 파일 재생 실패: ${audioPath}`);
-            reject(new Error('오디오 재생 실패'));
-          };
-          audio.play().catch(reject);
-        });
-      } else {
-        // 파일이 없으면 TTS API 사용 (폴백)
-        console.log(`[p5_vocabulary] 사전 생성된 오디오 없음, TTS 사용: ${phrase}`);
-        const ttsResponse = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: phrase }),
-        });
-        
-        if (!ttsResponse.ok) {
-          throw new Error('음성 생성 실패');
-        }
-        
-        const audioBlob = await ttsResponse.blob();
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const fallbackAudio = new Audio(audioUrl);
-        
-        await new Promise<void>((resolve, reject) => {
-          fallbackAudio.onended = () => {
-            URL.revokeObjectURL(audioUrl);
-            resolve();
-          };
-          fallbackAudio.onerror = reject;
-          fallbackAudio.play().catch(reject);
-        });
+      let usePreGenerated = false;
+      try {
+        const response = await fetch(audioPath, { method: 'HEAD' });
+        usePreGenerated = response.ok;
+      } catch (error) {
+        console.warn(`[p5_vocabulary] 파일 확인 실패, TTS 사용: ${audioPath}`);
+        usePreGenerated = false;
       }
+      
+      if (usePreGenerated) {
+        // 사전 생성된 파일이 있으면 사용 시도
+        try {
+          const audio = new Audio(audioPath);
+          await new Promise<void>((resolve, reject) => {
+            const timeout = setTimeout(() => {
+              reject(new Error('오디오 재생 타임아웃'));
+            }, 5000);
+            
+            audio.onended = () => {
+              clearTimeout(timeout);
+              resolve();
+            };
+            audio.onerror = (error) => {
+              clearTimeout(timeout);
+              console.warn(`[p5_vocabulary] 오디오 파일 재생 실패, TTS로 폴백: ${audioPath}`, error);
+              reject(new Error('오디오 재생 실패'));
+            };
+            audio.onloadeddata = () => {
+              // 파일이 로드되면 재생 시도
+              audio.play().catch((playError) => {
+                clearTimeout(timeout);
+                console.warn(`[p5_vocabulary] 오디오 재생 실패, TTS로 폴백:`, playError);
+                reject(playError);
+              });
+            };
+            audio.load();
+          });
+          return; // 성공적으로 재생했으면 종료
+        } catch (error) {
+          console.warn(`[p5_vocabulary] 사전 생성된 오디오 재생 실패, TTS로 폴백:`, error);
+          // TTS로 폴백 (아래 코드 계속 실행)
+        }
+      }
+      
+      // 파일이 없거나 재생 실패 시 TTS API 사용 (폴백)
+      console.log(`[p5_vocabulary] TTS 사용: ${phrase}`);
+      const ttsResponse = await fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text: phrase }),
+      });
+      
+      if (!ttsResponse.ok) {
+        throw new Error('음성 생성 실패');
+      }
+      
+      const audioBlob = await ttsResponse.blob();
+              const audioUrl = URL.createObjectURL(audioBlob);
+              const fallbackAudio = new Audio(audioUrl);
+      
+      await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('TTS 오디오 재생 타임아웃'));
+        }, 10000);
+        
+                fallbackAudio.onended = () => {
+          clearTimeout(timeout);
+                  URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+        fallbackAudio.onerror = (error) => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(audioUrl);
+          reject(error);
+        };
+        fallbackAudio.onloadeddata = () => {
+          fallbackAudio.play().catch((playError) => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(audioUrl);
+            reject(playError);
+          });
+        };
+        fallbackAudio.load();
+      });
     } catch (error) {
       console.error('[p5_vocabulary] 오디오 재생 에러:', error);
-      setFeedback('소리를 재생하는 데 문제가 생겼어요.');
+      setFeedback('소리를 재생하는 데 문제가 생겼어요. 잠시 후 다시 시도해주세요.');
     } finally {
       setIsAudioLoading(false);
     }
@@ -930,7 +975,7 @@ export default function MeaningTestPage() {
                         minHeight: '150px',
                       }}>
                         {isLoadingImages ? (
-                          <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
+                            <div style={{ marginBottom: '0.5rem' }}>이미지 로드 중...</div>
                         ) : (
                           <div style={{ fontSize: '0.9rem', opacity: 0.6 }}>이미지 준비 중...</div>
                         )}
@@ -997,11 +1042,17 @@ export default function MeaningTestPage() {
                   color: 'white',
                   fontSize: '1rem',
                 }}
-                onClick={(e) => {
+                onClick={async (e) => {
                   e.preventDefault();
                   e.stopPropagation();
                   try {
-                    router.push('/lobby');
+                    await router.push('/lobby');
+                    // 라우터가 작동하지 않으면 강제로 이동
+                    setTimeout(() => {
+                      if (window.location.pathname !== '/lobby') {
+                        window.location.href = '/lobby';
+                      }
+                    }, 100);
                   } catch (error) {
                     console.error('[p5_vocabulary] 라우터 오류:', error);
                     window.location.href = '/lobby';
