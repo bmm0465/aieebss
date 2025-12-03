@@ -260,10 +260,11 @@ export default function ComprehensionTestPage() {
             });
             
             // 정답 보기 찾기
-            const correctImageOption = allImageOptions.find((opt: any) => opt.isCorrect);
+            type OptionWithCorrect = ComprehensionOption & { isCorrect?: boolean };
+            const correctImageOption = allImageOptions.find((opt: OptionWithCorrect) => opt.isCorrect);
             
             // 오답 보기들
-            const wrongOptions = allImageOptions.filter((opt: any) => !opt.isCorrect);
+            const wrongOptions = allImageOptions.filter((opt: OptionWithCorrect) => !opt.isCorrect);
             
             // 정답 + 오답 2개 선택 (총 3개)
             const selectedWrongOptions = wrongOptions
@@ -274,8 +275,8 @@ export default function ComprehensionTestPage() {
             const finalOptions = correctImageOption 
               ? [...selectedWrongOptions, correctImageOption]
                   .sort(() => Math.random() - 0.5)
-                  .map(({ isCorrect, ...opt }) => opt) // isCorrect 제거
-              : allImageOptions.slice(0, 3).map(({ isCorrect, ...opt }: any) => opt); // 폴백: 처음 3개
+                  .map(({ isCorrect: _, ...opt }: OptionWithCorrect) => opt) // isCorrect 제거
+              : allImageOptions.slice(0, 3).map(({ isCorrect: _, ...opt }: OptionWithCorrect) => opt); // 폴백: 처음 3개
             
             return {
               dialogueOrStory: item.script.speaker2 ? 
