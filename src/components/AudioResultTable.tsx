@@ -339,12 +339,16 @@ export default function AudioResultTable({ testType, sessionId, studentId }: Aud
                         <div style={{ maxWidth: '200px', wordBreak: 'break-word', color: '#e9ecef' }}>
                           {result.question || '문제 없음'}
                         </div>
-                        {result.correct_answer && (
+                        {result.correct_answer && testType === 'p6_comprehension' ? (
+                          <P6DialogueAudioPlayer 
+                            question={result.question || ''}
+                          />
+                        ) : result.correct_answer ? (
                           <ChoiceTestAudioPlayer 
                             word={result.correct_answer}
                             testType={testType}
                           />
-                        )}
+                        ) : null}
                       </div>
                     ) : (
                       result.audio_url ? (
@@ -1016,6 +1020,253 @@ function ChoiceTestAudioPlayer({
         <>⏸️ 정지</>
       ) : (
         <>🔊 정답 음성 듣기</>
+      )}
+    </button>
+  );
+}
+
+// 6교시 대화 재생 컴포넌트
+function P6DialogueAudioPlayer({
+  question
+}: {
+  question: string;
+}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = React.useRef<string | null>(null);
+
+  // question에서 대화 부분 추출 (| 앞부분)
+  const dialoguePart = React.useMemo(() => {
+    if (!question) return null;
+    const parts = question.split(' | ');
+    return parts[0] || null;
+  }, [question]);
+
+  // 대화를 speaker1과 speaker2로 분리
+  const speakers = React.useMemo(() => {
+    if (!dialoguePart) return { speaker1: null, speaker2: null };
+    const lines = dialoguePart.split('\n').filter(line => line.trim());
+    if (lines.length >= 2) {
+      return { speaker1: lines[0].trim(), speaker2: lines[1].trim() };
+    } else if (lines.length === 1) {
+      return { speaker1: lines[0].trim(), speaker2: null };
+    }
+    return { speaker1: null, speaker2: null };
+  }, [dialoguePart]);
+
+  // 텍스트를 파일명으로 변환
+  const textToFileName = React.useCallback((text: string): string => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 50);
+  }, []);
+
+  const stopAudio = React.useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setIsPlaying(false);
+    setIsLoading(false);
+  }, []);
+
+  // 단일 음성 파일 재생
+  const playSingleAudio = React.useCallback(async (
+    text: string, 
+    speakerFolder: 'p6_speaker1' | 'p6_speaker2'
+  ): Promise<void> => {
+    if (!text) return;
+
+    const fileName = `${textToFileName(text)}.mp3`;
+    const audioPath = `/audio/comprehension/${speakerFolder}/${fileName}`;
+
+    // 파일 존재 여부 확인
+    let usePreGenerated = false;
+    try {
+      const response = await fetch(audioPath, { method: 'HEAD' });
+      usePreGenerated = response.ok;
+    } catch {
+      usePreGenerated = false;
+    }
+
+    if (usePreGenerated) {
+      // 사전 생성된 파일 재생
+      const audio = new Audio(audioPath);
+      audioRef.current = audio;
+
+      return new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('오디오 재생 타임아웃'));
+        }, 10000);
+
+        audio.onended = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        audio.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('오디오 재생 실패'));
+        };
+        audio.onloadeddata = () => {
+          audio.play().catch((playError) => {
+            clearTimeout(timeout);
+            reject(playError);
+          });
+        };
+        audio.load();
+      });
+    } else {
+      // TTS API 사용 (폴백)
+      const ttsResponse = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text }),
+      });
+
+      if (!ttsResponse.ok) {
+        throw new Error('TTS API 호출 실패');
+      }
+
+      const audioBlob = await ttsResponse.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      audioUrlRef.current = audioUrl;
+
+      const fallbackAudio = new Audio(audioUrl);
+      audioRef.current = fallbackAudio;
+
+      return new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('TTS 오디오 재생 타임아웃'));
+        }, 10000);
+
+        fallbackAudio.onloadeddata = () => {
+          fallbackAudio.play().catch((playError) => {
+            clearTimeout(timeout);
+            reject(playError);
+          });
+        };
+
+        fallbackAudio.onended = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+
+        fallbackAudio.onerror = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('TTS 오디오 재생 실패'));
+        };
+
+        fallbackAudio.load();
+      });
+    }
+  }, [textToFileName]);
+
+  const playDialogue = React.useCallback(async () => {
+    if (!speakers.speaker1 && !speakers.speaker2) {
+      throw new Error('재생할 대화가 없습니다.');
+    }
+
+    stopAudio();
+    setIsLoading(true);
+    setError(null);
+    setIsPlaying(true);
+
+    try {
+      // Speaker 1 재생
+      if (speakers.speaker1) {
+        try {
+          await playSingleAudio(speakers.speaker1, 'p6_speaker1');
+          // 화자 사이 간격
+          if (speakers.speaker2) {
+            await new Promise(resolve => setTimeout(resolve, 300));
+          }
+        } catch (error) {
+          console.warn('[P6DialogueAudioPlayer] Speaker 1 재생 실패:', error);
+          // 계속 진행
+        }
+      }
+
+      // Speaker 2 재생
+      if (speakers.speaker2) {
+        await playSingleAudio(speakers.speaker2, 'p6_speaker2');
+      }
+    } catch (error) {
+      console.error('[P6DialogueAudioPlayer] 대화 재생 에러:', error);
+      setError('재생 실패');
+      stopAudio();
+      throw error;
+    } finally {
+      setIsLoading(false);
+      setIsPlaying(false);
+    }
+  }, [speakers, playSingleAudio, stopAudio]);
+
+  // 컴포넌트 언마운트 시 오디오 정리
+  React.useEffect(() => {
+    return () => {
+      stopAudio();
+    };
+  }, [stopAudio]);
+
+  if (error) {
+    return (
+      <span style={{ color: '#dc3545', fontSize: '0.8rem' }}>❌ 재생 불가</span>
+    );
+  }
+
+  if (!speakers.speaker1 && !speakers.speaker2) {
+    return (
+      <span style={{ color: '#ccc', fontSize: '0.8rem' }}>대화 없음</span>
+    );
+  }
+
+  return (
+    <button
+      onClick={(e) => {
+        e.stopPropagation(); // 행 클릭 이벤트 전파 방지
+        if (isPlaying) {
+          stopAudio();
+        } else if (!isLoading) {
+          playDialogue();
+        }
+      }}
+      disabled={isLoading}
+      style={{
+        backgroundColor: isPlaying || isLoading ? '#6366f1' : 'rgba(99, 102, 241, 0.1)',
+        color: isPlaying || isLoading ? 'white' : '#6366f1',
+        border: '1px solid #6366f1',
+        borderRadius: '8px',
+        padding: '0.4rem 0.8rem',
+        fontSize: '0.85rem',
+        fontWeight: '500',
+        cursor: isLoading ? 'wait' : 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        transition: 'all 0.2s ease',
+        opacity: isLoading ? 0.7 : 1,
+      }}
+      title="대화 음성 재생"
+    >
+      {isLoading ? (
+        <>⏳ 재생 중...</>
+      ) : isPlaying ? (
+        <>⏸️ 정지</>
+      ) : (
+        <>🔊 대화 듣기</>
       )}
     </button>
   );
