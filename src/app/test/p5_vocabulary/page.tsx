@@ -273,7 +273,6 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
   });
   
   // 단어 => 어구 => 문장 순서로 정렬
-  const phaseOrder: VocabularyPhase[] = ['word', 'phrase', 'sentence'];
   const sortedItems: MeaningItem[] = [];
   
   const wordItems_sorted = items.filter(i => i.phase === 'word');
