@@ -57,6 +57,61 @@ const loadAvailableAudioWords = async (): Promise<string[]> => {
   }
 };
 
+// 헷갈릴 수 있는 유사 단어 그룹 정의 (같은 문항에서 함께 나오면 안 되는 단어들)
+const getConfusingWordGroups = (): string[][] => {
+  return [
+    // 필기구 그룹
+    ['pen', 'pencil'],
+    // 가족 그룹
+    ['mom', 'dad', 'brother', 'sister', 'grandfather', 'grandmother'],
+    // 색상 그룹
+    ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'orange'],
+    // 숫자 그룹
+    ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
+    // 과일 그룹
+    ['apple', 'banana'],
+    // 동물 그룹 (비슷한 크기/모양)
+    ['cat', 'dog', 'bird'],
+    ['elephant', 'monkey', 'lion', 'zebra'],
+    // 동작 그룹 (비슷한 의미)
+    ['run', 'jump', 'dance'],
+    ['sit', 'stand'],
+    // 음식 그룹
+    ['pizza', 'cheese'],
+    ['chicken', 'egg'],
+    // 도구/물건 그룹 (비슷한 용도)
+    ['cup', 'doll'],
+    ['book', 'pen', 'pencil'],
+    // 신체/부위
+    ['hand', 'hat'],
+  ];
+};
+
+// 단어가 헷갈릴 수 있는 그룹에 속하는지 확인
+const getConfusingGroupForWord = (word: string, groups: string[][]): string[] | null => {
+  const wordLower = word.toLowerCase();
+  for (const group of groups) {
+    if (group.some(w => w.toLowerCase() === wordLower)) {
+      return group.map(w => w.toLowerCase());
+    }
+  }
+  return null;
+};
+
+// 이미지로 표현하기 어려운 추상적 단어 제외 목록
+const getAbstractWordsToExclude = (): string[] => {
+  return [
+    // 감정/상태 표현
+    'nice', 'sorry', 'fine', 'good', 'great',
+    // 형용사 (추상적)
+    'pretty', 'big', 'small', 'tall', 'high', 'ready', 'right',
+    // 추상 동사/동작
+    'like', 'look', 'come', 'go', 'say', 'use', 'many',
+    // 숫자 (이미지로 표현하기 어려움)
+    'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
+  ];
+};
+
 // 실제 존재하는 단어 음성 파일과 이미지 파일을 기반으로 문항 생성
 // 단어만 20개 구성
 const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningItem[]> => {
@@ -72,15 +127,24 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
   
   // 음성 파일과 이미지 파일이 모두 있는 단어만 필터링
   const imageWordsLower = new Set(availableWords.map(w => w.toLowerCase()));
-  const validWords = availableAudioWords.filter(audioWord => {
+  let validWords = availableAudioWords.filter(audioWord => {
     return imageWordsLower.has(audioWord);
   });
   
   console.log('[p5_vocabulary] 음성과 이미지가 모두 있는 단어:', validWords.length, '개');
   
+  // 추상적 단어 제외 (이미지로 표현하기 어려운 단어들)
+  const abstractWordsToExclude = new Set(getAbstractWordsToExclude().map(w => w.toLowerCase()));
+  validWords = validWords.filter(word => !abstractWordsToExclude.has(word.toLowerCase()));
+  
+  console.log('[p5_vocabulary] 추상적 단어 제외 후 사용 가능한 단어:', validWords.length, '개');
+  
   if (validWords.length < 20) {
     console.warn(`[p5_vocabulary] 사용 가능한 단어가 부족합니다 (${validWords.length}개). 최대한 생성합니다.`);
   }
+  
+  // 헷갈릴 수 있는 단어 그룹 정의
+  const confusingGroups = getConfusingWordGroups();
   
   // 20개 단어 선택 (랜덤)
   const selectedWords = validWords
@@ -93,9 +157,22 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
   for (const word of selectedWords) {
     const wordLower = word.toLowerCase();
     
-    // 오답 선택지 생성 (같은 카테고리의 다른 단어)
+    // 현재 단어가 속한 헷갈릴 수 있는 그룹 찾기
+    const confusingGroup = getConfusingGroupForWord(wordLower, confusingGroups);
+    const confusingWordsSet = confusingGroup 
+      ? new Set(confusingGroup.filter(w => w !== wordLower))
+      : new Set<string>();
+    
+    // 오답 선택지 생성 (헷갈릴 수 있는 그룹의 단어는 제외)
     const wrongWords = validWords
-      .filter(w => w.toLowerCase() !== wordLower)
+      .filter(w => {
+        const wLower = w.toLowerCase();
+        // 정답 단어는 제외
+        if (wLower === wordLower) return false;
+        // 헷갈릴 수 있는 그룹의 다른 단어들도 제외
+        if (confusingWordsSet.has(wLower)) return false;
+        return true;
+      })
       .sort(() => Math.random() - 0.5)
       .slice(0, 2)
       .map(w => w.toLowerCase());
@@ -108,7 +185,13 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
         phase: 'word',
       });
       
-      console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}"`);
+      if (confusingGroup) {
+        console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}" (헷갈릴 수 있는 그룹: ${confusingGroup.filter(w => w !== wordLower).join(', ')})`);
+      } else {
+        console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}"`);
+      }
+    } else {
+      console.warn(`[p5_vocabulary] "${wordLower}"에 대한 충분한 오답 선택지를 찾을 수 없습니다.`);
     }
   }
   

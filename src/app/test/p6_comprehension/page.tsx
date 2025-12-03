@@ -25,6 +25,8 @@ interface ComprehensionItem {
   correctAnswer: string; // 영어 단어 (이미지 파일명)
   isDialogue?: boolean; // 대화 형식인지 여부
   evaluationTarget?: string; // evaluation.target (색깔과 크기, 인물의 모습, 색깔)
+  speaker1?: string; // 대화 형식일 때 Speaker 1 텍스트
+  speaker2?: string; // 대화 형식일 때 Speaker 2 텍스트
 }
 
 // p6_items.json 형식
@@ -247,14 +249,33 @@ export default function ComprehensionTestPage() {
             const correctWord = correctOption ? extractWordFromKorean(correctOption.description) : null;
             
             // 보기를 이미지로 변환
-            const imageOptions: ComprehensionOption[] = item.options.map((opt: P6JsonOption) => {
+            const allImageOptions: ComprehensionOption[] = item.options.map((opt: P6JsonOption) => {
               const word = extractWordFromKorean(opt.description);
               return {
                 type: 'image' as const,
                 content: word || opt.description.toLowerCase().replace(/\s+/g, '_'),
                 displayText: opt.description,
-              };
+                isCorrect: opt.isCorrect, // 정답 여부 임시 저장
+              } as ComprehensionOption & { isCorrect?: boolean };
             });
+            
+            // 정답 보기 찾기
+            const correctImageOption = allImageOptions.find((opt: any) => opt.isCorrect);
+            
+            // 오답 보기들
+            const wrongOptions = allImageOptions.filter((opt: any) => !opt.isCorrect);
+            
+            // 정답 + 오답 2개 선택 (총 3개)
+            const selectedWrongOptions = wrongOptions
+              .sort(() => Math.random() - 0.5)
+              .slice(0, 2);
+            
+            // 정답 포함하여 3개 구성 후 섞기
+            const finalOptions = correctImageOption 
+              ? [...selectedWrongOptions, correctImageOption]
+                  .sort(() => Math.random() - 0.5)
+                  .map(({ isCorrect, ...opt }) => opt) // isCorrect 제거
+              : allImageOptions.slice(0, 3).map(({ isCorrect, ...opt }: any) => opt); // 폴백: 처음 3개
             
             return {
               dialogueOrStory: item.script.speaker2 ? 
@@ -264,10 +285,12 @@ export default function ComprehensionTestPage() {
                 ? 'What is being described?' 
                 : item.question,
               questionKr: item.question,
-              options: imageOptions,
+              options: finalOptions,
               correctAnswer: correctWord || (correctOption ? correctOption.description : ''),
               isDialogue: !!item.script.speaker2,
               evaluationTarget: item.evaluation?.target || '', // evaluation.target 저장
+              speaker1: item.script.speaker1, // 화자별 재생을 위해 저장
+              speaker2: item.script.speaker2 || undefined, // 화자별 재생을 위해 저장
             };
           }).filter(item => item.correctAnswer && availableWords.includes(item.correctAnswer));
           
@@ -321,109 +344,141 @@ export default function ComprehensionTestPage() {
     setup();
   }, [router, supabase.auth]);
 
-  const playStoryAudio = useCallback(async (story: string, repeat: number = 1) => {
+  // 텍스트를 파일명으로 변환 (화자별 음성 파일용)
+  const textToFileName = useCallback((text: string): string => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9\s]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^_|_$/g, '')
+      .slice(0, 50);
+  }, []);
+
+  // 단일 음성 파일 재생 (사전 생성 파일 또는 TTS)
+  const playSingleAudio = useCallback(async (text: string, speakerFolder: 'p6_speaker1' | 'p6_speaker2' | null = null): Promise<void> => {
+    // 화자별 폴더가 지정된 경우 해당 폴더에서 파일 찾기
+    let audioPath = '';
+    if (speakerFolder) {
+      const fileName = `${textToFileName(text)}.mp3`;
+      audioPath = `/audio/comprehension/${speakerFolder}/${fileName}`;
+    } else {
+      // 기존 방식: 전체 스토리 파일
+      const safeFileName = text.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
+      audioPath = `/audio/comprehension/${safeFileName}.mp3`;
+    }
+
+    // 파일 존재 여부 확인
+    let usePreGenerated = false;
+    try {
+      const response = await fetch(audioPath, { method: 'HEAD' });
+      usePreGenerated = response.ok;
+    } catch {
+      usePreGenerated = false;
+    }
+
+    if (usePreGenerated) {
+      // 사전 생성된 파일 재생
+      const audio = new Audio(audioPath);
+      return new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('오디오 재생 타임아웃'));
+        }, 10000);
+
+        audio.onended = () => {
+          clearTimeout(timeout);
+          resolve();
+        };
+        audio.onerror = () => {
+          clearTimeout(timeout);
+          reject(new Error('오디오 재생 실패'));
+        };
+        audio.onloadeddata = () => {
+          audio.play().catch((playError) => {
+            clearTimeout(timeout);
+            reject(playError);
+          });
+        };
+        audio.load();
+      });
+    } else {
+      // TTS API 사용 (폴백)
+      const ttsResponse = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text }),
+      });
+
+      if (!ttsResponse.ok) {
+        throw new Error('음성 생성 실패');
+      }
+
+      const audioBlob = await ttsResponse.blob();
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const fallbackAudio = new Audio(audioUrl);
+
+      return new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('TTS 오디오 재생 타임아웃'));
+        }, 10000);
+
+        fallbackAudio.onended = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(audioUrl);
+          resolve();
+        };
+        fallbackAudio.onerror = () => {
+          clearTimeout(timeout);
+          URL.revokeObjectURL(audioUrl);
+          reject(new Error('TTS 오디오 재생 실패'));
+        };
+        fallbackAudio.onloadeddata = () => {
+          fallbackAudio.play().catch((playError) => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(audioUrl);
+            reject(playError);
+          });
+        };
+        fallbackAudio.load();
+      });
+    }
+  }, [textToFileName]);
+
+  const playStoryAudio = useCallback(async (item: ComprehensionItem, repeat: number = 1) => {
     setIsAudioLoading(true);
     try {
-      // 사전 생성된 오디오 파일 사용 (우선)
-      const safeFileName = story.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
-      const audioPath = `/audio/comprehension/${safeFileName}.mp3`;
-      
-      // 먼저 파일 존재 여부 확인
-      let usePreGenerated = false;
-      try {
-        const response = await fetch(audioPath, { method: 'HEAD' });
-        usePreGenerated = response.ok;
-      } catch {
-        console.warn(`[p6_comprehension] 파일 확인 실패, TTS 사용: ${audioPath}`);
-        usePreGenerated = false;
-      }
-      
-      const playAudio = async (): Promise<void> => {
-        if (usePreGenerated) {
-          // 사전 생성된 파일이 있으면 사용 시도
+      const playDialogue = async (): Promise<void> => {
+        // 대화 형식인 경우: 화자별로 순차 재생
+        if (item.isDialogue && item.speaker1 && item.speaker2) {
+          // Speaker 1 재생
           try {
-            const audio = new Audio(audioPath);
-            return new Promise<void>((resolve, reject) => {
-              const timeout = setTimeout(() => {
-                reject(new Error('오디오 재생 타임아웃'));
-              }, 5000);
-              
-              audio.onended = () => {
-                clearTimeout(timeout);
-                resolve();
-              };
-              audio.onerror = (error) => {
-                clearTimeout(timeout);
-                console.warn(`[p6_comprehension] 오디오 파일 재생 실패, TTS로 폴백: ${audioPath}`, error);
-                reject(new Error('오디오 재생 실패'));
-              };
-              audio.onloadeddata = () => {
-                // 파일이 로드되면 재생 시도
-                audio.play().catch((playError) => {
-                  clearTimeout(timeout);
-                  console.warn(`[p6_comprehension] 오디오 재생 실패, TTS로 폴백:`, playError);
-                  reject(playError);
-                });
-              };
-              audio.load();
-            });
+            await playSingleAudio(item.speaker1, 'p6_speaker1');
+            // 화자 사이 간격
+            await new Promise(resolve => setTimeout(resolve, 300));
           } catch (error) {
-            console.warn(`[p6_comprehension] 사전 생성된 오디오 재생 실패, TTS로 폴백:`, error);
-            // TTS로 폴백 (아래 코드 계속 실행)
-            usePreGenerated = false;
+            console.warn('[p6_comprehension] Speaker 1 재생 실패:', error);
+            // 계속 진행
           }
-        }
-        
-        // 파일이 없거나 재생 실패 시 TTS API 사용 (폴백)
-        if (!usePreGenerated) {
-          console.log(`[p6_comprehension] TTS 사용: ${story}`);
-          const ttsResponse = await fetch('/api/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: story }),
-          });
-          
-          if (!ttsResponse.ok) {
-            throw new Error('음성 생성 실패');
+
+          // Speaker 2 재생
+          try {
+            await playSingleAudio(item.speaker2, 'p6_speaker2');
+          } catch (error) {
+            console.warn('[p6_comprehension] Speaker 2 재생 실패:', error);
+            throw error;
           }
-          
-          const audioBlob = await ttsResponse.blob();
-          const audioUrl = URL.createObjectURL(audioBlob);
-          const fallbackAudio = new Audio(audioUrl);
-          
-          return new Promise<void>((resolve, reject) => {
-            const timeout = setTimeout(() => {
-              reject(new Error('TTS 오디오 재생 타임아웃'));
-            }, 10000);
-            
-            fallbackAudio.onended = () => {
-              clearTimeout(timeout);
-              URL.revokeObjectURL(audioUrl);
-              resolve();
-            };
-            fallbackAudio.onerror = (error) => {
-              clearTimeout(timeout);
-              URL.revokeObjectURL(audioUrl);
-              reject(error);
-            };
-            fallbackAudio.onloadeddata = () => {
-              fallbackAudio.play().catch((playError) => {
-                clearTimeout(timeout);
-                URL.revokeObjectURL(audioUrl);
-                reject(playError);
-              });
-            };
-            fallbackAudio.load();
-          });
+        } else {
+          // 스토리 형식인 경우: 기존 방식 (전체 텍스트 재생)
+          await playSingleAudio(item.dialogueOrStory, null);
         }
       };
-      
+
       // 반복 재생
       for (let i = 0; i < repeat; i++) {
-        await playAudio();
+        await playDialogue();
         if (i < repeat - 1) {
           // 반복 사이에 짧은 간격
-          await new Promise(resolve => setTimeout(resolve, 300));
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
     } catch (error) {
@@ -432,7 +487,7 @@ export default function ComprehensionTestPage() {
     } finally {
       setIsAudioLoading(false);
     }
-  }, []);
+  }, [playSingleAudio]);
 
   const loadImagesForItem = useCallback(async (item: ComprehensionItem) => {
     setIsLoadingImages(true);
@@ -778,7 +833,7 @@ export default function ComprehensionTestPage() {
                 onClick={() => {
                   const repeat = repeatCount < 2 ? repeatCount + 1 : 1;
                   setRepeatCount(repeat);
-                  playStoryAudio(currentItem.dialogueOrStory, repeat);
+                  playStoryAudio(currentItem, repeat);
                 }}
                 style={{
                   ...buttonStyle,
@@ -968,11 +1023,17 @@ export default function ComprehensionTestPage() {
                 transition: 'all 0.2s ease',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 try {
-                  router.push('/lobby');
+                  await router.push('/lobby');
+                  // 라우터가 작동하지 않으면 강제로 이동
+                  setTimeout(() => {
+                    if (window.location.pathname !== '/lobby') {
+                      window.location.href = '/lobby';
+                    }
+                  }, 100);
                 } catch (error) {
                   console.error('[p6_comprehension] 라우터 오류:', error);
                   window.location.href = '/lobby';
