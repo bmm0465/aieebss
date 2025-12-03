@@ -79,12 +79,16 @@ export default function StressTestPage() {
             // JSON 구조 검증
             if (Array.isArray(jsonItems) && jsonItems.length > 0) {
               // 각 항목이 필수 필드를 가지고 있는지 확인
-              const validItems = jsonItems.filter((item: any) => 
-                item.word && 
-                Array.isArray(item.choices) && 
-                item.choices.length > 0 && 
-                item.correctAnswer
-              );
+              const validItems = jsonItems.filter((item: unknown): item is StressItem => {
+                if (typeof item !== 'object' || item === null) return false;
+                const obj = item as Record<string, unknown>;
+                return (
+                  typeof obj.word === 'string' &&
+                  Array.isArray(obj.choices) &&
+                  obj.choices.length > 0 &&
+                  typeof obj.correctAnswer === 'string'
+                );
+              });
               
               if (validItems.length > 0) {
                 console.log('[p3_suprasegmental_phoneme] ✅ p3_stress_items.json에서 문항 로드:', validItems.length, '개');
