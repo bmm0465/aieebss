@@ -37,11 +37,11 @@ function getStressPosition(choice: string): number {
 // [폴백] 3교시 고정 문항: 강세 패턴 선택
 const getFixedStressItems = (): StressItem[] => {
   return [
-    { word: 'apple', choices: ['APple', 'apPLE', 'APPLE'], correctAnswer: 'apPLE' },
-    { word: 'banana', choices: ['BAnana', 'baNAna', 'bananA'], correctAnswer: 'baNAna' },
-    { word: 'brother', choices: ['BROther', 'broTHER', 'BROTHER'], correctAnswer: 'broTHER' },
-    { word: 'carrot', choices: ['CARrot', 'carROT', 'CARROT'], correctAnswer: 'carROT' },
-    { word: 'chicken', choices: ['CHIcken', 'chiCKEN', 'CHICKEN'], correctAnswer: 'chiCKEN' },
+    { word: 'apple', choices: ['APple', 'apPLE', 'APPLE'], correctAnswer: 'APple' },
+    { word: 'banana', choices: ['BANana', 'banANa', 'bananA'], correctAnswer: 'banANa' },
+    { word: 'brother', choices: ['BROther', 'broTHER', 'BROTHER'], correctAnswer: 'BROther' },
+    { word: 'carrot', choices: ['CARrot', 'carROT', 'CARROT'], correctAnswer: 'CARrot' },
+    { word: 'chicken', choices: ['CHIcken', 'chiCKEN', 'CHICKEN'], correctAnswer: 'CHIcken' },
   ];
 };
 
@@ -71,27 +71,51 @@ export default function StressTestPage() {
       setUser(user);
 
       try {
-        // p3_stress_items.json에서 문항 로드 시도
+        // p3_stress_items.json에서 문항 로드 시도 (최우선)
         const response = await fetch('/data/p3_stress_items.json');
         if (response.ok) {
-          const jsonItems = await response.json();
-          console.log('[p3_suprasegmental_phoneme] p3_stress_items.json에서 문항 로드:', jsonItems.length, '개');
-          setItems(jsonItems as StressItem[]);
-        } else {
-          // DB에서 승인된 문항 조회 시도
-          const gradeLevel = await getUserGradeLevel(user.id);
-          const dbItems = await fetchApprovedTestItems('p3_suprasegmental_phoneme', gradeLevel || undefined);
-
-          if (dbItems && Array.isArray(dbItems.items)) {
-            console.log('[p3_suprasegmental_phoneme] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-            setItems(dbItems.items as StressItem[]);
-          } else {
-            console.log('[p3_suprasegmental_phoneme] 기본 문항 사용');
-            setItems(getFixedStressItems());
+          try {
+            const jsonItems = await response.json();
+            // JSON 구조 검증
+            if (Array.isArray(jsonItems) && jsonItems.length > 0) {
+              // 각 항목이 필수 필드를 가지고 있는지 확인
+              const validItems = jsonItems.filter((item: any) => 
+                item.word && 
+                Array.isArray(item.choices) && 
+                item.choices.length > 0 && 
+                item.correctAnswer
+              );
+              
+              if (validItems.length > 0) {
+                console.log('[p3_suprasegmental_phoneme] ✅ p3_stress_items.json에서 문항 로드:', validItems.length, '개');
+                setItems(validItems as StressItem[]);
+                return; // JSON 파일 사용 성공, 함수 종료
+              } else {
+                console.warn('[p3_suprasegmental_phoneme] ⚠️ JSON 파일의 문항이 유효하지 않음');
+              }
+            } else {
+              console.warn('[p3_suprasegmental_phoneme] ⚠️ JSON 파일이 배열이 아니거나 비어있음');
+            }
+          } catch (parseError) {
+            console.error('[p3_suprasegmental_phoneme] ❌ JSON 파싱 오류:', parseError);
           }
+        } else {
+          console.warn('[p3_suprasegmental_phoneme] ⚠️ p3_stress_items.json 파일을 찾을 수 없음 (404)');
+        }
+        
+        // JSON 파일 로드 실패 시 DB에서 승인된 문항 조회 시도
+        const gradeLevel = await getUserGradeLevel(user.id);
+        const dbItems = await fetchApprovedTestItems('p3_suprasegmental_phoneme', gradeLevel || undefined);
+
+        if (dbItems && Array.isArray(dbItems.items) && dbItems.items.length > 0) {
+          console.log('[p3_suprasegmental_phoneme] ✅ DB에서 승인된 문항 사용:', dbItems.items.length, '개');
+          setItems(dbItems.items as StressItem[]);
+        } else {
+          console.log('[p3_suprasegmental_phoneme] 📝 기본 문항 사용 (폴백)');
+          setItems(getFixedStressItems());
         }
       } catch (error) {
-        console.error('[p3_suprasegmental_phoneme] 문항 로딩 오류, 기본 문항 사용:', error);
+        console.error('[p3_suprasegmental_phoneme] ❌ 문항 로딩 오류, 기본 문항 사용:', error);
         setItems(getFixedStressItems());
       }
     };
