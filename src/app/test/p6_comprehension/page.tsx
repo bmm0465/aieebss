@@ -333,7 +333,7 @@ export default function ComprehensionTestPage() {
       try {
         const response = await fetch(audioPath, { method: 'HEAD' });
         usePreGenerated = response.ok;
-      } catch (error) {
+      } catch {
         console.warn(`[p6_comprehension] 파일 확인 실패, TTS 사용: ${audioPath}`);
         usePreGenerated = false;
       }
