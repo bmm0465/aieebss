@@ -272,11 +272,18 @@ export default function ComprehensionTestPage() {
               .slice(0, 2);
             
             // 정답 포함하여 3개 구성 후 섞기
+            const removeIsCorrect = (opt: OptionWithCorrect): ComprehensionOption => {
+              return {
+                type: opt.type,
+                content: opt.content,
+                displayText: opt.displayText,
+              };
+            };
             const finalOptions = correctImageOption 
               ? [...selectedWrongOptions, correctImageOption]
                   .sort(() => Math.random() - 0.5)
-                  .map(({ isCorrect: _, ...opt }: OptionWithCorrect) => opt) // isCorrect 제거
-              : allImageOptions.slice(0, 3).map(({ isCorrect: _, ...opt }: OptionWithCorrect) => opt); // 폴백: 처음 3개
+                  .map(removeIsCorrect) // isCorrect 제거
+              : allImageOptions.slice(0, 3).map(removeIsCorrect); // 폴백: 처음 3개
             
             return {
               dialogueOrStory: item.script.speaker2 ? 
