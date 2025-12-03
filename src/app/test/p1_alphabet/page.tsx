@@ -7,27 +7,49 @@ import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
 // [폴백] 테스트용 알파벳 목록: 대문자 A~Z 26개, 소문자 a~z 26개 (총 52개)
+// 모든 학생이 동일한 섞인 순서로 평가를 보도록 고정된 순서 사용
 const getFixedAlphabet = () => {
-    // 폰트 구분 확인용: I, l, i, L을 앞에 배치
+    // 모든 알파벳 수집 (대소문자 모두)
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const lowercase = 'abcdefghijklmnopqrstuvwxyz'.split('');
     
-    // I와 L을 제외한 나머지 대문자
-    const uppercaseWithoutIL = uppercase.filter(letter => letter !== 'I' && letter !== 'L');
-    // i와 l을 제외한 나머지 소문자
-    const lowercaseWithoutIL = lowercase.filter(letter => letter !== 'i' && letter !== 'l');
+    // 모든 알파벳을 하나의 배열로 합치기
+    const allLetters = [...uppercase, ...lowercase];
     
-    // 순서: I(1번), l(2번), i(3번), L(4번), 나머지 대문자, 나머지 소문자
-    const fixedLetters = [
-        'I', // 1번: 대문자 아이
-        'l', // 2번: 소문자 엘
-        'i', // 3번: 소문자 아이
-        'L', // 4번: 대문자 엘
-        ...uppercaseWithoutIL, // 5~28번: 나머지 대문자 (24개)
-        ...lowercaseWithoutIL  // 29~52번: 나머지 소문자 (24개)
-    ];
+    // 고정된 시드로 일관된 섞기 (모든 학생이 동일한 순서)
+    const FIXED_SEED = 'aieebss-p1-alphabet-2025';
     
-    return fixedLetters; // 총 52개: I, l, i, L, 대문자 24개, 소문자 24개
+    // 시드 기반 랜덤 생성기
+    class SeededRandom {
+        private seed: number;
+        
+        constructor(seed: string) {
+            let hash = 0;
+            for (let i = 0; i < seed.length; i++) {
+                const char = seed.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash;
+            }
+            this.seed = Math.abs(hash);
+        }
+        
+        next(): number {
+            this.seed = (this.seed * 9301 + 49297) % 233280;
+            return this.seed / 233280;
+        }
+    }
+    
+    // 고정된 시드로 섞기 (모든 학생이 동일한 순서)
+    const shuffled = [...allLetters];
+    const rng = new SeededRandom(FIXED_SEED);
+    
+    // Fisher-Yates 셔플 알고리즘
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(rng.next() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    
+    return shuffled; // 총 52개: 대소문자 모두 섞인 순서
 };
 
 export default function LnfTestPage() {
@@ -70,11 +92,11 @@ export default function LnfTestPage() {
         const dbItems = await fetchApprovedTestItems('p1_alphabet', gradeLevel || undefined);
 
         if (dbItems && Array.isArray(dbItems.items)) {
-          // DB에서 가져온 문항 사용
+          // DB에서 가져온 문항 사용 (이미 섞인 순서로 저장되어 있다고 가정)
           console.log('[p1_alphabet] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
           setShuffledAlphabet(dbItems.items as string[]);
         } else {
-          // 폴백: 고정 문항 사용
+          // 폴백: 고정 문항 사용 (이미 섞인 순서)
           console.log('[p1_alphabet] 승인된 문항이 없어 기본 문항 사용');
           setShuffledAlphabet(getFixedAlphabet());
         }
@@ -377,7 +399,11 @@ export default function LnfTestPage() {
 
         {phase === 'testing' && (
           <div>
-            <div style={letterBoxStyle}>{currentLetter}</div>
+            <div style={letterBoxStyle}>
+              {currentLetter === 'I' || currentLetter === 'i' ? 'I / i' : 
+               currentLetter === 'L' || currentLetter === 'l' ? 'L / l' : 
+               currentLetter}
+            </div>
             <p style={feedbackStyle}>{feedback}</p>
             
             <div style={{ position: 'relative', width: '100%' }}>
