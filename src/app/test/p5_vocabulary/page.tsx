@@ -20,26 +20,6 @@ interface ImageWord {
   file: string;
 }
 
-interface CoreExpressions {
-  units: Array<{
-    unit: number;
-    entries: Array<{
-      index: number;
-      chunjae_text_ham: string | null;
-    }>;
-  }>;
-}
-
-interface VocabularyLevel {
-  units: Array<{
-    unit: number;
-    entries: Array<{
-      index: number;
-      chunjae_text_ham: string | null;
-    }>;
-  }>;
-}
-
 // 사용 가능한 이미지 단어 목록 로드
 const loadAvailableWords = async (): Promise<string[]> => {
   try {
@@ -73,62 +53,6 @@ const loadAvailableAudioFiles = async (): Promise<string[]> => {
     return data.map(item => item.original);
   } catch (error) {
     console.error('[p5_vocabulary] audio index.json 로드 오류:', error);
-    return [];
-  }
-};
-
-// 천재교과서(함) 핵심 표현 로드
-const loadChunjaeExpressions = async (): Promise<string[]> => {
-  try {
-    const response = await fetch('/data/core_expressions.json');
-    if (!response.ok) {
-      console.warn('[p5_vocabulary] core_expressions.json 로드 실패');
-      return [];
-    }
-    const data: CoreExpressions = await response.json();
-    const expressions: string[] = [];
-    
-    data.units.forEach(unit => {
-      unit.entries.forEach(entry => {
-        if (entry.chunjae_text_ham && entry.chunjae_text_ham.trim()) {
-          // "Hi. / Hello." 같은 경우 분리
-          const parts = entry.chunjae_text_ham.split('/').map(s => s.trim());
-          expressions.push(...parts);
-        }
-      });
-    });
-    
-    return expressions.filter(expr => expr.length > 0);
-  } catch (error) {
-    console.error('[p5_vocabulary] core_expressions.json 로드 오류:', error);
-    return [];
-  }
-};
-
-// 천재교과서(함) 어휘 로드
-const loadChunjaeVocabulary = async (): Promise<string[]> => {
-  try {
-    const response = await fetch('/data/vocabulary_level.json');
-    if (!response.ok) {
-      console.warn('[p5_vocabulary] vocabulary_level.json 로드 실패');
-      return [];
-    }
-    const data: VocabularyLevel = await response.json();
-    const words: string[] = [];
-    
-    data.units.forEach(unit => {
-      unit.entries.forEach(entry => {
-        if (entry.chunjae_text_ham && entry.chunjae_text_ham.trim()) {
-          // "hello(hi)" 같은 경우 괄호 제거
-          const word = entry.chunjae_text_ham.split('(')[0].trim();
-          words.push(word);
-        }
-      });
-    });
-    
-    return words.filter(word => word.length > 0);
-  } catch (error) {
-    console.error('[p5_vocabulary] vocabulary_level.json 로드 오류:', error);
     return [];
   }
 };
