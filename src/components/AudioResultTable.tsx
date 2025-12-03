@@ -809,13 +809,30 @@ function ChoiceTestAudioPlayer({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const audioRef = React.useRef<HTMLAudioElement | null>(null);
+  const audioUrlRef = React.useRef<string | null>(null);
+
+  const stopAudio = React.useCallback(() => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
+    if (audioUrlRef.current) {
+      URL.revokeObjectURL(audioUrlRef.current);
+      audioUrlRef.current = null;
+    }
+    setIsPlaying(false);
+    setIsLoading(false);
+  }, []);
 
   const playAudio = React.useCallback(async () => {
     if (!word) return;
     
+    // 이전 오디오 정리
+    stopAudio();
+    
     setIsLoading(true);
     setError(null);
-    setIsPlaying(true);
 
     try {
       // 테스트 타입에 따라 음성 파일 경로 결정
@@ -825,109 +842,139 @@ function ChoiceTestAudioPlayer({
       } else if (testType === 'p3_suprasegmental_phoneme') {
         audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`; // 3교시도 같은 폴더 사용
       } else if (testType === 'p5_vocabulary') {
-        const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-        audioPath = `/audio/meaning/${safeFileName}.mp3`;
+        audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
       } else if (testType === 'p6_comprehension') {
         const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
         audioPath = `/audio/comprehension/${safeFileName}.mp3`;
       }
 
-      if (audioPath) {
-        const audio = new Audio(audioPath);
-        audioRef.current = audio;
-
-        // 재생 완료 시 상태 초기화
-        audio.onended = () => {
-          setIsPlaying(false);
-          setIsLoading(false);
-        };
-
-        // 에러 발생 시 TTS API 사용 (폴백)
-        audio.onerror = async () => {
-          console.log(`[ChoiceTestAudioPlayer] 음성 파일 없음, TTS API 사용: ${word}`);
-          
-          try {
-            const response = await fetch('/api/tts', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ text: word }),
-            });
-
-            if (!response.ok) throw new Error('TTS API 호출 실패');
-
-            const audioBlob = await response.blob();
-            const audioUrl = URL.createObjectURL(audioBlob);
-            const fallbackAudio = new Audio(audioUrl);
-            
-            fallbackAudio.onended = () => {
-              URL.revokeObjectURL(audioUrl);
-              setIsPlaying(false);
-              setIsLoading(false);
-            };
-
-            fallbackAudio.onerror = () => {
-              URL.revokeObjectURL(audioUrl);
-              setError('재생 실패');
-              setIsPlaying(false);
-              setIsLoading(false);
-            };
-
-            await fallbackAudio.play();
-          } catch (ttsError) {
-            console.error('[ChoiceTestAudioPlayer] TTS API 에러:', ttsError);
-            setError('재생 실패');
-            setIsPlaying(false);
-            setIsLoading(false);
-          }
-        };
-
-        await audio.play();
-      } else {
-        // 경로가 없으면 바로 TTS API 사용
+      // TTS 재생 함수
+      const playTTS = async (text: string): Promise<void> => {
         const response = await fetch('/api/tts', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text: word }),
+          body: JSON.stringify({ text }),
         });
 
         if (!response.ok) throw new Error('TTS API 호출 실패');
 
         const audioBlob = await response.blob();
         const audioUrl = URL.createObjectURL(audioBlob);
-        const fallbackAudio = new Audio(audioUrl);
+        audioUrlRef.current = audioUrl;
         
-        fallbackAudio.onended = () => {
-          URL.revokeObjectURL(audioUrl);
-          setIsPlaying(false);
-          setIsLoading(false);
-        };
+        const fallbackAudio = new Audio(audioUrl);
+        audioRef.current = fallbackAudio;
+        
+        return new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('TTS 오디오 로딩 타임아웃'));
+          }, 10000);
+          
+          fallbackAudio.onloadeddata = () => {
+            clearTimeout(timeout);
+            setIsPlaying(true);
+            setIsLoading(false);
+            fallbackAudio.play()
+              .then(() => {
+                // 재생 시작 성공
+              })
+              .catch((playError) => {
+                clearTimeout(timeout);
+                console.error('[ChoiceTestAudioPlayer] 재생 시작 실패:', playError);
+                reject(playError);
+              });
+          };
+          
+          fallbackAudio.onended = () => {
+            clearTimeout(timeout);
+            stopAudio();
+            resolve();
+          };
 
-        fallbackAudio.onerror = () => {
-          URL.revokeObjectURL(audioUrl);
-          setError('재생 실패');
-          setIsPlaying(false);
-          setIsLoading(false);
-        };
+          fallbackAudio.onerror = (err) => {
+            clearTimeout(timeout);
+            console.error('[ChoiceTestAudioPlayer] TTS 오디오 에러:', err);
+            stopAudio();
+            reject(new Error('오디오 재생 실패'));
+          };
+          
+          fallbackAudio.load();
+        });
+      };
 
-        await fallbackAudio.play();
+      if (audioPath) {
+        // 먼저 파일 존재 여부 확인
+        try {
+          const headResponse = await fetch(audioPath, { method: 'HEAD' });
+          
+          if (headResponse.ok) {
+            // 파일이 존재하면 재생 시도
+            const audio = new Audio(audioPath);
+            audioRef.current = audio;
+            
+            await new Promise<void>((resolve, reject) => {
+              const timeout = setTimeout(() => {
+                reject(new Error('오디오 로딩 타임아웃'));
+              }, 10000);
+              
+              audio.onloadeddata = () => {
+                clearTimeout(timeout);
+                setIsPlaying(true);
+                setIsLoading(false);
+                audio.play()
+                  .then(() => {
+                    // 재생 시작 성공
+                  })
+                  .catch((playError) => {
+                    clearTimeout(timeout);
+                    console.warn('[ChoiceTestAudioPlayer] 재생 시작 실패, TTS로 폴백:', playError);
+                    reject(playError);
+                  });
+              };
+              
+              audio.onended = () => {
+                clearTimeout(timeout);
+                stopAudio();
+                resolve();
+              };
+              
+              audio.onerror = (err) => {
+                clearTimeout(timeout);
+                console.log(`[ChoiceTestAudioPlayer] 음성 파일 없음, TTS API 사용: ${word}`);
+                reject(new Error('파일 재생 실패'));
+              };
+              
+              audio.load();
+            });
+            
+            return; // 성공적으로 재생했으면 종료
+          } else {
+            // 파일이 없으면 TTS 사용
+            console.log(`[ChoiceTestAudioPlayer] 음성 파일 없음, TTS API 사용: ${word}`);
+            await playTTS(word);
+          }
+        } catch (fetchError) {
+          // 파일 확인 실패 시 TTS 사용
+          console.log(`[ChoiceTestAudioPlayer] 파일 확인 실패, TTS API 사용: ${word}`);
+          await playTTS(word);
+        }
+      } else {
+        // 경로가 없으면 바로 TTS API 사용
+        await playTTS(word);
       }
     } catch (error) {
       console.error('[ChoiceTestAudioPlayer] 오디오 재생 에러:', error);
       setError('재생 실패');
-      setIsPlaying(false);
-      setIsLoading(false);
+      stopAudio();
     }
-  }, [word, testType]);
+  }, [word, testType, stopAudio]);
 
   // 컴포넌트 언마운트 시 오디오 정리
   React.useEffect(() => {
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      stopAudio();
     };
-  }, []);
+  }, [stopAudio]);
 
   if (error) {
     return (
@@ -939,11 +986,13 @@ function ChoiceTestAudioPlayer({
     <button
       onClick={(e) => {
         e.stopPropagation(); // 행 클릭 이벤트 전파 방지
-        if (!isPlaying && !isLoading) {
+        if (isPlaying) {
+          stopAudio();
+        } else if (!isLoading) {
           playAudio();
         }
       }}
-      disabled={isLoading || isPlaying}
+      disabled={isLoading}
       style={{
         backgroundColor: isPlaying || isLoading ? '#6366f1' : 'rgba(99, 102, 241, 0.1)',
         color: isPlaying || isLoading ? 'white' : '#6366f1',
@@ -952,19 +1001,19 @@ function ChoiceTestAudioPlayer({
         padding: '0.4rem 0.8rem',
         fontSize: '0.85rem',
         fontWeight: '500',
-        cursor: isLoading || isPlaying ? 'wait' : 'pointer',
+        cursor: isLoading ? 'wait' : 'pointer',
         display: 'flex',
         alignItems: 'center',
         gap: '0.4rem',
         transition: 'all 0.2s ease',
-        opacity: isLoading || isPlaying ? 0.7 : 1,
+        opacity: isLoading ? 0.7 : 1,
       }}
       title={`정답 단어 "${word}" 음성 재생`}
     >
       {isLoading ? (
         <>⏳ 재생 중...</>
       ) : isPlaying ? (
-        <>🔊 재생 중...</>
+        <>⏸️ 정지</>
       ) : (
         <>🔊 정답 음성 듣기</>
       )}

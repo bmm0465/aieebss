@@ -36,23 +36,23 @@ const loadAvailableWords = async (): Promise<string[]> => {
   }
 };
 
-// 이미 생성된 음성 파일 목록 로드
-interface AudioFileInfo {
-  original: string;
+// chunjae-text-ham 단어 음성 파일 목록 로드
+interface AudioWordInfo {
+  word: string;
   file: string;
 }
 
-const loadAvailableAudioFiles = async (): Promise<string[]> => {
+const loadAvailableAudioWords = async (): Promise<string[]> => {
   try {
-    const response = await fetch('/audio/meaning/index.json');
+    const response = await fetch('/audio/p2_segmental_phoneme/chunjae-text-ham/index.json');
     if (!response.ok) {
-      console.warn('[p5_vocabulary] audio index.json 로드 실패');
+      console.warn('[p5_vocabulary] audio word index.json 로드 실패');
       return [];
     }
-    const data: AudioFileInfo[] = await response.json();
-    return data.map(item => item.original);
+    const data: AudioWordInfo[] = await response.json();
+    return data.map(item => item.word.toLowerCase());
   } catch (error) {
-    console.error('[p5_vocabulary] audio index.json 로드 오류:', error);
+    console.error('[p5_vocabulary] audio word index.json 로드 오류:', error);
     return [];
   }
 };
@@ -119,45 +119,45 @@ const findImageWordForExpression = (expression: string, availableWords: string[]
   return extractImageWord(expression, availableWords);
 };
 
-// 실제 존재하는 음성 파일과 이미지 파일을 기반으로 문항 생성
-// 단어 5개, 어구 5개, 문장 5개 구성
+// 실제 존재하는 단어 음성 파일과 이미지 파일을 기반으로 문항 생성
+// 단어만 20개 구성
 const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningItem[]> => {
   if (availableWords.length === 0) {
     return [];
   }
 
-  const wordItems: MeaningItem[] = [];
-  const phraseItems: MeaningItem[] = [];
-  const sentenceItems: MeaningItem[] = [];
+  // 단어 음성 파일 목록 로드
+  const availableAudioWords = await loadAvailableAudioWords();
   
-  // 실제 존재하는 음성 파일 목록 로드
-  const availableAudioPhrases = await loadAvailableAudioFiles();
-  
-  console.log('[p5_vocabulary] 사용 가능한 음성 파일:', availableAudioPhrases.length, '개');
+  console.log('[p5_vocabulary] 사용 가능한 단어 음성 파일:', availableAudioWords.length, '개');
   console.log('[p5_vocabulary] 사용 가능한 이미지 단어:', availableWords.length, '개');
   
-  // 1. 단어 5개 생성: 이미지 목록에서 단어 선택 (이미지가 있는 단어만)
-  // 이미지 목록에서 명사/동작 단어 위주로 선택 (불용어 제외)
-  const stopWords = ['a', 'an', 'the', 'i', 'am', 'is', 'are', 'do', 'does', 'can', 'can\'t', 'don\'t', 'what', 'how', 'many', 'my', 'you', 'he', 'she', 'it', 'they', 'we', 'this', 'that', 'please', 'sorry', 'okay', 'yes', 'no', 'right', 'welcome', 'fine', 'nice', 'great', 'good', 'big', 'small', 'tall', 'pretty', 'pink', 'red', 'blue', 'green', 'yellow', 'black', 'white', 'orange', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'one'];
+  // 음성 파일과 이미지 파일이 모두 있는 단어만 필터링
+  const imageWordsLower = new Set(availableWords.map(w => w.toLowerCase()));
+  const validWords = availableAudioWords.filter(audioWord => {
+    return imageWordsLower.has(audioWord);
+  });
   
-  const candidateWords = availableWords
-    .filter(w => !stopWords.includes(w.toLowerCase()))
-    .sort(() => Math.random() - 0.5);
+  console.log('[p5_vocabulary] 음성과 이미지가 모두 있는 단어:', validWords.length, '개');
   
-  // 단어 5개 생성 (이미지가 있는 단어만)
-  const usedImageWords = new Set<string>(); // 사용된 이미지 단어 추적
+  if (validWords.length < 20) {
+    console.warn(`[p5_vocabulary] 사용 가능한 단어가 부족합니다 (${validWords.length}개). 최대한 생성합니다.`);
+  }
   
-  for (let i = 0; i < Math.min(5, candidateWords.length); i++) {
-    const word = candidateWords[i];
+  // 20개 단어 선택 (랜덤)
+  const selectedWords = validWords
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.min(20, validWords.length));
+  
+  // 각 단어에 대해 문항 생성
+  const wordItems: MeaningItem[] = [];
+  
+  for (const word of selectedWords) {
     const wordLower = word.toLowerCase();
     
-    // 이미 사용된 단어는 건너뛰기
-    if (usedImageWords.has(wordLower)) {
-      continue;
-    }
-    
-    const wrongWords = candidateWords
-      .filter(w => w.toLowerCase() !== wordLower && !usedImageWords.has(w.toLowerCase()))
+    // 오답 선택지 생성 (같은 카테고리의 다른 단어)
+    const wrongWords = validWords
+      .filter(w => w.toLowerCase() !== wordLower)
       .sort(() => Math.random() - 0.5)
       .slice(0, 2)
       .map(w => w.toLowerCase());
@@ -170,153 +170,13 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
         phase: 'word',
       });
       
-      usedImageWords.add(wordLower); // 사용된 단어 기록
       console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}"`);
     }
   }
   
-  console.log(`[p5_vocabulary] 단어에서 사용된 이미지 단어:`, Array.from(usedImageWords));
+  console.log('[p5_vocabulary] 최종 생성된 문항 수:', wordItems.length, '개 (모두 단어)');
   
-  // 2. 어구와 문장: 음성 파일에서 분류 (단어에서 사용한 이미지 단어 제외)
-  const tempPhraseItems: MeaningItem[] = [];
-  const tempSentenceItems: MeaningItem[] = [];
-  
-  availableAudioPhrases.forEach((phrase) => {
-    const imageWord = findImageWordForExpression(phrase, availableWords);
-    
-    if (!imageWord) {
-      return; // 이미지 매칭 실패
-    }
-    
-    const imageWordLower = imageWord.toLowerCase();
-    
-    // 단어에서 이미 사용된 이미지 단어는 제외
-    if (usedImageWords.has(imageWordLower)) {
-      console.log(`[p5_vocabulary] 이미지 단어 "${imageWordLower}"는 단어에서 이미 사용되어 제외: "${phrase}"`);
-      return;
-    }
-    
-    const wrongWords = availableWords
-      .filter(w => w.toLowerCase() !== imageWordLower)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2)
-      .map(w => w.toLowerCase());
-    
-    if (wrongWords.length < 2) {
-      return; // 오답 선택지 부족
-    }
-    
-    // 단어/어구/문장 구분
-    const wordCount = phrase.split(/\s+/).length;
-    let phaseType: VocabularyPhase = 'phrase';
-    if (wordCount === 1) {
-      phaseType = 'word';
-    } else if (wordCount >= 5 || phrase.includes('?') || phrase.includes('!')) {
-      phaseType = 'sentence';
-    } else {
-      phaseType = 'phrase';
-    }
-    
-    const item: MeaningItem = {
-      wordOrPhrase: phrase,
-      imageOptions: [imageWordLower, ...wrongWords].sort(() => Math.random() - 0.5),
-      correctAnswer: imageWordLower,
-      phase: phaseType,
-    };
-    
-    if (phaseType === 'phrase') {
-      tempPhraseItems.push(item);
-    } else if (phaseType === 'sentence') {
-      tempSentenceItems.push(item);
-    }
-    
-    console.log(`[p5_vocabulary] ${phaseType} 문항 생성: "${phrase}" → 정답 이미지: "${imageWordLower}"`);
-  });
-  
-  // 어구 5개 선택 (이미 사용된 이미지 단어 제외하면서)
-  const selectedPhrases: MeaningItem[] = [];
-  const phraseUsedWords = new Set<string>();
-  
-  for (const phraseItem of tempPhraseItems) {
-    const imageWordLower = phraseItem.correctAnswer.toLowerCase();
-    
-    // 이미 단어나 다른 어구에서 사용된 단어는 제외
-    if (usedImageWords.has(imageWordLower) || phraseUsedWords.has(imageWordLower)) {
-      continue;
-    }
-    
-    selectedPhrases.push(phraseItem);
-    phraseUsedWords.add(imageWordLower);
-    
-    if (selectedPhrases.length >= 5) {
-      break;
-    }
-  }
-  
-  phraseItems.push(...selectedPhrases);
-  usedImageWords.forEach(word => phraseUsedWords.add(word)); // 어구에서 사용된 단어도 기록
-  
-  // 문장 5개 선택 (부족하면 어구를 문장으로 변환)
-  const selectedSentences: MeaningItem[] = [];
-  const sentenceUsedWords = new Set<string>();
-  
-  // 먼저 문장 항목에서 선택
-  for (const sentenceItem of tempSentenceItems) {
-    const imageWordLower = sentenceItem.correctAnswer.toLowerCase();
-    
-    // 이미 사용된 이미지 단어는 제외
-    if (phraseUsedWords.has(imageWordLower) || sentenceUsedWords.has(imageWordLower)) {
-      continue;
-    }
-    
-    selectedSentences.push(sentenceItem);
-    sentenceUsedWords.add(imageWordLower);
-    
-    if (selectedSentences.length >= 5) {
-      break;
-    }
-  }
-  
-  // 부족한 문장은 어구를 문장으로 변환 (더 긴 어구 우선, 사용되지 않은 것만)
-  if (selectedSentences.length < 5) {
-    const remainingPhrases = tempPhraseItems
-      .filter(item => {
-        const imageWordLower = item.correctAnswer.toLowerCase();
-        return !phraseUsedWords.has(imageWordLower) && !sentenceUsedWords.has(imageWordLower);
-      })
-      .sort((a, b) => b.wordOrPhrase.split(/\s+/).length - a.wordOrPhrase.split(/\s+/).length);
-    
-    for (let i = 0; i < Math.min(5 - selectedSentences.length, remainingPhrases.length); i++) {
-      const phraseItem = remainingPhrases[i];
-      const imageWordLower = phraseItem.correctAnswer.toLowerCase();
-      
-      selectedSentences.push({
-        ...phraseItem,
-        phase: 'sentence',
-      });
-      sentenceUsedWords.add(imageWordLower);
-    }
-  }
-  
-  sentenceItems.push(...selectedSentences);
-  
-  // 최종 문항 구성: 단어 5개 + 어구 5개 + 문장 5개
-  const sortedItems: MeaningItem[] = [];
-  
-  const maxLength = Math.max(wordItems.length, phraseItems.length, sentenceItems.length);
-  
-  for (let i = 0; i < maxLength; i++) {
-    if (i < wordItems.length) sortedItems.push(wordItems[i]);
-    if (i < phraseItems.length) sortedItems.push(phraseItems[i]);
-    if (i < sentenceItems.length) sortedItems.push(sentenceItems[i]);
-  }
-  
-  console.log('[p5_vocabulary] 최종 생성된 문항 수:', sortedItems.length, '개');
-  console.log('[p5_vocabulary] - 단어:', wordItems.length, '개');
-  console.log('[p5_vocabulary] - 어구:', phraseItems.length, '개');
-  console.log('[p5_vocabulary] - 문장:', sentenceItems.length, '개');
-  
-  return sortedItems;
+  return wordItems;
 };
 
 export default function MeaningTestPage() {
@@ -389,12 +249,11 @@ export default function MeaningTestPage() {
     setup();
   }, [router, supabase.auth]);
 
-  const playPhraseAudio = useCallback(async (phrase: string) => {
+  const playPhraseAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
-      // 사전 생성된 오디오 파일 사용 (우선)
-      const safeFileName = phrase.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
-      const audioPath = `/audio/meaning/${safeFileName}.mp3`;
+      // 단어 음성 파일 사용
+      const audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
       
       // 먼저 파일 존재 여부 확인
       let usePreGenerated = false;
@@ -442,11 +301,11 @@ export default function MeaningTestPage() {
       }
       
       // 파일이 없거나 재생 실패 시 TTS API 사용 (폴백)
-      console.log(`[p5_vocabulary] TTS 사용: ${phrase}`);
+      console.log(`[p5_vocabulary] TTS 사용: ${word}`);
       const ttsResponse = await fetch('/api/tts', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: phrase }),
+            body: JSON.stringify({ text: word }),
       });
       
       if (!ttsResponse.ok) {
