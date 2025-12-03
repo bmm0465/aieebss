@@ -230,10 +230,10 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
   const validWords = chunjaeWords.filter(w => availableWords.includes(w.toLowerCase()));
   console.log('[p5_vocabulary] 사용 가능한 단어:', validWords.length, '개');
   
-  // 1. 단어 문항 (단순 명사)
+  // 1. 단어 문항 (단순 명사) - 5개
   const wordItems: string[] = [];
   validWords.forEach(word => {
-    if (wordItems.length < 10) {
+    if (wordItems.length < 5) {
       const wrongWords = validWords.filter(w => w !== word).sort(() => Math.random() - 0.5).slice(0, 2);
       if (wrongWords.length >= 2) {
         wordItems.push(word);
@@ -247,14 +247,14 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
     }
   });
   
-  // 2. 어구 문항 (2-3단어 조합)
+  // 2. 어구 문항 (2-3단어 조합) - 5개
   const phraseExpressions = chunjaeExpressions.filter(expr => {
     const wordCount = expr.split(/\s+/).length;
     return wordCount >= 2 && wordCount <= 4 && !expr.includes('?') && !expr.includes('!');
   });
   
   phraseExpressions.forEach(expr => {
-    if (items.filter(i => i.phase === 'phrase').length >= 10) return;
+    if (items.filter(i => i.phase === 'phrase').length >= 5) return;
     
     const imageWord = findImageWordForExpression(expr, availableWords);
     if (imageWord) {
@@ -275,14 +275,14 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
     }
   });
   
-  // 3. 문장 문항 (질문이나 긴 문장)
+  // 3. 문장 문항 (질문이나 긴 문장) - 5개
   const sentenceExpressions = chunjaeExpressions.filter(expr => {
     const wordCount = expr.split(/\s+/).length;
     return wordCount >= 3 || expr.includes('?') || expr.includes('!');
   });
   
   sentenceExpressions.forEach(expr => {
-    if (items.filter(i => i.phase === 'sentence').length >= 10) return;
+    if (items.filter(i => i.phase === 'sentence').length >= 5) return;
     
     const imageWord = findImageWordForExpression(expr, availableWords);
     if (imageWord) {
@@ -306,9 +306,9 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
   // 단어 => 어구 => 문장 순서로 정렬
   const sortedItems: MeaningItem[] = [];
   
-  const wordItems_sorted = items.filter(i => i.phase === 'word');
-  const phraseItems_sorted = items.filter(i => i.phase === 'phrase');
-  const sentenceItems_sorted = items.filter(i => i.phase === 'sentence');
+  const wordItems_sorted = items.filter(i => i.phase === 'word').slice(0, 5);
+  const phraseItems_sorted = items.filter(i => i.phase === 'phrase').slice(0, 5);
+  const sentenceItems_sorted = items.filter(i => i.phase === 'sentence').slice(0, 5);
   
   const maxLength = Math.max(wordItems_sorted.length, phraseItems_sorted.length, sentenceItems_sorted.length);
   
@@ -318,7 +318,7 @@ const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningIt
     if (i < sentenceItems_sorted.length) sortedItems.push(sentenceItems_sorted[i]);
   }
   
-  return sortedItems.slice(0, 30); // 최대 30개
+  return sortedItems; // 총 15개 (단어 5개 + 어구 5개 + 문장 5개)
 };
 
 export default function MeaningTestPage() {

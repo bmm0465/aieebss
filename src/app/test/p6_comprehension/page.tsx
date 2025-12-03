@@ -24,6 +24,7 @@ interface ComprehensionItem {
   options: ComprehensionOption[];
   correctAnswer: string; // 영어 단어 (이미지 파일명)
   isDialogue?: boolean; // 대화 형식인지 여부
+  evaluationTarget?: string; // evaluation.target (색깔과 크기, 인물의 모습, 색깔)
 }
 
 // p6_items.json 형식
@@ -241,7 +242,7 @@ export default function ComprehensionTestPage() {
           console.log('[p6_comprehension] p6_items.json에서 문항 로드:', jsonItems.length, '개');
           
           // p6_items.json 형식을 ComprehensionItem 형식으로 변환
-          const convertedItems: ComprehensionItem[] = (jsonItems as P6JsonItem[]).map((item: P6JsonItem) => {
+          const allConvertedItems: ComprehensionItem[] = (jsonItems as P6JsonItem[]).map((item: P6JsonItem) => {
             const correctOption = item.options.find((opt: P6JsonOption) => opt.isCorrect);
             const correctWord = correctOption ? extractWordFromKorean(correctOption.description) : null;
             
@@ -266,8 +267,29 @@ export default function ComprehensionTestPage() {
               options: imageOptions,
               correctAnswer: correctWord || (correctOption ? correctOption.description : ''),
               isDialogue: !!item.script.speaker2,
+              evaluationTarget: item.evaluation?.target || '', // evaluation.target 저장
             };
           }).filter(item => item.correctAnswer && availableWords.includes(item.correctAnswer));
+          
+          // evaluation.target 기준으로 분류하여 각 5개씩 선택
+          const colorSizeItems = allConvertedItems.filter(item => item.evaluationTarget === '색깔과 크기');
+          const appearanceItems = allConvertedItems.filter(item => item.evaluationTarget === '인물의 모습');
+          const colorOnlyItems = allConvertedItems.filter(item => item.evaluationTarget === '색깔');
+          
+          // 각 카테고리에서 5개씩 랜덤 선택
+          const selectedColorSize = colorSizeItems.sort(() => Math.random() - 0.5).slice(0, 5);
+          const selectedAppearance = appearanceItems.sort(() => Math.random() - 0.5).slice(0, 5);
+          const selectedColorOnly = colorOnlyItems.sort(() => Math.random() - 0.5).slice(0, 5);
+          
+          // 모습 = 인물의 모습과 동일하므로, 총 15개 (크기 5개 + 인물 5개 + 색깔 5개)
+          const convertedItems = [...selectedColorSize, ...selectedAppearance, ...selectedColorOnly];
+          
+          console.log('[p6_comprehension] 필터링된 문항:', {
+            크기: selectedColorSize.length,
+            인물: selectedAppearance.length,
+            색깔: selectedColorOnly.length,
+            총: convertedItems.length
+          });
           
           if (convertedItems.length > 0) {
             setItems(convertedItems);

@@ -338,7 +338,7 @@ async function regenerateSpecificWords(words: string[]) {
 // 실행
 // 특정 단어만 재생성하려면 아래 배열에 단어를 추가하고 REGENERATE_MODE를 true로 설정
 const REGENERATE_MODE = true;
-const WORDS_TO_REGENERATE = ['book', 'fine', 'high', 'how'];
+const WORDS_TO_REGENERATE = ['ten'];
 
 if (REGENERATE_MODE) {
   regenerateSpecificWords(WORDS_TO_REGENERATE)

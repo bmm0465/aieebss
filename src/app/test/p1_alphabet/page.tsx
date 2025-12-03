@@ -8,13 +8,22 @@ import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems
 
 // [폴백] 테스트용 알파벳 목록: 대문자 A~Z 26개, 소문자 a~z 26개 (총 52개)
 // 모든 학생이 동일한 섞인 순서로 평가를 보도록 고정된 순서 사용
+// I/i와 L/l은 함께 제시되므로 각각 한 번씩만 출제
 const getFixedAlphabet = () => {
     // 모든 알파벳 수집 (대소문자 모두)
     const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
     const lowercase = 'abcdefghijklmnopqrstuvwxyz'.split('');
     
+    // I/i와 L/l은 각각 한 번씩만 포함
+    // I와 i 중 하나만, L과 l 중 하나만 선택
+    const filteredUppercase = uppercase.filter(l => l !== 'I' && l !== 'L');
+    const filteredLowercase = lowercase.filter(l => l !== 'i' && l !== 'l');
+    
+    // I/i와 L/l은 대소문자 중 하나만 선택 (고정: 대문자 I, 소문자 l 사용)
+    const specialLetters = ['I', 'l'];
+    
     // 모든 알파벳을 하나의 배열로 합치기
-    const allLetters = [...uppercase, ...lowercase];
+    const allLetters = [...filteredUppercase, ...filteredLowercase, ...specialLetters];
     
     // 고정된 시드로 일관된 섞기 (모든 학생이 동일한 순서)
     const FIXED_SEED = 'aieebss-p1-alphabet-2025';
@@ -49,7 +58,7 @@ const getFixedAlphabet = () => {
         [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     
-    return shuffled; // 총 52개: 대소문자 모두 섞인 순서
+    return shuffled; // 총 50개: I/i와 L/l은 각각 한 번씩만 포함
 };
 
 export default function LnfTestPage() {
