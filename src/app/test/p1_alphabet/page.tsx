@@ -8,57 +8,66 @@ import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems
 
 // [폴백] 테스트용 알파벳 목록: 대문자 A~Z 26개, 소문자 a~z 26개 (총 52개)
 // 모든 학생이 동일한 섞인 순서로 평가를 보도록 고정된 순서 사용
-// I/i와 L/l은 함께 제시되므로 각각 한 번씩만 출제
-const getFixedAlphabet = () => {
-    // 모든 알파벳 수집 (대소문자 모두)
-    const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
-    const lowercase = 'abcdefghijklmnopqrstuvwxyz'.split('');
-    
-    // I/i와 L/l은 각각 한 번씩만 포함
-    // I와 i 중 하나만, L과 l 중 하나만 선택
-    const filteredUppercase = uppercase.filter(l => l !== 'I' && l !== 'L');
-    const filteredLowercase = lowercase.filter(l => l !== 'i' && l !== 'l');
-    
-    // I/i와 L/l은 대소문자 중 하나만 선택 (고정: 대문자 I, 소문자 l 사용)
-    const specialLetters = ['I', 'l'];
-    
-    // 모든 알파벳을 하나의 배열로 합치기
-    const allLetters = [...filteredUppercase, ...filteredLowercase, ...specialLetters];
-    
-    // 고정된 시드로 일관된 섞기 (모든 학생이 동일한 순서)
-    const FIXED_SEED = 'aieebss-p1-alphabet-2025';
-    
-    // 시드 기반 랜덤 생성기
-    class SeededRandom {
-        private seed: number;
-        
-        constructor(seed: string) {
-            let hash = 0;
-            for (let i = 0; i < seed.length; i++) {
-                const char = seed.charCodeAt(i);
-                hash = ((hash << 5) - hash) + char;
-                hash = hash & hash;
-            }
-            this.seed = Math.abs(hash);
-        }
-        
-        next(): number {
-            this.seed = (this.seed * 9301 + 49297) % 233280;
-            return this.seed / 233280;
-        }
-    }
-    
-    // 고정된 시드로 섞기 (모든 학생이 동일한 순서)
-    const shuffled = [...allLetters];
-    const rng = new SeededRandom(FIXED_SEED);
-    
-    // Fisher-Yates 셔플 알고리즘
-    for (let i = shuffled.length - 1; i > 0; i--) {
-        const j = Math.floor(rng.next() * (i + 1));
-        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    
-    return shuffled; // 총 50개: I/i와 L/l은 각각 한 번씩만 포함
+// 문서(1교시_알파벳_순서.md, 평가_문항_및_정답.md)에 정의된 순서를 그대로 사용
+// 연속된 대소문자 쌍이 나오지 않도록 수동으로 순서 조정됨
+const getFixedAlphabet = (): string[] => {
+    // 문서에 명시된 정확한 순서 (총 52개)
+    // I/i와 L/l은 함께 제시되므로 "I / i" 또는 "L / l"로 표시되지만, 실제로는 각각 한 번씩만 출제
+    // 문서 기준: 'I'는 41번과 48번에, 'l'은 1번과 45번에 출제
+    return [
+        'l',  // 1. L / l
+        'E',  // 2. E
+        'm',  // 3. m
+        'S',  // 4. S
+        'O',  // 5. O
+        'B',  // 6. B
+        'J',  // 7. J
+        'c',  // 8. c
+        'w',  // 9. w
+        'g',  // 10. g
+        'y',  // 11. y
+        'b',  // 12. b
+        'F',  // 13. F
+        'r',  // 14. r
+        'k',  // 15. k
+        'u',  // 16. u
+        'j',  // 17. j
+        'V',  // 18. V
+        'Q',  // 19. Q
+        's',  // 20. s
+        'H',  // 21. H
+        'h',  // 22. h
+        'G',  // 23. G
+        'z',  // 24. z
+        'o',  // 25. o
+        'T',  // 26. T
+        'C',  // 27. C
+        't',  // 28. t
+        'R',  // 29. R
+        'A',  // 30. A
+        'N',  // 31. N
+        'M',  // 32. M
+        'X',  // 33. X
+        'W',  // 34. W
+        'Y',  // 35. Y
+        'd',  // 36. d
+        'f',  // 37. f
+        'D',  // 38. D
+        'v',  // 39. v
+        'p',  // 40. p
+        'I',  // 41. I / i
+        'U',  // 42. U
+        'K',  // 43. K
+        'x',  // 44. x
+        'l',  // 45. L / l (중복이지만 문서 기준)
+        'e',  // 46. e
+        'n',  // 47. n
+        'I',  // 48. I / i (중복이지만 문서 기준)
+        'P',  // 49. P
+        'a',  // 50. a
+        'Z',  // 51. Z
+        'q',  // 52. q
+    ];
 };
 
 export default function LnfTestPage() {
