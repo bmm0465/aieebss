@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>파일럿 테스트 피드백 가이드 - AIDTPEL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+            line-height: 1.8;
+            color: #1f2937;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.95;
+        }
+
+        .nav {
+            background: #f9fafb;
+            padding: 1.5rem 2rem;
+            border-bottom: 2px solid #e5e7eb;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav a {
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: #6366f1;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: 600;
+            border: 2px solid #6366f1;
+            transition: all 0.3s;
+        }
+
+        .nav a:hover {
+            background: #6366f1;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .content {
+            padding: 3rem 2rem;
+        }
+
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section h2 {
+            font-size: 2rem;
+            color: #6366f1;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #6366f1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            color: #4b5563;
+            margin: 2rem 0 1rem 0;
+            padding-left: 1rem;
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .section h4 {
+            font-size: 1.2rem;
+            color: #6b7280;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        .step-box {
+            background: #f9fafb;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .step-box::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .test-card {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s;
+        }
+
+        .test-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+
+        .test-card h4 {
+            color: #6366f1;
+            margin-bottom: 0.5rem;
+            font-size: 1.3rem;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #6366f1;
+            margin: 1rem 0;
+        }
+
+        .warning {
+            background: #fef3c7;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #f59e0b;
+            margin: 1rem 0;
+        }
+
+        .success {
+            background: #d1fae5;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+            margin: 1rem 0;
+        }
+
+        .info-box {
+            background: #eff6ff;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid #3b82f6;
+            margin: 1rem 0;
+        }
+
+        ul, ol {
+            margin-left: 2rem;
+            margin-top: 0.5rem;
+        }
+
+        li {
+            margin: 0.5rem 0;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: flex-start;
+            margin: 0.75rem 0;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .checkbox-item:hover {
+            background: #f9fafb;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 0.75rem;
+            margin-top: 0.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .checkbox-item label {
+            flex: 1;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .checkbox-item strong {
+            color: #4b5563;
+        }
+
+        .text-input-group {
+            margin: 1rem 0;
+        }
+
+        .text-input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .text-input-group textarea {
+            width: 100%;
+            min-height: 80px;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        .text-input-group textarea:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .text-input-group input[type="text"],
+        .text-input-group input[type="date"],
+        .text-input-group input[type="number"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .text-input-group input:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .template-box {
+            background: #f9fafb;
+            border: 2px dashed #9ca3af;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .template-box h4 {
+            margin-top: 0;
+            color: #6366f1;
+        }
+
+        .rating-stars {
+            display: flex;
+            gap: 0.5rem;
+            margin: 0.5rem 0;
+            font-size: 1.5rem;
+        }
+
+        .rating-stars input[type="radio"] {
+            display: none;
+        }
+
+        .rating-stars label {
+            cursor: pointer;
+            color: #d1d5db;
+            transition: color 0.2s;
+        }
+
+        .rating-stars label:hover,
+        .rating-stars input:checked ~ label,
+        .rating-stars label:hover ~ label {
+            color: #fbbf24;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .two-column {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .nav {
+                flex-direction: column;
+            }
+        }
+
+        .print-button {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.6);
+        }
+
+        @media print {
+            .nav,
+            .print-button {
+                display: none;
+            }
+            body {
+                background: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📋 파일럿 테스트 피드백 가이드</h1>
+            <p>초등 영어 기초 학력 진단 평가 시스템</p>
+            <p style="font-size: 1rem; margin-top: 0.5rem; opacity: 0.9;">
+                사용자 경험, 기술적 안정성, 평가 내용의 적절성을 검증하기 위한 체계적인 피드백 수집
+            </p>
+        </div>
+
+        <div class="nav">
+            <a href="#intro">테스트 목적</a>
+            <a href="#student">학생 피드백</a>
+            <a href="#teacher">교사 피드백</a>
+            <a href="#observation">관찰 체크리스트</a>
+            <a href="#methods">수집 방법</a>
+            <a href="#templates">피드백 템플릿</a>
+        </div>
+
+        <div class="content">
+            <!-- 테스트 목적 -->
+            <section id="intro" class="section">
+                <h2>📋 테스트 목적</h2>
+                
+                <div class="highlight">
+                    <p>
+                        초등 영어 기초 학력 진단 평가 시스템의 파일럿 테스트를 통해 
+                        <strong>사용자 경험</strong>, <strong>기술적 안정성</strong>, 
+                        <strong>평가 내용의 적절성</strong>을 검증합니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- 학생 피드백 -->
+            <section id="student" class="section">
+                <h2>👥 학생 대상 피드백 항목</h2>
+
+                <h3>1. 사용 편의성 (Usability)</h3>
+
+                <div class="test-card">
+                    <h4>📱 화면 및 인터페이스</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ui-1">
+                        <label for="ui-1"><strong>화면 크기와 레이아웃</strong>: 화면이 보기 편했나요? 텍스트나 버튼이 너무 작거나 크지 않았나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ui-2">
+                        <label for="ui-2"><strong>색상 및 대비</strong>: 색상 구분이 명확했나요? (특히 정답/오답 표시)</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ui-3">
+                        <label for="ui-3"><strong>버튼 위치</strong>: 재생 버튼, 다음 버튼 등의 위치가 적절했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="ui-4">
+                        <label for="ui-4"><strong>한글/영어 표시</strong>: 한글 안내문이 이해하기 쉬웠나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>🔊 음성 및 오디오</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="audio-1">
+                        <label for="audio-1"><strong>음성 속도</strong>: 음성이 너무 빠르거나 느리지 않았나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="audio-2">
+                        <label for="audio-2"><strong>음성 명확도</strong>: 발음이 명확하게 들렸나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="audio-3">
+                        <label for="audio-3"><strong>재생 기능</strong>: "다시 듣기" 버튼이 잘 작동했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="audio-4">
+                        <label for="audio-4"><strong>대화 음성</strong> (6교시): 두 화자의 음성이 구분되게 들렸나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="audio-5">
+                        <label for="audio-5"><strong>음성 반복</strong>: 음성이 2회 반복되는 것이 적절했나요?</label>
+                    </div>
+                </div>
+
+                <h3>2. 평가 내용 및 난이도</h3>
+
+                <div class="test-card">
+                    <h4>📚 문항 난이도</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty-1">
+                        <label for="difficulty-1"><strong>1교시 (알파벳)</strong>: 알파벳 순서와 난이도가 적절했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty-2">
+                        <label for="difficulty-2"><strong>2교시 (음소)</strong>: 단어 발음이 너무 어렵지 않았나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty-3">
+                        <label for="difficulty-3"><strong>3교시 (초분절음)</strong>: 강세 구분이 명확했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty-4">
+                        <label for="difficulty-4"><strong>4교시 (파닉스)</strong>: 문장 읽기가 적절한 난이도였나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty-5">
+                        <label for="difficulty-5"><strong>5교시 (어휘)</strong>: 이미지와 단어 매칭이 이해하기 쉬웠나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="difficulty-6">
+                        <label for="difficulty-6"><strong>6교시 (이해력)</strong>: 대화 내용이 이해하기 쉬웠나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>🎯 문항 구성</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="composition-1">
+                        <label for="composition-1"><strong>문항 수</strong>: 각 교시별 문항 수(시간)가 적절했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="composition-2">
+                        <label for="composition-2"><strong>보기 개수</strong>: 선택지가 너무 많거나 적지 않았나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="composition-3">
+                        <label for="composition-3"><strong>타임리밋</strong>: 제한 시간이 적절했나요?</label>
+                    </div>
+                </div>
+
+                <h3>3. 기술적 문제</h3>
+
+                <div class="test-card">
+                    <h4>⚠️ 오류 및 문제점</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tech-1">
+                        <label for="tech-1"><strong>음성 인식</strong>: 말한 내용이 제대로 인식되었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tech-2">
+                        <label for="tech-2"><strong>페이지 로딩</strong>: 화면 전환이 너무 느리지 않았나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tech-3">
+                        <label for="tech-3"><strong>오디오 재생</strong>: 음성 파일이 재생되지 않는 경우가 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tech-4">
+                        <label for="tech-4"><strong>이미지 로딩</strong>: 이미지가 제대로 표시되었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tech-5">
+                        <label for="tech-5"><strong>버튼 작동</strong>: 버튼이 클릭되지 않거나 멈춘 적이 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="tech-6">
+                        <label for="tech-6"><strong>인터넷 연결</strong>: 인터넷이 끊기거나 느려진 적이 있었나요?</label>
+                    </div>
+                </div>
+
+                <h3>4. 사용 경험</h3>
+
+                <div class="test-card">
+                    <h4>😊 전반적인 느낌</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="experience-1">
+                        <label for="experience-1"><strong>집중도</strong>: 평가에 집중할 수 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="experience-2">
+                        <label for="experience-2"><strong>스트레스</strong>: 평가가 너무 부담스러웠나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="experience-3">
+                        <label for="experience-3"><strong>재미</strong>: 평가가 재미있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="experience-4">
+                        <label for="experience-4"><strong>이해도</strong>: 평가 방법을 이해하기 쉬웠나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>💬 자유 의견</h4>
+                    <div class="text-input-group">
+                        <label>좋았던 점:</label>
+                        <textarea placeholder="좋았던 점을 자유롭게 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>불편했던 점:</label>
+                        <textarea placeholder="불편했던 점을 자유롭게 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>개선했으면 좋겠는 점:</label>
+                        <textarea placeholder="개선 사항을 자유롭게 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>다른 의견:</label>
+                        <textarea placeholder="기타 의견을 자유롭게 작성해주세요."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 교사 피드백 -->
+            <section id="teacher" class="section">
+                <h2>👨‍🏫 교사 대상 피드백 항목</h2>
+
+                <h3>1. 평가 설계 및 내용</h3>
+
+                <div class="test-card">
+                    <h4>📊 평가 타당도</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="validity-1">
+                        <label for="validity-1"><strong>내용 타당도</strong>: 평가 내용이 초등 영어 교육과정과 적절히 연계되었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="validity-2">
+                        <label for="validity-2"><strong>난이도 적절성</strong>: 학생들의 수준에 적절한 난이도였나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="validity-3">
+                        <label for="validity-3"><strong>문항 구성</strong>: 각 교시별 문항 구성이 균형 잡혔나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="validity-4">
+                        <label for="validity-4"><strong>평가 범위</strong>: 평가 범위가 적절하게 커버되었나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>🎯 평가 목표</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="goal-1">
+                        <label for="goal-1"><strong>1교시 (알파벳)</strong>: 알파벳 인식 평가가 적절했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="goal-2">
+                        <label for="goal-2"><strong>2교시 (음소)</strong>: 음소 분리 능력 평가가 타당했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="goal-3">
+                        <label for="goal-3"><strong>3교시 (초분절음)</strong>: 강세 인식 평가가 유용했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="goal-4">
+                        <label for="goal-4"><strong>4교시 (파닉스)</strong>: 읽기 유창성 평가가 의미있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="goal-5">
+                        <label for="goal-5"><strong>5교시 (어휘)</strong>: 어휘 이해력 평가가 적절했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="goal-6">
+                        <label for="goal-6"><strong>6교시 (이해력)</strong>: 듣기 이해력 평가가 효과적이었나요?</label>
+                    </div>
+                </div>
+
+                <h3>2. 결과 및 피드백</h3>
+
+                <div class="test-card">
+                    <h4>📈 결과 분석</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="result-1">
+                        <label for="result-1"><strong>결과 페이지</strong>: 결과 표시가 명확하고 이해하기 쉬웠나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="result-2">
+                        <label for="result-2"><strong>세부 결과</strong>: 세부 결과 분석이 유용했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="result-3">
+                        <label for="result-3"><strong>음성 재생</strong>: 학생 답변 음성을 다시 들을 수 있는 기능이 유용했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="result-4">
+                        <label for="result-4"><strong>정답 비교</strong>: 정답과 학생 답변이 비교 표시가 명확했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="result-5">
+                        <label for="result-5"><strong>점수 표시</strong>: 점수 및 정확도 표시가 적절했나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>📋 결과 활용</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="usage-1">
+                        <label for="usage-1"><strong>학습 진단</strong>: 결과를 통해 학생의 학습 수준을 파악할 수 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="usage-2">
+                        <label for="usage-2"><strong>약점 파악</strong>: 학생의 약점 영역을 파악할 수 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="usage-3">
+                        <label for="usage-3"><strong>보고서 작성</strong>: 결과를 활용하여 보고서를 작성할 수 있나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="usage-4">
+                        <label for="usage-4"><strong>부모 상담</strong>: 결과를 부모님께 설명하기에 적절한가요?</label>
+                    </div>
+                </div>
+
+                <h3>3. 운영 및 관리</h3>
+
+                <div class="test-card">
+                    <h4>🖥️ 시스템 관리</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="system-1">
+                        <label for="system-1"><strong>학생 관리</strong>: 학생 계정 생성 및 관리가 쉬웠나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="system-2">
+                        <label for="system-2"><strong>결과 조회</strong>: 학생별/교시별 결과 조회가 편리했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="system-3">
+                        <label for="system-3"><strong>세션 관리</strong>: 평가 세션 구분이 명확했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="system-4">
+                        <label for="system-4"><strong>데이터 저장</strong>: 결과 저장이 안정적으로 되었나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>⚙️ 기술적 안정성</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="stability-1">
+                        <label for="stability-1"><strong>시스템 안정성</strong>: 평가 진행 중 오류나 멈춤이 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="stability-2">
+                        <label for="stability-2"><strong>음성 인식 정확도</strong>: 음성 인식이 정확하게 작동했나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="stability-3">
+                        <label for="stability-3"><strong>데이터 손실</strong>: 결과 데이터가 손실되거나 누락된 경우가 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="stability-4">
+                        <label for="stability-4"><strong>접근성</strong>: 모든 학생이 평가에 접근할 수 있었나요?</label>
+                    </div>
+                </div>
+
+                <h3>4. 교육적 효과</h3>
+
+                <div class="test-card">
+                    <h4>📚 학습 지원</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="support-1">
+                        <label for="support-1"><strong>실시간 피드백</strong>: 평가 중 즉시 피드백이 제공되는 것이 좋았나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="support-2">
+                        <label for="support-2"><strong>자기 주도 학습</strong>: 학생들이 스스로 평가를 진행할 수 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="support-3">
+                        <label for="support-3"><strong>학습 동기</strong>: 평가가 학생들의 학습 동기를 높였나요?</label>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>🎓 교수·학습 활용</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="teaching-1">
+                        <label for="teaching-1"><strong>수업 설계</strong>: 결과를 수업 설계에 활용할 수 있나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="teaching-2">
+                        <label for="teaching-2"><strong>개별화 학습</strong>: 결과를 바탕으로 개별화된 학습이 가능한가요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="teaching-3">
+                        <label for="teaching-3"><strong>추가 평가 필요성</strong>: 추가로 평가하고 싶은 영역이 있나요?</label>
+                    </div>
+                </div>
+
+                <h3>5. 개선 사항</h3>
+
+                <div class="test-card">
+                    <h4>🔧 기능 개선</h4>
+                    <div class="text-input-group">
+                        <label>추가하면 좋을 기능:</label>
+                        <textarea placeholder="새로운 기능 제안을 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>수정이 필요한 기능:</label>
+                        <textarea placeholder="수정이 필요한 기능을 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>삭제해도 되는 기능:</label>
+                        <textarea placeholder="삭제 가능한 기능을 작성해주세요."></textarea>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>📝 내용 개선</h4>
+                    <div class="text-input-group">
+                        <label>문항 내용 개선 사항:</label>
+                        <textarea placeholder="문항 내용 개선 사항을 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>난이도 조정 필요 영역:</label>
+                        <textarea placeholder="난이도 조정이 필요한 영역을 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>평가 시간 조정 의견:</label>
+                        <textarea placeholder="평가 시간 조정 의견을 작성해주세요."></textarea>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>🎨 UI/UX 개선</h4>
+                    <div class="text-input-group">
+                        <label>화면 구성 개선 사항:</label>
+                        <textarea placeholder="화면 구성 개선 사항을 작성해주세요."></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>사용성 개선 의견:</label>
+                        <textarea placeholder="사용성 개선 의견을 작성해주세요."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 관찰 체크리스트 -->
+            <section id="observation" class="section">
+                <h2>📝 관찰 체크리스트 (교사용)</h2>
+
+                <div class="warning">
+                    <strong>⚠️ 주의</strong>: 평가 진행 중 학생의 행동과 기술적 문제를 관찰하여 기록하세요.
+                </div>
+
+                <div class="test-card">
+                    <h4>학생 행동 관찰</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-behavior-1">
+                        <label for="obs-behavior-1"><strong>음성 인식 반응</strong>: 학생이 음성을 인식하지 못할 때 어떻게 반응하나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-behavior-2">
+                        <label for="obs-behavior-2"><strong>시간 압박</strong>: 시간 제한에 대한 학생의 반응은 어떠한가요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-behavior-3">
+                        <label for="obs-behavior-3"><strong>집중 지속</strong>: 전체 평가 동안 집중을 유지할 수 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-behavior-4">
+                        <label for="obs-behavior-4"><strong>도움 요청</strong>: 도움이 필요한 상황에서 어떻게 대처하나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-behavior-5">
+                        <label for="obs-behavior-5"><strong>반복 재생</strong>: "다시 들기"를 얼마나 자주 사용하나요?</label>
+                    </div>
+                    <div class="text-input-group">
+                        <label>관찰 기록:</label>
+                        <textarea placeholder="학생 행동에 대한 상세 관찰 내용을 기록하세요."></textarea>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>기술적 문제 관찰</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-tech-1">
+                        <label for="obs-tech-1"><strong>오디오 문제</strong>: 오디오가 재생되지 않거나 끊기는 경우가 있었나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-tech-2">
+                        <label for="obs-tech-2"><strong>인식 오류</strong>: 음성 인식이 잘못된 경우가 얼마나 자주 발생하나요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-tech-3">
+                        <label for="obs-tech-3"><strong>로딩 시간</strong>: 각 페이지 전환 시간이 적절한가요?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-tech-4">
+                        <label for="obs-tech-4"><strong>오류 메시지</strong>: 오류 발생 시 학생이 이해할 수 있었나요?</label>
+                    </div>
+                    <div class="text-input-group">
+                        <label>기술적 문제 기록:</label>
+                        <textarea placeholder="발생한 기술적 문제와 빈도를 기록하세요."></textarea>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>평가 내용 관찰</h4>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-content-1">
+                        <label for="obs-content-1"><strong>난이도 분포</strong>: 학생들이 어려워하는 문항 유형은?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-content-2">
+                        <label for="obs-content-2"><strong>시간 소요</strong>: 각 교시별 실제 소요 시간은?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-content-3">
+                        <label for="obs-content-3"><strong>완료율</strong>: 모든 교시를 완료한 학생 비율은?</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="obs-content-4">
+                        <label for="obs-content-4"><strong>건너뛰기</strong>: "넘어가기"를 사용한 학생은 얼마나 되나요?</label>
+                    </div>
+                    <div class="text-input-group">
+                        <label>평가 내용 관찰 기록:</label>
+                        <textarea placeholder="평가 내용에 대한 관찰 사항을 기록하세요."></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 피드백 수집 방법 -->
+            <section id="methods" class="section">
+                <h2>📊 피드백 수집 방법</h2>
+
+                <div class="two-column">
+                    <div class="test-card">
+                        <h4>1. 설문 조사</h4>
+                        <ul>
+                            <li><strong>학생</strong>: 구두 또는 간단한 체크리스트 (교사가 대신 작성)</li>
+                            <li><strong>교사</strong>: 온라인 설문 또는 서면 설문</li>
+                        </ul>
+                    </div>
+
+                    <div class="test-card">
+                        <h4>2. 관찰 기록</h4>
+                        <ul>
+                            <li><strong>관찰 일지</strong>: 교사가 평가 진행 중 관찰한 내용 기록</li>
+                            <li><strong>비디오 녹화</strong> (동의 하에): 학생의 평가 진행 과정 녹화 후 분석</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="two-column">
+                    <div class="test-card">
+                        <h4>3. 인터뷰</h4>
+                        <p><strong>학생 인터뷰</strong> (10분 내외):</p>
+                        <ul>
+                            <li>가장 어려웠던 부분은?</li>
+                            <li>가장 쉬웠던 부분은?</li>
+                            <li>개선했으면 하는 점은?</li>
+                        </ul>
+                        <p style="margin-top: 1rem;"><strong>교사 인터뷰</strong> (20-30분):</p>
+                        <p>평가 결과 분석 및 종합 의견</p>
+                    </div>
+
+                    <div class="test-card">
+                        <h4>4. 데이터 분석</h4>
+                        <ul>
+                            <li><strong>시스템 로그</strong>: 오류 발생 빈도, 응답 시간 등</li>
+                            <li><strong>결과 분석</strong>: 정답률, 완료율, 시간 분포 등</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="info-box">
+                    <h4>📅 테스트 일정 예시</h4>
+                    <p><strong>1주차: 사전 준비</strong></p>
+                    <ul>
+                        <li>교사 대상 평가 방법 안내</li>
+                        <li>테스트 환경 점검</li>
+                        <li>학생 계정 생성</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>2주차: 파일럿 테스트</strong></p>
+                    <ul>
+                        <li><strong>Day 1</strong>: 학생 3-5명 평가 (약 30-40분/명)</li>
+                        <li><strong>Day 2</strong>: 학생 3-5명 평가</li>
+                        <li><strong>Day 3</strong>: 평가 결과 검토 및 초기 피드백 수집</li>
+                    </ul>
+                    <p style="margin-top: 1rem;"><strong>3주차: 피드백 분석</strong></p>
+                    <ul>
+                        <li>설문 조사 수집</li>
+                        <li>인터뷰 진행</li>
+                        <li>데이터 분석</li>
+                        <li>개선 사항 도출</li>
+                    </ul>
+                </div>
+
+                <div class="highlight">
+                    <h4>🎯 핵심 확인 사항</h4>
+                    <div class="two-column">
+                        <div>
+                            <p><strong>기술적 측면</strong></p>
+                            <ul>
+                                <li>✅ 시스템 안정성 (오류, 멈춤, 로딩)</li>
+                                <li>✅ 음성 인식 정확도</li>
+                                <li>✅ 오디오/비디오 재생 품질</li>
+                                <li>✅ 데이터 저장 및 조회</li>
+                            </ul>
+                        </div>
+                        <div>
+                            <p><strong>교육적 측면</strong></p>
+                            <ul>
+                                <li>✅ 평가 내용의 타당도</li>
+                                <li>✅ 난이도의 적절성</li>
+                                <li>✅ 결과의 활용 가능성</li>
+                                <li>✅ 학습 진단 효과</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <p style="margin-top: 1rem;"><strong>사용자 경험 측면</strong></p>
+                    <ul>
+                        <li>✅ 사용 편의성</li>
+                        <li>✅ 접근성</li>
+                        <li>✅ 시각적 디자인</li>
+                        <li>✅ 오류 처리 및 안내</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 피드백 템플릿 -->
+            <section id="templates" class="section">
+                <h2>💡 피드백 정리 템플릿</h2>
+
+                <div class="template-box">
+                    <h4>학생별 피드백 요약</h4>
+                    <div class="text-input-group">
+                        <label>학생명:</label>
+                        <input type="text" placeholder="학생 이름을 입력하세요">
+                    </div>
+                    <div class="text-input-group">
+                        <label>평가일:</label>
+                        <input type="date">
+                    </div>
+                    <div class="text-input-group">
+                        <label>[기술적 문제] - 발생한 문제:</label>
+                        <textarea placeholder="발생한 기술적 문제를 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[기술적 문제] - 빈도:</label>
+                        <textarea placeholder="문제 발생 빈도를 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[사용 경험] - 어려웠던 점:</label>
+                        <textarea placeholder="학생이 어려워했던 점을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[사용 경험] - 쉬웠던 점:</label>
+                        <textarea placeholder="학생이 쉽게 느낀 점을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[사용 경험] - 개선 제안:</label>
+                        <textarea placeholder="개선 제안을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[평가 내용] - 어려운 교시:</label>
+                        <textarea placeholder="어려워했던 교시를 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[평가 내용] - 쉬운 교시:</label>
+                        <textarea placeholder="쉽게 느낀 교시를 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[평가 내용] - 문항 수 의견:</label>
+                        <textarea placeholder="문항 수에 대한 의견을 기록하세요"></textarea>
+                    </div>
+                </div>
+
+                <div class="template-box">
+                    <h4>교사 종합 피드백</h4>
+                    <div class="text-input-group">
+                        <label>테스트 일자:</label>
+                        <input type="date">
+                    </div>
+                    <div class="text-input-group">
+                        <label>테스트 학생 수:</label>
+                        <input type="number" min="1" placeholder="학생 수를 입력하세요">
+                    </div>
+                    <div class="text-input-group">
+                        <label>[전반적 평가] - 시스템 안정성:</label>
+                        <div class="rating-stars">
+                            <input type="radio" name="stability" id="star5-s" value="5">
+                            <label for="star5-s">⭐</label>
+                            <input type="radio" name="stability" id="star4-s" value="4">
+                            <label for="star4-s">⭐</label>
+                            <input type="radio" name="stability" id="star3-s" value="3">
+                            <label for="star3-s">⭐</label>
+                            <input type="radio" name="stability" id="star2-s" value="2">
+                            <label for="star2-s">⭐</label>
+                            <input type="radio" name="stability" id="star1-s" value="1">
+                            <label for="star1-s">⭐</label>
+                        </div>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[전반적 평가] - 평가 내용 적절성:</label>
+                        <div class="rating-stars">
+                            <input type="radio" name="content" id="star5-c" value="5">
+                            <label for="star5-c">⭐</label>
+                            <input type="radio" name="content" id="star4-c" value="4">
+                            <label for="star4-c">⭐</label>
+                            <input type="radio" name="content" id="star3-c" value="3">
+                            <label for="star3-c">⭐</label>
+                            <input type="radio" name="content" id="star2-c" value="2">
+                            <label for="star2-c">⭐</label>
+                            <input type="radio" name="content" id="star1-c" value="1">
+                            <label for="star1-c">⭐</label>
+                        </div>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[전반적 평가] - 사용 편의성:</label>
+                        <div class="rating-stars">
+                            <input type="radio" name="usability" id="star5-u" value="5">
+                            <label for="star5-u">⭐</label>
+                            <input type="radio" name="usability" id="star4-u" value="4">
+                            <label for="star4-u">⭐</label>
+                            <input type="radio" name="usability" id="star3-u" value="3">
+                            <label for="star3-u">⭐</label>
+                            <input type="radio" name="usability" id="star2-u" value="2">
+                            <label for="star2-u">⭐</label>
+                            <input type="radio" name="usability" id="star1-u" value="1">
+                            <label for="star1-u">⭐</label>
+                        </div>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[주요 발견 사항] 1:</label>
+                        <textarea placeholder="주요 발견 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[주요 발견 사항] 2:</label>
+                        <textarea placeholder="주요 발견 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[주요 발견 사항] 3:</label>
+                        <textarea placeholder="주요 발견 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[긴급 개선 필요] 1:</label>
+                        <textarea placeholder="긴급하게 개선이 필요한 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[긴급 개선 필요] 2:</label>
+                        <textarea placeholder="긴급하게 개선이 필요한 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[단기 개선 제안] 1:</label>
+                        <textarea placeholder="단기적으로 개선하면 좋을 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[단기 개선 제안] 2:</label>
+                        <textarea placeholder="단기적으로 개선하면 좋을 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[장기 개선 제안] 1:</label>
+                        <textarea placeholder="장기적으로 개선하면 좋을 사항을 기록하세요"></textarea>
+                    </div>
+                    <div class="text-input-group">
+                        <label>[장기 개선 제안] 2:</label>
+                        <textarea placeholder="장기적으로 개선하면 좋을 사항을 기록하세요"></textarea>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 추가 권장 사항 -->
+            <section class="section">
+                <h2>📌 추가 권장 사항</h2>
+
+                <div class="two-column">
+                    <div class="test-card">
+                        <h4>테스트 전</h4>
+                        <ul>
+                            <li>학생들에게 평가 목적과 방법을 충분히 설명</li>
+                            <li>교사가 먼저 평가를 경험해볼 수 있도록 지원</li>
+                            <li>테스트 환경(인터넷, 헤드셋 등) 사전 점검</li>
+                        </ul>
+                    </div>
+
+                    <div class="test-card">
+                        <h4>테스트 중</h4>
+                        <ul>
+                            <li>학생이 불편해하거나 막히는 상황을 즉시 기록</li>
+                            <li>기술적 문제 발생 시 즉시 중단하고 기록</li>
+                            <li>학생의 자연스러운 반응 관찰</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="test-card">
+                    <h4>테스트 후</h4>
+                    <ul>
+                        <li>결과에 대한 학생 피드백 즉시 수집</li>
+                        <li>교사 종합 의견 수집</li>
+                        <li>시스템 로그 및 데이터 분석</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- 마무리 -->
+            <section class="section">
+                <div class="success" style="text-align: center; padding: 2rem;">
+                    <h3 style="font-size: 1.5rem; margin-bottom: 1rem;">🎉 수고하셨습니다!</h3>
+                    <p style="font-size: 1.1rem;">
+                        이 가이드를 활용하여 체계적인 파일럿 테스트를 진행하시면,<br>
+                        평가 시스템의 개선점을 명확히 파악할 수 있을 것입니다.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <div style="background: #f9fafb; padding: 2rem; text-align: center; border-top: 2px solid #e5e7eb; color: #6b7280;">
+            <p>© 2025 AIDTPEL - AI 기반 초등 영어 기초 학력 진단 평가 시스템</p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                파일럿 테스트 피드백 가이드
+            </p>
+        </div>
+    </div>
+
+    <button class="print-button" onclick="window.print()">🖨️ 인쇄하기</button>
+
+    <script>
+        // 부드러운 스크롤
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
