@@ -56,6 +56,27 @@ const loadAvailableWords = async (): Promise<string[]> => {
   }
 };
 
+// 이미 생성된 음성 파일 목록 로드
+interface AudioFileInfo {
+  original: string;
+  file: string;
+}
+
+const loadAvailableAudioFiles = async (): Promise<string[]> => {
+  try {
+    const response = await fetch('/audio/meaning/index.json');
+    if (!response.ok) {
+      console.warn('[p5_vocabulary] audio index.json 로드 실패');
+      return [];
+    }
+    const data: AudioFileInfo[] = await response.json();
+    return data.map(item => item.original);
+  } catch (error) {
+    console.error('[p5_vocabulary] audio index.json 로드 오류:', error);
+    return [];
+  }
+};
+
 // 천재교과서(함) 핵심 표현 로드
 const loadChunjaeExpressions = async (): Promise<string[]> => {
   try {
@@ -112,8 +133,36 @@ const loadChunjaeVocabulary = async (): Promise<string[]> => {
   }
 };
 
-// 문구나 문장에서 핵심 단어 추출 (이미지 파일명과 매칭)
-const extractImageWord = (phrase: string): string | null => {
+// 복수형을 단수형으로 변환하는 헬퍼 함수
+const toSingular = (word: string): string => {
+  const lower = word.toLowerCase();
+  
+  // 일반적인 복수형 규칙
+  if (lower.endsWith('ies')) {
+    return lower.slice(0, -3) + 'y'; // cities -> city
+  }
+  if (lower.endsWith('ves')) {
+    return lower.slice(0, -3) + 'f'; // wolves -> wolf
+  }
+  if (lower.endsWith('es')) {
+    // boxes, matches 등
+    if (lower.endsWith('ches') || lower.endsWith('shes') || lower.endsWith('xes') || lower.endsWith('zes')) {
+      return lower.slice(0, -2);
+    }
+    // potatoes, tomatoes 등
+    if (lower.endsWith('oes')) {
+      return lower.slice(0, -2);
+    }
+  }
+  if (lower.endsWith('s') && !lower.endsWith('ss')) {
+    return lower.slice(0, -1); // cats -> cat, dogs -> dog
+  }
+  
+  return lower; // 이미 단수형이거나 규칙에 맞지 않으면 그대로 반환
+};
+
+// 문구나 문장에서 핵심 단어 추출 (이미지 파일명과 매칭, 복수형 처리 포함)
+const extractImageWord = (phrase: string, availableImageWords: string[]): string | null => {
   const lowerPhrase = phrase.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
   const words = lowerPhrase.split(/\s+/).filter(w => w.length > 0);
   
@@ -124,201 +173,226 @@ const extractImageWord = (phrase: string): string | null => {
   for (let i = words.length - 1; i >= 0; i--) {
     const word = words[i];
     if (!stopWords.includes(word)) {
-      return word;
-    }
-  }
-  
-  // 모든 단어가 불용어인 경우, 마지막 단어 반환
-  return words.length > 0 ? words[words.length - 1] : null;
-};
-
-// 문장/어구에서 핵심 이미지 단어 찾기 (더 정교한 추출)
-const findImageWordForExpression = (expression: string, availableWords: string[]): string | null => {
-  const lowerExpr = expression.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
-  const words = lowerExpr.split(/\s+/).filter(w => w.length > 0);
-  
-  // 이미지로 표현할 수 없는 표현들 필터링
-  const nonImageExpressions = [
-    "i'm", "im", "i am", "my name is", "how are you", "thank you", "you're welcome", 
-    "that's okay", "that's right", "here you are", "yes i do", "no i don't", 
-    "yes i can", "no i can't", "i'm sorry", "i'm fine", "how about you"
-  ];
-  
-  const exprLower = lowerExpr.trim();
-  for (const nonImg of nonImageExpressions) {
-    if (exprLower.includes(nonImg)) {
-      // 특정 케이스는 예외 처리
-      if (exprLower.includes("i'm momo") || exprLower.includes("im momo")) {
-        // "I'm Momo"는 이름이므로 이미지로 표현 불가
-        return null;
+      // 직접 매칭 시도
+      if (availableImageWords.includes(word)) {
+        return word;
       }
-      // "I'm sorry" 같은 경우는 "sorry" 이미지 사용 가능
-      if (nonImg === "i'm sorry" && availableWords.includes('sorry')) {
-        return 'sorry';
-      }
-      // 나머지는 이미지로 표현 불가
-      if (!nonImg.includes('sorry')) {
-        return null;
+      
+      // 복수형 -> 단수형 변환 후 매칭 시도
+      const singular = toSingular(word);
+      if (singular !== word && availableImageWords.includes(singular)) {
+        return singular;
       }
     }
-  }
-  
-  // 직접 매칭 시도 (불용어 제외)
-  const stopWords = ['i', 'am', 'is', 'are', 'do', 'does', 'can', 'can\'t', 'don\'t', 'what', 'how', 'many', 'my', 'you', 'he', 'she', 'it', 'they', 'we', 'this', 'that', 'please', 'yes', 'no', 'right', 'welcome', 'fine', 'nice', 'great', 'good', 'big', 'small', 'tall', 'pretty', 'pink', 'red', 'blue', 'green', 'yellow', 'black', 'white', 'orange', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'one', 'a', 'an', 'the'];
-  
-  for (const word of words) {
-    if (!stopWords.includes(word) && availableWords.includes(word)) {
-      return word;
-    }
-  }
-  
-  // 추출 시도
-  const extracted = extractImageWord(expression);
-  if (extracted && availableWords.includes(extracted)) {
-    return extracted;
-  }
-  
-  // 특수 케이스 처리
-  if (expression.toLowerCase().includes('dad') || expression.toLowerCase().includes('father')) {
-    return availableWords.includes('dad') ? 'dad' : (availableWords.includes('grandfather') ? 'grandfather' : null);
-  }
-  if (expression.toLowerCase().includes('mom') || expression.toLowerCase().includes('mother')) {
-    // "I'm Momo" 같은 경우는 제외 (이미 위에서 처리됨)
-    if (expression.toLowerCase().includes("i'm momo") || expression.toLowerCase().includes("im momo")) {
-      return null;
-    }
-    return availableWords.includes('mom') ? 'mom' : (availableWords.includes('grandmother') ? 'grandmother' : null);
-  }
-  if (expression.toLowerCase().includes('brother')) {
-    return availableWords.includes('brother') ? 'brother' : null;
-  }
-  if (expression.toLowerCase().includes('sister')) {
-    return availableWords.includes('sister') ? 'sister' : null;
-  }
-  if (expression.toLowerCase().includes('sit down')) {
-    return availableWords.includes('sit') ? 'sit' : null;
-  }
-  if (expression.toLowerCase().includes('stand up')) {
-    return availableWords.includes('stand') ? 'stand' : null;
-  }
-  if (expression.toLowerCase().includes('open the door')) {
-    return availableWords.includes('door') ? 'door' : (availableWords.includes('open') ? 'open' : null);
-  }
-  if (expression.toLowerCase().includes('close the door')) {
-    return availableWords.includes('door') ? 'door' : (availableWords.includes('close') ? 'close' : null);
   }
   
   return null;
 };
 
-// [폴백] 천재교과서(함) 기반 문항 생성
+// 문장/어구에서 핵심 이미지 단어 찾기 (실제 존재하는 이미지 파일 기반)
+const findImageWordForExpression = (expression: string, availableWords: string[]): string | null => {
+  // extractImageWord 함수가 복수형 처리도 포함하므로 이것만 사용
+  return extractImageWord(expression, availableWords);
+};
+
+// 실제 존재하는 음성 파일과 이미지 파일을 기반으로 문항 생성
+// 단어 5개, 어구 5개, 문장 5개 구성
 const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningItem[]> => {
   if (availableWords.length === 0) {
     return [];
   }
 
-  const items: MeaningItem[] = [];
+  const wordItems: MeaningItem[] = [];
+  const phraseItems: MeaningItem[] = [];
+  const sentenceItems: MeaningItem[] = [];
   
-  // 천재교과서(함) 데이터 로드
-  const chunjaeWords = await loadChunjaeVocabulary();
-  const chunjaeExpressions = await loadChunjaeExpressions();
+  // 실제 존재하는 음성 파일 목록 로드
+  const availableAudioPhrases = await loadAvailableAudioFiles();
   
-  console.log('[p5_vocabulary] 천재교과서(함) 단어:', chunjaeWords.length, '개');
-  console.log('[p5_vocabulary] 천재교과서(함) 표현:', chunjaeExpressions.length, '개');
+  console.log('[p5_vocabulary] 사용 가능한 음성 파일:', availableAudioPhrases.length, '개');
+  console.log('[p5_vocabulary] 사용 가능한 이미지 단어:', availableWords.length, '개');
   
-  // 사용 가능한 이미지가 있는 단어만 필터링
-  const validWords = chunjaeWords.filter(w => availableWords.includes(w.toLowerCase()));
-  console.log('[p5_vocabulary] 사용 가능한 단어:', validWords.length, '개');
+  // 1. 단어 5개 생성: 이미지 목록에서 단어 선택 (이미지가 있는 단어만)
+  // 이미지 목록에서 명사/동작 단어 위주로 선택 (불용어 제외)
+  const stopWords = ['a', 'an', 'the', 'i', 'am', 'is', 'are', 'do', 'does', 'can', 'can\'t', 'don\'t', 'what', 'how', 'many', 'my', 'you', 'he', 'she', 'it', 'they', 'we', 'this', 'that', 'please', 'sorry', 'okay', 'yes', 'no', 'right', 'welcome', 'fine', 'nice', 'great', 'good', 'big', 'small', 'tall', 'pretty', 'pink', 'red', 'blue', 'green', 'yellow', 'black', 'white', 'orange', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'one'];
   
-  // 1. 단어 문항 (단순 명사) - 5개
-  const wordItems: string[] = [];
-  validWords.forEach(word => {
-    if (wordItems.length < 5) {
-      const wrongWords = validWords.filter(w => w !== word).sort(() => Math.random() - 0.5).slice(0, 2);
-      if (wrongWords.length >= 2) {
-        wordItems.push(word);
-        items.push({
-          wordOrPhrase: word,
-          imageOptions: [word.toLowerCase(), ...wrongWords.map(w => w.toLowerCase())].sort(() => Math.random() - 0.5),
-          correctAnswer: word.toLowerCase(),
-          phase: 'word',
-        });
-      }
-    }
-  });
+  const candidateWords = availableWords
+    .filter(w => !stopWords.includes(w.toLowerCase()))
+    .sort(() => Math.random() - 0.5);
   
-  // 2. 어구 문항 (2-3단어 조합) - 5개
-  const phraseExpressions = chunjaeExpressions.filter(expr => {
-    const wordCount = expr.split(/\s+/).length;
-    return wordCount >= 2 && wordCount <= 4 && !expr.includes('?') && !expr.includes('!');
-  });
+  // 단어 5개 생성 (이미지가 있는 단어만)
+  const usedImageWords = new Set<string>(); // 사용된 이미지 단어 추적
   
-  phraseExpressions.forEach(expr => {
-    if (items.filter(i => i.phase === 'phrase').length >= 5) return;
+  for (let i = 0; i < Math.min(5, candidateWords.length); i++) {
+    const word = candidateWords[i];
+    const wordLower = word.toLowerCase();
     
-    const imageWord = findImageWordForExpression(expr, availableWords);
-    if (imageWord) {
-      const wrongWords = validWords
-        .filter(w => w.toLowerCase() !== imageWord)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 2)
-        .map(w => w.toLowerCase());
-      
-      if (wrongWords.length >= 2) {
-        items.push({
-          wordOrPhrase: expr,
-          imageOptions: [imageWord, ...wrongWords].sort(() => Math.random() - 0.5),
-          correctAnswer: imageWord,
-          phase: 'phrase',
-        });
-      }
+    // 이미 사용된 단어는 건너뛰기
+    if (usedImageWords.has(wordLower)) {
+      continue;
     }
-  });
-  
-  // 3. 문장 문항 (질문이나 긴 문장) - 5개
-  const sentenceExpressions = chunjaeExpressions.filter(expr => {
-    const wordCount = expr.split(/\s+/).length;
-    return wordCount >= 3 || expr.includes('?') || expr.includes('!');
-  });
-  
-  sentenceExpressions.forEach(expr => {
-    if (items.filter(i => i.phase === 'sentence').length >= 5) return;
     
-    const imageWord = findImageWordForExpression(expr, availableWords);
-    if (imageWord) {
-      const wrongWords = validWords
-        .filter(w => w.toLowerCase() !== imageWord)
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 2)
-        .map(w => w.toLowerCase());
+    const wrongWords = candidateWords
+      .filter(w => w.toLowerCase() !== wordLower && !usedImageWords.has(w.toLowerCase()))
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2)
+      .map(w => w.toLowerCase());
+    
+    if (wrongWords.length >= 2) {
+      wordItems.push({
+        wordOrPhrase: wordLower,
+        imageOptions: [wordLower, ...wrongWords].sort(() => Math.random() - 0.5),
+        correctAnswer: wordLower,
+        phase: 'word',
+      });
       
-      if (wrongWords.length >= 2) {
-        items.push({
-          wordOrPhrase: expr,
-          imageOptions: [imageWord, ...wrongWords].sort(() => Math.random() - 0.5),
-          correctAnswer: imageWord,
-          phase: 'sentence',
-        });
-      }
+      usedImageWords.add(wordLower); // 사용된 단어 기록
+      console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}"`);
     }
-  });
-  
-  // 단어 => 어구 => 문장 순서로 정렬
-  const sortedItems: MeaningItem[] = [];
-  
-  const wordItems_sorted = items.filter(i => i.phase === 'word').slice(0, 5);
-  const phraseItems_sorted = items.filter(i => i.phase === 'phrase').slice(0, 5);
-  const sentenceItems_sorted = items.filter(i => i.phase === 'sentence').slice(0, 5);
-  
-  const maxLength = Math.max(wordItems_sorted.length, phraseItems_sorted.length, sentenceItems_sorted.length);
-  
-  for (let i = 0; i < maxLength; i++) {
-    if (i < wordItems_sorted.length) sortedItems.push(wordItems_sorted[i]);
-    if (i < phraseItems_sorted.length) sortedItems.push(phraseItems_sorted[i]);
-    if (i < sentenceItems_sorted.length) sortedItems.push(sentenceItems_sorted[i]);
   }
   
-  return sortedItems; // 총 15개 (단어 5개 + 어구 5개 + 문장 5개)
+  console.log(`[p5_vocabulary] 단어에서 사용된 이미지 단어:`, Array.from(usedImageWords));
+  
+  // 2. 어구와 문장: 음성 파일에서 분류 (단어에서 사용한 이미지 단어 제외)
+  const tempPhraseItems: MeaningItem[] = [];
+  const tempSentenceItems: MeaningItem[] = [];
+  
+  availableAudioPhrases.forEach((phrase) => {
+    const imageWord = findImageWordForExpression(phrase, availableWords);
+    
+    if (!imageWord) {
+      return; // 이미지 매칭 실패
+    }
+    
+    const imageWordLower = imageWord.toLowerCase();
+    
+    // 단어에서 이미 사용된 이미지 단어는 제외
+    if (usedImageWords.has(imageWordLower)) {
+      console.log(`[p5_vocabulary] 이미지 단어 "${imageWordLower}"는 단어에서 이미 사용되어 제외: "${phrase}"`);
+      return;
+    }
+    
+    const wrongWords = availableWords
+      .filter(w => w.toLowerCase() !== imageWordLower)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 2)
+      .map(w => w.toLowerCase());
+    
+    if (wrongWords.length < 2) {
+      return; // 오답 선택지 부족
+    }
+    
+    // 단어/어구/문장 구분
+    const wordCount = phrase.split(/\s+/).length;
+    let phaseType: VocabularyPhase = 'phrase';
+    if (wordCount === 1) {
+      phaseType = 'word';
+    } else if (wordCount >= 5 || phrase.includes('?') || phrase.includes('!')) {
+      phaseType = 'sentence';
+    } else {
+      phaseType = 'phrase';
+    }
+    
+    const item: MeaningItem = {
+      wordOrPhrase: phrase,
+      imageOptions: [imageWordLower, ...wrongWords].sort(() => Math.random() - 0.5),
+      correctAnswer: imageWordLower,
+      phase: phaseType,
+    };
+    
+    if (phaseType === 'phrase') {
+      tempPhraseItems.push(item);
+    } else if (phaseType === 'sentence') {
+      tempSentenceItems.push(item);
+    }
+    
+    console.log(`[p5_vocabulary] ${phaseType} 문항 생성: "${phrase}" → 정답 이미지: "${imageWordLower}"`);
+  });
+  
+  // 어구 5개 선택 (이미 사용된 이미지 단어 제외하면서)
+  const selectedPhrases: MeaningItem[] = [];
+  const phraseUsedWords = new Set<string>();
+  
+  for (const phraseItem of tempPhraseItems) {
+    const imageWordLower = phraseItem.correctAnswer.toLowerCase();
+    
+    // 이미 단어나 다른 어구에서 사용된 단어는 제외
+    if (usedImageWords.has(imageWordLower) || phraseUsedWords.has(imageWordLower)) {
+      continue;
+    }
+    
+    selectedPhrases.push(phraseItem);
+    phraseUsedWords.add(imageWordLower);
+    
+    if (selectedPhrases.length >= 5) {
+      break;
+    }
+  }
+  
+  phraseItems.push(...selectedPhrases);
+  usedImageWords.forEach(word => phraseUsedWords.add(word)); // 어구에서 사용된 단어도 기록
+  
+  // 문장 5개 선택 (부족하면 어구를 문장으로 변환)
+  const selectedSentences: MeaningItem[] = [];
+  const sentenceUsedWords = new Set<string>();
+  
+  // 먼저 문장 항목에서 선택
+  for (const sentenceItem of tempSentenceItems) {
+    const imageWordLower = sentenceItem.correctAnswer.toLowerCase();
+    
+    // 이미 사용된 이미지 단어는 제외
+    if (phraseUsedWords.has(imageWordLower) || sentenceUsedWords.has(imageWordLower)) {
+      continue;
+    }
+    
+    selectedSentences.push(sentenceItem);
+    sentenceUsedWords.add(imageWordLower);
+    
+    if (selectedSentences.length >= 5) {
+      break;
+    }
+  }
+  
+  // 부족한 문장은 어구를 문장으로 변환 (더 긴 어구 우선, 사용되지 않은 것만)
+  if (selectedSentences.length < 5) {
+    const remainingPhrases = tempPhraseItems
+      .filter(item => {
+        const imageWordLower = item.correctAnswer.toLowerCase();
+        return !phraseUsedWords.has(imageWordLower) && !sentenceUsedWords.has(imageWordLower);
+      })
+      .sort((a, b) => b.wordOrPhrase.split(/\s+/).length - a.wordOrPhrase.split(/\s+/).length);
+    
+    for (let i = 0; i < Math.min(5 - selectedSentences.length, remainingPhrases.length); i++) {
+      const phraseItem = remainingPhrases[i];
+      const imageWordLower = phraseItem.correctAnswer.toLowerCase();
+      
+      selectedSentences.push({
+        ...phraseItem,
+        phase: 'sentence',
+      });
+      sentenceUsedWords.add(imageWordLower);
+    }
+  }
+  
+  sentenceItems.push(...selectedSentences);
+  
+  // 최종 문항 구성: 단어 5개 + 어구 5개 + 문장 5개
+  const sortedItems: MeaningItem[] = [];
+  
+  const maxLength = Math.max(wordItems.length, phraseItems.length, sentenceItems.length);
+  
+  for (let i = 0; i < maxLength; i++) {
+    if (i < wordItems.length) sortedItems.push(wordItems[i]);
+    if (i < phraseItems.length) sortedItems.push(phraseItems[i]);
+    if (i < sentenceItems.length) sortedItems.push(sentenceItems[i]);
+  }
+  
+  console.log('[p5_vocabulary] 최종 생성된 문항 수:', sortedItems.length, '개');
+  console.log('[p5_vocabulary] - 단어:', wordItems.length, '개');
+  console.log('[p5_vocabulary] - 어구:', phraseItems.length, '개');
+  console.log('[p5_vocabulary] - 문장:', sentenceItems.length, '개');
+  
+  return sortedItems;
 };
 
 export default function MeaningTestPage() {
@@ -1080,11 +1154,17 @@ export default function MeaningTestPage() {
                 transition: 'all 0.2s ease',
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
               }}
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 try {
-                  router.push('/lobby');
+                  await router.push('/lobby');
+                  // 라우터가 작동하지 않으면 강제로 이동
+                  setTimeout(() => {
+                    if (window.location.pathname !== '/lobby') {
+                      window.location.href = '/lobby';
+                    }
+                  }, 100);
                 } catch (error) {
                   console.error('[p5_vocabulary] 라우터 오류:', error);
                   window.location.href = '/lobby';

@@ -506,7 +506,7 @@ export default function PsfTestPage() {
               {feedback || "2교시 '소리의 원소 분리 시험'이 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
-              <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/p4_phonics')}>
+              <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/p3_suprasegmental_phoneme')}>
                 다음 시험으로 이동
               </button>
               <button

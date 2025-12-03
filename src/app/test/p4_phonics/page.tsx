@@ -574,7 +574,7 @@ export default function ReadingTestPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button
                 style={{ ...buttonStyle, maxWidth: '250px' }}
-                onClick={() => router.push('/test/p3_suprasegmental_phoneme')}
+                onClick={() => router.push('/test/p5_vocabulary')}
               >
                 다음 시험으로 이동
               </button>

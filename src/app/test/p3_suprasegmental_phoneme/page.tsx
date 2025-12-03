@@ -588,7 +588,7 @@ export default function StressTestPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button
                 style={{ ...buttonStyle, maxWidth: '250px' }}
-                onClick={() => router.push('/test/p5_vocabulary')}
+                onClick={() => router.push('/test/p4_phonics')}
               >
                 다음 시험으로 이동
               </button>
