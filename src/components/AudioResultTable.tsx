@@ -938,7 +938,7 @@ function ChoiceTestAudioPlayer({
                 resolve();
               };
               
-              audio.onerror = (err) => {
+              audio.onerror = () => {
                 clearTimeout(timeout);
                 console.log(`[ChoiceTestAudioPlayer] 음성 파일 없음, TTS API 사용: ${word}`);
                 reject(new Error('파일 재생 실패'));
@@ -953,7 +953,7 @@ function ChoiceTestAudioPlayer({
             console.log(`[ChoiceTestAudioPlayer] 음성 파일 없음, TTS API 사용: ${word}`);
             await playTTS(word);
           }
-        } catch (fetchError) {
+        } catch {
           // 파일 확인 실패 시 TTS 사용
           console.log(`[ChoiceTestAudioPlayer] 파일 확인 실패, TTS API 사용: ${word}`);
           await playTTS(word);

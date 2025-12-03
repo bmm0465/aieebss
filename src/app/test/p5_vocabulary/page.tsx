@@ -57,68 +57,6 @@ const loadAvailableAudioWords = async (): Promise<string[]> => {
   }
 };
 
-// 복수형을 단수형으로 변환하는 헬퍼 함수
-const toSingular = (word: string): string => {
-  const lower = word.toLowerCase();
-  
-  // 일반적인 복수형 규칙
-  if (lower.endsWith('ies')) {
-    return lower.slice(0, -3) + 'y'; // cities -> city
-  }
-  if (lower.endsWith('ves')) {
-    return lower.slice(0, -3) + 'f'; // wolves -> wolf
-  }
-  if (lower.endsWith('es')) {
-    // boxes, matches 등
-    if (lower.endsWith('ches') || lower.endsWith('shes') || lower.endsWith('xes') || lower.endsWith('zes')) {
-      return lower.slice(0, -2);
-    }
-    // potatoes, tomatoes 등
-    if (lower.endsWith('oes')) {
-      return lower.slice(0, -2);
-    }
-  }
-  if (lower.endsWith('s') && !lower.endsWith('ss')) {
-    return lower.slice(0, -1); // cats -> cat, dogs -> dog
-  }
-  
-  return lower; // 이미 단수형이거나 규칙에 맞지 않으면 그대로 반환
-};
-
-// 문구나 문장에서 핵심 단어 추출 (이미지 파일명과 매칭, 복수형 처리 포함)
-const extractImageWord = (phrase: string, availableImageWords: string[]): string | null => {
-  const lowerPhrase = phrase.toLowerCase().replace(/[^a-z0-9\s]/g, ' ');
-  const words = lowerPhrase.split(/\s+/).filter(w => w.length > 0);
-  
-  // 일반적인 불용어 제거
-  const stopWords = ['a', 'an', 'the', 'i', 'am', 'is', 'are', 'do', 'does', 'can', 'can\'t', 'don\'t', 'what', 'how', 'many', 'my', 'you', 'he', 'she', 'it', 'they', 'we', 'this', 'that', 'please', 'sorry', 'okay', 'yes', 'no', 'right', 'welcome', 'fine', 'nice', 'great', 'good', 'big', 'small', 'tall', 'pretty', 'pink', 'red', 'blue', 'green', 'yellow', 'black', 'white', 'orange', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'one'];
-  
-  // 명사나 동작 단어 찾기 (불용어가 아닌 단어 중에서)
-  for (let i = words.length - 1; i >= 0; i--) {
-    const word = words[i];
-    if (!stopWords.includes(word)) {
-      // 직접 매칭 시도
-      if (availableImageWords.includes(word)) {
-        return word;
-      }
-      
-      // 복수형 -> 단수형 변환 후 매칭 시도
-      const singular = toSingular(word);
-      if (singular !== word && availableImageWords.includes(singular)) {
-        return singular;
-      }
-    }
-  }
-  
-  return null;
-};
-
-// 문장/어구에서 핵심 이미지 단어 찾기 (실제 존재하는 이미지 파일 기반)
-const findImageWordForExpression = (expression: string, availableWords: string[]): string | null => {
-  // extractImageWord 함수가 복수형 처리도 포함하므로 이것만 사용
-  return extractImageWord(expression, availableWords);
-};
-
 // 실제 존재하는 단어 음성 파일과 이미지 파일을 기반으로 문항 생성
 // 단어만 20개 구성
 const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningItem[]> => {
