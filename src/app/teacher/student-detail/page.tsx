@@ -1,7 +1,7 @@
 'use client'
 
 import { useSearchParams, useRouter } from 'next/navigation'
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useMemo } from 'react'
 import Link from 'next/link'
 import { TeacherAudioPlayer } from '@/components/TeacherAudioPlayer'
 
@@ -37,12 +37,112 @@ interface StudentData {
   stats: Record<string, { total: number; correct: number; accuracy: number }>;
 }
 
+interface SessionGroup {
+  sessionId: string;
+  date: string;
+  time: string;
+  results: TestResultRow[];
+}
+
+// 세션별로 결과를 그룹화하는 함수
+function groupResultsBySession(results: TestResultRow[]): SessionGroup[] {
+  if (!results || results.length === 0) return [];
+
+  // 시간순으로 정렬
+  const sortedResults = [...results].sort((a, b) => 
+    new Date(a.created_at || 0).getTime() - new Date(b.created_at || 0).getTime()
+  );
+
+  const sessions: { [key: string]: TestResultRow[] } = {};
+  
+  // 날짜별로 먼저 구분
+  sortedResults.forEach(result => {
+    const resultTime = new Date(result.created_at || 0);
+    const sessionKey = resultTime.toISOString().split('T')[0];
+    
+    if (!sessions[sessionKey]) {
+      sessions[sessionKey] = [];
+    }
+    sessions[sessionKey].push(result);
+  });
+
+  // 각 날짜 내에서 세션을 더 세밀하게 구분
+  const refinedSessions: { [key: string]: TestResultRow[] } = {};
+  
+  Object.keys(sessions).forEach(dateKey => {
+    const dayResults = sessions[dateKey];
+    const sessionGroups: TestResultRow[][] = [];
+    let currentGroup: TestResultRow[] = [];
+    let lastTime = 0;
+    let lastTestType = '';
+
+    dayResults.forEach(result => {
+      const resultTime = new Date(result.created_at || 0).getTime();
+      const currentTestType = result.test_type || '';
+      
+      const timeGap = resultTime - lastTime;
+      const isSameTestType = currentTestType === lastTestType;
+      
+      // 같은 test_type 내에서는 10분, 다른 test_type으로 변경되거나 30분 이상 차이면 새로운 세션
+      const shouldStartNewSession = (isSameTestType && timeGap > 600000 && currentGroup.length > 0) ||
+                                    (!isSameTestType && timeGap > 1800000 && currentGroup.length > 0);
+      
+      if (shouldStartNewSession) {
+        sessionGroups.push(currentGroup);
+        currentGroup = [];
+        lastTime = 0;
+      }
+      
+      currentGroup.push(result);
+      lastTime = resultTime;
+      lastTestType = currentTestType;
+    });
+    
+    if (currentGroup.length > 0) {
+      sessionGroups.push(currentGroup);
+    }
+
+    // 각 세션 그룹을 고유한 키로 저장
+    sessionGroups.forEach((group, index) => {
+      const sessionId = `${dateKey}_${index}`;
+      refinedSessions[sessionId] = group;
+    });
+  });
+
+  // SessionGroup 배열로 변환
+  return Object.entries(refinedSessions).map(([sessionId, sessionResults]) => {
+    const firstResult = sessionResults[0];
+    const lastResult = sessionResults[sessionResults.length - 1];
+    const date = new Date(firstResult.created_at || 0);
+    
+    return {
+      sessionId,
+      date: date.toLocaleDateString('ko-KR'),
+      time: `${date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })} ~ ${new Date(lastResult.created_at || 0).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Seoul' })}`,
+      results: sessionResults
+    };
+  }).sort((a, b) => {
+    const aTime = new Date(a.sessionId.split('_')[0]).getTime();
+    const bTime = new Date(b.sessionId.split('_')[0]).getTime();
+    
+    if (aTime === bTime) {
+      const aSessionNum = parseInt(a.sessionId.split('_')[1] || '0');
+      const bSessionNum = parseInt(b.sessionId.split('_')[1] || '0');
+      return aSessionNum - bSessionNum;
+    }
+    
+    return bTime - aTime; // 최신 세션이 먼저
+  });
+}
+
 function StudentDetailContent() {
   const searchParams = useSearchParams()
   const studentId = searchParams.get('id')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [studentData, setStudentData] = useState<StudentData | null>(null)
+  const [selectedSession, setSelectedSession] = useState<string | null>(null)
+  const [selectedTestType, setSelectedTestType] = useState<string | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -168,7 +268,10 @@ function StudentDetailContent() {
     )
   }
 
-  const { student, assignment, results: testResults, stats } = studentData
+  const { student, assignment, results: testResults } = studentData
+
+  // 세션별로 그룹화
+  const sessions = useMemo(() => groupResultsBySession(testResults || []), [testResults])
 
   const testInfo = {
     p1_alphabet: { title: '1교시', description: '알파벳 대소문자를 소리 내어 읽기' },
@@ -185,6 +288,39 @@ function StudentDetailContent() {
     ORF: { title: 'ORF', description: '구두 읽기 유창성' },
     MAZE: { title: 'MAZE', description: '미로 이해도' }
   }
+
+  // 세션별 통계 계산
+  const calculateSessionStats = (sessionResults: TestResultRow[]) => {
+    const stats: Record<string, { total: number; correct: number; accuracy: number }> = {};
+    
+    sessionResults.forEach(result => {
+      const testType = result.test_type || 'unknown';
+      if (!stats[testType]) {
+        stats[testType] = { total: 0, correct: 0, accuracy: 0 };
+      }
+      stats[testType].total++;
+      if (result.is_correct) {
+        stats[testType].correct++;
+      }
+    });
+
+    Object.keys(stats).forEach(testType => {
+      const stat = stats[testType];
+      stat.accuracy = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
+    });
+
+    return stats;
+  };
+
+  // 선택된 세션과 교시의 상세 결과 가져오기
+  const selectedResults = useMemo(() => {
+    if (!selectedSession || !selectedTestType) return [];
+    
+    const session = sessions.find(s => s.sessionId === selectedSession);
+    if (!session) return [];
+    
+    return session.results.filter(r => r.test_type === selectedTestType);
+  }, [selectedSession, selectedTestType, sessions]);
 
   return (
     <div style={{ 
@@ -242,90 +378,130 @@ function StudentDetailContent() {
           </div>
         </div>
 
-        {/* 전체 통계 */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '2rem',
-          borderRadius: '20px',
-          marginBottom: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h2 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '1.5rem',
-            fontSize: '1.75rem',
-            fontWeight: 'bold'
-          }}>📊 전체 평가 현황</h2>
-          {testResults && testResults.length > 0 ? (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
-              {/* 1교시부터 6교시 순서로 명시적으로 표시 */}
-              {(['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'] as const).map((testType) => {
-                const stat = stats[testType];
-                if (!stat) return null;
-                
-                return (
-                  <div key={testType} style={{
-                    backgroundColor: '#f9fafb',
-                    padding: '1.5rem',
-                    borderRadius: '12px',
-                    border: '2px solid #e5e7eb',
-                    textAlign: 'center',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    flex: '1 1 200px',
-                    minWidth: '200px'
+        {/* 세션별 평가 현황 */}
+        {sessions.length > 0 ? (
+          sessions.map((session) => {
+            const sessionStats = calculateSessionStats(session.results);
+            
+            return (
+              <div key={session.sessionId} style={{
+                backgroundColor: '#ffffff',
+                padding: '2rem',
+                borderRadius: '20px',
+                marginBottom: '2rem',
+                border: '2px solid #e5e7eb',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                  <h2 style={{ 
+                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    fontSize: '1.75rem',
+                    fontWeight: 'bold',
+                    margin: 0
                   }}>
-                    <h3 style={{ 
-                      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                      backgroundClip: 'text',
-                      marginBottom: '0.5rem',
-                      fontSize: '1.1rem',
-                      fontWeight: '600'
-                    }}>
-                      {testInfo[testType]?.title || testType}
-                    </h3>
-                    <p style={{ marginBottom: '0.5rem', color: '#4b5563', fontSize: '0.9rem' }}>
-                      {testInfo[testType]?.description || '테스트'}
-                    </p>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981', marginBottom: '0.5rem' }}>
-                      {stat.accuracy}%
-                    </div>
-                    <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
-                      {stat.correct}/{stat.total} 정답
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <div style={{ 
-              textAlign: 'center', 
-              padding: '2rem',
-              backgroundColor: '#f9fafb',
-              borderRadius: '12px',
-              border: '2px solid #e5e7eb'
-            }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
-              <h3 style={{ 
-                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                backgroundClip: 'text',
-                marginBottom: '0.5rem',
-                fontSize: '1.5rem',
-                fontWeight: '600'
-              }}>평가 통계</h3>
-              <p style={{ color: '#4b5563' }}>
-                테스트를 완료하면 여기에 상세한 통계가 표시됩니다.
-              </p>
-            </div>
-          )}
-        </div>
+                    📊 평가 세션 - {session.date}
+                  </h2>
+                  <p style={{ color: '#6b7280', fontSize: '0.9rem', margin: 0 }}>
+                    {session.time}
+                  </p>
+                </div>
+                
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+                  {/* 1교시부터 6교시 순서로 명시적으로 표시 */}
+                  {(['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'] as const).map((testType) => {
+                    const stat = sessionStats[testType];
+                    if (!stat) return null;
+                    
+                    return (
+                      <div 
+                        key={testType} 
+                        onClick={() => {
+                          setSelectedSession(session.sessionId);
+                          setSelectedTestType(testType);
+                        }}
+                        style={{
+                          backgroundColor: '#f9fafb',
+                          padding: '1.5rem',
+                          borderRadius: '12px',
+                          border: '2px solid #e5e7eb',
+                          textAlign: 'center',
+                          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                          flex: '1 1 200px',
+                          minWidth: '200px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f3f4f6';
+                          e.currentTarget.style.borderColor = '#6366f1';
+                          e.currentTarget.style.transform = 'translateY(-2px)';
+                          e.currentTarget.style.boxShadow = '0 6px 12px -1px rgba(99, 102, 241, 0.3)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = '#f9fafb';
+                          e.currentTarget.style.borderColor = '#e5e7eb';
+                          e.currentTarget.style.transform = 'translateY(0)';
+                          e.currentTarget.style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';
+                        }}
+                      >
+                        <h3 style={{ 
+                          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          backgroundClip: 'text',
+                          marginBottom: '0.5rem',
+                          fontSize: '1.1rem',
+                          fontWeight: '600'
+                        }}>
+                          {testInfo[testType]?.title || testType}
+                        </h3>
+                        <p style={{ marginBottom: '0.5rem', color: '#4b5563', fontSize: '0.9rem' }}>
+                          {testInfo[testType]?.description || '테스트'}
+                        </p>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981', marginBottom: '0.5rem' }}>
+                          {stat.accuracy}%
+                        </div>
+                        <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
+                          {stat.correct}/{stat.total} 정답
+                        </div>
+                        <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#9ca3af' }}>
+                          클릭하여 상세 보기
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '2rem',
+            borderRadius: '20px',
+            marginBottom: '2rem',
+            border: '2px solid #e5e7eb',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>📊</div>
+            <h3 style={{ 
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: '0.5rem',
+              fontSize: '1.5rem',
+              fontWeight: '600'
+            }}>평가 통계</h3>
+            <p style={{ color: '#4b5563' }}>
+              테스트를 완료하면 여기에 상세한 통계가 표시됩니다.
+            </p>
+          </div>
+        )}
 
         {/* 최근 테스트 결과 */}
         <div style={{
@@ -458,6 +634,159 @@ function StudentDetailContent() {
             </div>
           )}
         </div>
+
+        {/* 상세 결과 모달 */}
+        {selectedSession && selectedTestType && selectedResults.length > 0 && (
+          <div 
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              zIndex: 1000,
+              padding: '2rem'
+            }}
+            onClick={() => {
+              setSelectedSession(null);
+              setSelectedTestType(null);
+            }}
+          >
+            <div 
+              style={{
+                backgroundColor: '#ffffff',
+                borderRadius: '20px',
+                padding: '2rem',
+                maxWidth: '900px',
+                width: '100%',
+                maxHeight: '90vh',
+                overflow: 'auto',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.3)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ 
+                  background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontSize: '1.75rem',
+                  fontWeight: 'bold',
+                  margin: 0
+                }}>
+                  {testInfo[selectedTestType as keyof typeof testInfo]?.title || selectedTestType} 상세 결과
+                </h2>
+                <button
+                  onClick={() => {
+                    setSelectedSession(null);
+                    setSelectedTestType(null);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    fontSize: '1.5rem',
+                    cursor: 'pointer',
+                    color: '#6b7280',
+                    padding: '0.5rem',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                    e.currentTarget.style.color = '#1f2937';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = '#6b7280';
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ 
+                  width: '100%', 
+                  borderCollapse: 'collapse',
+                  backgroundColor: '#ffffff'
+                }}>
+                  <thead>
+                    <tr style={{ backgroundColor: '#f9fafb' }}>
+                      <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>문제</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>학생 답변</th>
+                      <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>음성 재생</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>전사 결과</th>
+                      <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>정답 여부</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {selectedResults.map((result: TestResultRow) => {
+                      const transcriptionText = result.transcription_results?.openai?.text 
+                        || result.transcription_results?.gemini?.text
+                        || result.transcription_results?.aws?.text
+                        || result.transcription_results?.azure?.text
+                        || null;
+                      
+                      return (
+                        <tr key={result.id} style={{ 
+                          borderBottom: '1px solid #e5e7eb',
+                          backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)'
+                        }}>
+                          <td style={{ padding: '1rem', color: '#1f2937' }}>{result.question || '-'}</td>
+                          <td style={{ padding: '1rem', color: '#1f2937' }}>{result.student_answer || '-'}</td>
+                          <td style={{ padding: '1rem', textAlign: 'center' }}>
+                            {result.audio_url ? (
+                              <TeacherAudioPlayer
+                                audioPath={result.audio_url}
+                                userId={student.id}
+                                testType={result.test_type}
+                                createdAt={result.created_at}
+                              />
+                            ) : (
+                              <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem', color: '#1f2937', maxWidth: '300px', wordBreak: 'break-word' }}>
+                            {transcriptionText ? (
+                              <div style={{ fontSize: '0.875rem' }}>
+                                {transcriptionText}
+                                {result.transcription_results?.openai?.confidence && (
+                                  <span style={{ color: '#6b7280', fontSize: '0.75rem', marginLeft: '0.5rem' }}>
+                                    (신뢰도: {result.transcription_results.openai.confidence})
+                                  </span>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '1rem' }}>
+                            <span style={{
+                              padding: '0.375rem 0.875rem',
+                              borderRadius: '8px',
+                              fontSize: '0.875rem',
+                              fontWeight: '600',
+                              backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                              color: result.is_correct ? '#10b981' : '#ef4444',
+                              border: `1.5px solid ${result.is_correct ? '#10b981' : '#ef4444'}`
+                            }}>
+                              {result.is_correct ? '✅ 정답' : '❌ 오답'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
