@@ -233,7 +233,7 @@ export default function LnfTestPage() {
         fetch('/api/submit-p1_alphabet', { method: 'POST', body: formData });
         
       // 피드백을 일반적인 긍정 메시지로 변경
-      setFeedback("좋아요! 다음 룬 문자를 해독해 보세요!");
+      setFeedback("좋아요! 다음 알파벳을 읽어보세요!");
       
       
       
@@ -290,7 +290,7 @@ export default function LnfTestPage() {
       
       mediaRecorder.start();
       setIsRecording(true);
-      setFeedback('🎤 녹음 중... 룬 문자를 읽어주세요!');
+      setFeedback('🎤 녹음 중... 알파벳을 읽어주세요!');
       
       // 5초로 늘리고, 더 명확한 피드백 제공
       silenceTimeoutRef.current = setTimeout(() => {
@@ -310,7 +310,7 @@ export default function LnfTestPage() {
     setLetterIndex(0);
     setCurrentLetter(shuffledAlphabet[0]);
     setTimeLeft(60);
-    setFeedback("화면에 나타나는 룬 문자의 이름을 말해주세요.");
+    setFeedback("화면에 나타나는 알파벳의 이름을 말해주세요.");
   };
 
   // useEffect들 - 모든 함수 선언 후에 배치
