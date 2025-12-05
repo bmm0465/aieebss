@@ -3,7 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { 
   evaluateOverallAchievement, 
   type StudentTestResult,
-  type OverallAchievementResult 
+  type TestType
 } from '@/lib/achievement-standards';
 
 /**
@@ -92,14 +92,14 @@ export async function GET(request: NextRequest) {
       const accuracies = testTypeGroups[testType];
       const avgAccuracy = accuracies.reduce((sum, acc) => sum + acc, 0) / accuracies.length;
       studentTestResults.push({
-        test_type: testType as any,
+        test_type: testType as TestType,
         accuracy: Math.round(avgAccuracy * 100) / 100
       });
     });
 
     // 반 학생들의 평가 결과 가져오기 (통계 계산용)
     const targetClassName = className || assignment.class_name;
-    let classTestResults: StudentTestResult[] = [];
+    const classTestResults: StudentTestResult[] = [];
 
     if (targetClassName) {
       // 같은 반 학생들 찾기
@@ -150,7 +150,7 @@ export async function GET(request: NextRequest) {
               const accuracies = classTestTypeGroups[testType][userId];
               const avgAccuracy = accuracies.reduce((sum, acc) => sum + acc, 0) / accuracies.length;
               classTestResults.push({
-                test_type: testType as any,
+                test_type: testType as TestType,
                 accuracy: Math.round(avgAccuracy * 100) / 100
               });
             });

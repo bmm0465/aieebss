@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import type { OverallAchievementResult } from '@/lib/achievement-standards';
+import type { OverallAchievementResult, TestType } from '@/lib/achievement-standards';
 import { getTestTypeShortName } from '@/lib/achievement-standards';
 
 interface Props {
@@ -38,27 +38,11 @@ interface StudentData {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// 임시: 정적 테스트 데이터 (컴포넌트 외부로 이동)
-const testStudentData: StudentData = {
-  student: {
-    id: 'test-id',
-    full_name: '테스트 학생',
-    class_name: '테스트 반',
-    grade_level: 3,
-    student_number: '1'
-  },
-  assignment: {
-    class_name: '테스트 반'
-  },
-  results: []
-};
-
 export default function StudentDetailPage({ params }: Props) {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [achievementResult, setAchievementResult] = useState<OverallAchievementResult | null>(null);
-  const [loadingAchievement, setLoadingAchievement] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -429,7 +413,7 @@ export default function StudentDetailPage({ params }: Props) {
                       fontWeight: '600',
                       color: '#1f2937'
                     }}>
-                      {getTestTypeShortName(testType as any)}
+                      {getTestTypeShortName(testType as TestType)}
                     </h3>
                     <span style={{ fontSize: '1.2rem' }}>
                       {result.overall_achieved ? '✅' : '❌'}
