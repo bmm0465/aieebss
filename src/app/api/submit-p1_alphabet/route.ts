@@ -110,7 +110,7 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
 
 CRITICAL INSTRUCTIONS:
 1. Target letter: "${questionLetter}"
-2. Accept Korean pronunciations: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' for Z.
+2. Accept Korean pronunciations: '에이' for A, '비' for B, '씨' for C, '디' for D, '이' for E, '에프' for F, '지' for G, '에이치' for H, '아이' for I, '제이' for J, '케이' for K, '엘' for L, '엠' for M, '엔' for N, '오' for O, '피' for P, '큐' for Q, '알' for R, '에스' for S, '티' for T, '유' for U, '브이' for V, '더블유' for W, '엑스' for X, '와이' for Y, '지' or '제트' for Z.
 3. Accept English letter names: 'ay', 'bee', 'cee', 'dee', 'ee', 'eff', 'gee', 'aitch', 'eye', 'jay', 'kay', 'ell', 'em', 'en', 'oh', 'pee', 'cue', 'ar', 'ess', 'tee', 'you', 'vee', 'double-u', 'ex', 'why', 'zee'.
 4. Be flexible with hesitations, repetitions, and partial attempts.
 5. Return strict JSON with keys: "text" (string), "confidence" (string), and "segments" (array of {"start": number, "end": number, "text": string}) where start/end are seconds from audio start. Always include the segments array (empty if no speech).`,

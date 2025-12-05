@@ -324,7 +324,7 @@ export default function PsfTestPage() {
   };
   const titleStyle: React.CSSProperties = {
     textAlign: 'center',
-    fontFamily: 'var(--font-nanum-pen)',
+    fontFamily: 'var(--font-noto-sans-kr)',
     fontSize: '2.8rem',
     marginBottom: '2rem',
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
