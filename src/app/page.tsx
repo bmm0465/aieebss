@@ -27,7 +27,7 @@ export default function Home() {
       router.push('/lobby');
     } catch (error) {
       if (error instanceof Error) {
-        alert('입학 암호가 올바르지 않아요: ' + error.message);
+        alert('로그인 정보가 올바르지 않습니다: ' + error.message);
       } else {
         alert('알 수 없는 에러가 발생했습니다.');
       }
@@ -130,10 +130,10 @@ export default function Home() {
     <div style={pageStyle}>
       <style>{inputFocusStyle}{buttonHoverStyle}</style>
       <div style={formContainerStyle}>
-        <h1 style={titleStyle}>달빛 마법학교 입학처</h1>
+        <h1 style={titleStyle}>초등 영어 기초 학력 진단 평가 플랫폼</h1>
         <form onSubmit={handleLogin}>
           <div>
-            <label htmlFor="email">마법사 등록 이메일</label>
+            <label htmlFor="email">로그인 이메일</label>
             <input
               id="email"
               type="email"
@@ -144,7 +144,7 @@ export default function Home() {
             />
           </div>
           <div style={{ marginTop: '1.25rem' }}>
-            <label htmlFor="password">마법사 등록 암호</label>
+            <label htmlFor="password">로그인 암호</label>
             <input
               id="password"
               type="password"
@@ -155,7 +155,7 @@ export default function Home() {
             />
           </div>
           <button type="submit" style={buttonStyle} disabled={loading}>
-            {loading ? '마법진 그리는 중...' : '마법학교 입장하기'}
+            {loading ? '로그인 중...' : '로그인하기'}
           </button>
         </form>
       </div>

@@ -372,7 +372,7 @@ export default function ReadingTestPage() {
   };
 
   const getPhaseTitle = () => {
-    return '4교시: 마법 주문 읽기 시험';
+    return '4교시: 무의미 단어, 단어, 문장을 소리 내어 읽기';
   };
 
   const getPhaseDescription = () => {
@@ -489,11 +489,6 @@ export default function ReadingTestPage() {
 
         {testPhase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>
-              소리와 철자의 관계를 이해하며 단어와 문장을 읽는 능력을 평가합니다.
-              <br />
-              무의미 단어 → 실제 단어 → 문장 순서로 진행됩니다.
-            </p>
             <p style={{ ...feedbackStyle, color: isMediaReady ? '#90EE90' : '#FFB6C1' }}>
               {isMediaReady ? '🎤 마이크가 준비되었습니다!' : '🎤 마이크를 준비하고 있습니다...'}
             </p>
@@ -502,7 +497,7 @@ export default function ReadingTestPage() {
               style={{ ...buttonStyle, opacity: isMediaReady ? 1 : 0.7 }}
               disabled={!isMediaReady}
             >
-              {isMediaReady ? '시험 시작하기' : '마이크 준비 중...'}
+              {isMediaReady ? '평가 시작하기' : '마이크 준비 중...'}
             </button>
           </div>
         )}
@@ -567,16 +562,16 @@ export default function ReadingTestPage() {
 
         {testPhase === 'finished' && (
           <div>
-            <h1 style={titleStyle}>시험 종료!</h1>
+            <h1 style={titleStyle}>평가 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || '통합 읽기 평가가 끝났습니다. 수고 많으셨습니다!'}
+              {feedback || '4교시 평가가 끝났습니다. 수고 많으셨습니다!'}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button
                 style={{ ...buttonStyle, maxWidth: '250px' }}
                 onClick={() => router.push('/test/p5_vocabulary')}
               >
-                다음 시험으로 이동
+                다음 평가로 이동
               </button>
               <button
                 style={{

@@ -401,7 +401,7 @@ export default function PsfTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 소리의 원소 분리 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 단어를 듣고 올바른 단어 고르기</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -420,7 +420,7 @@ export default function PsfTestPage() {
               (예: &quot;pin&quot;을 들려주면, &quot;pin&quot;을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
-              시험 시작하기
+              평가 시작하기
             </button>
           </div>
         )}
@@ -501,13 +501,13 @@ export default function PsfTestPage() {
 
         {phase === 'finished' && (
           <div>
-            <h1 style={titleStyle}>시험 종료!</h1>
+            <h1 style={titleStyle}>평가 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "2교시 '소리의 원소 분리 시험'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "2교시 평가가 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button style={{ ...buttonStyle, maxWidth: '250px' }} onClick={() => router.push('/test/p3_suprasegmental_phoneme')}>
-                다음 시험으로 이동
+                다음 평가로 이동
               </button>
               <button
                 style={{

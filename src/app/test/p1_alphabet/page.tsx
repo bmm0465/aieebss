@@ -395,7 +395,7 @@ export default function LnfTestPage() {
     <div style={pageStyle}>
       <style>{animationStyles}</style>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>1교시: 고대 룬 문자 해독 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>1교시: 알파벳 대소문자를 소리 내어 읽기</h1>}
         
         {phase === 'testing' && (
           <div>
@@ -405,12 +405,11 @@ export default function LnfTestPage() {
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>비석에 나타나는 고대 룬 문자의 이름을 정확하고 빠르게 읽어내야 합니다.<br/></p>
             <p style={{...feedbackStyle, color: isMediaReady ? '#90EE90' : '#FFB6C1'}}>
               {isMediaReady ? '🎤 마이크가 준비되었습니다!' : '🎤 마이크를 준비하고 있습니다...'}
             </p>
             <button onClick={handleStartTest} style={{...buttonStyle, opacity: isMediaReady ? 1 : 0.7}} disabled={!isMediaReady}>
-              {isMediaReady ? '시험 시작하기' : '마이크 준비 중...'}
+              {isMediaReady ? '평가 시작하기' : '마이크 준비 중...'}
             </button>
           </div>
         )}
@@ -489,11 +488,11 @@ export default function LnfTestPage() {
 
         {phase === 'finished' && (
             <div>
-                <h1 style={titleStyle}>시험 종료!</h1>
-                <p style={paragraphStyle}>{feedback || "1교시 '고대 룬 문자 해독 시험'이 끝났습니다. 수고 많으셨습니다!"}</p>
+                <h1 style={titleStyle}>평가 종료!</h1>
+                <p style={paragraphStyle}>{feedback || "1교시 평가가 끝났습니다. 수고 많으셨습니다!"}</p>
                 <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center'}}>
                   <button style={{...buttonStyle, maxWidth: '250px'}} onClick={() => router.push('/test/p2_segmental_phoneme')}>
-                    다음 시험으로 이동
+                    다음 평가로 이동
                   </button>
                   <button 
                     style={{

@@ -737,7 +737,7 @@ export default function MeaningTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>5교시: 마법서 그림 해석 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>5교시: 단어, 어구, 문장을 듣거나 읽고 올바른 그림 고르기</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -755,13 +755,8 @@ export default function MeaningTestPage() {
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>
-              단어, 어구, 문장을 듣거나 읽고, 알맞은 그림을 선택해주세요.
-              <br />
-              단어 → 어구 → 문장 순서로 문제가 출제됩니다.
-            </p>
             <button onClick={handleStartTest} style={buttonStyle}>
-              시험 시작하기
+              평가 시작하기
             </button>
           </div>
         )}
@@ -901,16 +896,16 @@ export default function MeaningTestPage() {
 
         {phase === 'finished' && (
           <div>
-            <h1 style={titleStyle}>시험 종료!</h1>
+            <h1 style={titleStyle}>평가 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "5교시 '마법서 그림 해석 시험'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "5교시 평가가 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button
                 style={{ ...buttonStyle, maxWidth: '250px' }}
                 onClick={() => router.push('/test/p6_comprehension')}
               >
-                다음 시험으로 이동
+                다음 평가로 이동
               </button>
               <button
                 style={{

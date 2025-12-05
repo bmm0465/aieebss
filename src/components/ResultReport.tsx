@@ -21,14 +21,14 @@ interface ResultProps {
   sessionId?: string;
 }
 
-// 각 시험별 제목과 설명
+// 각 평가별 제목과 설명
 const testInfo = {
-  p1_alphabet: { title: "1교시: 고대 룬 문자 해독 시험", description: "알파벳 이름 인지 정확도" },
-  p2_segmental_phoneme: { title: "2교시: 소리의 원소 분리 시험", description: "최소대립쌍 듣고 식별 능력" },
-  p3_suprasegmental_phoneme: { title: "3교시: 마법 리듬 패턴 시험", description: "강세 패턴 식별 능력" },
-  p4_phonics: { title: "4교시: 마법 주문 읽기 시험", description: "파닉스 규칙 적용 및 유창성" },
-  p5_vocabulary: { title: "5교시: 마법서 그림 해석 시험", description: "단어/문장 의미 이해 능력" },
-  p6_comprehension: { title: "6교시: 고대 전설 이해 시험", description: "주요 정보 파악 능력" },
+  p1_alphabet: { title: "1교시: 알파벳 대소문자를 소리 내어 읽기", description: "알파벳 이름 인지 정확도" },
+  p2_segmental_phoneme: { title: "2교시: 단어를 듣고 올바른 단어 고르기", description: "최소대립쌍 듣고 식별 능력" },
+  p3_suprasegmental_phoneme: { title: "3교시: 단어를 듣고 올바른 강세 고르기", description: "강세 패턴 식별 능력" },
+  p4_phonics: { title: "4교시: 무의미 단어, 단어, 문장을 소리 내어 읽기", description: "파닉스 규칙 적용 및 유창성" },
+  p5_vocabulary: { title: "5교시: 단어, 어구, 문장을 듣거나 읽고 올바른 그림 고르기", description: "단어/문장 의미 이해 능력" },
+  p6_comprehension: { title: "6교시: 대화를 듣거나 읽고, 질문에 대한 올바른 그림 고르기", description: "주요 정보 파악 능력" },
 };
 
 export default function ResultReport({ results, sessionId }: ResultProps) {

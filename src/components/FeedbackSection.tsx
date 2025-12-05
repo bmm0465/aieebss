@@ -16,15 +16,15 @@ interface FeedbackSectionProps {
   hasResults: boolean;
 }
 
-// 테스트 타입별 제목 매핑
+// 평가 타입별 제목 매핑
 const getTestTypeTitle = (testType: string): string => {
   const testTitles: Record<string, string> = {
-    'p1_alphabet': '1교시 고대 룬 문자 해독',
-    'p2_segmental_phoneme': '2교시 소리의 원소 분리',
-    'p3_suprasegmental_phoneme': '3교시 마법 리듬 패턴',
-    'p4_phonics': '4교시 마법 주문 읽기',
-    'p5_vocabulary': '5교시 마법서 그림 해석',
-    'p6_comprehension': '6교시 고대 전설 이해'
+    'p1_alphabet': '1교시: 알파벳 대소문자를 소리 내어 읽기',
+    'p2_segmental_phoneme': '2교시: 단어를 듣고 올바른 단어 고르기',
+    'p3_suprasegmental_phoneme': '3교시: 단어를 듣고 올바른 강세 고르기',
+    'p4_phonics': '4교시: 무의미 단어, 단어, 문장을 소리 내어 읽기',
+    'p5_vocabulary': '5교시: 단어, 어구, 문장을 듣거나 읽고 올바른 그림 고르기',
+    'p6_comprehension': '6교시: 대화를 듣거나 읽고, 질문에 대한 올바른 그림 고르기'
   };
   return testTitles[testType] || testType;
 };

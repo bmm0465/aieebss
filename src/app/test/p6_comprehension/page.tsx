@@ -808,7 +808,7 @@ export default function ComprehensionTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 고대 전설 이해 시험</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>6교시: 대화를 듣거나 읽고, 질문에 대한 올바른 그림 고르기</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -821,15 +821,8 @@ export default function ComprehensionTestPage() {
 
         {phase === 'ready' && (
           <div>
-            <p style={paragraphStyle}>
-              말이나 대화를 듣거나 읽고, 한국어 질문에 맞는 답을 이미지로 선택해주세요.
-              <br />
-              말은 2~3문장, 대화는 최대 A-B-A 형식으로 제시됩니다.
-              <br />
-              (예: &quot;Hello, I&apos;m Kate. I can swim.&quot;을 듣고, &quot;Kate는 무엇을 할 수 있나요?&quot;에 수영 이미지를 선택)
-            </p>
             <button onClick={handleStartTest} style={buttonStyle}>
-              시험 시작하기
+              평가 시작하기
             </button>
           </div>
         )}
@@ -980,9 +973,9 @@ export default function ComprehensionTestPage() {
 
         {phase === 'finished' && (
           <div>
-            <h1 style={titleStyle}>시험 종료!</h1>
+            <h1 style={titleStyle}>평가 종료!</h1>
             <p style={paragraphStyle}>
-              {feedback || "6교시 '고대 전설 이해 시험'이 끝났습니다. 수고 많으셨습니다!"}
+              {feedback || "6교시 평가가 끝났습니다. 수고 많으셨습니다!"}
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
               <button

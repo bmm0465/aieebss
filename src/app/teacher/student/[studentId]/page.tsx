@@ -4,6 +4,8 @@ import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import type { OverallAchievementResult } from '@/lib/achievement-standards';
+import { getTestTypeShortName } from '@/lib/achievement-standards';
 
 interface Props {
   params: Promise<{ studentId: string }>;
@@ -55,6 +57,8 @@ export default function StudentDetailPage({ params }: Props) {
   const [studentData, setStudentData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [achievementResult, setAchievementResult] = useState<OverallAchievementResult | null>(null);
+  const [loadingAchievement, setLoadingAchievement] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -115,15 +119,7 @@ export default function StudentDetailPage({ params }: Props) {
           console.log('PAGE: User authenticated:', user.email);
         }
 
-        // 임시: API 호출 대신 테스트 데이터 사용
-        console.log('PAGE: Using test data instead of API call');
-        console.log('PAGE: Test student data:', testStudentData);
-        
-        setStudentData(testStudentData);
-        setLoading(false);
-
-        // 원래 API 호출 코드 (주석 처리)
-        /*
+        // API 호출로 학생 데이터 가져오기
         const baseUrl = window.location.origin;
         console.log('PAGE: Making API call to:', `${baseUrl}/api/teacher/students/${id}/results`);
 
@@ -164,7 +160,35 @@ export default function StudentDetailPage({ params }: Props) {
         
         setStudentData(data);
         setLoading(false);
-        */
+
+        // 성취기준 판정 API 호출
+        if (data.student && data.assignment) {
+          setLoadingAchievement(true);
+          try {
+            const achievementRes = await fetch(
+              `${baseUrl}/api/teacher/achievement-standards?studentId=${data.student.id}&className=${data.assignment.class_name}`,
+              {
+                method: 'GET',
+                cache: 'no-store',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+              }
+            );
+
+            if (achievementRes.ok) {
+              const achievementData = await achievementRes.json();
+              if (achievementData.achievement) {
+                setAchievementResult(achievementData.achievement);
+              }
+            }
+          } catch (err) {
+            console.error('Failed to fetch achievement standards:', err);
+          } finally {
+            setLoadingAchievement(false);
+          }
+        }
+
       } catch (err) {
         console.error('PAGE: Error loading student data:', err);
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
@@ -275,12 +299,12 @@ export default function StudentDetailPage({ params }: Props) {
   });
 
   const testInfo = {
-    p1_alphabet: { title: 'p1_alphabet', description: '고대 룬 문자 해독' },
-    p2_segmental_phoneme: { title: 'p2_segmental_phoneme', description: '소리의 원소 분리' },
-    p3_suprasegmental_phoneme: { title: 'p3_suprasegmental_phoneme', description: '마법 리듬 패턴' },
-    p4_phonics: { title: 'p4_phonics', description: '파닉스 읽기 (무의미 단어, 실제 단어, 문장)' },
-    p5_vocabulary: { title: 'p5_vocabulary', description: '마법서 그림 해석' },
-    p6_comprehension: { title: 'p6_comprehension', description: '고대 전설 이해' }
+    p1_alphabet: { title: 'p1_alphabet', description: '알파벳 대소문자를 소리 내어 읽기' },
+    p2_segmental_phoneme: { title: 'p2_segmental_phoneme', description: '단어를 듣고 올바른 단어 고르기' },
+    p3_suprasegmental_phoneme: { title: 'p3_suprasegmental_phoneme', description: '단어를 듣고 올바른 강세 고르기' },
+    p4_phonics: { title: 'p4_phonics', description: '무의미 단어, 단어, 문장을 소리 내어 읽기' },
+    p5_vocabulary: { title: 'p5_vocabulary', description: '단어, 어구, 문장을 듣거나 읽고 올바른 그림 고르기' },
+    p6_comprehension: { title: 'p6_comprehension', description: '대화를 듣거나 읽고, 질문에 대한 올바른 그림 고르기' }
   };
 
   return (
@@ -339,6 +363,100 @@ export default function StudentDetailPage({ params }: Props) {
           </div>
         </div>
 
+        {/* 성취기준 도달 현황 */}
+        {achievementResult && (
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '2rem',
+            borderRadius: '20px',
+            marginBottom: '2rem',
+            border: achievementResult.all_achieved ? '3px solid #10b981' : '3px solid #f59e0b',
+            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+          }}>
+            <h2 style={{ 
+              background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              marginBottom: '1.5rem',
+              fontSize: '1.75rem',
+              fontWeight: 'bold'
+            }}>🎯 성취기준 도달 현황</h2>
+            
+            <div style={{
+              backgroundColor: achievementResult.all_achieved ? 'rgba(16, 185, 129, 0.1)' : 'rgba(245, 158, 11, 0.1)',
+              padding: '1.5rem',
+              borderRadius: '12px',
+              marginBottom: '1.5rem',
+              border: `2px solid ${achievementResult.all_achieved ? '#10b981' : '#f59e0b'}`,
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>
+                {achievementResult.all_achieved ? '✅' : '⚠️'}
+              </div>
+              <div style={{ 
+                fontSize: '1.5rem', 
+                fontWeight: 'bold',
+                color: achievementResult.all_achieved ? '#10b981' : '#f59e0b',
+                marginBottom: '0.5rem'
+              }}>
+                {achievementResult.all_achieved 
+                  ? '모든 영역에서 성취기준 도달' 
+                  : `${achievementResult.achieved_count}/${achievementResult.total_count} 영역 도달`}
+              </div>
+              <div style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                {achievementResult.all_achieved 
+                  ? '학생이 모든 최소 성취기준을 달성했습니다.' 
+                  : '일부 영역에서 추가 학습이 필요합니다.'}
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
+              {Object.entries(achievementResult.results).map(([testType, result]) => (
+                <div 
+                  key={testType}
+                  style={{
+                    backgroundColor: result.overall_achieved ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: `2px solid ${result.overall_achieved ? '#10b981' : '#ef4444'}`,
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <h3 style={{ 
+                      fontSize: '1rem',
+                      fontWeight: '600',
+                      color: '#1f2937'
+                    }}>
+                      {getTestTypeShortName(testType as any)}
+                    </h3>
+                    <span style={{ fontSize: '1.2rem' }}>
+                      {result.overall_achieved ? '✅' : '❌'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                    정확도: {result.student_accuracy.toFixed(1)}% / 기준: {result.absolute_threshold}%
+                  </div>
+                  {result.class_mean !== null && result.z_score !== null && (
+                    <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
+                      반 평균: {result.class_mean.toFixed(1)}% | Z-score: {result.z_score.toFixed(2)}
+                    </div>
+                  )}
+                  <div style={{ 
+                    marginTop: '0.5rem',
+                    fontSize: '0.85rem',
+                    color: result.overall_achieved ? '#10b981' : '#ef4444',
+                    fontWeight: '600'
+                  }}>
+                    {result.overall_achieved ? '성취기준 도달' : '성취기준 미도달'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* 전체 통계 */}
         <div style={{
           backgroundColor: '#ffffff',
@@ -359,37 +477,63 @@ export default function StudentDetailPage({ params }: Props) {
           }}>📊 전체 평가 현황</h2>
           {testResults && testResults.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              {Object.entries(statistics).map(([testType, stats]) => (
-                <div key={testType} style={{
-                  backgroundColor: '#f9fafb',
-                  padding: '1.5rem',
-                  borderRadius: '12px',
-                  border: '2px solid #e5e7eb',
-                  textAlign: 'center',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
-                }}>
-                  <h3 style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text',
-                    marginBottom: '0.5rem',
-                    fontSize: '1.1rem',
-                    fontWeight: '600'
+              {Object.entries(statistics).map(([testType, stats]) => {
+                const achievement = achievementResult?.results[testType as keyof typeof achievementResult.results];
+                const isAchieved = achievement?.overall_achieved ?? false;
+                
+                return (
+                  <div key={testType} style={{
+                    backgroundColor: isAchieved ? 'rgba(16, 185, 129, 0.05)' : '#f9fafb',
+                    padding: '1.5rem',
+                    borderRadius: '12px',
+                    border: isAchieved ? '2px solid #10b981' : '2px solid #e5e7eb',
+                    textAlign: 'center',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    position: 'relative'
                   }}>
-                    {testInfo[testType as keyof typeof testInfo].title}
-                  </h3>
-                  <p style={{ marginBottom: '0.5rem', color: '#4b5563', fontSize: '0.9rem' }}>
-                    {testInfo[testType as keyof typeof testInfo].description}
-                  </p>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981', marginBottom: '0.5rem' }}>
-                    {stats.accuracy}%
-              </div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
-                    {stats.correct}/{stats.total} 정답
-              </div>
-              </div>
-              ))}
+                    {isAchieved && (
+                      <div style={{
+                        position: 'absolute',
+                        top: '0.5rem',
+                        right: '0.5rem',
+                        fontSize: '1.2rem'
+                      }}>
+                        ✅
+                      </div>
+                    )}
+                    <h3 style={{ 
+                      background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                      WebkitBackgroundClip: 'text',
+                      WebkitTextFillColor: 'transparent',
+                      backgroundClip: 'text',
+                      marginBottom: '0.5rem',
+                      fontSize: '1.1rem',
+                      fontWeight: '600'
+                    }}>
+                      {testInfo[testType as keyof typeof testInfo].title}
+                    </h3>
+                    <p style={{ marginBottom: '0.5rem', color: '#4b5563', fontSize: '0.9rem' }}>
+                      {testInfo[testType as keyof typeof testInfo].description}
+                    </p>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981', marginBottom: '0.5rem' }}>
+                      {stats.accuracy}%
+                    </div>
+                    <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
+                      {stats.correct}/{stats.total} 정답
+                    </div>
+                    {achievement && (
+                      <div style={{ 
+                        marginTop: '0.5rem',
+                        fontSize: '0.85rem',
+                        color: isAchieved ? '#10b981' : '#ef4444',
+                        fontWeight: '600'
+                      }}>
+                        {isAchieved ? '✅ 성취기준 도달' : '❌ 성취기준 미도달'}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ) : (
             <div style={{ 
