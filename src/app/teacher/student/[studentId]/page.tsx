@@ -43,7 +43,6 @@ export default function StudentDetailPage({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [achievementResult, setAchievementResult] = useState<OverallAchievementResult | null>(null);
-  const [loadingAchievement, setLoadingAchievement] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
@@ -148,7 +147,6 @@ export default function StudentDetailPage({ params }: Props) {
 
         // 성취기준 판정 API 호출
         if (data.student && data.assignment) {
-          setLoadingAchievement(true);
           try {
             const achievementRes = await fetch(
               `${baseUrl}/api/teacher/achievement-standards?studentId=${data.student.id}&className=${data.assignment.class_name}`,
@@ -169,8 +167,6 @@ export default function StudentDetailPage({ params }: Props) {
             }
           } catch (err) {
             console.error('Failed to fetch achievement standards:', err);
-          } finally {
-            setLoadingAchievement(false);
           }
         }
 
