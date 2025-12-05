@@ -17,15 +17,6 @@ export async function middleware(request: NextRequest) {
   // 인증 체크는 하지 않음 - 단순히 세션을 갱신만 함
   await supabase.auth.getSession()
   
-  // teacher/student/[studentId] 경로 처리
-  if (pathname.startsWith('/teacher/student/') && pathname !== '/teacher/student') {
-    const studentId = pathname.split('/').pop()
-    console.log('MIDDLEWARE: Student ID detected:', studentId)
-    
-    // 동적 라우트로 리다이렉트
-    return NextResponse.rewrite(new URL(`/teacher/student/${studentId}`, request.url))
-  }
-  
   // 인증 체크 제거 - 각 페이지와 API에서 처리하도록 함
   // 세션이 갱신된 응답 반환
   return response
