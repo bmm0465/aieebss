@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { OverallAchievementResult, TestType } from '@/lib/achievement-standards';
 import { getTestTypeShortName } from '@/lib/achievement-standards';
+import { TeacherAudioPlayer } from '@/components/TeacherAudioPlayer';
 
 interface Props {
   params: Promise<{ studentId: string }>;
@@ -18,6 +19,14 @@ interface TestResultRow {
   student_answer: string | null;
   is_correct: boolean | null;
   created_at: string;
+  audio_url?: string | null;
+  transcription_results?: {
+    openai?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    gemini?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    aws?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+    azure?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
+  } | null;
+  correct_answer?: string | null;
 }
 
 interface StudentData {
@@ -574,37 +583,74 @@ export default function StudentDetailPage({ params }: Props) {
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>테스트</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>문제</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>학생 답변</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>음성 재생</th>
+                    <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>전사 결과</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>정답 여부</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>날짜</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {testResults.slice(0, 20).map((result: TestResultRow) => (
-                    <tr key={result.id} style={{ 
-                      borderBottom: '1px solid #e5e7eb',
-                      backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)'
-                    }}>
-                      <td style={{ padding: '1rem', color: '#1f2937' }}>{result.test_type}</td>
-                      <td style={{ padding: '1rem', color: '#1f2937' }}>{result.question || '-'}</td>
-                      <td style={{ padding: '1rem', color: '#1f2937' }}>{result.student_answer || '-'}</td>
-                      <td style={{ padding: '1rem' }}>
-                        <span style={{
-                          padding: '0.375rem 0.875rem',
-                          borderRadius: '8px',
-                          fontSize: '0.875rem',
-                          fontWeight: '600',
-                          backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-                          color: result.is_correct ? '#10b981' : '#ef4444',
-                          border: `1.5px solid ${result.is_correct ? '#10b981' : '#ef4444'}`
-                        }}>
-                          {result.is_correct ? '✅ 정답' : '❌ 오답'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '1rem', color: '#4b5563' }}>
-                        {new Date(result.created_at).toLocaleDateString('ko-KR')}
-                      </td>
-                    </tr>
-                  ))}
+                  {testResults.slice(0, 20).map((result: TestResultRow) => {
+                    // 전사 결과 추출 (OpenAI 우선)
+                    const transcriptionText = result.transcription_results?.openai?.text 
+                      || result.transcription_results?.gemini?.text
+                      || result.transcription_results?.aws?.text
+                      || result.transcription_results?.azure?.text
+                      || null;
+                    
+                    return (
+                      <tr key={result.id} style={{ 
+                        borderBottom: '1px solid #e5e7eb',
+                        backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)'
+                      }}>
+                        <td style={{ padding: '1rem', color: '#1f2937' }}>{result.test_type}</td>
+                        <td style={{ padding: '1rem', color: '#1f2937' }}>{result.question || '-'}</td>
+                        <td style={{ padding: '1rem', color: '#1f2937' }}>{result.student_answer || '-'}</td>
+                        <td style={{ padding: '1rem', textAlign: 'center' }}>
+                          {result.audio_url ? (
+                            <TeacherAudioPlayer
+                              audioPath={result.audio_url}
+                              userId={student.id}
+                              testType={result.test_type}
+                              createdAt={result.created_at}
+                            />
+                          ) : (
+                            <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '1rem', color: '#1f2937', maxWidth: '300px', wordBreak: 'break-word' }}>
+                          {transcriptionText ? (
+                            <div style={{ fontSize: '0.875rem' }}>
+                              {transcriptionText}
+                              {result.transcription_results?.openai?.confidence && (
+                                <span style={{ color: '#6b7280', fontSize: '0.75rem', marginLeft: '0.5rem' }}>
+                                  (신뢰도: {result.transcription_results.openai.confidence})
+                                </span>
+                              )}
+                            </div>
+                          ) : (
+                            <span style={{ color: '#9ca3af', fontSize: '0.875rem' }}>-</span>
+                          )}
+                        </td>
+                        <td style={{ padding: '1rem' }}>
+                          <span style={{
+                            padding: '0.375rem 0.875rem',
+                            borderRadius: '8px',
+                            fontSize: '0.875rem',
+                            fontWeight: '600',
+                            backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                            color: result.is_correct ? '#10b981' : '#ef4444',
+                            border: `1.5px solid ${result.is_correct ? '#10b981' : '#ef4444'}`
+                          }}>
+                            {result.is_correct ? '✅ 정답' : '❌ 오답'}
+                          </span>
+                        </td>
+                        <td style={{ padding: '1rem', color: '#4b5563' }}>
+                          {new Date(result.created_at).toLocaleDateString('ko-KR')}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
           </div>
