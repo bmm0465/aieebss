@@ -60,15 +60,16 @@ export default function Home() {
 
   const titleStyle: React.CSSProperties = {
     textAlign: 'center',
-    fontFamily: 'var(--font-nanum-pen)',
-    fontSize: '2.8rem',
+    fontFamily: 'var(--font-noto-sans-kr), sans-serif',
+    fontSize: '2.2rem',
     marginBottom: '2rem',
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
-    fontWeight: 'bold',
-    letterSpacing: '-0.02em',
+    fontWeight: '700',
+    letterSpacing: '-0.03em',
+    lineHeight: '1.3',
   };
 
   const inputStyle: React.CSSProperties = {

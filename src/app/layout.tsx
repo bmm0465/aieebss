@@ -1,8 +1,8 @@
 // src/app/layout.tsx
 
 import type { Metadata } from "next";
-// [핵심 수정] Inter, Nanum_Pen_Script 외에 Lexend 폰트를 추가로 import 합니다.
-import { Inter, Nanum_Pen_Script, Lexend } from "next/font/google";
+// [핵심 수정] Inter, Nanum_Pen_Script 외에 Lexend, Noto Sans KR 폰트를 추가로 import 합니다.
+import { Inter, Nanum_Pen_Script, Lexend, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast";
@@ -18,6 +18,12 @@ const lexend = Lexend({
   subsets: ['latin'],
   variable: '--font-lexend', // CSS 변수 이름 지정
 });
+// Noto Sans KR 폰트 추가 (한글 타이틀용)
+const notoSansKR = Noto_Sans_KR({
+  weight: ['400', '500', '600', '700'],
+  subsets: ['latin'],
+  variable: '--font-noto-sans-kr',
+});
 
 export const metadata: Metadata = {
   title: "초등 영어 기초 학력 진단 평가 플랫폼",
@@ -28,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       {/* [핵심 수정] body의 className에 lexend.variable을 추가합니다. */}
-      <body className={`${inter.className} ${nanumPenScript.variable} ${lexend.variable}`}>
+      <body className={`${inter.className} ${nanumPenScript.variable} ${lexend.variable} ${notoSansKR.variable}`}>
         <ErrorBoundary>
           <ToastProvider>
             {children}

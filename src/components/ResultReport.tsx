@@ -3,7 +3,6 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import AudioResultTable from './AudioResultTable';
 
 // UI 컴포넌트가 받을 데이터의 타입을 명확하게 정의
@@ -46,14 +45,15 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
   const containerStyle: React.CSSProperties = { maxWidth: '900px', margin: '2rem auto', backgroundColor: '#ffffff', padding: '3rem', borderRadius: '20px', border: '2px solid #e5e7eb', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)' };
   const titleStyle: React.CSSProperties = { 
     textAlign: 'center', 
-    fontFamily: 'var(--font-nanum-pen)', 
-    fontSize: '2.8rem', 
+    fontFamily: 'var(--font-noto-sans-kr), sans-serif', 
+    fontSize: '2.2rem', 
     marginBottom: '1rem', 
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
     backgroundClip: 'text',
-    fontWeight: 'bold'
+    fontWeight: '700',
+    letterSpacing: '-0.03em'
   };
   const introStyle: React.CSSProperties = { display: 'flex', alignItems: 'center', marginBottom: '2rem', backgroundColor: '#f9fafb', padding: '1.5rem', borderRadius: '12px', border: '2px solid #e5e7eb' };
   const resultGridStyle: React.CSSProperties = { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.5rem' };
@@ -95,10 +95,9 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
     <div style={pageStyle}>
       <div style={containerStyle}>
         <div style={introStyle}>
-          <Image src="/owl.png" alt="안내하는 부엉이" width={80} height={80} />
-          <div style={{marginLeft: '1rem'}}>
-            <h1 style={titleStyle}>마법 적성 분석 두루마리</h1>
-            <p>모든 시험을 통과한 것을 축하합니다! 예비 마법사님의 놀라운 잠재력을 확인해보세요.</p>
+          <div style={{marginLeft: '0'}}>
+            <h1 style={titleStyle}>평가 결과 리포트</h1>
+            <p>모든 평가를 완료하셨습니다! 평가 결과를 확인해보세요.</p>
           </div>
         </div>
 
@@ -177,7 +176,7 @@ export default function ResultReport({ results, sessionId }: ResultProps) {
           </div>
         )}
 
-        <button style={buttonStyle} onClick={() => router.push('/lobby')}>시험 안내로 돌아가기</button>
+        <button style={buttonStyle} onClick={() => router.push('/lobby')}>로비로 돌아가기</button>
       </div>
     </div>
   );
