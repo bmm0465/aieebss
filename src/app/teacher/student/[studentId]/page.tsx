@@ -401,8 +401,8 @@ export default function StudentDetailPage({ params }: Props) {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-              {/* 1교시부터 6교시 순서로 표시 */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+              {/* 1교시부터 6교시 순서로 명시적으로 표시 */}
               {(['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'] as const).map((testType) => {
                 const result = achievementResult.results[testType];
                 if (!result) return null;
@@ -415,7 +415,9 @@ export default function StudentDetailPage({ params }: Props) {
                       padding: '1.5rem',
                       borderRadius: '12px',
                       border: `2px solid ${result.overall_achieved ? '#10b981' : '#ef4444'}`,
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      flex: '1 1 250px',
+                      minWidth: '250px'
                     }}
                   >
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
@@ -472,8 +474,8 @@ export default function StudentDetailPage({ params }: Props) {
             fontWeight: 'bold'
           }}>📊 전체 평가 현황</h2>
           {testResults && testResults.length > 0 ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              {/* 1교시부터 6교시 순서로 표시 */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+              {/* 1교시부터 6교시 순서로 명시적으로 표시 */}
               {(['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'] as const).map((testType) => {
                 const stats = statistics[testType];
                 const achievement = achievementResult?.results[testType];
@@ -487,7 +489,9 @@ export default function StudentDetailPage({ params }: Props) {
                     border: isAchieved ? '2px solid #10b981' : '2px solid #e5e7eb',
                     textAlign: 'center',
                     boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                    position: 'relative'
+                    position: 'relative',
+                    flex: '1 1 200px',
+                    minWidth: '200px'
                   }}>
                     {isAchieved && (
                       <div style={{
