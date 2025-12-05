@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect, notFound } from 'next/navigation';
 import Link from 'next/link';
 import ResultReport, { type ProcessedResults } from '@/components/ResultReport';
-import FeedbackSection from '@/components/FeedbackSection';
+// import FeedbackSection from '@/components/FeedbackSection'; // 피드백 기능 잠시 비활성화
 
 // Supabase 테이블 타입 정의
 type TestResult = {
@@ -307,7 +307,8 @@ export default async function SessionDetailPage({ params }: PageProps) {
 
         {/* 음성 결과 테이블은 이제 ResultReport 컴포넌트에서 선택적으로 표시됩니다 */}
 
-        {/* AI 피드백 섹션 */}
+        {/* AI 피드백 섹션 - 잠시 비활성화 */}
+        {/* TODO: 피드백 기능 보강 후 다시 활성화
         {testTypes.map(testType => (
           <FeedbackSection
             key={testType}
@@ -316,6 +317,7 @@ export default async function SessionDetailPage({ params }: PageProps) {
             hasResults={sessionResults.some(r => r.test_type === testType)}
           />
         ))}
+        */}
 
         {/* 네비게이션 버튼들 */}
         <div style={{ 
