@@ -38,7 +38,7 @@ export default function Home() {
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f3f4f6',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     display: 'flex',
@@ -131,7 +131,10 @@ export default function Home() {
     <div style={pageStyle}>
       <style>{inputFocusStyle}{buttonHoverStyle}</style>
       <div style={formContainerStyle}>
-        <h1 style={titleStyle}>초등 영어 기초 학력 진단 평가 플랫폼</h1>
+        <h1 style={titleStyle}>
+          초등 영어 기초 학력<br/>
+          진단 평가 플랫폼
+        </h1>
         <form onSubmit={handleLogin}>
           <div>
             <label htmlFor="email">로그인 이메일</label>
