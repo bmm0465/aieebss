@@ -183,7 +183,7 @@ export default function StudentDetailPage({ params }: Props) {
   if (loading) {
     return (
       <div style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#f3f4f6', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
@@ -205,7 +205,7 @@ export default function StudentDetailPage({ params }: Props) {
   if (error || !studentData) {
     return (
       <div style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#f3f4f6', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
@@ -290,7 +290,7 @@ export default function StudentDetailPage({ params }: Props) {
 
   return (
     <div style={{ 
-      backgroundColor: '#ffffff', 
+      backgroundColor: '#f3f4f6', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',

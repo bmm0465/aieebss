@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 type GeneratedItems = {
   LNF?: string[];
@@ -171,8 +170,7 @@ export default function GenerateItemsPage() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/owl.png" alt="문항 생성" width={60} height={60} />
-              <div style={{ marginLeft: '1rem' }}>
+              <div>
                 <h1 style={{ 
                   fontSize: '2.5rem', 
                   margin: 0,

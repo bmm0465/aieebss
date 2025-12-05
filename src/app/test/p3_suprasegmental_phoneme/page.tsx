@@ -340,7 +340,7 @@ export default function StressTestPage() {
 
   // --- 스타일 정의 ---
   const pageStyle: React.CSSProperties = {
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f3f4f6',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     minHeight: '100vh',

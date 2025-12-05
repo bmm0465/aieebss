@@ -238,7 +238,7 @@ export default function CurriculumDataPage() {
   if (loading) {
     return (
       <div style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#f3f4f6', 
         minHeight: '100vh',
         padding: '2rem',
         display: 'flex',
@@ -296,7 +296,7 @@ export default function CurriculumDataPage() {
 
   return (
     <div style={{ 
-      backgroundColor: '#ffffff', 
+      backgroundColor: '#f3f4f6', 
       minHeight: '100vh',
       padding: '2rem',
       color: '#171717'

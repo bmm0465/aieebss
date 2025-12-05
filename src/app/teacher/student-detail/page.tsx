@@ -92,7 +92,7 @@ function StudentDetailContent() {
   if (loading) {
     return (
       <div style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#f3f4f6', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
@@ -118,7 +118,7 @@ function StudentDetailContent() {
   if (error || !studentData) {
     return (
       <div style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#f3f4f6', 
         backgroundSize: 'cover', 
         minHeight: '100vh',
         padding: '2rem',
@@ -179,7 +179,7 @@ function StudentDetailContent() {
 
   return (
     <div style={{ 
-      backgroundColor: '#ffffff', 
+      backgroundColor: '#f3f4f6', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',

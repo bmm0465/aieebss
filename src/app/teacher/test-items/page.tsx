@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default async function TestItemsPage() {
   const supabase = await createClient();
@@ -202,7 +201,7 @@ Kim: Yes, it is. It is my new pencil.`,
 
   return (
     <div style={{ 
-      backgroundColor: '#ffffff', 
+      backgroundColor: '#f3f4f6', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
@@ -220,8 +219,7 @@ Kim: Yes, it is. It is my new pencil.`,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/owl.png" alt="문항 확인" width={60} height={60} />
-              <div style={{ marginLeft: '1rem' }}>
+              <div>
                 <h1 style={{ 
                   fontSize: '2.5rem', 
                   margin: 0,

@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import LogoutButton from '@/components/LogoutButton';
 
 // 타입 정의
@@ -60,7 +59,7 @@ export default async function TeacherDashboard() {
   if (profileError || !profile || profile.role !== 'teacher') {
     return (
       <div style={{ 
-        backgroundColor: '#ffffff', 
+        backgroundColor: '#f3f4f6', 
         backgroundSize: 'cover', 
         minHeight: '100vh', 
         display: 'flex', 
@@ -196,7 +195,7 @@ export default async function TeacherDashboard() {
 
   return (
     <div style={{ 
-      backgroundColor: '#ffffff', 
+      backgroundColor: '#f3f4f6', 
       backgroundSize: 'cover', 
       minHeight: '100vh',
       padding: '2rem',
@@ -213,8 +212,7 @@ export default async function TeacherDashboard() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <Image src="/owl.png" alt="교사" width={60} height={60} />
-              <div style={{ marginLeft: '1rem' }}>
+              <div>
                 <h1 style={{ 
                   fontSize: '2.5rem', 
                   margin: 0,
