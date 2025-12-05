@@ -43,6 +43,7 @@ export default function StudentDetailPage({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [achievementResult, setAchievementResult] = useState<OverallAchievementResult | null>(null);
+  const [loadingAchievement, setLoadingAchievement] = useState(false);
   const router = useRouter();
   const supabase = createClient();
 
