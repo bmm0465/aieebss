@@ -20,8 +20,8 @@ const lexend = Lexend({
 });
 
 export const metadata: Metadata = {
-  title: "달빛 마법학교 입학처",
-  description: "DIBELS 기반 영어 학력 진단",
+  title: "초등 영어 기초 학력 진단 평가 플랫폼",
+  description: "초등 영어 기초 학력 진단 평가 플랫폼",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
