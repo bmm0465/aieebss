@@ -402,47 +402,53 @@ export default function StudentDetailPage({ params }: Props) {
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem' }}>
-              {Object.entries(achievementResult.results).map(([testType, result]) => (
-                <div 
-                  key={testType}
-                  style={{
-                    backgroundColor: result.overall_achieved ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
-                    padding: '1.5rem',
-                    borderRadius: '12px',
-                    border: `2px solid ${result.overall_achieved ? '#10b981' : '#ef4444'}`,
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <h3 style={{ 
-                      fontSize: '1rem',
-                      fontWeight: '600',
-                      color: '#1f2937'
-                    }}>
-                      {getTestTypeShortName(testType as TestType)}
-                    </h3>
-                    <span style={{ fontSize: '1.2rem' }}>
-                      {result.overall_achieved ? '✅' : '❌'}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '0.5rem' }}>
-                    정확도: {result.student_accuracy.toFixed(1)}% / 기준: {result.absolute_threshold}%
-                  </div>
-                  {result.class_mean !== null && result.z_score !== null && (
-                    <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
-                      반 평균: {result.class_mean.toFixed(1)}% | Z-score: {result.z_score.toFixed(2)}
+              {/* 1교시부터 6교시 순서로 표시 */}
+              {(['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'] as const).map((testType) => {
+                const result = achievementResult.results[testType];
+                if (!result) return null;
+                
+                return (
+                  <div 
+                    key={testType}
+                    style={{
+                      backgroundColor: result.overall_achieved ? 'rgba(16, 185, 129, 0.05)' : 'rgba(239, 68, 68, 0.05)',
+                      padding: '1.5rem',
+                      borderRadius: '12px',
+                      border: `2px solid ${result.overall_achieved ? '#10b981' : '#ef4444'}`,
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                      <h3 style={{ 
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        color: '#1f2937'
+                      }}>
+                        {getTestTypeShortName(testType as TestType)}
+                      </h3>
+                      <span style={{ fontSize: '1.2rem' }}>
+                        {result.overall_achieved ? '✅' : '❌'}
+                      </span>
                     </div>
-                  )}
-                  <div style={{ 
-                    marginTop: '0.5rem',
-                    fontSize: '0.85rem',
-                    color: result.overall_achieved ? '#10b981' : '#ef4444',
-                    fontWeight: '600'
-                  }}>
-                    {result.overall_achieved ? '성취기준 도달' : '성취기준 미도달'}
+                    <div style={{ fontSize: '0.9rem', color: '#6b7280', marginBottom: '0.5rem' }}>
+                      정확도: {result.student_accuracy.toFixed(1)}% / 기준: {result.absolute_threshold}%
+                    </div>
+                    {result.class_mean !== null && result.z_score !== null && (
+                      <div style={{ fontSize: '0.85rem', color: '#9ca3af' }}>
+                        반 평균: {result.class_mean.toFixed(1)}% | Z-score: {result.z_score.toFixed(2)}
+                      </div>
+                    )}
+                    <div style={{ 
+                      marginTop: '0.5rem',
+                      fontSize: '0.85rem',
+                      color: result.overall_achieved ? '#10b981' : '#ef4444',
+                      fontWeight: '600'
+                    }}>
+                      {result.overall_achieved ? '성취기준 도달' : '성취기준 미도달'}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -467,8 +473,10 @@ export default function StudentDetailPage({ params }: Props) {
           }}>📊 전체 평가 현황</h2>
           {testResults && testResults.length > 0 ? (
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
-              {Object.entries(statistics).map(([testType, stats]) => {
-                const achievement = achievementResult?.results[testType as keyof typeof achievementResult.results];
+              {/* 1교시부터 6교시 순서로 표시 */}
+              {(['p1_alphabet', 'p2_segmental_phoneme', 'p3_suprasegmental_phoneme', 'p4_phonics', 'p5_vocabulary', 'p6_comprehension'] as const).map((testType) => {
+                const stats = statistics[testType];
+                const achievement = achievementResult?.results[testType];
                 const isAchieved = achievement?.overall_achieved ?? false;
                 
                 return (
@@ -500,10 +508,10 @@ export default function StudentDetailPage({ params }: Props) {
                       fontSize: '1.1rem',
                       fontWeight: '600'
                     }}>
-                      {testInfo[testType as keyof typeof testInfo].title}
+                      {testInfo[testType].title}
                     </h3>
                     <p style={{ marginBottom: '0.5rem', color: '#4b5563', fontSize: '0.9rem' }}>
-                      {testInfo[testType as keyof typeof testInfo].description}
+                      {testInfo[testType].description}
                     </p>
                     <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#10b981', marginBottom: '0.5rem' }}>
                       {stats.accuracy}%
