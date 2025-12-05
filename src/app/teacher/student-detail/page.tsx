@@ -145,6 +145,22 @@ function StudentDetailContent() {
   const [selectedTestType, setSelectedTestType] = useState<string | null>(null)
   const router = useRouter()
 
+  // 세션별로 그룹화 - hooks는 early return 전에 호출해야 함
+  const sessions = useMemo(() => {
+    if (!studentData || !studentData.results) return [];
+    return groupResultsBySession(studentData.results);
+  }, [studentData])
+
+  // 선택된 세션과 교시의 상세 결과 가져오기
+  const selectedResults = useMemo(() => {
+    if (!selectedSession || !selectedTestType || !sessions.length) return [];
+    
+    const session = sessions.find(s => s.sessionId === selectedSession);
+    if (!session) return [];
+    
+    return session.results.filter(r => r.test_type === selectedTestType);
+  }, [selectedSession, selectedTestType, sessions]);
+
   useEffect(() => {
     const fetchStudentData = async () => {
       if (!studentId) {
@@ -270,9 +286,6 @@ function StudentDetailContent() {
 
   const { student, assignment, results: testResults } = studentData
 
-  // 세션별로 그룹화
-  const sessions = useMemo(() => groupResultsBySession(testResults || []), [testResults])
-
   const testInfo = {
     p1_alphabet: { title: '1교시', description: '알파벳 대소문자를 소리 내어 읽기' },
     p2_segmental_phoneme: { title: '2교시', description: '단어를 듣고 올바른 단어 고르기' },
@@ -311,16 +324,6 @@ function StudentDetailContent() {
 
     return stats;
   };
-
-  // 선택된 세션과 교시의 상세 결과 가져오기
-  const selectedResults = useMemo(() => {
-    if (!selectedSession || !selectedTestType) return [];
-    
-    const session = sessions.find(s => s.sessionId === selectedSession);
-    if (!session) return [];
-    
-    return session.results.filter(r => r.test_type === selectedTestType);
-  }, [selectedSession, selectedTestType, sessions]);
 
   return (
     <div style={{ 
