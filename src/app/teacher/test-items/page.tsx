@@ -132,15 +132,32 @@ async function loadFallbackItems(testType: string) {
         const fileContents = fs.readFileSync(filePath, 'utf8');
         const jsonItems = JSON.parse(fileContents);
         if (Array.isArray(jsonItems) && jsonItems.length > 0) {
+          // p6_items.json 형식 타입 정의
+          interface P6JsonOption {
+            number: number;
+            description: string;
+            isCorrect: boolean;
+          }
+          
+          interface P6JsonItem {
+            id: string;
+            question: string;
+            script: {
+              speaker1: string;
+              speaker2: string;
+            };
+            options: P6JsonOption[];
+          }
+          
           // p6_items.json 형식을 ComprehensionItem 형식으로 변환
-          return jsonItems.map((item: any) => ({
+          return (jsonItems as P6JsonItem[]).map((item) => ({
             dialogueOrStory: `${item.script.speaker1}\n${item.script.speaker2}`,
             question: item.question,
-            options: item.options.map((opt: any) => ({
+            options: item.options.map((opt) => ({
               type: 'word' as const,
               content: opt.description,
             })),
-            correctAnswer: item.options.find((opt: any) => opt.isCorrect)?.description || '',
+            correctAnswer: item.options.find((opt) => opt.isCorrect)?.description || '',
             isDialogue: true,
             speaker1: item.script.speaker1,
             speaker2: item.script.speaker2,
