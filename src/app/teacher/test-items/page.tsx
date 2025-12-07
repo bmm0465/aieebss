@@ -1,6 +1,160 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import fs from 'fs';
+import path from 'path';
+
+// 승인된 문항 조회 함수
+async function fetchApprovedItems(testType: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('generated_test_items')
+    .select('id, test_type, grade_level, items, status, created_at')
+    .eq('status', 'approved')
+    .eq('test_type', testType)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (error || !data) {
+    return null;
+  }
+
+  const items = data.items as Record<string, unknown>;
+  
+  // 테스트 타입에 맞는 문항 추출
+  switch (testType) {
+    case 'p1_alphabet':
+      return items.p1_alphabet || items.LNF || null;
+    case 'p2_segmental_phoneme':
+      return items.p2_segmental_phoneme || items.PSF || null;
+    case 'p3_suprasegmental_phoneme':
+      return items.p3_suprasegmental_phoneme || items.STRESS || null;
+    case 'p4_phonics':
+      return items.p4_phonics || null;
+    case 'p5_vocabulary':
+      return items.p5_vocabulary || items.MEANING || null;
+    case 'p6_comprehension':
+      return items.p6_comprehension || items.COMPREHENSION || null;
+    default:
+      return null;
+  }
+}
+
+// 폴백 문항 로드 함수들 (각 테스트 페이지에서 사용하는 실제 폴백 문항)
+async function loadFallbackItems(testType: string) {
+  switch (testType) {
+    case 'p1_alphabet': {
+      // p1_alphabet 페이지의 getFixedAlphabet() 함수와 동일
+      return [
+        'l', 'E', 'm', 'S', 'O', 'B', 'J', 'c', 'w', 'g',
+        'y', 'b', 'F', 'r', 'k', 'u', 'j', 'V', 'Q', 's',
+        'H', 'h', 'G', 'z', 'o', 'T', 'C', 't', 'R', 'A',
+        'N', 'M', 'X', 'W', 'Y', 'd', 'f', 'D', 'v', 'p',
+        'I', 'U', 'K', 'x', 'l', 'e', 'n', 'I', 'P', 'a',
+        'Z', 'q'
+      ];
+    }
+    case 'p2_segmental_phoneme': {
+      // p2_segmental_phoneme 페이지의 getFixedMinimalPairs() 함수와 동일
+      return [
+        { word1: 'fine', word2: 'five', correctAnswer: 'fine' },
+        { word1: 'big', word2: 'pig', correctAnswer: 'big' },
+        { word1: 'book', word2: 'look', correctAnswer: 'book' },
+        { word1: 'pen', word2: 'ten', correctAnswer: 'pen' },
+        { word1: 'king', word2: 'ring', correctAnswer: 'king' },
+        { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
+        { word1: 'sit', word2: 'six', correctAnswer: 'sit' },
+        { word1: 'that', word2: 'what', correctAnswer: 'that' },
+        { word1: 'can', word2: 'cat', correctAnswer: 'can' },
+        { word1: 'go', word2: 'no', correctAnswer: 'go' },
+        { word1: 'do', word2: 'go', correctAnswer: 'do' },
+        { word1: 'how', word2: 'now', correctAnswer: 'how' },
+        { word1: 'at', word2: 'it', correctAnswer: 'at' },
+        { word1: 'in', word2: 'it', correctAnswer: 'in' },
+        { word1: 'be', word2: 'he', correctAnswer: 'be' },
+        { word1: 'nice', word2: 'nine', correctAnswer: 'nice' },
+        { word1: 'ring', word2: 'sing', correctAnswer: 'ring' },
+        { word1: 'she', word2: 'the', correctAnswer: 'she' },
+        { word1: 'cow', word2: 'how', correctAnswer: 'cow' },
+        { word1: 'cow', word2: 'now', correctAnswer: 'cow' },
+        { word1: 'not', word2: 'now', correctAnswer: 'not' },
+      ];
+    }
+    case 'p3_suprasegmental_phoneme': {
+      // JSON 파일에서 로드 시도
+      try {
+        const filePath = path.join(process.cwd(), 'public', 'data', 'p3_stress_items.json');
+        const fileContents = fs.readFileSync(filePath, 'utf8');
+        const jsonItems = JSON.parse(fileContents);
+        if (Array.isArray(jsonItems) && jsonItems.length > 0) {
+          return jsonItems;
+        }
+      } catch {
+        // 파일이 없거나 파싱 오류 시 기본값 사용
+      }
+      // 기본값 (p3_suprasegmental_phoneme 페이지의 getFixedStressItems()와 동일)
+      return [
+        { word: 'apple', choices: ['APple', 'apPLE', 'APPLE'], correctAnswer: 'APple' },
+        { word: 'banana', choices: ['BANana', 'banANa', 'bananA'], correctAnswer: 'banANa' },
+        { word: 'brother', choices: ['BROther', 'broTHER', 'BROTHER'], correctAnswer: 'BROther' },
+        { word: 'carrot', choices: ['CARrot', 'carROT', 'CARROT'], correctAnswer: 'CARrot' },
+        { word: 'chicken', choices: ['CHIcken', 'chiCKEN', 'CHICKEN'], correctAnswer: 'CHIcken' },
+      ];
+    }
+    case 'p4_phonics': {
+      // JSON 파일에서 로드 시도
+      try {
+        const filePath = path.join(process.cwd(), 'public', 'data', 'p4_items.json');
+        const fileContents = fs.readFileSync(filePath, 'utf8');
+        const jsonItems = JSON.parse(fileContents);
+        if (jsonItems && typeof jsonItems === 'object') {
+          return jsonItems;
+        }
+      } catch {
+        // 파일이 없거나 파싱 오류 시 기본값 사용
+      }
+      // 기본값 (p4_phonics 페이지의 폴백과 동일)
+      return {
+        nwf: ['sep', 'het', 'tum', 'lut', 'dit', 'reg', 'fet', 'pom', 'teb', 'gid'],
+        wrf: ['apple', 'banana', 'brother', 'carrot', 'chicken', 'color', 'elephant', 'eraser', 'flower', 'grandfather'],
+        orf: ["I'm Momo", 'How are you?', "What's this", "It's a bike", "It's a robot", 'Sit down, please', 'Open the door, please', 'Thank you', "You're welcome", 'How many cows?'],
+      };
+    }
+    case 'p5_vocabulary': {
+      // p5는 동적으로 생성되므로 null 반환 (표시 안 함)
+      return null;
+    }
+    case 'p6_comprehension': {
+      // JSON 파일에서 로드 시도
+      try {
+        const filePath = path.join(process.cwd(), 'public', 'data', 'p6_items.json');
+        const fileContents = fs.readFileSync(filePath, 'utf8');
+        const jsonItems = JSON.parse(fileContents);
+        if (Array.isArray(jsonItems) && jsonItems.length > 0) {
+          // p6_items.json 형식을 ComprehensionItem 형식으로 변환
+          return jsonItems.map((item: any) => ({
+            dialogueOrStory: `${item.script.speaker1}\n${item.script.speaker2}`,
+            question: item.question,
+            options: item.options.map((opt: any) => ({
+              type: 'word' as const,
+              content: opt.description,
+            })),
+            correctAnswer: item.options.find((opt: any) => opt.isCorrect)?.description || '',
+            isDialogue: true,
+            speaker1: item.script.speaker1,
+            speaker2: item.script.speaker2,
+          }));
+        }
+      } catch {
+        // 파일이 없거나 파싱 오류 시 null 반환
+      }
+      return null;
+    }
+    default:
+      return null;
+  }
+}
 
 export default async function TestItemsPage() {
   const supabase = await createClient();
@@ -24,178 +178,91 @@ export default async function TestItemsPage() {
     redirect('/lobby');
   }
 
-  // 각 평가의 문항 데이터
+  // 데이터베이스에서 승인된 문항 조회, 없으면 폴백 문항 사용
+  const [p1ItemsDB, p2ItemsDB, p3ItemsDB, p4ItemsDB, p5ItemsDB, p6ItemsDB] = await Promise.all([
+    fetchApprovedItems('p1_alphabet'),
+    fetchApprovedItems('p2_segmental_phoneme'),
+    fetchApprovedItems('p3_suprasegmental_phoneme'),
+    fetchApprovedItems('p4_phonics'),
+    fetchApprovedItems('p5_vocabulary'),
+    fetchApprovedItems('p6_comprehension'),
+  ]);
+
+  // 폴백 문항 로드
+  const [p1ItemsFallback, p2ItemsFallback, p3ItemsFallback, p4ItemsFallback, p5ItemsFallback, p6ItemsFallback] = await Promise.all([
+    loadFallbackItems('p1_alphabet'),
+    loadFallbackItems('p2_segmental_phoneme'),
+    loadFallbackItems('p3_suprasegmental_phoneme'),
+    loadFallbackItems('p4_phonics'),
+    loadFallbackItems('p5_vocabulary'),
+    loadFallbackItems('p6_comprehension'),
+  ]);
+
+  // DB 문항이 있으면 사용, 없으면 폴백 문항 사용
+  const p1Items = p1ItemsDB || p1ItemsFallback;
+  const p2Items = p2ItemsDB || p2ItemsFallback;
+  const p3Items = p3ItemsDB || p3ItemsFallback;
+  const p4Items = p4ItemsDB || p4ItemsFallback;
+  const p5Items = p5ItemsDB || p5ItemsFallback;
+  const p6Items = p6ItemsDB || p6ItemsFallback;
+
+  // 각 평가의 문항 데이터 (데이터베이스에서 가져온 실제 문항 또는 폴백 데이터)
   const testItems = {
-    LNF: {
-      title: "LNF - 고대 룬 문자 해독 시험",
+    p1_alphabet: {
+      title: "1교시 - 알파벳 이름 말하기",
       description: "알파벳 인식 능력 평가",
-      totalItems: 100,
-      items: [
-        'T', 'a', 'S', 'o', 'r', 'E', 'i', 'n', 'D', 'h',
-        'f', 'P', 'm', 'C', 'u', 'L', 'd', 'G', 'H', 'R',
-        's', 'N', 'I', 'O', 'A', 'e', 'T', 'c', 'b', 'F',
-        'v', 'p', 'Y', 'k', 'g', 'M', 'u', 'a', 'R', 'I',
-        'E', 'S', 'd', 'o', 'T', 'j', 'n', 'q', 'C', 'b',
-        'h', 'L', 'A', 'P', 'r', 'f', 'e', 'K', 'V', 'z',
-        'O', 't', 'i', 's', 'N', 'G', 'c', 'u', 'M', 'D',
-        'a', 'E', 'H', 'k', 'Y', 'r', 'T', 'B', 'p', 'F',
-        'g', 'v', 'I', 'o', 'e', 'n', 's', 'L', 'J', 'q',
-        'x', 'C', 'a', 'P', 'd', 'R', 'i', 'A', 'm', 'U'
-      ],
+      totalItems: p1Items && Array.isArray(p1Items) ? p1Items.length : 0,
+      items: p1Items && Array.isArray(p1Items) ? p1Items : [],
       type: 'list',
-      note: '학생은 알파벳의 이름(예: A → "에이")을 말해야 합니다. LNF 표준 규격: 100개, 대소문자 균형, 빈도 높은 문자 우선, W와 소문자 l 제외.'
+      note: '학생은 알파벳의 이름(예: A → "에이")을 말해야 합니다.',
+      fromDB: !!p1ItemsDB
     },
-    PSF: {
-      title: "PSF - 소리 듣고 식별하기",
+    p2_segmental_phoneme: {
+      title: "2교시 - 음소 분리",
       description: "최소대립쌍 듣고 식별 능력 평가",
-      totalItems: 20,
-      items: [
-        { word1: 'pin', word2: 'fin', correctAnswer: 'pin' },
-        { word1: 'bat', word2: 'pat', correctAnswer: 'bat' },
-        { word1: 'cat', word2: 'hat', correctAnswer: 'cat' },
-        { word1: 'dog', word2: 'log', correctAnswer: 'dog' },
-        { word1: 'sun', word2: 'fun', correctAnswer: 'sun' },
-        { word1: 'bed', word2: 'red', correctAnswer: 'bed' },
-        { word1: 'cup', word2: 'pup', correctAnswer: 'cup' },
-        { word1: 'map', word2: 'cap', correctAnswer: 'map' },
-        { word1: 'sit', word2: 'hit', correctAnswer: 'sit' },
-        { word1: 'pen', word2: 'hen', correctAnswer: 'pen' },
-        { word1: 'big', word2: 'pig', correctAnswer: 'big' },
-        { word1: 'top', word2: 'pop', correctAnswer: 'top' },
-        { word1: 'run', word2: 'sun', correctAnswer: 'run' },
-        { word1: 'leg', word2: 'peg', correctAnswer: 'leg' },
-        { word1: 'mug', word2: 'bug', correctAnswer: 'mug' },
-        { word1: 'fan', word2: 'van', correctAnswer: 'fan' },
-        { word1: 'ten', word2: 'pen', correctAnswer: 'ten' },
-        { word1: 'box', word2: 'fox', correctAnswer: 'box' },
-        { word1: 'six', word2: 'fix', correctAnswer: 'six' },
-        { word1: 'web', word2: 'deb', correctAnswer: 'web' },
-      ],
+      totalItems: p2Items && Array.isArray(p2Items) ? p2Items.length : 0,
+      items: p2Items && Array.isArray(p2Items) ? p2Items : [],
       type: 'minimal-pairs',
-      note: '학생은 두 단어를 듣고 들려준 단어를 선택합니다. 최소대립쌍(minimal pairs)은 하나의 음소만 다른 단어 쌍입니다. vocabulary_level.json의 어휘 수준을 준수합니다.'
+      note: '학생은 두 단어를 듣고 들려준 단어를 선택합니다. 최소대립쌍(minimal pairs)은 하나의 음소만 다른 단어 쌍입니다.',
+      fromDB: !!p2ItemsDB
     },
-    NWF: {
-      title: "NWF - 초급 주문 시전 시험",
-      description: "파닉스 적용 능력 평가",
-      totalItems: 122,
-      items: [
-        "sep", "nem", "dib", "rop", "lin", "fom", "mig", "rup", "dep", "fod",
-        "pid", "rit", "mog", "pim", "sog", "tib", "pon", "heg", "dev", "seb",
-        "dop", "nug", "tet", "wep", "vom", "bem", "kun", "yut", "yad", "heb",
-        "pom", "gid", "pag", "kom", "wog", "yig", "lan", "nen", "het", "som",
-        "tig", "fon", "tup", "nin", "hon", "vid", "wim", "pob", "sed", "yod",
-        "tud", "mem", "vot", "dob", "vun", "yed", "bim", "wod", "yab", "yun",
-        "lem", "fub", "vut", "gim", "wid", "reb", "wap", "mip", "wem", "yom",
-        "vad", "wum", "nim", "kep", "biv", "lum", "rik", "sab", "wug", "pac",
-        "fot", "lut", "nam", "tok", "zam", "neb", "wut", "cun", "rif", "lom",
-        "stam", "clen", "frap", "smop", "grut", "ston", "cles", "snid", "blut", "pren",
-        "glom", "trab", "clom", "snut", "krat", "flot", "clor", "jent", "galk", "vrop",
-        "pler", "drem", "trul", "skom", "tolt", "vrat", "blim", "sner", "larm", "fral",
-        "sket", "trak", "plon", "trup", "smot", "gren", "frim", "prun", "twet", "draf",
-        "snib", "glap", "frem", "spov", "spen", "drup", "fran", "plap", "clut", "spet",
-        "crum", "frin", "bap", "fek", "himp", "krad", "clanp", "zib", "wux", "jev"
-      ],
-      type: 'list',
-      note: 'Nonsense words (무의미 단어)를 파닉스 규칙으로 읽습니다. NWF 표준: 단모음 기본 구조(72개), 자음 연속 패턴(50개).'
-    },
-    WRF: {
-      title: "WRF - 마법 단어 활성화 시험",
-      description: "단어 읽기 유창성 평가",
-      totalItems: 81,
-      items: [
-        "it", "up", "no", "go", "he", "me", "to", "do", "big", "can",
-        "dad", "hat", "cat", "sit", "mom", "dog", "pig", "pen", "leg", "pan",
-        "red", "ten", "sun", "six", "run", "not", "yes", "car", "zoo", "one",
-        "the", "she", "who", "how", "this", "that", "what", "swim", "jump", "stand",
-        "like", "nice", "here", "said", "look", "good", "book", "door", "ball", "tall",
-        "two", "too", "down", "open", "have", "come", "love", "blue", "green", "white",
-        "three", "four", "five", "great", "eight", "nine", "many", "much", "close", "dance",
-        "hello", "sorry", "color", "apple", "pizza", "sunny", "okay", "bye", "pencil", "sister", "eraser"
-      ],
-      type: 'list',
-      note: '실제 단어를 빠르고 정확하게 읽는 능력을 측정합니다. WRF 표준: 4단계 난이도(기초 CVC → 자음 연속 → 장모음 → 다음절) 혼합 구성.'
-    },
-    ORF: {
-      title: "ORF - 고대 이야기 소생술 시험",
-      description: "읽기 유창성 평가",
-      totalItems: 1,
-      passage: `Passage 1: Drawing a Picture
-Leo: What are you doing?
-Mia: I am drawing a picture.
-Leo: Wow. What is it?
-Mia: It is a big, yellow sun.
-Leo: I like your picture.
-
-Passage 2: Juice, Please
-Dan: Do you have juice?
-Pam: Yes, I do. Do you like orange juice?
-Dan: Yes, I do. I like orange juice.
-Pam: Here.
-Dan: Thank you. Bye.
-
-Passage 3: Counting Dogs
-Ken: Hello. How many dogs?
-Liz: Hi! One, two, three, four.
-Ken: Four dogs! Okay.
-
-Passage 4: My New Ball
-Sam: Do you have a ball?
-Ann: Yes, I do. Here you are.
-Sam: Thank you.
-Ann: Let's play together.
-
-Passage 5: What is This?
-Max: What is this?
-Kim: It is a book.
-Max: Is this your pencil?
-Kim: Yes, it is. It is my new pencil.`,
-      type: 'passage',
-      note: 'ORF 표준: 5개 지문으로 구성, 학년 수준에 맞는 어휘와 문장 구조. WCPM과 정확도를 AI가 측정합니다.'
-    },
-    STRESS: {
-      title: "STRESS - 강세 및 리듬 패턴 파악",
+    p3_suprasegmental_phoneme: {
+      title: "3교시 - 강세 및 리듬 패턴",
       description: "강세 패턴 식별 능력 평가",
-      totalItems: 20,
-      items: [
-        { word: 'computer', choices: ['comPUter', 'COMputer', 'compuTER'], correctAnswer: 'comPUter' },
-        { word: 'banana', choices: ['baNAna', 'BAnana', 'bananA'], correctAnswer: 'baNAna' },
-        { word: 'elephant', choices: ['ELEphant', 'elePHANT', 'elephANT'], correctAnswer: 'ELEphant' },
-        { word: 'tomorrow', choices: ['toMORrow', 'TOmorrow', 'tomorROW'], correctAnswer: 'toMORrow' },
-        { word: 'beautiful', choices: ['BEAUtiful', 'beauTIful', 'beautiFUL'], correctAnswer: 'BEAUtiful' },
-      ],
+      totalItems: p3Items && Array.isArray(p3Items) ? p3Items.length : 0,
+      items: p3Items && Array.isArray(p3Items) ? p3Items : [],
       type: 'stress-pattern',
-      note: '학생은 단어를 듣고 올바른 강세 패턴을 선택합니다. 2음절 이상의 단어를 사용하며, vocabulary_level.json의 어휘 수준을 준수합니다.'
+      note: '학생은 단어를 듣고 올바른 강세 패턴을 선택합니다.',
+      fromDB: !!p3ItemsDB
     },
-    MEANING: {
-      title: "MEANING - 의미 이해",
+    p4_phonics: {
+      title: "4교시 - 파닉스 읽기",
+      description: "파닉스 적용 능력 평가",
+      totalItems: 0,
+      nwf: (p4Items && typeof p4Items === 'object' && 'nwf' in p4Items && Array.isArray(p4Items.nwf)) ? p4Items.nwf : [],
+      wrf: (p4Items && typeof p4Items === 'object' && 'wrf' in p4Items && Array.isArray(p4Items.wrf)) ? p4Items.wrf : [],
+      orf: (p4Items && typeof p4Items === 'object' && 'orf' in p4Items && Array.isArray(p4Items.orf)) ? p4Items.orf : [],
+      type: 'phonics',
+      note: '무의미 단어(NWF), 단어 읽기(WRF), 구두 읽기(ORF) 능력을 평가합니다.',
+      fromDB: !!p4ItemsDB
+    },
+    p5_vocabulary: {
+      title: "5교시 - 의미 이해",
       description: "단어/문장 의미 이해 능력 평가",
-      totalItems: 20,
-      items: [
-        { wordOrPhrase: 'a red apple', imageOptions: ['red apple', 'yellow banana', 'green grape'], correctAnswer: 'red apple' },
-        { wordOrPhrase: 'a big dog', imageOptions: ['big dog', 'small cat', 'blue bird'], correctAnswer: 'big dog' },
-        { wordOrPhrase: 'three cats', imageOptions: ['three cats', 'two dogs', 'one bird'], correctAnswer: 'three cats' },
-      ],
+      totalItems: p5Items && Array.isArray(p5Items) ? p5Items.length : 0,
+      items: p5Items && Array.isArray(p5Items) ? p5Items : [],
       type: 'meaning',
-      note: '학생은 단어나 문장을 듣거나 읽고 알맞은 그림을 선택합니다. vocabulary_level.json의 어휘 수준을 준수합니다.'
+      note: '학생은 단어나 문장을 듣거나 읽고 알맞은 그림을 선택합니다.',
+      fromDB: !!p5ItemsDB
     },
-    COMPREHENSION: {
-      title: "COMPREHENSION - 주요 정보 파악",
+    p6_comprehension: {
+      title: "6교시 - 주요 정보 파악",
       description: "주요 정보 파악 능력 평가",
-      totalItems: 15,
-      items: [
-        { 
-          dialogueOrStory: 'This is my friend, Tom. He has a big, blue ball.',
-          question: 'What does Tom have?',
-          options: [
-            { type: 'word', content: 'blue ball' },
-            { type: 'word', content: 'red car' },
-            { type: 'word', content: 'small yellow cat' },
-          ],
-          correctAnswer: 'blue ball'
-        },
-      ],
+      totalItems: p6Items && Array.isArray(p6Items) ? p6Items.length : 0,
+      items: p6Items && Array.isArray(p6Items) ? p6Items : [],
       type: 'comprehension',
-      note: '학생은 짧은 대화나 이야기를 듣거나 읽고 질문에 맞는 답을 선택합니다. core_expressions.json의 표현을 사용하며, vocabulary_level.json의 어휘 수준을 준수합니다.'
+      note: '학생은 짧은 대화나 이야기를 듣거나 읽고 질문에 맞는 답을 선택합니다.',
+      fromDB: !!p6ItemsDB
     }
   };
 
@@ -223,7 +290,7 @@ Kim: Yes, it is. It is my new pencil.`,
                 <h1 style={{ 
                   fontSize: '2.5rem', 
                   margin: 0,
-                  fontFamily: 'var(--font-nanum-pen)',
+                  fontFamily: 'var(--font-noto-sans-kr)',
                   background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
@@ -257,341 +324,122 @@ Kim: Yes, it is. It is my new pencil.`,
           </div>
         </div>
 
-        {/* LNF */}
-        <TestItemSection 
-          title={testItems.LNF.title}
-          description={testItems.LNF.description}
-          totalItems={testItems.LNF.totalItems}
-          items={testItems.LNF.items}
-          note={testItems.LNF.note}
-        />
-
-        {/* PSF */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '2rem',
-          borderRadius: '20px',
-          marginBottom: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h2 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '1.5rem',
-            fontSize: '1.75rem',
-            fontWeight: 'bold'
-          }}>
-            {testItems.PSF.title}
-          </h2>
-          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
-            {testItems.PSF.description} - 총 {testItems.PSF.totalItems}문항
-          </p>
-          <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.PSF.items.map((item: { word1: string; word2: string; correctAnswer: string }, idx: number) => (
-              <div key={idx} style={{
-                backgroundColor: '#f9fafb',
-                padding: '1rem',
-                borderRadius: '12px',
-                border: '2px solid #e5e7eb'
-              }}>
-                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
-                  <strong style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}>문항 {idx + 1}:</strong> {item.word1} / {item.word2}
-                </div>
-                <div style={{ color: '#10b981', fontWeight: '600', marginLeft: '1rem' }}>
-                  정답: {item.correctAnswer} ✓
-                </div>
-              </div>
-            ))}
+        {/* 1교시 - 알파벳 */}
+        {testItems.p1_alphabet.totalItems > 0 ? (
+          <div>
+            <TestItemSection 
+              title={testItems.p1_alphabet.title}
+              description={testItems.p1_alphabet.description + (testItems.p1_alphabet.fromDB ? '' : ' (기본 문항)')}
+              totalItems={testItems.p1_alphabet.totalItems}
+              items={testItems.p1_alphabet.items}
+              note={testItems.p1_alphabet.note}
+            />
+            {!testItems.p1_alphabet.fromDB && (
+              <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '-1.5rem', marginBottom: '1rem', paddingLeft: '2rem' }}>
+                ℹ️ 데이터베이스에 승인된 문항이 없어 실제 테스트에서 사용되는 기본 문항을 표시합니다.
+              </p>
+            )}
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
-            💡 {testItems.PSF.note}
-          </p>
-        </div>
+        ) : (
+          <NoItemsSection title={testItems.p1_alphabet.title} description={testItems.p1_alphabet.description} />
+        )}
 
-        {/* NWF */}
-        <TestItemSection 
-          title={testItems.NWF.title}
-          description={testItems.NWF.description}
-          totalItems={testItems.NWF.totalItems}
-          items={testItems.NWF.items}
-          note={testItems.NWF.note}
-        />
-
-        {/* WRF */}
-        <TestItemSection 
-          title={testItems.WRF.title}
-          description={testItems.WRF.description}
-          totalItems={testItems.WRF.totalItems}
-          items={testItems.WRF.items}
-          note={testItems.WRF.note}
-        />
-
-        {/* ORF */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '2rem',
-          borderRadius: '20px',
-          marginBottom: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h2 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '1.5rem',
-            fontSize: '1.75rem',
-            fontWeight: 'bold'
-          }}>
-            {testItems.ORF.title}
-          </h2>
-          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>{testItems.ORF.description}</p>
-          <div style={{ 
-            backgroundColor: '#f9fafb',
-            padding: '1.5rem',
-            borderRadius: '12px',
-            marginBottom: '1rem',
-            border: '2px solid #e5e7eb'
-          }}>
-            <pre style={{ 
-              whiteSpace: 'pre-wrap', 
-              fontFamily: 'monospace',
-              fontSize: '1rem',
-              lineHeight: '1.8',
-              margin: 0,
-              color: '#171717'
-            }}>
-              {testItems.ORF.passage}
-            </pre>
+        {/* 2교시 - 음소 분리 */}
+        {testItems.p2_segmental_phoneme.totalItems > 0 ? (
+          <div>
+            <MinimalPairsSection 
+              title={testItems.p2_segmental_phoneme.title}
+              description={testItems.p2_segmental_phoneme.description + (testItems.p2_segmental_phoneme.fromDB ? '' : ' (기본 문항)')}
+              items={testItems.p2_segmental_phoneme.items}
+              note={testItems.p2_segmental_phoneme.note}
+            />
+            {!testItems.p2_segmental_phoneme.fromDB && (
+              <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '-1.5rem', marginBottom: '1rem', paddingLeft: '2rem' }}>
+                ℹ️ 데이터베이스에 승인된 문항이 없어 실제 테스트에서 사용되는 기본 문항을 표시합니다.
+              </p>
+            )}
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic' }}>
-            💡 {testItems.ORF.note}
-          </p>
-        </div>
+        ) : (
+          <NoItemsSection title={testItems.p2_segmental_phoneme.title} description={testItems.p2_segmental_phoneme.description} />
+        )}
 
-        {/* STRESS */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '2rem',
-          borderRadius: '20px',
-          marginBottom: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h2 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '1.5rem',
-            fontSize: '1.75rem',
-            fontWeight: 'bold'
-          }}>
-            {testItems.STRESS.title}
-          </h2>
-          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
-            {testItems.STRESS.description} - 총 {testItems.STRESS.totalItems}문항
-          </p>
-          <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.STRESS.items.map((item: { word: string; choices: string[]; correctAnswer: string }, idx: number) => (
-              <div key={idx} style={{
-                backgroundColor: '#f9fafb',
-                padding: '1rem',
-                borderRadius: '12px',
-                border: '2px solid #e5e7eb'
-              }}>
-                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
-                  <strong style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}>문항 {idx + 1}:</strong> {item.word}
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                  {item.choices.map((choice: string, optIdx: number) => (
-                    <span 
-                      key={optIdx}
-                      style={{
-                        padding: '0.3rem 0.8rem',
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        backgroundColor: choice === item.correctAnswer 
-                          ? 'rgba(16, 185, 129, 0.1)' 
-                          : '#ffffff',
-                        border: choice === item.correctAnswer 
-                          ? '2px solid #10b981' 
-                          : '1px solid #e5e7eb',
-                        color: choice === item.correctAnswer ? '#10b981' : '#171717',
-                        fontWeight: choice === item.correctAnswer ? '600' : '400'
-                      }}
-                    >
-                      {choice} {choice === item.correctAnswer && '✓'}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+        {/* 3교시 - 강세 및 리듬 패턴 */}
+        {testItems.p3_suprasegmental_phoneme.totalItems > 0 ? (
+          <div>
+            <StressPatternSection 
+              title={testItems.p3_suprasegmental_phoneme.title}
+              description={testItems.p3_suprasegmental_phoneme.description + (testItems.p3_suprasegmental_phoneme.fromDB ? '' : ' (기본 문항)')}
+              items={testItems.p3_suprasegmental_phoneme.items}
+              note={testItems.p3_suprasegmental_phoneme.note}
+            />
+            {!testItems.p3_suprasegmental_phoneme.fromDB && (
+              <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '-1.5rem', marginBottom: '1rem', paddingLeft: '2rem' }}>
+                ℹ️ 데이터베이스에 승인된 문항이 없어 실제 테스트에서 사용되는 기본 문항을 표시합니다.
+              </p>
+            )}
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
-            💡 {testItems.STRESS.note}
-          </p>
-        </div>
+        ) : (
+          <NoItemsSection title={testItems.p3_suprasegmental_phoneme.title} description={testItems.p3_suprasegmental_phoneme.description} />
+        )}
 
-        {/* MEANING */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '2rem',
-          borderRadius: '20px',
-          marginBottom: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h2 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '1.5rem',
-            fontSize: '1.75rem',
-            fontWeight: 'bold'
-          }}>
-            {testItems.MEANING.title}
-          </h2>
-          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
-            {testItems.MEANING.description} - 총 {testItems.MEANING.totalItems}문항
-          </p>
-          <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.MEANING.items.map((item: { wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }, idx: number) => (
-              <div key={idx} style={{
-                backgroundColor: '#f9fafb',
-                padding: '1rem',
-                borderRadius: '12px',
-                border: '2px solid #e5e7eb'
-              }}>
-                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
-                  <strong style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}>문항 {idx + 1}:</strong> {item.wordOrPhrase}
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                  {item.imageOptions.map((option: string, optIdx: number) => (
-                    <span 
-                      key={optIdx}
-                      style={{
-                        padding: '0.3rem 0.8rem',
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        backgroundColor: option === item.correctAnswer 
-                          ? 'rgba(16, 185, 129, 0.1)' 
-                          : '#ffffff',
-                        border: option === item.correctAnswer 
-                          ? '2px solid #10b981' 
-                          : '1px solid #e5e7eb',
-                        color: option === item.correctAnswer ? '#10b981' : '#171717',
-                        fontWeight: option === item.correctAnswer ? '600' : '400'
-                      }}
-                    >
-                      {option} {option === item.correctAnswer && '✓'}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+        {/* 4교시 - 파닉스 */}
+        {(testItems.p4_phonics.nwf.length > 0 || testItems.p4_phonics.wrf.length > 0 || testItems.p4_phonics.orf.length > 0) ? (
+          <div>
+            <PhonicsSection 
+              title={testItems.p4_phonics.title}
+              description={testItems.p4_phonics.description + (testItems.p4_phonics.fromDB ? '' : ' (기본 문항)')}
+              nwf={testItems.p4_phonics.nwf}
+              wrf={testItems.p4_phonics.wrf}
+              orf={testItems.p4_phonics.orf}
+              note={testItems.p4_phonics.note}
+            />
+            {!testItems.p4_phonics.fromDB && (
+              <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '-1.5rem', marginBottom: '1rem', paddingLeft: '2rem' }}>
+                ℹ️ 데이터베이스에 승인된 문항이 없어 실제 테스트에서 사용되는 기본 문항을 표시합니다.
+              </p>
+            )}
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
-            💡 {testItems.MEANING.note}
-          </p>
-        </div>
+        ) : (
+          <NoItemsSection title={testItems.p4_phonics.title} description={testItems.p4_phonics.description} />
+        )}
 
-        {/* COMPREHENSION */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          padding: '2rem',
-          borderRadius: '20px',
-          marginBottom: '2rem',
-          border: '2px solid #e5e7eb',
-          boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
-        }}>
-          <h2 style={{ 
-            background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
-            marginBottom: '1.5rem',
-            fontSize: '1.75rem',
-            fontWeight: 'bold'
-          }}>
-            {testItems.COMPREHENSION.title}
-          </h2>
-          <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
-            {testItems.COMPREHENSION.description} - 총 {testItems.COMPREHENSION.totalItems}문항
-          </p>
-          <div style={{ display: 'grid', gap: '0.8rem' }}>
-            {testItems.COMPREHENSION.items.map((item, idx) => (
-              <div key={idx} style={{
-                backgroundColor: '#f9fafb',
-                padding: '1rem',
-                borderRadius: '12px',
-                border: '2px solid #e5e7eb'
-              }}>
-                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
-                  <strong style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}>대화/이야기:</strong> {item.dialogueOrStory}
-                </div>
-                <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
-                  <strong style={{ 
-                    background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    backgroundClip: 'text'
-                  }}>질문:</strong> {item.question}
-                </div>
-                <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
-                  {item.options.map((option, optIdx) => (
-                    <span 
-                      key={optIdx}
-                      style={{
-                        padding: '0.3rem 0.8rem',
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        backgroundColor: option.content === item.correctAnswer 
-                          ? 'rgba(16, 185, 129, 0.1)' 
-                          : '#ffffff',
-                        border: option.content === item.correctAnswer 
-                          ? '2px solid #10b981' 
-                          : '1px solid #e5e7eb',
-                        color: option.content === item.correctAnswer ? '#10b981' : '#171717',
-                        fontWeight: option.content === item.correctAnswer ? '600' : '400'
-                      }}
-                    >
-                      {option.content} {option.content === item.correctAnswer && '✓'}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            ))}
+        {/* 5교시 - 의미 이해 */}
+        {testItems.p5_vocabulary.totalItems > 0 ? (
+          <div>
+            <MeaningSection 
+              title={testItems.p5_vocabulary.title}
+              description={testItems.p5_vocabulary.description + (testItems.p5_vocabulary.fromDB ? '' : ' (기본 문항)')}
+              items={testItems.p5_vocabulary.items}
+              note={testItems.p5_vocabulary.note}
+            />
+            {!testItems.p5_vocabulary.fromDB && (
+              <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '-1.5rem', marginBottom: '1rem', paddingLeft: '2rem' }}>
+                ℹ️ 데이터베이스에 승인된 문항이 없어 실제 테스트에서 사용되는 기본 문항을 표시합니다.
+              </p>
+            )}
           </div>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
-            💡 {testItems.COMPREHENSION.note}
-          </p>
-        </div>
+        ) : (
+          <NoItemsSection title={testItems.p5_vocabulary.title} description={testItems.p5_vocabulary.description} />
+        )}
+
+        {/* 6교시 - 주요 정보 파악 */}
+        {testItems.p6_comprehension.totalItems > 0 ? (
+          <div>
+            <ComprehensionSection 
+              title={testItems.p6_comprehension.title}
+              description={testItems.p6_comprehension.description + (testItems.p6_comprehension.fromDB ? '' : ' (기본 문항)')}
+              items={testItems.p6_comprehension.items}
+              note={testItems.p6_comprehension.note}
+            />
+            {!testItems.p6_comprehension.fromDB && (
+              <p style={{ fontSize: '0.85rem', color: '#f59e0b', fontStyle: 'italic', marginTop: '-1.5rem', marginBottom: '1rem', paddingLeft: '2rem' }}>
+                ℹ️ 데이터베이스에 승인된 문항이 없어 실제 테스트에서 사용되는 기본 문항을 표시합니다.
+              </p>
+            )}
+          </div>
+        ) : (
+          <NoItemsSection title={testItems.p6_comprehension.title} description={testItems.p6_comprehension.description} />
+        )}
       </div>
     </div>
   );
@@ -670,6 +518,529 @@ function TestItemSection({
       <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic' }}>
         💡 {note}
       </p>
+    </div>
+  );
+}
+
+// 최소대립쌍 섹션 컴포넌트
+function MinimalPairsSection({
+  title,
+  description,
+  items,
+  note
+}: {
+  title: string;
+  description: string;
+  items: Array<{ word1: string; word2: string; correctAnswer: string }>;
+  note: string;
+}) {
+  return (
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '2rem',
+      borderRadius: '20px',
+      marginBottom: '2rem',
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h2>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+        {description} - 총 {items.length}문항
+      </p>
+      <div style={{ display: 'grid', gap: '0.8rem' }}>
+        {items.map((item, idx) => (
+          <div key={idx} style={{
+            backgroundColor: '#f9fafb',
+            padding: '1rem',
+            borderRadius: '12px',
+            border: '2px solid #e5e7eb'
+          }}>
+            <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+              <strong style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>문항 {idx + 1}:</strong> {item.word1} / {item.word2}
+            </div>
+            <div style={{ color: '#10b981', fontWeight: '600', marginLeft: '1rem' }}>
+              정답: {item.correctAnswer} ✓
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+        💡 {note}
+      </p>
+    </div>
+  );
+}
+
+// 강세 패턴 섹션 컴포넌트
+function StressPatternSection({
+  title,
+  description,
+  items,
+  note
+}: {
+  title: string;
+  description: string;
+  items: Array<{ word: string; choices: string[]; correctAnswer: string }>;
+  note: string;
+}) {
+  return (
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '2rem',
+      borderRadius: '20px',
+      marginBottom: '2rem',
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h2>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+        {description} - 총 {items.length}문항
+      </p>
+      <div style={{ display: 'grid', gap: '0.8rem' }}>
+        {items.map((item, idx) => (
+          <div key={idx} style={{
+            backgroundColor: '#f9fafb',
+            padding: '1rem',
+            borderRadius: '12px',
+            border: '2px solid #e5e7eb'
+          }}>
+            <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+              <strong style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>문항 {idx + 1}:</strong> {item.word}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
+              {item.choices.map((choice, optIdx) => (
+                <span 
+                  key={optIdx}
+                  style={{
+                    padding: '0.3rem 0.8rem',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    backgroundColor: choice === item.correctAnswer 
+                      ? 'rgba(16, 185, 129, 0.1)' 
+                      : '#ffffff',
+                    border: choice === item.correctAnswer 
+                      ? '2px solid #10b981' 
+                      : '1px solid #e5e7eb',
+                    color: choice === item.correctAnswer ? '#10b981' : '#171717',
+                    fontWeight: choice === item.correctAnswer ? '600' : '400'
+                  }}
+                >
+                  {choice} {choice === item.correctAnswer && '✓'}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+        💡 {note}
+      </p>
+    </div>
+  );
+}
+
+// 파닉스 섹션 컴포넌트
+function PhonicsSection({
+  title,
+  description,
+  nwf,
+  wrf,
+  orf,
+  note
+}: {
+  title: string;
+  description: string;
+  nwf: string[];
+  wrf: string[];
+  orf: string[];
+  note: string;
+}) {
+  return (
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '2rem',
+      borderRadius: '20px',
+      marginBottom: '2rem',
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h2>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+        {description}
+      </p>
+      
+      {nwf.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem', color: '#171717' }}>NWF (무의미 단어) - {nwf.length}개</h3>
+          <div style={{
+            backgroundColor: '#f9fafb',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '1rem',
+            border: '2px solid #e5e7eb'
+          }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))',
+              gap: '0.5rem'
+            }}>
+              {nwf.map((item, idx) => (
+                <div 
+                  key={idx}
+                  style={{
+                    padding: '0.5rem',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    fontSize: '0.9rem',
+                    border: '1px solid #e5e7eb',
+                    color: '#171717',
+                    fontWeight: '500'
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {wrf.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem', color: '#171717' }}>WRF (단어 읽기) - {wrf.length}개</h3>
+          <div style={{
+            backgroundColor: '#f9fafb',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            maxHeight: '300px',
+            overflowY: 'auto',
+            marginBottom: '1rem',
+            border: '2px solid #e5e7eb'
+          }}>
+            <div style={{ 
+              display: 'grid', 
+              gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))',
+              gap: '0.5rem'
+            }}>
+              {wrf.map((item, idx) => (
+                <div 
+                  key={idx}
+                  style={{
+                    padding: '0.5rem',
+                    backgroundColor: '#ffffff',
+                    borderRadius: '8px',
+                    textAlign: 'center',
+                    fontSize: '0.9rem',
+                    border: '1px solid #e5e7eb',
+                    color: '#171717',
+                    fontWeight: '500'
+                  }}
+                >
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {orf.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontSize: '1.25rem', fontWeight: '600', marginBottom: '1rem', color: '#171717' }}>ORF (구두 읽기) - {orf.length}개</h3>
+          <div style={{ 
+            backgroundColor: '#f9fafb',
+            padding: '1.5rem',
+            borderRadius: '12px',
+            marginBottom: '1rem',
+            border: '2px solid #e5e7eb'
+          }}>
+            {orf.map((passage, idx) => (
+              <div key={idx} style={{ marginBottom: idx < orf.length - 1 ? '1.5rem' : '0' }}>
+                <pre style={{ 
+                  whiteSpace: 'pre-wrap', 
+                  fontFamily: 'monospace',
+                  fontSize: '1rem',
+                  lineHeight: '1.8',
+                  margin: 0,
+                  color: '#171717'
+                }}>
+                  {passage}
+                </pre>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+        💡 {note}
+      </p>
+    </div>
+  );
+}
+
+// 의미 이해 섹션 컴포넌트
+function MeaningSection({
+  title,
+  description,
+  items,
+  note
+}: {
+  title: string;
+  description: string;
+  items: Array<{ wordOrPhrase: string; imageOptions: string[]; correctAnswer: string }>;
+  note: string;
+}) {
+  return (
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '2rem',
+      borderRadius: '20px',
+      marginBottom: '2rem',
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h2>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+        {description} - 총 {items.length}문항
+      </p>
+      <div style={{ display: 'grid', gap: '0.8rem' }}>
+        {items.map((item, idx) => (
+          <div key={idx} style={{
+            backgroundColor: '#f9fafb',
+            padding: '1rem',
+            borderRadius: '12px',
+            border: '2px solid #e5e7eb'
+          }}>
+            <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+              <strong style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>문항 {idx + 1}:</strong> {item.wordOrPhrase}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
+              {item.imageOptions.map((option, optIdx) => (
+                <span 
+                  key={optIdx}
+                  style={{
+                    padding: '0.3rem 0.8rem',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    backgroundColor: option === item.correctAnswer 
+                      ? 'rgba(16, 185, 129, 0.1)' 
+                      : '#ffffff',
+                    border: option === item.correctAnswer 
+                      ? '2px solid #10b981' 
+                      : '1px solid #e5e7eb',
+                    color: option === item.correctAnswer ? '#10b981' : '#171717',
+                    fontWeight: option === item.correctAnswer ? '600' : '400'
+                  }}
+                >
+                  {option} {option === item.correctAnswer && '✓'}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+        💡 {note}
+      </p>
+    </div>
+  );
+}
+
+// 이해도 섹션 컴포넌트
+function ComprehensionSection({
+  title,
+  description,
+  items,
+  note
+}: {
+  title: string;
+  description: string;
+  items: Array<{
+    dialogueOrStory: string;
+    question: string;
+    options: Array<{ type: 'image' | 'word'; content: string }>;
+    correctAnswer: string;
+  }>;
+  note: string;
+}) {
+  return (
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '2rem',
+      borderRadius: '20px',
+      marginBottom: '2rem',
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h2>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+        {description} - 총 {items.length}문항
+      </p>
+      <div style={{ display: 'grid', gap: '0.8rem' }}>
+        {items.map((item, idx) => (
+          <div key={idx} style={{
+            backgroundColor: '#f9fafb',
+            padding: '1rem',
+            borderRadius: '12px',
+            border: '2px solid #e5e7eb'
+          }}>
+            <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+              <strong style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>대화/이야기:</strong> {item.dialogueOrStory}
+            </div>
+            <div style={{ marginBottom: '0.5rem', color: '#171717' }}>
+              <strong style={{ 
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>질문:</strong> {item.question}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', marginLeft: '1rem' }}>
+              {item.options.map((option, optIdx) => (
+                <span 
+                  key={optIdx}
+                  style={{
+                    padding: '0.3rem 0.8rem',
+                    borderRadius: '8px',
+                    fontSize: '0.9rem',
+                    backgroundColor: option.content === item.correctAnswer 
+                      ? 'rgba(16, 185, 129, 0.1)' 
+                      : '#ffffff',
+                    border: option.content === item.correctAnswer 
+                      ? '2px solid #10b981' 
+                      : '1px solid #e5e7eb',
+                    color: option.content === item.correctAnswer ? '#10b981' : '#171717',
+                    fontWeight: option.content === item.correctAnswer ? '600' : '400'
+                  }}
+                >
+                  {option.content} {option.content === item.correctAnswer && '✓'}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+      <p style={{ fontSize: '0.9rem', color: '#6b7280', fontStyle: 'italic', marginTop: '1rem' }}>
+        💡 {note}
+      </p>
+    </div>
+  );
+}
+
+// 문항 없음 섹션 컴포넌트
+function NoItemsSection({
+  title,
+  description
+}: {
+  title: string;
+  description: string;
+}) {
+  return (
+    <div style={{
+      backgroundColor: '#ffffff',
+      padding: '2rem',
+      borderRadius: '20px',
+      marginBottom: '2rem',
+      border: '2px solid #e5e7eb',
+      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'
+    }}>
+      <h2 style={{ 
+        background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+        marginBottom: '1.5rem',
+        fontSize: '1.75rem',
+        fontWeight: 'bold'
+      }}>
+        {title}
+      </h2>
+      <p style={{ color: '#4b5563', marginBottom: '1rem', fontSize: '1rem' }}>
+        {description}
+      </p>
+      <div style={{
+        backgroundColor: '#fef3c7',
+        padding: '1.5rem',
+        borderRadius: '12px',
+        border: '1px solid #fbbf24',
+        color: '#92400e'
+      }}>
+        ⚠️ 아직 승인된 문항이 없습니다. 문항 생성 페이지에서 문항을 생성하고 승인해주세요.
+      </div>
     </div>
   );
 }
