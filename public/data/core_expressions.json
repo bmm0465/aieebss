@@ -120,8 +120,8 @@
           "ybm_kim": null,
           "ybm_choi": null,
           "chunjae_text_kim": null,
-          "chunjae_text_ham": null,
-          "chunjae_edu_lee": "I'm fine."
+          "chunjae_text_ham": "I'm fine.",
+          "chunjae_edu_lee": null
         }
       ]
     },
@@ -405,8 +405,8 @@
           "ybm_kim": null,
           "ybm_choi": null,
           "chunjae_text_kim": null,
-          "chunjae_text_ham": "Here you are.",
-          "chunjae_edu_lee": null
+          "chunjae_text_ham": null,
+          "chunjae_edu_lee": "Here you are."
         }
       ]
     },
@@ -640,8 +640,8 @@
           "ybm_kim": null,
           "ybm_choi": null,
           "chunjae_text_kim": null,
-          "chunjae_text_ham": null,
-          "chunjae_edu_lee": "How's the weather?"
+          "chunjae_text_ham": "How's the weather?",
+          "chunjae_edu_lee": null
         },
         {
           "index": 2,
@@ -650,8 +650,8 @@
           "ybm_kim": null,
           "ybm_choi": null,
           "chunjae_text_kim": null,
-          "chunjae_text_ham": null,
-          "chunjae_edu_lee": "It's snowing."
+          "chunjae_text_ham": "It's snowing.",
+          "chunjae_edu_lee": null
         },
         {
           "index": 3,
@@ -660,8 +660,8 @@
           "ybm_kim": null,
           "ybm_choi": null,
           "chunjae_text_kim": null,
-          "chunjae_text_ham": null,
-          "chunjae_edu_lee": "Put on your coat."
+          "chunjae_text_ham": "Put on your coat.",
+          "chunjae_edu_lee": null
         }
       ]
     }

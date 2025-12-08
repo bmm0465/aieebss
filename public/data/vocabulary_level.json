@@ -90,7 +90,7 @@
         {"index": 16, "donga_yoon": "up", "icecream_park": "stand", "ybm_kim": null, "ybm_choi": "please", "chunjae_text_kim": "three", "chunjae_text_ham": null, "chunjae_edu_lee": "sit"},
         {"index": 17, "donga_yoon": "window", "icecream_park": "the", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "two", "chunjae_text_ham": null, "chunjae_edu_lee": "stand"},
         {"index": 18, "donga_yoon": null, "icecream_park": "there", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": "up", "chunjae_text_ham": null, "chunjae_edu_lee": "the"},
-        {"index": 19, "donga_yoon": null, "icecream_park": null, "ybm_kim": "up", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "up"}
+        {"index": 19, "donga_yoon": null, "icecream_park": "up", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "up"}
       ]
     },
     {
@@ -258,18 +258,18 @@
     {
       "unit": 12,
       "entries": [
-        {"index": 1, "donga_yoon": null, "icecream_park": null, "ybm_kim": "bus", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "cap"},
-        {"index": 2, "donga_yoon": null, "icecream_park": null, "ybm_kim": "cold", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "cloudy"},
-        {"index": 3, "donga_yoon": null, "icecream_park": null, "ybm_kim": "hot", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "coat"},
-        {"index": 4, "donga_yoon": null, "icecream_park": null, "ybm_kim": "let", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "jacket"},
-        {"index": 5, "donga_yoon": null, "icecream_park": null, "ybm_kim": "outside", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "on"},
-        {"index": 6, "donga_yoon": null, "icecream_park": null, "ybm_kim": "raining", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "put"},
-        {"index": 7, "donga_yoon": null, "icecream_park": null, "ybm_kim": "snowing", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "raining"},
-        {"index": 8, "donga_yoon": null, "icecream_park": null, "ybm_kim": "weather", "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "sunny"},
-        {"index": 9, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "snowing"},
-        {"index": 10, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "there"},
-        {"index": 11, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "wake"},
-        {"index": 12, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": null, "chunjae_edu_lee": "weather"}
+        {"index": 1, "donga_yoon": null, "icecream_park": "bus", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "cap", "chunjae_edu_lee": null},
+        {"index": 2, "donga_yoon": null, "icecream_park": "cold", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "cloudy", "chunjae_edu_lee": null},
+        {"index": 3, "donga_yoon": null, "icecream_park": "hot", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "coat", "chunjae_edu_lee": null},
+        {"index": 4, "donga_yoon": null, "icecream_park": "let", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "jacket", "chunjae_edu_lee": null},
+        {"index": 5, "donga_yoon": null, "icecream_park": "outside", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "on", "chunjae_edu_lee": null},
+        {"index": 6, "donga_yoon": null, "icecream_park": "raining", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "put", "chunjae_edu_lee": null},
+        {"index": 7, "donga_yoon": null, "icecream_park": "snowing", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "raining", "chunjae_edu_lee": null},
+        {"index": 8, "donga_yoon": null, "icecream_park": "weather", "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "sunny", "chunjae_edu_lee": null},
+        {"index": 9, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "snowing", "chunjae_edu_lee": null},
+        {"index": 10, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "there", "chunjae_edu_lee": null},
+        {"index": 11, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "wake", "chunjae_edu_lee": null},
+        {"index": 12, "donga_yoon": null, "icecream_park": null, "ybm_kim": null, "ybm_choi": null, "chunjae_text_kim": null, "chunjae_text_ham": "weather", "chunjae_edu_lee": null}
       ]
     }
   ]
