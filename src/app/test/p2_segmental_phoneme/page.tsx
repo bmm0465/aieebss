@@ -6,51 +6,60 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-interface MinimalPair {
-  word1: string;
-  word2: string;
-  correctAnswer: string;
+interface TestItem {
+  id: number;
+  type: 'minimal_pair' | 'phonics_letter';
+  position: 'initial' | 'final';
+  question?: string; // minimal_pair 타입용
+  target_word?: string; // phonics_letter 타입용
+  options: string[];
+  answer: string;
 }
 
-// [폴백] PSF 최소대립쌍 고정 문항
-// 천재교과서(함) 어휘 목록 분석 결과와 한국인이 헷갈려하는 음가를 반영
-const getFixedMinimalPairs = (): MinimalPair[] => {
-  const fixedPairs: MinimalPair[] = [
-    // 한국인이 헷갈려하는 음가 쌍 포함
-    // b/v 구분 (fine/five - n/v 차이로 v 음가 포함)
-    { word1: 'fine', word2: 'five', correctAnswer: 'fine' },
-    
-    // b/p 구분 (한국인은 둘 다 '브'로 발음하기 쉬움)
-    { word1: 'big', word2: 'pig', correctAnswer: 'big' },
-    { word1: 'book', word2: 'look', correctAnswer: 'book' }, // b/l 구분
-    
-    // p/f 구분 (한국인은 둘 다 '프'로 발음하기 쉬움)
-    { word1: 'pen', word2: 'ten', correctAnswer: 'pen' }, // p/t 구분
-    
-    // r/l 구분 (한국인이 가장 헷갈려하는 음가)
-    { word1: 'king', word2: 'ring', correctAnswer: 'king' }, // k/r 구분
-    
-    // 천재교과서(함) 어휘 목록에서 추출한 최소대립쌍
-    { word1: 'cat', word2: 'hat', correctAnswer: 'cat' }, // c/h 구분
-    { word1: 'sit', word2: 'six', correctAnswer: 'sit' }, // t/x 구분
-    { word1: 'that', word2: 'what', correctAnswer: 'that' }, // t/w 구분
-    { word1: 'can', word2: 'cat', correctAnswer: 'can' }, // n/t 구분
-    { word1: 'go', word2: 'no', correctAnswer: 'go' }, // g/n 구분
-    { word1: 'do', word2: 'go', correctAnswer: 'do' }, // d/g 구분
-    { word1: 'how', word2: 'now', correctAnswer: 'how' }, // h/n 구분
-    
-    // 기타 교육적으로 유용한 최소대립쌍
-    { word1: 'at', word2: 'it', correctAnswer: 'at' }, // a/i 구분
-    { word1: 'in', word2: 'it', correctAnswer: 'in' }, // n/t 구분
-    { word1: 'be', word2: 'he', correctAnswer: 'be' }, // b/h 구분
-    { word1: 'nice', word2: 'nine', correctAnswer: 'nice' }, // c/n 구분
-    { word1: 'ring', word2: 'sing', correctAnswer: 'ring' }, // r/s 구분
-    { word1: 'she', word2: 'the', correctAnswer: 'she' }, // s/t 구분
-    { word1: 'cow', word2: 'how', correctAnswer: 'cow' }, // c/h 구분
-    { word1: 'cow', word2: 'now', correctAnswer: 'cow' }, // c/n 구분
-    { word1: 'not', word2: 'now', correctAnswer: 'not' }, // t/w 구분
+// [폴백] 고정 문항 데이터
+const getFixedTestItems = (): TestItem[] => {
+  return [
+    { id: 1, type: 'minimal_pair', position: 'initial', question: 'big / pig', options: ['big', 'pig'], answer: 'big' },
+    { id: 2, type: 'phonics_letter', position: 'initial', target_word: 'apple', options: ['a', 'b', 'c'], answer: 'a' },
+    { id: 3, type: 'minimal_pair', position: 'initial', question: 'cow / how', options: ['cow', 'how'], answer: 'cow' },
+    { id: 4, type: 'phonics_letter', position: 'final', target_word: 'ball', options: ['r', 'l', 'b'], answer: 'l' },
+    { id: 5, type: 'minimal_pair', position: 'final', question: 'fine / five', options: ['fine', 'five'], answer: 'fine' },
+    { id: 6, type: 'phonics_letter', position: 'final', target_word: 'dog', options: ['k', 'h', 'g'], answer: 'g' },
+    { id: 7, type: 'minimal_pair', position: 'initial', question: 'book / look', options: ['book', 'look'], answer: 'book' },
+    { id: 8, type: 'phonics_letter', position: 'initial', target_word: 'game', options: ['j', 'g', 'h'], answer: 'g' },
+    { id: 9, type: 'minimal_pair', position: 'initial', question: 'pen / ten', options: ['pen', 'ten'], answer: 'pen' },
+    { id: 10, type: 'phonics_letter', position: 'initial', target_word: 'jump', options: ['g', 'j', 'z'], answer: 'j' },
+    { id: 11, type: 'minimal_pair', position: 'initial', question: 'king / ring', options: ['king', 'ring'], answer: 'king' },
+    { id: 12, type: 'phonics_letter', position: 'initial', target_word: 'wind', options: ['u', 'y', 'w'], answer: 'w' },
+    { id: 13, type: 'minimal_pair', position: 'initial', question: 'cat / hat', options: ['cat', 'hat'], answer: 'cat' },
+    { id: 14, type: 'phonics_letter', position: 'initial', target_word: 'door', options: ['t', 'd', 'b'], answer: 'd' },
+    { id: 15, type: 'minimal_pair', position: 'final', question: 'sit / six', options: ['sit', 'six'], answer: 'sit' },
+    { id: 16, type: 'phonics_letter', position: 'initial', target_word: 'right', options: ['r', 'l', 'y'], answer: 'r' },
+    { id: 17, type: 'minimal_pair', position: 'initial', question: 'that / what', options: ['that', 'what'], answer: 'that' },
+    { id: 18, type: 'phonics_letter', position: 'initial', target_word: 'tape', options: ['f', 't', 'p'], answer: 't' },
+    { id: 19, type: 'minimal_pair', position: 'final', question: 'can / cat', options: ['can', 'cat'], answer: 'can' },
+    { id: 20, type: 'phonics_letter', position: 'final', target_word: 'pink', options: ['t', 'c', 'k'], answer: 'k' },
+    { id: 21, type: 'minimal_pair', position: 'initial', question: 'go / no', options: ['go', 'no'], answer: 'go' },
+    { id: 22, type: 'phonics_letter', position: 'initial', target_word: 'potato', options: ['p', 'f', 't'], answer: 'p' },
+    { id: 23, type: 'minimal_pair', position: 'initial', question: 'how / now', options: ['how', 'now'], answer: 'how' },
+    { id: 24, type: 'phonics_letter', position: 'initial', target_word: 'violin', options: ['b', 'u', 'v'], answer: 'v' },
+    { id: 25, type: 'minimal_pair', position: 'initial', question: 'do / go', options: ['do', 'go'], answer: 'do' },
+    { id: 26, type: 'phonics_letter', position: 'final', target_word: 'swim', options: ['n', 'r', 'm'], answer: 'm' },
+    { id: 27, type: 'minimal_pair', position: 'initial', question: 'at / it', options: ['at', 'it'], answer: 'at' },
+    { id: 28, type: 'phonics_letter', position: 'final', target_word: 'cup', options: ['p', 'b', 'f'], answer: 'p' },
+    { id: 29, type: 'minimal_pair', position: 'final', question: 'in / it', options: ['in', 'it'], answer: 'in' },
+    { id: 30, type: 'phonics_letter', position: 'final', target_word: 'robot', options: ['d', 't', 'k'], answer: 't' },
+    { id: 31, type: 'minimal_pair', position: 'initial', question: 'be / he', options: ['be', 'he'], answer: 'be' },
+    { id: 32, type: 'phonics_letter', position: 'final', target_word: 'ten', options: ['m', 'n', 'l'], answer: 'n' },
+    { id: 33, type: 'minimal_pair', position: 'final', question: 'nice / nine', options: ['nice', 'nine'], answer: 'nice' },
+    { id: 34, type: 'phonics_letter', position: 'initial', target_word: 'zebra', options: ['j', 's', 'z'], answer: 'z' },
+    { id: 35, type: 'minimal_pair', position: 'initial', question: 'ring / sing', options: ['ring', 'sing'], answer: 'ring' },
+    { id: 36, type: 'phonics_letter', position: 'initial', target_word: 'egg', options: ['a', 'e', 'i'], answer: 'e' },
+    { id: 37, type: 'minimal_pair', position: 'initial', question: 'she / the', options: ['she', 'the'], answer: 'she' },
+    { id: 38, type: 'phonics_letter', position: 'final', target_word: 'red', options: ['t', 'b', 'd'], answer: 'd' },
+    { id: 39, type: 'minimal_pair', position: 'final', question: 'not / now', options: ['not', 'now'], answer: 'not' },
+    { id: 40, type: 'phonics_letter', position: 'initial', target_word: 'monkey', options: ['n', 'w', 'm'], answer: 'm' },
   ];
-  return fixedPairs;
 };
 
 export default function PsfTestPage() {
@@ -58,9 +67,9 @@ export default function PsfTestPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [phase, setPhase] = useState('ready');
-  const [pairs, setPairs] = useState<MinimalPair[]>([]);
-  const [pairIndex, setPairIndex] = useState(0);
-  const [currentPair, setCurrentPair] = useState<MinimalPair | null>(null);
+  const [items, setItems] = useState<TestItem[]>([]);
+  const [itemIndex, setItemIndex] = useState(0);
+  const [currentItem, setCurrentItem] = useState<TestItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [timeLeft, setTimeLeft] = useState(60);
@@ -85,25 +94,26 @@ export default function PsfTestPage() {
         if (dbItems && Array.isArray(dbItems.items)) {
           // DB에서 가져온 문항 사용
           console.log('[p2_segmental_phoneme] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setPairs(dbItems.items as MinimalPair[]);
+          setItems(dbItems.items as TestItem[]);
         } else {
           // 폴백: 고정 문항 사용
           console.log('[p2_segmental_phoneme] 승인된 문항이 없어 기본 문항 사용');
-          setPairs(getFixedMinimalPairs());
+          setItems(getFixedTestItems());
         }
       } catch (error) {
         console.error('[p2_segmental_phoneme] 문항 로딩 오류, 기본 문항 사용:', error);
-        setPairs(getFixedMinimalPairs());
+        setItems(getFixedTestItems());
       }
     };
     setup();
   }, [router, supabase.auth]);
 
-  const playWordAudio = useCallback(async (word: string) => {
+  const playWordAudio = useCallback(async (word: string, itemType?: 'minimal_pair' | 'phonics_letter') => {
     setIsAudioLoading(true);
     try {
-      // p2_segmental_phoneme 폴더의 mp3 파일 사용
-      const audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
+      // 타입에 따라 다른 폴더에서 음성 파일 로드
+      const folder = itemType === 'phonics_letter' ? 'first-last-phoneme' : 'minimal-pairs';
+      const audioPath = `/audio/p2_segmental_phoneme/${folder}/${word.toLowerCase()}.mp3`;
       const audio = new Audio(audioPath);
       
       await new Promise<void>((resolve, reject) => {
@@ -147,19 +157,27 @@ export default function PsfTestPage() {
   }, []);
 
   const playCorrectAnswer = useCallback(async () => {
-    if (!currentPair) return;
-    setFeedback('정답 단어를 들어보세요...');
+    if (!currentItem) return;
+    setFeedback('정답을 들어보세요...');
     setIsAudioLoading(true);
     
-    // 정답 단어만 재생
-    await playWordAudio(currentPair.correctAnswer);
+    // 타입에 따라 다른 단어 재생
+    if (currentItem.type === 'minimal_pair') {
+      // minimal_pair: 정답 단어 재생
+      await playWordAudio(currentItem.answer, 'minimal_pair');
+    } else {
+      // phonics_letter: target_word 재생
+      if (currentItem.target_word) {
+        await playWordAudio(currentItem.target_word, 'phonics_letter');
+      }
+    }
     
-    setFeedback('들어본 단어를 선택해주세요.');
+    setFeedback('들어본 내용을 선택해주세요.');
     setIsAudioLoading(false);
-  }, [currentPair, playWordAudio]);
+  }, [currentItem, playWordAudio]);
 
   const handleAnswerSelect = async (answer: string) => {
-    if (isSubmitting || !currentPair || !user) return;
+    if (isSubmitting || !currentItem || !user) return;
     
     setSelectedAnswer(answer);
     setIsSubmitting(true);
@@ -173,15 +191,24 @@ export default function PsfTestPage() {
         return;
       }
 
+      // 타입에 따라 다른 형식으로 제출
+      let question: string;
+      if (currentItem.type === 'minimal_pair') {
+        question = currentItem.question || '';
+      } else {
+        question = currentItem.target_word || '';
+      }
+
       const response = await fetch('/api/submit-p2_segmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          question: `${currentPair.word1}|${currentPair.word2}`,
+          question: question,
           selectedAnswer: answer,
-          correctAnswer: currentPair.correctAnswer,
+          correctAnswer: currentItem.answer,
           userId: user.id,
           authToken: authUser.id,
+          itemType: currentItem.type,
         }),
       });
 
@@ -196,7 +223,7 @@ export default function PsfTestPage() {
       setFeedback('좋아요! 다음 문제예요.');
       
       setTimeout(() => {
-        goToNextPair();
+        goToNextItem();
       }, 500);
     } catch (error) {
       console.error('[p2_segmental_phoneme] 제출 오류:', error);
@@ -205,13 +232,13 @@ export default function PsfTestPage() {
     }
   };
 
-  const goToNextPair = () => {
-    const nextIndex = pairIndex + 1;
-    if (nextIndex >= pairs.length) {
+  const goToNextItem = () => {
+    const nextIndex = itemIndex + 1;
+    if (nextIndex >= items.length) {
       setPhase('finished');
     } else {
-      setPairIndex(nextIndex);
-      setCurrentPair(pairs[nextIndex]);
+      setItemIndex(nextIndex);
+      setCurrentItem(items[nextIndex]);
       setSelectedAnswer(null);
       setIsSubmitting(false);
       setFeedback('');
@@ -219,7 +246,7 @@ export default function PsfTestPage() {
   };
 
   const handleSkip = async () => {
-    if (isSubmitting || !currentPair || !user) return;
+    if (isSubmitting || !currentItem || !user) return;
     
     setIsSubmitting(true);
     setFeedback('넘어가는 중...');
@@ -232,19 +259,27 @@ export default function PsfTestPage() {
         return;
       }
 
-      // 잘못된 답안으로 저장 (첫 번째 단어를 선택한 것으로 처리)
-      const wrongAnswer = currentPair.word1 === currentPair.correctAnswer ? currentPair.word2 : currentPair.word1;
+      // 잘못된 답안으로 저장 (첫 번째 옵션을 선택한 것으로 처리)
+      const wrongAnswer = currentItem.options[0] === currentItem.answer ? currentItem.options[1] : currentItem.options[0];
+      
+      let question: string;
+      if (currentItem.type === 'minimal_pair') {
+        question = currentItem.question || '';
+      } else {
+        question = currentItem.target_word || '';
+      }
       
       const response = await fetch('/api/submit-p2_segmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          question: `${currentPair.word1}|${currentPair.word2}`,
+          question: question,
           selectedAnswer: wrongAnswer,
-          correctAnswer: currentPair.correctAnswer,
+          correctAnswer: currentItem.answer,
           userId: user.id,
           authToken: authUser.id,
           skip: true, // 넘어가기 플래그
+          itemType: currentItem.type,
         }),
       });
 
@@ -256,7 +291,7 @@ export default function PsfTestPage() {
       setFeedback('다음 문제로 넘어갑니다.');
       
       setTimeout(() => {
-        goToNextPair();
+        goToNextItem();
       }, 500);
     } catch (error) {
       console.error('[p2_segmental_phoneme] 넘어가기 오류:', error);
@@ -266,10 +301,10 @@ export default function PsfTestPage() {
   };
 
   useEffect(() => {
-    if (phase === 'testing' && pairs.length > 0 && pairIndex < pairs.length) {
-      setCurrentPair(pairs[pairIndex]);
+    if (phase === 'testing' && items.length > 0 && itemIndex < items.length) {
+      setCurrentItem(items[itemIndex]);
     }
-  }, [phase, pairs, pairIndex]);
+  }, [phase, items, itemIndex]);
 
   useEffect(() => {
     if (phase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -293,9 +328,9 @@ export default function PsfTestPage() {
 
   const handleStartTest = () => {
     setPhase('testing');
-    setPairIndex(0);
+    setItemIndex(0);
     setTimeLeft(60);
-    setCurrentPair(pairs[0]);
+    setCurrentItem(items[0]);
   };
 
   // --- 스타일 정의 ---
@@ -425,8 +460,13 @@ export default function PsfTestPage() {
           </div>
         )}
 
-        {phase === 'testing' && currentPair && (
+        {phase === 'testing' && currentItem && (
           <div>
+            {currentItem.type === 'phonics_letter' && currentItem.target_word && (
+              <div style={{ marginBottom: '1rem', fontSize: '1.2rem', fontWeight: '600', color: '#4b5563' }}>
+                단어: {currentItem.target_word}
+              </div>
+            )}
             <button
               onClick={playCorrectAnswer}
               style={{
@@ -442,25 +482,44 @@ export default function PsfTestPage() {
               }}
               disabled={isAudioLoading || isSubmitting}
             >
-              {isAudioLoading ? '재생 중...' : '🔊 단어 듣기'}
+              {isAudioLoading ? '재생 중...' : '🔊 듣기'}
             </button>
-            <p style={feedbackStyle}>{feedback || '단어를 듣고 선택해주세요.'}</p>
+            <p style={feedbackStyle}>{feedback || (currentItem.type === 'minimal_pair' ? '단어를 듣고 선택해주세요.' : '알파벳을 선택해주세요.')}</p>
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
-                <button
-                  onClick={() => handleAnswerSelect(currentPair.word1)}
-                  style={selectedAnswer === currentPair.word1 ? selectedWordButtonStyle : wordButtonStyle}
-                  disabled={isSubmitting || isAudioLoading}
-                >
-                  {currentPair.word1}
-                </button>
-                <button
-                  onClick={() => handleAnswerSelect(currentPair.word2)}
-                  style={selectedAnswer === currentPair.word2 ? selectedWordButtonStyle : wordButtonStyle}
-                  disabled={isSubmitting || isAudioLoading}
-                >
-                  {currentPair.word2}
-                </button>
+                {currentItem.type === 'minimal_pair' ? (
+                  // minimal_pair: 두 단어 버튼
+                  <>
+                    <button
+                      onClick={() => handleAnswerSelect(currentItem.options[0])}
+                      style={selectedAnswer === currentItem.options[0] ? selectedWordButtonStyle : wordButtonStyle}
+                      disabled={isSubmitting || isAudioLoading}
+                    >
+                      {currentItem.options[0]}
+                    </button>
+                    <button
+                      onClick={() => handleAnswerSelect(currentItem.options[1])}
+                      style={selectedAnswer === currentItem.options[1] ? selectedWordButtonStyle : wordButtonStyle}
+                      disabled={isSubmitting || isAudioLoading}
+                    >
+                      {currentItem.options[1]}
+                    </button>
+                  </>
+                ) : (
+                  // phonics_letter: 알파벳 버튼들
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', width: '100%' }}>
+                    {currentItem.options.map((option, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleAnswerSelect(option)}
+                        style={selectedAnswer === option ? selectedWordButtonStyle : wordButtonStyle}
+                        disabled={isSubmitting || isAudioLoading}
+                      >
+                        {option.toUpperCase()}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <button

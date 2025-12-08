@@ -105,7 +105,8 @@ function loadChunjaeTextHamWords(): string[] {
 async function generateAudioFile(
   text: string,
   outputPath: string,
-  description: string
+  description: string,
+  customInstructions?: string
 ): Promise<boolean> {
   try {
     console.log(`⏳ "${text}" (${description}) 생성 중...`);
@@ -114,16 +115,21 @@ async function generateAudioFile(
     // OpenAI TTS API의 instructions 파라미터로 속도 제어 가능
     // 알파벳 음가의 경우 letter sound만 발음하도록 추가 지시
     const isAlphabetSound = description.includes('알파벳');
-    const speedInstruction = isAlphabetSound
+    let speedInstruction = isAlphabetSound
       ? "Pronounce only the letter sound (phoneme), not the letter name. Speak very slowly and clearly, emphasizing each sound distinctly. This is for beginner English learners."
       : "Speak slowly and clearly. This is for beginner English learners who are hearing English for the first time in public education. Pronounce each sound distinctly and at a slower pace than normal conversation.";
+    
+    // 커스텀 instructions가 있으면 추가
+    if (customInstructions) {
+      speedInstruction += " " + customInstructions;
+    }
     
     const mp3 = await openai.audio.speech.create({
       model: "gpt-4o-mini-tts",
       voice: "alloy",
       input: text,
       instructions: speedInstruction,
-      speed: 0.8,
+      speed: 1.0,
     });
     
     const buffer = Buffer.from(await mp3.arrayBuffer());
@@ -335,36 +341,214 @@ async function regenerateSpecificWords(words: string[]) {
   console.log(`❌ 실패: ${failCount}개`);
 }
 
-// 실행
-// 특정 단어만 재생성하려면 아래 배열에 단어를 추가하고 REGENERATE_MODE를 true로 설정
-const REGENERATE_MODE = true;
-const WORDS_TO_REGENERATE = ['ten'];
-
-if (REGENERATE_MODE) {
-  regenerateSpecificWords(WORDS_TO_REGENERATE)
-    .then(() => {
-      console.log('\n🎉 단어 재생성 완료!');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('\n💥 스크립트 실행 오류:', error);
-      process.exit(1);
-    });
-} else {
-  // 테스트 모드: 각각 5개씩만 생성
-  const TEST_MODE = false; // false로 변경하면 전체 생성
-
-  generateAllAudioFiles(TEST_MODE)
-    .then(() => {
-      console.log('\n🎉 모든 오디오 파일 생성 완료!');
-      if (TEST_MODE) {
-        console.log('💡 테스트 모드였습니다. 전체 생성을 원하시면 TEST_MODE를 false로 변경하세요.');
-      }
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('\n💥 스크립트 실행 오류:', error);
-      process.exit(1);
-    });
+/**
+ * 텍스트에서 영어 단어 추출
+ * 형식: (첫/끝) 단어 \n 선택지들
+ */
+function extractWordsFromText(text: string): string[] {
+  const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const words: string[] = [];
+  
+  for (const line of lines) {
+    // (첫) 또는 (끝) 다음에 오는 영어 단어 추출
+    const match = line.match(/^\([^)]+\)\s+([a-zA-Z]+)/);
+    if (match && match[1]) {
+      words.push(match[1].toLowerCase());
+    }
+  }
+  
+  return words;
 }
+
+/**
+ * 단어별 특별 발음 지시사항
+ */
+function getCustomInstructions(word: string): string | undefined {
+  const wordLower = word.toLowerCase();
+  
+  // game: 앞에 g가 제대로 발음이 안됨
+  if (wordLower === 'game') {
+    return "Pronounce the initial 'g' sound very clearly and distinctly. Make sure the 'g' sound is fully articulated before moving to the 'ame' part. The 'g' should be a clear voiced velar stop sound.";
+  }
+  
+  // ball: 앞에 b가 제대로 발음이 안됨
+  if (wordLower === 'ball') {
+    return "Pronounce the initial 'b' sound very clearly and distinctly. Make sure the 'b' sound is fully articulated with the lips before moving to the 'all' part. The 'b' should be a clear voiced bilabial stop sound.";
+  }
+  
+  // potato: po와 tato 사이가 텀이 있음
+  if (wordLower === 'potato') {
+    return "Pronounce the word as one continuous flow without any pause between 'po' and 'tato'. The word should be spoken smoothly and naturally without any break or hesitation in the middle.";
+  }
+  
+  return undefined;
+}
+
+/**
+ * 단어 오디오 파일 생성 (폴더 지정 가능)
+ * @param words - 생성할 단어 목록
+ * @param folderName - 저장할 폴더명 (기본값: 'minimal-pairs')
+ */
+async function generateMinimalPairs(words: string[], folderName: string = 'minimal-pairs') {
+  console.log(`\n🎤 오디오 파일 생성 시작...`);
+  console.log(`폴더: ${folderName}`);
+  console.log(`단어 목록: ${words.join(', ')}\n`);
+  
+  const outputDir = path.join(process.cwd(), 'public', 'audio', 'p2_segmental_phoneme', folderName);
+  
+  let successCount = 0;
+  let failCount = 0;
+  const fileList: Array<{ word: string; file: string }> = [];
+  
+  for (const word of words) {
+    // 파일명에 사용할 수 없는 문자 제거
+    const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+    const fileName = `${safeFileName}.mp3`;
+    const filePath = path.join(outputDir, fileName);
+    
+    // 단어별 특별 발음 지시사항 가져오기
+    const customInstructions = getCustomInstructions(word);
+    
+    const success = await generateAudioFile(word, filePath, `단어: ${word}`, customInstructions);
+    
+    if (success) {
+      successCount++;
+      fileList.push({
+        word,
+        file: `/audio/p2_segmental_phoneme/${folderName}/${fileName}`
+      });
+    } else {
+      failCount++;
+    }
+    
+    // API 레이트 리밋 방지를 위해 딜레이
+    await new Promise(resolve => setTimeout(resolve, 300));
+  }
+  
+  // 인덱스 파일 생성
+  const indexFile = path.join(outputDir, 'index.json');
+  fs.writeFileSync(indexFile, JSON.stringify(fileList, null, 2));
+  console.log(`📝 인덱스 파일 생성: ${indexFile}`);
+  
+  // 총 파일 크기 계산
+  let totalSize = 0;
+  fileList.forEach(({ file }) => {
+    const fullPath = path.join(process.cwd(), 'public', file);
+    if (fs.existsSync(fullPath)) {
+      const stats = fs.statSync(fullPath);
+      totalSize += stats.size;
+    }
+  });
+  
+  const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2);
+  
+  console.log(`\n📊 생성 완료:`);
+  console.log(`✅ 성공: ${successCount}개`);
+  console.log(`❌ 실패: ${failCount}개`);
+  console.log(`💾 총 용량: ${totalSizeMB} MB`);
+  
+  return { successCount, failCount, fileList };
+}
+
+// 실행
+// 텍스트에서 영어 단어 추출
+const TEXT_WITH_WORDS = `(첫) apple 
+
+a / b / c
+
+(끝) ball
+
+r / l / b
+
+(끝) dog
+
+k / h / g
+
+(첫) game
+
+j / g / h 
+
+(첫) jump
+
+g / j / z
+
+(첫) wind
+
+u / y / w
+
+(첫) door
+
+t / d / b
+
+(첫) right
+
+r / l / y
+
+(첫) tape
+
+f / t / p
+
+(끝) pink
+
+t / c / k
+
+(첫) potato
+
+p / f / t
+
+(첫) violin
+
+b / u / v
+
+(끝) swim
+
+n / r / m
+
+(끝) cup
+
+p / b / f
+
+(끝) robot
+
+d / t / k
+
+(끝) ten
+
+m / n / l
+
+(첫) zebra
+
+j / s / z
+
+(첫) egg
+
+a / e / i
+
+(끝) red
+
+t / b / d
+
+(첫) monkey
+
+n / w / m`;
+
+// 특정 단어만 재생성
+const MINIMAL_PAIRS_WORDS = [
+  'game',
+  'ball',
+  'pink',
+  'potato'
+];
+
+console.log(`📝 생성할 단어: ${MINIMAL_PAIRS_WORDS.join(', ')}\n`);
+
+generateMinimalPairs(MINIMAL_PAIRS_WORDS, 'first-last-phoneme')
+  .then(() => {
+    console.log('\n🎉 오디오 파일 생성 완료!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('\n💥 스크립트 실행 오류:', error);
+    process.exit(1);
+  });
 
