@@ -724,7 +724,6 @@ export default function ComprehensionTestPage() {
     setItemIndex(0);
     setTimeLeft(60);
     setCurrentItem(items[0]);
-    setRepeatCount(0);
   };
 
   // --- 스타일 정의 ---
