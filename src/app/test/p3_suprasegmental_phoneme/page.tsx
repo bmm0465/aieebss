@@ -552,30 +552,9 @@ export default function StressTestPage() {
                 {currentItem.word}
               </div>
               
-              {/* 모르겠음 버튼 */}
-              <button
-                onClick={() => {
-                  setSelectedAnswer('모르겠음');
-                  setSelectedStressPosition(-1); // -1을 모르겠음으로 사용
-                }}
-                style={{
-                  ...buttonStyle,
-                  maxWidth: '250px',
-                  marginTop: '1rem',
-                  backgroundColor: selectedAnswer === '모르겠음' 
-                    ? '#10b981' 
-                    : '#6366f1',
-                  fontSize: '1.2rem',
-                  minHeight: '60px',
-                }}
-                disabled={isSubmitting || isAudioLoading}
-              >
-                모르겠음
-              </button>
-              
               <div style={{ position: 'relative', width: '100%', marginTop: '2rem' }}>
-                {/* 제출 버튼 - selectedStressPosition이 설정되거나 모르겠음이 선택되면 표시 */}
-                {(selectedStressPosition !== null || selectedAnswer === '모르겠음') && (
+                {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
+                {selectedStressPosition !== null && (
                   <button
                     onClick={handleSubmit}
                     style={{

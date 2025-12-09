@@ -724,23 +724,6 @@ export default function MeaningTestPage() {
                     )}
                   </button>
                 ))}
-                {/* 모르겠음 버튼 */}
-                <button
-                  onClick={() => handleAnswerSelect('모르겠음')}
-                  style={{
-                    ...(selectedAnswer === '모르겠음' ? selectedChoiceButtonStyle : choiceButtonStyle),
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    minHeight: '200px',
-                    fontSize: '1.5rem',
-                  }}
-                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
-                >
-                  모르겠음
-                </button>
               </div>
               
               <button

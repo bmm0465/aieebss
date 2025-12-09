@@ -25,7 +25,6 @@ export async function POST(request: Request) {
     const serviceClient = createServiceClient();
     const isCorrect = selectedAnswer === correctAnswer;
     const isSkip = skip === true; // 넘어가기 플래그
-    const isUnknown = selectedAnswer === '모르겠음'; // 모르겠음 선택 플래그
 
     // test_results에 저장
     const { data: insertData, error: insertError } = await serviceClient.from('test_results').insert({
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
       correct_answer: correctAnswer,
       is_correct: isCorrect,
       accuracy: isCorrect ? 100 : 0,
-      error_type: isSkip ? 'Skipped' : (isUnknown ? 'Unknown' : null),
+      error_type: isSkip ? 'Skipped' : null,
     }).select();
 
     if (insertError) {

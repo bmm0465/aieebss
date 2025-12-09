@@ -877,9 +877,7 @@ export default function ComprehensionTestPage() {
             <div style={{ marginBottom: '2rem' }}>
               <button
                 onClick={() => {
-                  const repeat = repeatCount < 2 ? repeatCount + 1 : 1;
-                  setRepeatCount(repeat);
-                  playStoryAudio(currentItem, repeat);
+                  playStoryAudio(currentItem, 1);
                 }}
                 style={{
                   ...buttonStyle,
@@ -890,7 +888,7 @@ export default function ComprehensionTestPage() {
                 }}
                 disabled={isAudioLoading || isSubmitting}
               >
-                {isAudioLoading ? '재생 중...' : `🔊 듣기${repeatCount > 0 ? ` (${repeatCount}회 반복)` : ''}`}
+                {isAudioLoading ? '재생 중...' : '🔊 다시 듣기'}
               </button>
               <button
                 onClick={() => setShowText(!showText)}
@@ -978,22 +976,6 @@ export default function ComprehensionTestPage() {
                     )}
                   </button>
                 ))}
-                {/* 모르겠음 버튼 */}
-                <button
-                  onClick={() => handleAnswerSelect('모르겠음')}
-                  style={{
-                    ...(selectedAnswer === '모르겠음' ? selectedChoiceButtonStyle : choiceButtonStyle),
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem',
-                    fontSize: '1.5rem',
-                  }}
-                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
-                >
-                  모르겠음
-                </button>
               </div>
               
               <button

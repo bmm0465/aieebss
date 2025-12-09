@@ -844,12 +844,33 @@ function ChoiceTestAudioPlayer({
       if (testType === 'p2_segmental_phoneme') {
         audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
       } else if (testType === 'p3_suprasegmental_phoneme') {
-        audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`; // 3교시도 같은 폴더 사용
+        // 3교시는 p3_suprasegmental_phoneme 또는 stress 폴더 사용 (아래에서 두 경로 모두 확인)
+        audioPath = `/audio/p3_suprasegmental_phoneme/${word.toLowerCase()}.mp3`;
       } else if (testType === 'p5_vocabulary') {
-        audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
+        const textToFileName = (text: string): string => {
+          return text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '') // 특수문자 제거
+            .replace(/\s+/g, '_') // 공백을 언더스코어로
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '')
+            .slice(0, 50);
+        };
+        const fileName = textToFileName(word);
+        audioPath = `/audio/p5_vocabulary/${fileName}.mp3`;
       } else if (testType === 'p6_comprehension') {
-        const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
-        audioPath = `/audio/comprehension/${safeFileName}.mp3`;
+        // 6교시는 선택지 단어의 음성 파일이므로 p6_comprehension 폴더 사용
+        const textToFileName = (text: string): string => {
+          return text
+            .toLowerCase()
+            .replace(/[^a-z0-9\s]/g, '')
+            .replace(/\s+/g, '_')
+            .replace(/_+/g, '_')
+            .replace(/^_|_$/g, '')
+            .slice(0, 50);
+        };
+        const fileName = textToFileName(word);
+        audioPath = `/audio/p6_comprehension/${fileName}.mp3`;
       }
 
       // TTS 재생 함수
@@ -909,7 +930,20 @@ function ChoiceTestAudioPlayer({
       if (audioPath) {
         // 먼저 파일 존재 여부 확인
         try {
-          const headResponse = await fetch(audioPath, { method: 'HEAD' });
+          let headResponse = await fetch(audioPath, { method: 'HEAD' });
+          
+          // p3의 경우 두 경로 모두 확인
+          if (!headResponse.ok && testType === 'p3_suprasegmental_phoneme') {
+            const fallbackPath = `/audio/stress/${word.toLowerCase()}.mp3`;
+            try {
+              headResponse = await fetch(fallbackPath, { method: 'HEAD' });
+              if (headResponse.ok) {
+                audioPath = fallbackPath;
+              }
+            } catch {
+              // fallback 경로 확인 실패, 계속 진행
+            }
+          }
           
           if (headResponse.ok) {
             // 파일이 존재하면 재생 시도
@@ -1044,14 +1078,38 @@ function P6DialogueAudioPlayer({
     return parts[0] || null;
   }, [question]);
 
-  // 대화를 speaker1과 speaker2로 분리
+  // 대화를 speaker1(A)과 speaker2(B)로 분리
   const speakers = React.useMemo(() => {
     if (!dialoguePart) return { speaker1: null, speaker2: null };
+    
+    // "A: ..." 또는 "Speaker 1: ..." 형식 처리
     const lines = dialoguePart.split('\n').filter(line => line.trim());
-    if (lines.length >= 2) {
-      return { speaker1: lines[0].trim(), speaker2: lines[1].trim() };
-    } else if (lines.length === 1) {
-      return { speaker1: lines[0].trim(), speaker2: null };
+    const extractedLines: string[] = [];
+    
+    for (const line of lines) {
+      // "A: ...", "B: ..." 형식에서 텍스트 추출
+      const aMatch = line.match(/^A:\s*(.+)$/i);
+      const bMatch = line.match(/^B:\s*(.+)$/i);
+      const speaker1Match = line.match(/^Speaker\s*1:\s*(.+)$/i);
+      const speaker2Match = line.match(/^Speaker\s*2:\s*(.+)$/i);
+      
+      if (aMatch || speaker1Match) {
+        extractedLines.push((aMatch?.[1] || speaker1Match?.[1] || '').trim());
+      } else if (bMatch || speaker2Match) {
+        extractedLines.push((bMatch?.[1] || speaker2Match?.[1] || '').trim());
+      } else if (extractedLines.length === 0 && line.trim()) {
+        // 첫 번째 비어있지 않은 줄은 speaker1로
+        extractedLines.push(line.trim());
+      } else if (extractedLines.length === 1 && line.trim()) {
+        // 두 번째 비어있지 않은 줄은 speaker2로
+        extractedLines.push(line.trim());
+      }
+    }
+    
+    if (extractedLines.length >= 2) {
+      return { speaker1: extractedLines[0], speaker2: extractedLines[1] };
+    } else if (extractedLines.length === 1) {
+      return { speaker1: extractedLines[0], speaker2: null };
     }
     return { speaker1: null, speaker2: null };
   }, [dialoguePart]);
@@ -1084,12 +1142,12 @@ function P6DialogueAudioPlayer({
   // 단일 음성 파일 재생
   const playSingleAudio = React.useCallback(async (
     text: string, 
-    speakerFolder: 'p6_speaker1' | 'p6_speaker2'
+    speaker: 'A' | 'B'
   ): Promise<void> => {
     if (!text) return;
 
     const fileName = `${textToFileName(text)}.mp3`;
-    const audioPath = `/audio/comprehension/${speakerFolder}/${fileName}`;
+    const audioPath = `/audio/p6_comprehension/${speaker}_${fileName}`;
 
     // 파일 존재 여부 확인
     let usePreGenerated = false;
@@ -1185,23 +1243,23 @@ function P6DialogueAudioPlayer({
     setIsPlaying(true);
 
     try {
-      // Speaker 1 재생
+      // Speaker A 재생
       if (speakers.speaker1) {
         try {
-          await playSingleAudio(speakers.speaker1, 'p6_speaker1');
+          await playSingleAudio(speakers.speaker1, 'A');
           // 화자 사이 간격
           if (speakers.speaker2) {
             await new Promise(resolve => setTimeout(resolve, 300));
           }
         } catch (error) {
-          console.warn('[P6DialogueAudioPlayer] Speaker 1 재생 실패:', error);
+          console.warn('[P6DialogueAudioPlayer] Speaker A 재생 실패:', error);
           // 계속 진행
         }
       }
 
-      // Speaker 2 재생
+      // Speaker B 재생
       if (speakers.speaker2) {
-        await playSingleAudio(speakers.speaker2, 'p6_speaker2');
+        await playSingleAudio(speakers.speaker2, 'B');
       }
     } catch (error) {
       console.error('[P6DialogueAudioPlayer] 대화 재생 에러:', error);

@@ -127,14 +127,33 @@ CRITICAL INSTRUCTIONS:
     const confidence = transcriptionData.confidence ?? 'medium';
     const aggregatedTranscript = transcriptionData.text || '';
 
+    // 타임라인의 총 음성 길이 계산
+    const totalSpeechDuration = timeline.reduce((sum, entry) => {
+      return sum + Math.max(0, (entry.end || 0) - (entry.start || 0));
+    }, 0);
+
     // 무음 감지 강화: 타임라인이 비어있거나 실제 음성 구간이 없는 경우
     const hasActualSpeech = timeline.length > 0 && timeline.some(entry => {
       const duration = (entry.end || 0) - (entry.start || 0);
       return duration > 0.1; // 최소 0.1초 이상의 음성 구간이 있어야 함
     });
 
-    // 전사 결과가 비어있거나 타임라인에 실제 음성이 없으면 무음으로 처리
-    if (!aggregatedTranscript.trim() || !hasActualSpeech) {
+    // 전사 결과 정리
+    const cleanedAnswer = aggregatedTranscript
+      ? aggregatedTranscript.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
+      : '';
+
+    // 무음 감지 조건 강화:
+    // 1. 전사 결과가 비어있거나
+    // 2. 타임라인에 실제 음성이 없거나
+    // 3. 총 음성 길이가 0.3초 미만이거나
+    // 4. 전사 결과가 있지만 총 음성 길이가 0.5초 미만이고 신뢰도가 낮은 경우
+    const isSilence = !aggregatedTranscript.trim() || 
+                     !hasActualSpeech || 
+                     totalSpeechDuration < 0.3 ||
+                     (totalSpeechDuration < 0.5 && confidence === 'low' && (!cleanedAnswer || cleanedAnswer.length < 2));
+
+    if (isSilence) {
       await supabase.from('test_results').insert({
         user_id: userId,
         test_type: 'p1_alphabet',
@@ -152,45 +171,13 @@ CRITICAL INSTRUCTIONS:
           },
         },
       });
-      console.log(`[p1_alphabet 무음 감지] 사용자: ${userId}, 문제: ${questionLetter}, 타임라인: ${timeline.length}개, 전사: "${aggregatedTranscript}"`);
+      console.log(`[p1_alphabet 무음 감지] 사용자: ${userId}, 문제: ${questionLetter}, 타임라인: ${timeline.length}개, 총 음성 길이: ${totalSpeechDuration.toFixed(2)}초, 신뢰도: ${confidence}, 전사: "${aggregatedTranscript}"`);
       return;
     }
 
-    const cleanedAnswer = aggregatedTranscript
-      ? aggregatedTranscript.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, '')
-      : '';
     const studentAnswerRaw = cleanedAnswer || 'no_response';
-
     const upperCaseQuestion = questionLetter.toUpperCase();
     const hesitationDetected = hasHesitation(timeline, HESITATION_THRESHOLD_SECONDS);
-
-    // 신뢰도가 낮고 타임라인에 실제 음성이 거의 없으면 오답 처리
-    const totalSpeechDuration = timeline.reduce((sum, entry) => {
-      return sum + Math.max(0, (entry.end || 0) - (entry.start || 0));
-    }, 0);
-
-    // 음성 구간이 0.3초 미만이면 너무 짧은 응답으로 간주
-    if (totalSpeechDuration < 0.3 && confidence === 'low') {
-      await supabase.from('test_results').insert({
-        user_id: userId,
-        test_type: 'p1_alphabet',
-        question: questionLetter,
-        correct_answer: questionLetter,
-        student_answer: studentAnswerRaw,
-        is_correct: false,
-        error_type: isSkip ? 'Skipped' : 'Omissions',
-        audio_url: audioUrl,
-        transcription_results: {
-          openai: {
-            text: transcriptionData.text,
-            confidence: transcriptionData.confidence,
-            timeline: transcriptionData.timeline,
-          },
-        },
-      });
-      console.log(`[p1_alphabet 짧은 응답 감지] 사용자: ${userId}, 문제: ${questionLetter}, 음성 길이: ${totalSpeechDuration.toFixed(2)}초, 신뢰도: ${confidence}`);
-      return;
-    }
 
     type LnfEvaluation = {
       final_score: 'correct' | 'incorrect';
@@ -226,8 +213,9 @@ Scoring rules:
 - CRITICAL: For letter 'D', only accept '디' (di) as correct Korean pronunciation. '드' (duh) is a letter sound and must be marked as incorrect. If the transcript shows 'D' but the pronunciation sounds like '드' (duh), mark it as incorrect.
 - CRITICAL: For letter 'I', only accept '아이' (ai) as correct Korean pronunciation. '이' (i) is a letter sound and must be marked as incorrect. However, note that '이' is correct for letter 'E', not for 'I'.
 - CRITICAL: For letter 'S', only accept '에스' (es) as correct Korean pronunciation. '스' (s) is a letter sound and must be marked as incorrect. If the transcript shows 'S' but the pronunciation sounds like '스' (s), mark it as incorrect.
-- CRITICAL: If the transcript shows a letter name (e.g., 'J', 'Q', 'R') but the timeline shows no actual speech segments or very short duration (< 0.2 seconds), mark as "Omissions" (incorrect). This indicates the transcription might be hallucinated or from background noise.
-- CRITICAL: If the transcript shows the correct letter name but the timeline segments are empty or show no meaningful speech, mark as "Omissions" (incorrect). Do not trust transcripts that have no corresponding speech segments.
+- CRITICAL: If the transcript shows a letter name (e.g., 'J', 'Q', 'R') but the timeline shows no actual speech segments or very short duration (< 0.3 seconds), mark as "Omissions" (incorrect). This indicates the transcription might be hallucinated or from background noise.
+- CRITICAL: If the transcript shows the correct letter name but the timeline segments are empty or show no meaningful speech (total speech duration < 0.3 seconds), mark as "Omissions" (incorrect). Do not trust transcripts that have no corresponding speech segments.
+- CRITICAL: If the total speech duration across all timeline segments is less than 0.3 seconds, always mark as "Omissions" (incorrect) regardless of the transcript content, as this indicates silence or insufficient audio input.
 - SPECIAL RULE for similar-sounding letters: For letters where the letter name and letter sound are phonetically similar (e.g., 'O': "oh" vs "ah", 'I': "eye/아이" vs "ih/이"), if the student's response is phonetically close to the letter name, accept it as correct. However, for 'I', '이' is NOT acceptable - only '아이' is correct.
 - IMPORTANT: When the transcript shows a single letter (e.g., 'D', 'S'), you must analyze the actual pronunciation from the audio context. If it sounds like a letter sound (e.g., '드', '스') rather than a letter name (e.g., '디', '에스'), mark it as incorrect.
 - Hesitation threshold is ${HESITATION_THRESHOLD_SECONDS} seconds from audio start to first meaningful attempt.
@@ -252,7 +240,10 @@ Letter sounds (incorrect category): ${JSON.stringify(letterSounds[upperCaseQuest
 ${similarLetterNames[upperCaseQuestion] ? `Note: This letter has similar-sounding name and sound. Similar names: ${JSON.stringify(similarLetterNames[upperCaseQuestion].names)}, similar sounds: ${JSON.stringify(similarLetterNames[upperCaseQuestion].sounds)}. If the response is phonetically close to the letter name, accept it as correct.` : ''}
 Aggregated transcript: ${aggregatedTranscript}
 Timeline JSON: ${timelineToPrompt(timeline)}
-Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
+Total speech duration: ${totalSpeechDuration.toFixed(2)} seconds
+Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}
+
+IMPORTANT: If total speech duration is less than 0.3 seconds, mark as "Omissions" (incorrect) regardless of transcript content.`,
             },
           ],
           response_format: { type: 'json_object' },
@@ -297,11 +288,12 @@ Hesitation threshold seconds: ${HESITATION_THRESHOLD_SECONDS}`,
     const matchesTargetByRecognizedForm = normalizedRecognizedForm && acceptedNamesNormalized.includes(normalizedRecognizedForm);
     
     // 전사 결과가 타겟과 일치하지 않으면 오답 처리 (오버라이드 방지)
+    // 총 음성 길이가 0.3초 미만이면 무음으로 간주하여 오버라이드하지 않음
     const shouldOverrideToCorrect =
       evaluation.final_score !== 'correct' &&
       matchesTargetLetter &&
       !hesitationDetected && // hesitation이 있으면 오버라이드 안 함
-      totalSpeechDuration >= 0.2; // 최소 음성 길이 확인
+      totalSpeechDuration >= 0.3; // 최소 음성 길이 확인 (0.3초 이상)
 
     // 전사 결과가 타겟 알파벳 이름과 전혀 다르면 오답으로 강제 설정
     if (evaluation.final_score === 'correct' && !matchesTargetLetter && !matchesTargetByRecognizedForm) {
