@@ -72,9 +72,10 @@ export default function PsfTestPage() {
   const [currentItem, setCurrentItem] = useState<TestItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const testStartTimeRef = React.useRef<number | null>(null); // 평가 시작 시간 기록
 
   useEffect(() => {
     const setup = async () => {
@@ -172,7 +173,18 @@ export default function PsfTestPage() {
       }
     }
     
-    setFeedback('들어본 내용을 선택해주세요.');
+    // 문항 유형에 따라 적절한 피드백 메시지 설정
+    if (currentItem.type === 'minimal_pair') {
+      setFeedback('들어본 내용을 선택해주세요.');
+    } else if (currentItem.type === 'phonics_letter') {
+      if (currentItem.position === 'initial') {
+        setFeedback('들어본 단어의 첫소리에 해당하는 알파벳을 선택해주세요.');
+      } else {
+        setFeedback('들어본 단어의 끝소리에 해당하는 알파벳을 선택해주세요.');
+      }
+    } else {
+      setFeedback('들어본 내용을 선택해주세요.');
+    }
     setIsAudioLoading(false);
   }, [currentItem, playWordAudio]);
 
@@ -199,6 +211,11 @@ export default function PsfTestPage() {
         question = currentItem.target_word || '';
       }
 
+      // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+      const elapsedSeconds = testStartTimeRef.current 
+        ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+        : 0;
+
       const response = await fetch('/api/submit-p2_segmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -209,6 +226,7 @@ export default function PsfTestPage() {
           userId: user.id,
           authToken: authUser.id,
           itemType: currentItem.type,
+          timeTaken: elapsedSeconds,
         }),
       });
 
@@ -280,6 +298,9 @@ export default function PsfTestPage() {
           authToken: authUser.id,
           skip: true, // 넘어가기 플래그
           itemType: currentItem.type,
+          timeTaken: testStartTimeRef.current 
+            ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+            : 0,
         }),
       });
 
@@ -329,8 +350,9 @@ export default function PsfTestPage() {
   const handleStartTest = () => {
     setPhase('testing');
     setItemIndex(0);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setCurrentItem(items[0]);
+    testStartTimeRef.current = Date.now(); // 평가 시작 시간 기록
   };
 
   // --- 스타일 정의 ---

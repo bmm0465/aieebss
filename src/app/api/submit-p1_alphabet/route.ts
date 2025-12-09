@@ -54,7 +54,7 @@ const normalizeResponse = (value: string | null | undefined) =>
 const HESITATION_THRESHOLD_SECONDS = 5;
 
 // [핵심 2] 백그라운드 함수가 supabase 클라이언트 객체를 인자로 받도록 수정합니다.
-async function processLnfInBackground(supabase: SupabaseClient, userId: string, questionLetter: string, arrayBuffer: ArrayBuffer, isSkip: boolean = false) {
+async function processLnfInBackground(supabase: SupabaseClient, userId: string, questionLetter: string, arrayBuffer: ArrayBuffer, isSkip: boolean = false, timeTaken: number = 0) {
   const startTime = Date.now();
   
   try {
@@ -71,7 +71,8 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
           correct_answer: questionLetter,
-          is_correct: false, error_type: isSkip ? 'Skipped' : 'Hesitation'
+          is_correct: false, error_type: isSkip ? 'Skipped' : 'Hesitation',
+          time_taken: timeTaken > 0 ? timeTaken : null,
       });
       console.log(`[p1_alphabet 비동기 처리 완료] 사용자: ${userId}, 문제: ${questionLetter}, 결과: ${isSkip ? 'skipped' : 'hesitation'}, 처리시간: ${Date.now() - startTime}ms`);
       return;
@@ -81,7 +82,8 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength < 1024) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
-          is_correct: false, error_type: 'insufficient_audio'
+          is_correct: false, error_type: 'insufficient_audio',
+          time_taken: timeTaken > 0 ? timeTaken : null,
       });
       console.log(`[p1_alphabet 경고] 오디오 파일이 너무 작음: ${arrayBuffer.byteLength} bytes`);
       return;
@@ -90,7 +92,8 @@ async function processLnfInBackground(supabase: SupabaseClient, userId: string, 
     if (arrayBuffer.byteLength > 10 * 1024 * 1024) {
       await supabase.from('test_results').insert({
           user_id: userId, test_type: 'p1_alphabet', question: questionLetter,
-          is_correct: false, error_type: 'audio_too_large'
+          is_correct: false, error_type: 'audio_too_large',
+          time_taken: timeTaken > 0 ? timeTaken : null,
       });
       console.log(`[p1_alphabet 경고] 오디오 파일이 너무 큼: ${arrayBuffer.byteLength} bytes`);
       return;
@@ -170,6 +173,7 @@ CRITICAL INSTRUCTIONS:
             timeline: transcriptionData.timeline,
           },
         },
+        time_taken: timeTaken > 0 ? timeTaken : null,
       });
       console.log(`[p1_alphabet 무음 감지] 사용자: ${userId}, 문제: ${questionLetter}, 타임라인: ${timeline.length}개, 총 음성 길이: ${totalSpeechDuration.toFixed(2)}초, 신뢰도: ${confidence}, 전사: "${aggregatedTranscript}"`);
       return;
@@ -353,6 +357,7 @@ IMPORTANT: If total speech duration is less than 0.3 seconds, mark as "Omissions
       error_type: errorType,
       audio_url: audioUrl,
       transcription_results: transcriptionResults,
+      time_taken: timeTaken > 0 ? timeTaken : null,
     });
 
     if (insertError) {
@@ -378,7 +383,8 @@ IMPORTANT: If total speech duration is less than 0.3 seconds, mark as "Omissions
         question: questionLetter,
         correct_answer: questionLetter,
         is_correct: false,
-        error_type: isSkip ? 'Skipped' : 'processing_error'
+        error_type: isSkip ? 'Skipped' : 'processing_error',
+        time_taken: timeTaken > 0 ? timeTaken : null,
       });
     } catch (dbError) {
       console.error(`[p1_alphabet 데이터베이스 오류 기록 실패] 사용자: ${userId}`, dbError);
@@ -393,6 +399,8 @@ export async function POST(request: Request) {
     const questionLetter = formData.get('question') as string;
     const userId = formData.get('userId') as string;
     const isSkip = formData.get('skip') === 'true'; // 넘어가기 플래그
+    const timeTakenStr = formData.get('timeTaken') as string;
+    const timeTaken = timeTakenStr ? parseInt(timeTakenStr, 10) : 0;
 
     if (!audioBlob || !questionLetter || !userId) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
@@ -414,7 +422,7 @@ export async function POST(request: Request) {
     const arrayBuffer = await audioBlob.arrayBuffer();
 
     // [핵심 4] 생성된 supabase 객체를 백그라운드 함수로 전달하고, 작업이 끝날 때까지 기다립니다.
-    await processLnfInBackground(serviceClient, userId, questionLetter, arrayBuffer, isSkip);
+    await processLnfInBackground(serviceClient, userId, questionLetter, arrayBuffer, isSkip, timeTaken);
 
     // 백그라운드 작업이 성공적으로 완료된 후 응답을 반환합니다.
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });

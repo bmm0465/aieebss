@@ -16,6 +16,7 @@ async function processReadingInBackground(
   testType: 'nwf' | 'wrf' | 'orf',
   arrayBuffer: ArrayBuffer,
   isSkip: boolean = false,
+  timeTaken: number = 0,
 ) {
   try {
     if (arrayBuffer.byteLength === 0) {
@@ -26,6 +27,7 @@ async function processReadingInBackground(
         correct_answer: question,
         is_correct: false,
         error_type: isSkip ? 'Skipped' : 'Hesitation',
+        time_taken: timeTaken > 0 ? timeTaken : null,
       });
       return;
     }
@@ -93,6 +95,7 @@ Accept Korean-accented pronunciations and be flexible with variations.`,
       error_type: isSkip ? 'Skipped' : (hesitationDetected ? 'Hesitation' : (isCorrect ? null : 'Other')),
       audio_url: audioUrl,
       transcription_results: transcriptionResults,
+      time_taken: timeTaken > 0 ? timeTaken : null,
     });
 
     console.log(
@@ -123,6 +126,8 @@ export async function POST(request: Request) {
     const testType = formData.get('testType') as 'nwf' | 'wrf' | 'orf';
     const userId = formData.get('userId') as string;
     const isSkip = formData.get('skip') === 'true'; // 넘어가기 플래그
+    const timeTakenStr = formData.get('timeTaken') as string;
+    const timeTaken = timeTakenStr ? parseInt(timeTakenStr, 10) : 0;
 
     if (!audioBlob || !question || !testType || !userId) {
       return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
@@ -142,7 +147,7 @@ export async function POST(request: Request) {
     const serviceClient = createServiceClient();
     const arrayBuffer = await audioBlob.arrayBuffer();
 
-    await processReadingInBackground(serviceClient, userId, question, testType, arrayBuffer, isSkip);
+    await processReadingInBackground(serviceClient, userId, question, testType, arrayBuffer, isSkip, timeTaken);
 
     return NextResponse.json({ message: '요청이 성공적으로 처리되었습니다.' }, { status: 200 });
   } catch (error) {

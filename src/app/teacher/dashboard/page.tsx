@@ -15,6 +15,7 @@ type StudentWithStats = {
   last_test_date: string | null;
   completion_rate: number;
   avg_accuracy: number;
+  avg_time: number | null; // 평균 평가 시간 (초)
 };
 
 type TestResult = {
@@ -23,6 +24,7 @@ type TestResult = {
   is_correct: boolean | null;
   accuracy: number | null;
   created_at: string;
+  time_taken: number | null;
 };
 
 export default async function TeacherDashboard() {
@@ -133,10 +135,10 @@ export default async function TeacherDashboard() {
       // 이메일을 가져오지 못해도 계속 진행
     }
     
-    // 테스트 결과 가져오기
+    // 테스트 결과 가져오기 (time_taken 포함)
     const { data: testResults } = await supabase
       .from('test_results')
-      .select('user_id, test_type, is_correct, accuracy, created_at')
+      .select('user_id, test_type, is_correct, accuracy, created_at, time_taken')
       .in('user_id', studentIds);
 
     // 학생별 통계 계산
@@ -160,6 +162,12 @@ export default async function TeacherDashboard() {
         ? new Date(Math.max(...studentTests.map(t => new Date(t.created_at).getTime()))).toLocaleDateString('ko-KR')
         : null;
 
+      // 평균 평가 시간 계산 (초 단위)
+      const timeTests = studentTests.filter(t => t.time_taken !== null && t.time_taken > 0);
+      const avgTime = timeTests.length > 0
+        ? Math.round(timeTests.reduce((sum, t) => sum + (t.time_taken || 0), 0) / timeTests.length)
+        : null;
+
       return {
         id: studentId,
         email: studentUser?.email || '이메일 없음',
@@ -170,7 +178,8 @@ export default async function TeacherDashboard() {
         total_tests: studentTests.length,
         last_test_date: lastTestDate,
         completion_rate: completionRate,
-        avg_accuracy: avgAccuracy
+        avg_accuracy: avgAccuracy,
+        avg_time: avgTime,
       };
     });
 
@@ -449,7 +458,7 @@ export default async function TeacherDashboard() {
                     >
                       <div style={{ 
                         display: 'grid', 
-                        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr',
+                        gridTemplateColumns: '2fr 1fr 1fr 1fr 1fr 1fr',
                         gap: '1rem',
                         alignItems: 'center'
                       }}>
@@ -496,6 +505,21 @@ export default async function TeacherDashboard() {
                             {student.avg_accuracy}%
                           </div>
                           <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>평균 정확도</div>
+                        </div>
+
+                        {/* 평균 평가 시간 */}
+                        <div style={{ textAlign: 'center' }}>
+                          <div style={{ 
+                            fontSize: '1.5rem', 
+                            fontWeight: 'bold',
+                            color: '#9C27B0'
+                          }}>
+                            {student.avg_time !== null 
+                              ? `${Math.floor(student.avg_time / 60)}분 ${student.avg_time % 60}초`
+                              : '-'
+                            }
+                          </div>
+                          <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>평균 시간</div>
                         </div>
 
                         {/* 마지막 테스트 */}

@@ -364,13 +364,14 @@ export default function ComprehensionTestPage() {
   const [currentItem, setCurrentItem] = useState<ComprehensionItem | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [showText, setShowText] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
+  const testStartTimeRef = React.useRef<number | null>(null); // 평가 시작 시간 기록
 
   useEffect(() => {
     const setup = async () => {
@@ -602,6 +603,9 @@ export default function ComprehensionTestPage() {
           options: currentItem.options,
           userId: user.id,
           authToken: authUser.id,
+          timeTaken: testStartTimeRef.current 
+            ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+            : 0,
         }),
       });
 
@@ -669,6 +673,9 @@ export default function ComprehensionTestPage() {
           userId: user.id,
           authToken: authUser.id,
           skip: true,
+          timeTaken: testStartTimeRef.current 
+            ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+            : 0,
         }),
       });
 
@@ -722,8 +729,9 @@ export default function ComprehensionTestPage() {
   const handleStartTest = () => {
     setPhase('testing');
     setItemIndex(0);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setCurrentItem(items[0]);
+    testStartTimeRef.current = Date.now(); // 평가 시작 시간 기록
   };
 
   // --- 스타일 정의 ---

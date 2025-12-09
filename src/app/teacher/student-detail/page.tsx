@@ -20,6 +20,7 @@ interface TestResultRow {
     azure?: { text?: string; confidence?: string; timeline?: unknown[]; error?: string };
   } | null;
   correct_answer?: string | null;
+  time_taken?: number | null;
 }
 
 interface StudentData {
@@ -304,12 +305,12 @@ function StudentDetailContent() {
 
   // 세션별 통계 계산
   const calculateSessionStats = (sessionResults: TestResultRow[]) => {
-    const stats: Record<string, { total: number; correct: number; accuracy: number }> = {};
+    const stats: Record<string, { total: number; correct: number; accuracy: number; avgTime: number | null }> = {};
     
     sessionResults.forEach(result => {
       const testType = result.test_type || 'unknown';
       if (!stats[testType]) {
-        stats[testType] = { total: 0, correct: 0, accuracy: 0 };
+        stats[testType] = { total: 0, correct: 0, accuracy: 0, avgTime: null };
       }
       stats[testType].total++;
       if (result.is_correct) {
@@ -320,6 +321,13 @@ function StudentDetailContent() {
     Object.keys(stats).forEach(testType => {
       const stat = stats[testType];
       stat.accuracy = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
+      
+      // 평균 시간 계산
+      const timeResults = sessionResults.filter(r => (r.test_type || 'unknown') === testType && r.time_taken !== null && r.time_taken > 0);
+      if (timeResults.length > 0) {
+        const totalTime = timeResults.reduce((sum, r) => sum + (r.time_taken || 0), 0);
+        stat.avgTime = Math.round(totalTime / timeResults.length);
+      }
     });
 
     return stats;
@@ -470,6 +478,11 @@ function StudentDetailContent() {
                         <div style={{ fontSize: '0.9rem', color: '#6b7280', fontWeight: '500' }}>
                           {stat.correct}/{stat.total} 정답
                         </div>
+                        {stat.avgTime !== null && (
+                          <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: '#9C27B0', fontWeight: '500' }}>
+                            평균 시간: {Math.floor(stat.avgTime / 60)}분 {stat.avgTime % 60}초
+                          </div>
+                        )}
                         <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#9ca3af' }}>
                           클릭하여 상세 보기
                         </div>
@@ -542,6 +555,7 @@ function StudentDetailContent() {
                     <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>음성 재생</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>전사 결과</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>정답 여부</th>
+                    <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>평가 시간</th>
                     <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>날짜</th>
                   </tr>
                 </thead>
@@ -600,6 +614,12 @@ function StudentDetailContent() {
                           }}>
                             {result.is_correct ? '✅ 정답' : '❌ 오답'}
                           </span>
+                        </td>
+                        <td style={{ padding: '1rem', textAlign: 'center', color: '#4b5563' }}>
+                          {result.time_taken && result.time_taken > 0
+                            ? `${Math.floor(result.time_taken / 60)}분 ${result.time_taken % 60}초`
+                            : '-'
+                          }
                         </td>
                         <td style={{ padding: '1rem', color: '#4b5563' }}>
                           {new Date(result.created_at).toLocaleDateString('ko-KR')}
@@ -725,6 +745,7 @@ function StudentDetailContent() {
                       <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>음성 재생</th>
                       <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>전사 결과</th>
                       <th style={{ padding: '1rem', textAlign: 'left', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>정답 여부</th>
+                      <th style={{ padding: '1rem', textAlign: 'center', borderBottom: '2px solid #e5e7eb', color: '#1f2937', fontWeight: '600' }}>평가 시간</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -780,6 +801,12 @@ function StudentDetailContent() {
                             }}>
                               {result.is_correct ? '✅ 정답' : '❌ 오답'}
                             </span>
+                          </td>
+                          <td style={{ padding: '1rem', textAlign: 'center', color: '#4b5563' }}>
+                            {result.time_taken && result.time_taken > 0
+                              ? `${Math.floor(result.time_taken / 60)}분 ${result.time_taken % 60}초`
+                              : '-'
+                            }
                           </td>
                         </tr>
                       );

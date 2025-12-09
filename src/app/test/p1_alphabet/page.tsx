@@ -74,7 +74,7 @@ export default function LnfTestPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(120);
 
   // [핵심 수정] 비동기 처리에서는 실시간 개수 파악이 불가능하므로 상태 제거
   // const [firstTenCorrectCount, setFirstTenCorrectCount] = useState(0);
@@ -85,6 +85,7 @@ export default function LnfTestPage() {
   const audioChunksRef = useRef<Blob[]>([]);
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const testStartTimeRef = useRef<number | null>(null); // 평가 시작 시간 기록
 
   const router = useRouter();
 
@@ -166,11 +167,17 @@ export default function LnfTestPage() {
 
       // 빈 오디오 Blob을 보내서 오답으로 저장 (넘어가기 플래그 포함)
       const emptyBlob = new Blob([], { type: 'audio/webm' });
+      // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+      const elapsedSeconds = testStartTimeRef.current 
+        ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+        : 0;
+
       const formData = new FormData();
       formData.append('audio', emptyBlob);
       formData.append('question', currentLetter);
       formData.append('userId', user.id);
-      formData.append('skip', 'true'); // 넘어가기 플래그
+      formData.append('skip', 'true');
+      formData.append('timeTaken', elapsedSeconds.toString()); // 넘어가기 플래그
       
       // API 호출 (결과를 기다리지 않음)
       fetch('/api/submit-p1_alphabet', { method: 'POST', body: formData })
@@ -217,10 +224,16 @@ export default function LnfTestPage() {
       return;
     }
 
+    // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+    const elapsedSeconds = testStartTimeRef.current 
+      ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+      : 0;
+
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentLetter);
     formData.append('userId', user.id);
+    formData.append('timeTaken', elapsedSeconds.toString());
     
     // [핵심 수정] API 호출 후 결과를 기다리지 않고, UI를 즉시 업데이트
     try {
@@ -303,8 +316,9 @@ export default function LnfTestPage() {
     setPhase('testing');
     setLetterIndex(0);
     setCurrentLetter(shuffledAlphabet[0]);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setFeedback("화면에 나타나는 알파벳의 이름을 말해주세요.");
+    testStartTimeRef.current = Date.now(); // 평가 시작 시간 기록
   };
 
   // useEffect들 - 모든 함수 선언 후에 배치
@@ -367,7 +381,7 @@ export default function LnfTestPage() {
   const titleStyle: React.CSSProperties = { textAlign: 'center', fontFamily: 'var(--font-noto-sans-kr)', fontSize: '2.8rem', marginBottom: '2rem', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontWeight: 'bold' };
   const paragraphStyle: React.CSSProperties = { fontSize: '1.05rem', lineHeight: 1.8, color: '#4b5563', marginBottom: '2.5rem' };
   const buttonStyle: React.CSSProperties = { width: '100%', maxWidth: '300px', padding: '16px 24px', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', fontWeight: '600', fontSize: '1.1rem', textAlign: 'center', transition: 'all 0.3s ease', boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)' };
-  const letterBoxStyle: React.CSSProperties = { fontSize: '12rem', fontWeight: 'bold', margin: '2rem 0', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: 'Rockwell, "Rockwell Nova", "Roboto Slab", serif' };
+  const letterBoxStyle: React.CSSProperties = { fontSize: '12rem', fontWeight: 'bold', margin: '2rem 0', background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', minHeight: '250px', display: 'flex', justifyContent: 'center', alignItems: 'center', fontFamily: '"Times New Roman", Times, serif' };
   const feedbackStyle: React.CSSProperties = { minHeight: '2.5em', fontSize: '1.05rem', color: '#1f2937', padding: '0 1rem', transition: 'color 0.3s', fontWeight: '500' };
   const timerStyle: React.CSSProperties = { fontSize: '1.75rem', color: '#6366f1', marginBottom: '1rem', fontFamily: 'monospace', fontWeight: '600' };
   

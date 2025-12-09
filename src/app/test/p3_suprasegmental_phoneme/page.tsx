@@ -77,9 +77,10 @@ export default function StressTestPage() {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [selectedStressPosition, setSelectedStressPosition] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [isAudioLoading, setIsAudioLoading] = useState(false);
   const [feedback, setFeedback] = useState('');
+  const testStartTimeRef = React.useRef<number | null>(null); // 평가 시작 시간 기록
 
   useEffect(() => {
     const setup = async () => {
@@ -237,6 +238,11 @@ export default function StressTestPage() {
         return;
       }
 
+      // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+      const elapsedSeconds = testStartTimeRef.current 
+        ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+        : 0;
+
       const response = await fetch('/api/submit-p3_suprasegmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -247,6 +253,7 @@ export default function StressTestPage() {
           choices: currentItem.choices,
           userId: user.id,
           authToken: authUser.id,
+          timeTaken: elapsedSeconds,
         }),
       });
 
@@ -303,6 +310,11 @@ export default function StressTestPage() {
         ? currentItem.choices[1] || currentItem.choices[0]
         : currentItem.choices[0];
       
+      // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+      const elapsedSeconds = testStartTimeRef.current 
+        ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+        : 0;
+
       const response = await fetch('/api/submit-p3_suprasegmental_phoneme', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -314,6 +326,7 @@ export default function StressTestPage() {
           userId: user.id,
           authToken: authUser.id,
           skip: true, // 넘어가기 플래그
+          timeTaken: elapsedSeconds,
         }),
       });
 
@@ -363,8 +376,9 @@ export default function StressTestPage() {
   const handleStartTest = () => {
     setPhase('testing');
     setItemIndex(0);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setCurrentItem(items[0]);
+    testStartTimeRef.current = Date.now(); // 평가 시작 시간 기록
   };
 
   // --- 스타일 정의 ---

@@ -51,7 +51,7 @@ export default function ReadingTestPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [timeLeft, setTimeLeft] = useState(120);
   const [isMediaReady, setIsMediaReady] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -59,6 +59,7 @@ export default function ReadingTestPage() {
   const silenceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const readingStartTimeRef = useRef<number>(0);
+  const testStartTimeRef = useRef<number | null>(null); // 평가 시작 시간 기록
 
   useEffect(() => {
     const setup = async () => {
@@ -179,6 +180,11 @@ export default function ReadingTestPage() {
         return;
       }
 
+      // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+      const elapsedSeconds = testStartTimeRef.current 
+        ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+        : 0;
+
       // 빈 오디오 Blob을 보내서 오답으로 저장 (넘어가기 플래그 포함)
       const emptyBlob = new Blob([], { type: 'audio/webm' });
       const formData = new FormData();
@@ -188,6 +194,7 @@ export default function ReadingTestPage() {
       formData.append('userId', user.id);
       formData.append('authToken', authUser.id);
       formData.append('skip', 'true'); // 넘어가기 플래그
+      formData.append('timeTaken', elapsedSeconds.toString());
       
       // API 호출 (결과를 기다리지 않음)
       fetch('/api/submit-p4_phonics', { method: 'POST', body: formData })
@@ -222,12 +229,18 @@ export default function ReadingTestPage() {
       return;
     }
 
+    // 평가 시작 시간부터 현재까지 경과 시간 계산 (초 단위)
+    const elapsedSeconds = testStartTimeRef.current 
+      ? Math.floor((Date.now() - testStartTimeRef.current) / 1000)
+      : 0;
+
     const formData = new FormData();
     formData.append('audio', audioBlob);
     formData.append('question', currentItem.text);
     formData.append('testType', currentItem.type.toUpperCase());
     formData.append('userId', user.id);
     formData.append('authToken', authUser.id);
+    formData.append('timeTaken', elapsedSeconds.toString());
     
     try {
       fetch('/api/submit-p4_phonics', { method: 'POST', body: formData })
@@ -336,9 +349,10 @@ export default function ReadingTestPage() {
   const handleStartTest = () => {
     setTestPhase('testing');
     setCurrentIndex(0);
-    setTimeLeft(60);
+    setTimeLeft(120);
     setCurrentItem(items[0] || null);
     setFeedback('');
+    testStartTimeRef.current = Date.now(); // 평가 시작 시간 기록
   };
 
   const getPhaseTitle = () => {

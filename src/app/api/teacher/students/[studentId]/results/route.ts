@@ -94,10 +94,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       })
     }
 
-    // Results - audio_url과 transcription_results도 포함
+    // Results - audio_url과 transcription_results, time_taken도 포함
     const { data: results } = await service
       .from('test_results')
-      .select('id, test_type, question, student_answer, is_correct, created_at, audio_url, transcription_results, correct_answer')
+      .select('id, test_type, question, student_answer, is_correct, created_at, audio_url, transcription_results, correct_answer, time_taken')
       .eq('user_id', studentId)
       .order('created_at', { ascending: false })
 
