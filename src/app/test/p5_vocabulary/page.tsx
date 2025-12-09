@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
 type VocabularyPhase = 'word' | 'phrase' | 'sentence';
 
@@ -15,102 +14,6 @@ interface MeaningItem {
   phase: VocabularyPhase;
 }
 
-interface ImageWord {
-  word: string;
-  file: string;
-}
-
-// 사용 가능한 이미지 단어 목록 로드
-const loadAvailableWords = async (): Promise<string[]> => {
-  try {
-    const response = await fetch('/images/p5_vocabulary/index.json');
-    if (!response.ok) {
-      console.warn('[p5_vocabulary] index.json 로드 실패, 기본 단어 목록 사용');
-      return [];
-    }
-    const data: ImageWord[] = await response.json();
-    return data.map(item => item.word);
-  } catch (error) {
-    console.error('[p5_vocabulary] index.json 로드 오류:', error);
-    return [];
-  }
-};
-
-// chunjae-text-ham 단어 음성 파일 목록 로드
-interface AudioWordInfo {
-  word: string;
-  file: string;
-}
-
-const loadAvailableAudioWords = async (): Promise<string[]> => {
-  try {
-    const response = await fetch('/audio/p2_segmental_phoneme/chunjae-text-ham/index.json');
-    if (!response.ok) {
-      console.warn('[p5_vocabulary] audio word index.json 로드 실패');
-      return [];
-    }
-    const data: AudioWordInfo[] = await response.json();
-    return data.map(item => item.word.toLowerCase());
-  } catch (error) {
-    console.error('[p5_vocabulary] audio word index.json 로드 오류:', error);
-    return [];
-  }
-};
-
-// 헷갈릴 수 있는 유사 단어 그룹 정의 (같은 문항에서 함께 나오면 안 되는 단어들)
-const getConfusingWordGroups = (): string[][] => {
-  return [
-    // 필기구 그룹
-    ['pen', 'pencil'],
-    // 가족 그룹
-    ['mom', 'dad', 'brother', 'sister', 'grandfather', 'grandmother'],
-    // 색상 그룹
-    ['red', 'blue', 'green', 'yellow', 'black', 'white', 'pink', 'orange'],
-    // 숫자 그룹
-    ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'],
-    // 과일 그룹
-    ['apple', 'banana'],
-    // 동물 그룹 (비슷한 크기/모양)
-    ['cat', 'dog', 'bird'],
-    ['elephant', 'monkey', 'lion', 'zebra'],
-    // 동작 그룹 (비슷한 의미)
-    ['run', 'jump', 'dance'],
-    ['sit', 'stand'],
-    // 음식 그룹
-    ['pizza', 'cheese'],
-    ['chicken', 'egg'],
-    // 도구/물건 그룹 (비슷한 용도)
-    ['cup', 'doll'],
-    ['book', 'pen', 'pencil'],
-    // 신체/부위
-    ['hand', 'hat'],
-  ];
-};
-
-// 단어가 헷갈릴 수 있는 그룹에 속하는지 확인
-const getConfusingGroupForWord = (word: string, groups: string[][]): string[] | null => {
-  const wordLower = word.toLowerCase();
-  for (const group of groups) {
-    if (group.some(w => w.toLowerCase() === wordLower)) {
-      return group.map(w => w.toLowerCase());
-    }
-  }
-  return null;
-};
-
-// 이미지로 표현하기 어려운 추상적 단어 제외 목록
-const getAbstractWordsToExclude = (): string[] => {
-  return [
-    // 감정/상태 표현
-    'nice', 'sorry', 'fine', 'good', 'great',
-    // 형용사 (추상적)
-    'pretty', 'big', 'small', 'tall', 'high', 'ready', 'right',
-    // 추상 동사/동작
-    'like', 'look', 'come', 'go', 'say', 'use', 'many',
-    // 숫자 (이미지로 표현하기 어려움)
-    'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-  ];
-};
 
 // 텍스트를 파일명으로 변환
 const textToFileName = (text: string): string => {

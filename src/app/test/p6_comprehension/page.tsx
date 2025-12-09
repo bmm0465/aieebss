@@ -4,12 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
-
-interface ImageWord {
-  word: string;
-  file: string;
-}
 
 interface ComprehensionOption {
   type: 'image' | 'word';
@@ -29,119 +23,6 @@ interface ComprehensionItem {
   speaker2?: string; // 대화 형식일 때 Speaker 2 텍스트
 }
 
-// p6_items.json 형식
-interface P6JsonOption {
-  number: number;
-  description: string;
-  isCorrect: boolean;
-}
-
-interface P6JsonItem {
-  id: string;
-  question: string;
-  script: {
-    speaker1: string;
-    speaker2: string;
-  };
-  options: P6JsonOption[];
-  evaluation: {
-    target: string;
-    description: string;
-  };
-}
-
-// 한국어 보기를 영어 단어(이미지 파일명)로 변환하는 매핑
-const koreanToEnglishWord: Record<string, string> = {
-  // 색상
-  '빨간색': 'red',
-  '파란색': 'blue',
-  '노란색': 'yellow',
-  '초록색': 'green',
-  '분홍색': 'pink',
-  '하얀색': 'white',
-  '검은색': 'black',
-  '빨간색 공': 'ball',
-  '파란색 공': 'ball',
-  '작은 빨간색 공': 'ball',
-  '큰 빨간색 공': 'ball',
-  '작은 파란색 공': 'ball',
-  '큰 파란색 공': 'ball',
-  '작은 초록색 공': 'ball',
-  '큰 초록색 공': 'ball',
-  '작은 노란색 공': 'ball',
-  '큰 노란색 공': 'ball',
-  '작은 분홍색 공': 'ball',
-  '큰 분홍색 공': 'ball',
-  // 크기
-  '큰': 'big',
-  '작은': 'small',
-  // 인물
-  '키가 큰 남자': 'tall',
-  '키가 작은 남자': 'small',
-  '키가 큰 여자': 'tall',
-  '키가 작은 여자': 'small',
-  '예쁜 여자': 'pretty',
-  // 동작
-  '수영': 'swim',
-  '춤': 'dance',
-  '노래': 'sing',
-  // 가족
-  '아빠': 'dad',
-  '엄마': 'mom',
-  '형제': 'brother',
-  '자매': 'sister',
-  '할아버지': 'grandfather',
-  '할머니': 'grandmother',
-};
-
-// 한국어 보기에서 핵심 단어 추출
-const extractWordFromKorean = (korean: string): string | null => {
-  // 직접 매칭
-  if (koreanToEnglishWord[korean]) {
-    return koreanToEnglishWord[korean];
-  }
-  
-  // 부분 매칭
-  for (const [kr, en] of Object.entries(koreanToEnglishWord)) {
-    if (korean.includes(kr)) {
-      return en;
-    }
-  }
-  
-  // 특수 케이스: "큰 빨간색 공" → "ball"
-  if (korean.includes('공')) return 'ball';
-  if (korean.includes('책')) return 'book';
-  if (korean.includes('연필')) return 'pencil';
-  if (korean.includes('컵')) return 'cup';
-  if (korean.includes('모자')) return 'hat';
-  if (korean.includes('고양이')) return 'cat';
-  if (korean.includes('강아지')) return 'dog';
-  if (korean.includes('사과')) return 'apple';
-  if (korean.includes('바나나')) return 'banana';
-  if (korean.includes('오렌지')) return 'orange';
-  if (korean.includes('펜')) return 'pen';
-  if (korean.includes('인형')) return 'doll';
-  if (korean.includes('로봇')) return 'robot';
-  if (korean.includes('자전거')) return 'bike';
-  if (korean.includes('꽃')) return 'flower';
-  if (korean.includes('달걀')) return 'egg';
-  if (korean.includes('사자')) return 'lion';
-  if (korean.includes('원숭이')) return 'monkey';
-  if (korean.includes('얼룩말')) return 'zebra';
-  if (korean.includes('새')) return 'bird';
-  
-  return null;
-};
-
-// 텍스트를 파일명으로 변환
-const textToFileName = (text: string): string => {
-  return text
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, '') // 특수문자 제거
-    .replace(/\s+/g, '_') // 공백을 언더스코어로
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
-};
 
 // 20개 고정 문항 정의
 const getFixedComprehensionItems = async (): Promise<ComprehensionItem[]> => {

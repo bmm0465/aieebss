@@ -4,7 +4,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
-import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
 interface StressItem {
   word: string;
@@ -32,39 +31,6 @@ function getStressPosition(choice: string): number {
   const beforeStressed = choice.substring(0, choice.indexOf(stressedPart));
   const syllablesBefore = countSyllables(beforeStressed);
   return syllablesBefore + 1;
-}
-
-// 강세 위치에 따라 선택지 생성 함수
-function generateStressChoices(word: string, correctSyllable: number, totalSyllables: number): string[] {
-  const choices: string[] = [];
-  
-  // 각 음절 위치에 강세를 둔 선택지 생성
-  for (let i = 1; i <= totalSyllables; i++) {
-    const parts = word.toLowerCase().split('');
-    let result = '';
-    let syllableCount = 0;
-    
-    // 간단한 음절 분리 로직 (실제로는 더 정교한 로직이 필요하지만 여기서는 단순화)
-    for (let j = 0; j < parts.length; j++) {
-      const char = parts[j];
-      const isVowel = /[aeiou]/i.test(char);
-      
-      if (isVowel && (j === 0 || !/[aeiou]/i.test(parts[j - 1]))) {
-        syllableCount++;
-      }
-      
-      if (syllableCount === i) {
-        // 해당 음절을 대문자로
-        result += char.toUpperCase();
-      } else {
-        result += char;
-      }
-    }
-    
-    choices.push(result);
-  }
-  
-  return choices;
 }
 
 // [폴백] 3교시 고정 문항: 강세 패턴 선택 (1그룹 + 2그룹)
@@ -162,17 +128,9 @@ export default function StressTestPage() {
           console.warn('[p3_suprasegmental_phoneme] ⚠️ p3_stress_items.json 파일을 찾을 수 없음 (404)');
         }
         
-        // JSON 파일 로드 실패 시 DB에서 승인된 문항 조회 시도
-        const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('p3_suprasegmental_phoneme', gradeLevel || undefined);
-
-        if (dbItems && Array.isArray(dbItems.items) && dbItems.items.length > 0) {
-          console.log('[p3_suprasegmental_phoneme] ✅ DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          setItems(dbItems.items as StressItem[]);
-        } else {
-          console.log('[p3_suprasegmental_phoneme] 📝 기본 문항 사용 (폴백)');
-          setItems(getFixedStressItems());
-        }
+        // 고정 문항 사용
+        console.log('[p3_suprasegmental_phoneme] 📝 고정 문항 사용');
+        setItems(getFixedStressItems());
       } catch (error) {
         console.error('[p3_suprasegmental_phoneme] ❌ 문항 로딩 오류, 기본 문항 사용:', error);
         setItems(getFixedStressItems());
