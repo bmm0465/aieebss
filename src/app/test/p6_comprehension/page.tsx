@@ -133,73 +133,342 @@ const extractWordFromKorean = (korean: string): string | null => {
   return null;
 };
 
-// 사용 가능한 이미지 단어 목록 로드
-const loadAvailableWords = async (): Promise<string[]> => {
-  try {
-    const response = await fetch('/images/vocabulary/chunjae-text-ham/index.json');
-    if (!response.ok) {
-      console.warn('[p6_comprehension] index.json 로드 실패');
-      return [];
-    }
-    const data: ImageWord[] = await response.json();
-    return data.map(item => item.word);
-  } catch (error) {
-    console.error('[p6_comprehension] index.json 로드 오류:', error);
-    return [];
-  }
+// 텍스트를 파일명으로 변환
+const textToFileName = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // 특수문자 제거
+    .replace(/\s+/g, '_') // 공백을 언더스코어로
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
 };
 
-// [폴백] COMPREHENSION 고정 문항 (천재교과서 함 기반)
-const getFixedComprehensionItems = async (availableWords: string[]): Promise<ComprehensionItem[]> => {
-  const items: ComprehensionItem[] = [];
-  
-  // 예시 1: 말 (2~3문장)
-  if (availableWords.includes('swim')) {
-    items.push({
-      dialogueOrStory: "Hello, I'm Kate. I can swim.",
-      question: 'What can Kate do?',
-      questionKr: 'Kate는 무엇을 할 수 있나요?',
+// 20개 고정 문항 정의
+const getFixedComprehensionItems = async (): Promise<ComprehensionItem[]> => {
+  const items: ComprehensionItem[] = [
+    // 문항 1: 모습 - pizza
+    {
+      dialogueOrStory: "A: Do you like pizza?\nB: Yes, I do. I like pizza.",
+      question: '두 사람이 이야기하고 있는 음식은 무엇인가요?',
+      questionKr: '두 사람이 이야기하고 있는 음식은 무엇인가요?',
       options: [
-        { type: 'image', content: 'swim', displayText: '수영' },
-        { type: 'image', content: 'dance', displayText: '춤' },
-        { type: 'image', content: 'sing', displayText: '노래' },
+        { type: 'image', content: 'pizza' },
+        { type: 'image', content: 'chicken' },
+        { type: 'image', content: 'steak' },
       ],
-      correctAnswer: 'swim',
-      isDialogue: false,
-    });
-  }
-  
-  // 예시 2: 대화 (A-B 형식)
-  if (availableWords.includes('brother')) {
-    items.push({
-      dialogueOrStory: "B: Who's he?\nG: He's my brother.",
-      question: "Who is he?",
-      questionKr: '그는 누구인가요?',
+      correctAnswer: 'pizza',
+      isDialogue: true,
+      evaluationTarget: '모습',
+      speaker1: 'Do you like pizza?',
+      speaker2: 'Yes, I do. I like pizza.',
+    },
+    // 문항 2: 크기 - a big lion
+    {
+      dialogueOrStory: "A: Look at the lion.\nB: Wow! It's big.",
+      question: '사자의 크기는 어떠한가요?',
+      questionKr: '사자의 크기는 어떠한가요?',
       options: [
-        { type: 'image', content: 'brother', displayText: '형제' },
-        { type: 'image', content: 'dad', displayText: '아빠' },
-        { type: 'image', content: 'mom', displayText: '엄마' },
+        { type: 'image', content: 'a small lion' },
+        { type: 'image', content: 'a big lion' },
+        { type: 'image', content: 'a big mouse' },
+      ],
+      correctAnswer: 'a big lion',
+      isDialogue: true,
+      evaluationTarget: '크기',
+      speaker1: 'Look at the lion.',
+      speaker2: 'Wow! It\'s big.',
+    },
+    // 문항 3: 색깔 - a yellow crayon
+    {
+      dialogueOrStory: "A: Do you have a crayon?\nB: Yes. It's yellow.",
+      question: '여학생이 가지고 있는 크레용의 색깔은 무엇인가요?',
+      questionKr: '여학생이 가지고 있는 크레용의 색깔은 무엇인가요?',
+      options: [
+        { type: 'image', content: 'a red crayon' },
+        { type: 'image', content: 'a yellow crayon' },
+        { type: 'image', content: 'a blue crayon' },
+      ],
+      correctAnswer: 'a yellow crayon',
+      isDialogue: true,
+      evaluationTarget: '색깔',
+      speaker1: 'Do you have a crayon?',
+      speaker2: 'Yes. It\'s yellow.',
+    },
+    // 문항 4: 인물 - dad
+    {
+      dialogueOrStory: "A: Who is he?\nB: He's my dad.",
+      question: '남학생이 소개하는 사람은 누구인가요?',
+      questionKr: '남학생이 소개하는 사람은 누구인가요?',
+      options: [
+        { type: 'image', content: 'dad' },
+        { type: 'image', content: 'mom' },
+        { type: 'image', content: 'brother' },
+      ],
+      correctAnswer: 'dad',
+      isDialogue: true,
+      evaluationTarget: '인물',
+      speaker1: 'Who is he?',
+      speaker2: 'He\'s my dad.',
+    },
+    // 문항 5: 모습 - cup
+    {
+      dialogueOrStory: "A: What's this?\nB: It's a cup. It's nice.",
+      question: '여학생이 설명하고 있는 물건은 무엇인가요?',
+      questionKr: '여학생이 설명하고 있는 물건은 무엇인가요?',
+      options: [
+        { type: 'image', content: 'bag' },
+        { type: 'image', content: 'cup' },
+        { type: 'image', content: 'bed' },
+      ],
+      correctAnswer: 'cup',
+      isDialogue: true,
+      evaluationTarget: '모습',
+      speaker1: 'What\'s this?',
+      speaker2: 'It\'s a cup. It\'s nice.',
+    },
+    // 문항 6: 크기 - a small bag
+    {
+      dialogueOrStory: "A: What's that?\nB: It's a bag. It's small.",
+      question: '가방의 크기는 어떠한가요?',
+      questionKr: '가방의 크기는 어떠한가요?',
+      options: [
+        { type: 'image', content: 'a big bag' },
+        { type: 'image', content: 'a small bag' },
+        { type: 'image', content: 'a small cap' },
+      ],
+      correctAnswer: 'a small bag',
+      isDialogue: true,
+      evaluationTarget: '크기',
+      speaker1: 'What\'s that?',
+      speaker2: 'It\'s a bag. It\'s small.',
+    },
+    // 문항 7: 색깔 - a black dog
+    {
+      dialogueOrStory: "A: Look at the dog.\nB: It's black. It's cute.",
+      question: '강아지의 색깔은 무엇인가요?',
+      questionKr: '강아지의 색깔은 무엇인가요?',
+      options: [
+        { type: 'image', content: 'a white dog' },
+        { type: 'image', content: 'a black dog' },
+        { type: 'image', content: 'a brown dog' },
+      ],
+      correctAnswer: 'a black dog',
+      isDialogue: true,
+      evaluationTarget: '색깔',
+      speaker1: 'Look at the dog.',
+      speaker2: 'It\'s black. It\'s cute.',
+    },
+    // 문항 8: 인물 - grandmother
+    {
+      dialogueOrStory: "A: Who is she?\nB: She's my grandmother.",
+      question: '여학생이 가리키는 사람은 누구인가요?',
+      questionKr: '여학생이 가리키는 사람은 누구인가요?',
+      options: [
+        { type: 'image', content: 'grandmother' },
+        { type: 'image', content: 'grandfather' },
+        { type: 'image', content: 'sister' },
+      ],
+      correctAnswer: 'grandmother',
+      isDialogue: true,
+      evaluationTarget: '인물',
+      speaker1: 'Who is she?',
+      speaker2: 'She\'s my grandmother.',
+    },
+    // 문항 9: 모습 - a boy jumping
+    {
+      dialogueOrStory: "A: Can you jump?\nB: Yes, I can. I can jump.",
+      question: '남학생은 무엇을 할 수 있나요?',
+      questionKr: '남학생은 무엇을 할 수 있나요?',
+      options: [
+        { type: 'image', content: 'a boy swimming' },
+        { type: 'image', content: 'a boy jumping' },
+        { type: 'image', content: 'a boy running' },
+      ],
+      correctAnswer: 'a boy jumping',
+      isDialogue: true,
+      evaluationTarget: '모습',
+      speaker1: 'Can you jump?',
+      speaker2: 'Yes, I can. I can jump.',
+    },
+    // 문항 10: 크기 - a big bear
+    {
+      dialogueOrStory: "A: Is it a bear?\nB: Yes, it is. It's big.",
+      question: '곰의 모습으로 알맞은 것을 고르세요.',
+      questionKr: '곰의 모습으로 알맞은 것을 고르세요.',
+      options: [
+        { type: 'image', content: 'a big bear' },
+        { type: 'image', content: 'a small bear' },
+        { type: 'image', content: 'a big dog' },
+      ],
+      correctAnswer: 'a big bear',
+      isDialogue: true,
+      evaluationTarget: '크기',
+      speaker1: 'Is it a bear?',
+      speaker2: 'Yes, it is. It\'s big.',
+    },
+    // 문항 11: 색깔 - a blue bird
+    {
+      dialogueOrStory: "A: Look! It's a bird.\nB: Oh, it's blue.",
+      question: '남학생이 가리키는 새의 색깔은 무엇인가요?',
+      questionKr: '남학생이 가리키는 새의 색깔은 무엇인가요?',
+      options: [
+        { type: 'image', content: 'a blue bird' },
+        { type: 'image', content: 'a green bird' },
+        { type: 'image', content: 'a red bird' },
+      ],
+      correctAnswer: 'a blue bird',
+      isDialogue: true,
+      evaluationTarget: '색깔',
+      speaker1: 'Look! It\'s a bird.',
+      speaker2: 'Oh, it\'s blue.',
+    },
+    // 문항 12: 인물 - brother
+    {
+      dialogueOrStory: "A: Who is he?\nB: He's my brother. He's tall.",
+      question: '사진 속의 인물은 누구인가요?',
+      questionKr: '사진 속의 인물은 누구인가요?',
+      options: [
+        { type: 'image', content: 'dad' },
+        { type: 'image', content: 'brother' },
+        { type: 'image', content: 'grandfather' },
       ],
       correctAnswer: 'brother',
       isDialogue: true,
-    });
-  }
-  
-  // 추가 예시들
-  if (availableWords.includes('ball') && availableWords.includes('red')) {
-    items.push({
-      dialogueOrStory: "Look at this ball. It is big. It is red.",
-      question: "What is being described?",
-      questionKr: '묘사하는 내용에 알맞은 공을 고르시오.',
+      evaluationTarget: '인물',
+      speaker1: 'Who is he?',
+      speaker2: 'He\'s my brother. He\'s tall.',
+    },
+    // 문항 13: 모습 - skating
+    {
+      dialogueOrStory: "A: I can skate. Look at me!\nB: Wow, great!",
+      question: '여학생이 잘하는 운동은 무엇인가요?',
+      questionKr: '여학생이 잘하는 운동은 무엇인가요?',
       options: [
-        { type: 'image', content: 'ball', displayText: '큰 빨간색 공' },
-        { type: 'image', content: 'ball', displayText: '작은 파란색 공' },
-        { type: 'image', content: 'ball', displayText: '큰 노란색 공' },
+        { type: 'image', content: 'skating' },
+        { type: 'image', content: 'skiing' },
+        { type: 'image', content: 'dancing' },
       ],
-      correctAnswer: 'ball',
-      isDialogue: false,
-    });
-  }
+      correctAnswer: 'skating',
+      isDialogue: true,
+      evaluationTarget: '모습',
+      speaker1: 'I can skate. Look at me!',
+      speaker2: 'Wow, great!',
+    },
+    // 문항 14: 크기 - a small fish
+    {
+      dialogueOrStory: "A: Look at the fish.\nB: It's small. It's cute.",
+      question: '물고기의 크기는 어떠한가요?',
+      questionKr: '물고기의 크기는 어떠한가요?',
+      options: [
+        { type: 'image', content: 'a big fish' },
+        { type: 'image', content: 'a small fish' },
+        { type: 'image', content: 'a small whale' },
+      ],
+      correctAnswer: 'a small fish',
+      isDialogue: true,
+      evaluationTarget: '크기',
+      speaker1: 'Look at the fish.',
+      speaker2: 'It\'s small. It\'s cute.',
+    },
+    // 문항 15: 색깔 - a white cat
+    {
+      dialogueOrStory: "A: Is it a cat?\nB: Yes. It's white.",
+      question: '고양이의 색깔은 무엇인가요?',
+      questionKr: '고양이의 색깔은 무엇인가요?',
+      options: [
+        { type: 'image', content: 'a black cat' },
+        { type: 'image', content: 'a white cat' },
+        { type: 'image', content: 'a yellow cat' },
+      ],
+      correctAnswer: 'a white cat',
+      isDialogue: true,
+      evaluationTarget: '색깔',
+      speaker1: 'Is it a cat?',
+      speaker2: 'Yes. It\'s white.',
+    },
+    // 문항 16: 인물 - sister
+    {
+      dialogueOrStory: "A: Who is she?\nB: She's my sister. She's pretty.",
+      question: '두 사람이 이야기하고 있는 대상은 누구인가요?',
+      questionKr: '두 사람이 이야기하고 있는 대상은 누구인가요?',
+      options: [
+        { type: 'image', content: 'mom' },
+        { type: 'image', content: 'grandmother' },
+        { type: 'image', content: 'sister' },
+      ],
+      correctAnswer: 'sister',
+      isDialogue: true,
+      evaluationTarget: '인물',
+      speaker1: 'Who is she?',
+      speaker2: 'She\'s my sister. She\'s pretty.',
+    },
+    // 문항 17: 모습 - raining
+    {
+      dialogueOrStory: "A: How's the weather?\nB: It's raining. Take an umbrella.",
+      question: '창밖의 날씨는 어떠한가요?',
+      questionKr: '창밖의 날씨는 어떠한가요?',
+      options: [
+        { type: 'image', content: 'sunny' },
+        { type: 'image', content: 'raining' },
+        { type: 'image', content: 'snowing' },
+      ],
+      correctAnswer: 'raining',
+      isDialogue: true,
+      evaluationTarget: '모습',
+      speaker1: 'How\'s the weather?',
+      speaker2: 'It\'s raining. Take an umbrella.',
+    },
+    // 문항 18: 크기 - a big ball
+    {
+      dialogueOrStory: "A: Do you have a ball?\nB: Yes. It's big.",
+      question: '남학생이 설명하는 공의 크기는 어떠한가요?',
+      questionKr: '남학생이 설명하는 공의 크기는 어떠한가요?',
+      options: [
+        { type: 'image', content: 'a small ball' },
+        { type: 'image', content: 'a big ball' },
+        { type: 'image', content: 'a big apple' },
+      ],
+      correctAnswer: 'a big ball',
+      isDialogue: true,
+      evaluationTarget: '크기',
+      speaker1: 'Do you have a ball?',
+      speaker2: 'Yes. It\'s big.',
+    },
+    // 문항 19: 색깔 - a green bag
+    {
+      dialogueOrStory: "A: What color is it?\nB: It's green.",
+      question: '가방의 색깔로 알맞은 것을 고르세요.',
+      questionKr: '가방의 색깔로 알맞은 것을 고르세요.',
+      options: [
+        { type: 'image', content: 'a red bag' },
+        { type: 'image', content: 'a green bag' },
+        { type: 'image', content: 'a pink bag' },
+      ],
+      correctAnswer: 'a green bag',
+      isDialogue: true,
+      evaluationTarget: '색깔',
+      speaker1: 'What color is it?',
+      speaker2: 'It\'s green.',
+    },
+    // 문항 20: 인물 - grandfather
+    {
+      dialogueOrStory: "A: Who is he?\nB: He's my grandfather.",
+      question: '남학생이 소개하는 사람은 누구인가요?',
+      questionKr: '남학생이 소개하는 사람은 누구인가요?',
+      options: [
+        { type: 'image', content: 'brother' },
+        { type: 'image', content: 'dad' },
+        { type: 'image', content: 'grandfather' },
+      ],
+      correctAnswer: 'grandfather',
+      isDialogue: true,
+      evaluationTarget: '인물',
+      speaker1: 'Who is he?',
+      speaker2: 'He\'s my grandfather.',
+    },
+  ];
+
+  console.log('[p6_comprehension] 고정 문항 20개 로드 완료');
   
   return items;
 };
@@ -234,118 +503,13 @@ export default function ComprehensionTestPage() {
       setUser(user);
 
       try {
-        const availableWords = await loadAvailableWords();
-        console.log('[p6_comprehension] 사용 가능한 이미지 단어:', availableWords.length, '개');
-
-        // p6_items.json에서 문항 로드 시도
-        const response = await fetch('/data/p6_items.json');
-        if (response.ok) {
-          const jsonItems = await response.json();
-          console.log('[p6_comprehension] p6_items.json에서 문항 로드:', jsonItems.length, '개');
-          
-          // p6_items.json 형식을 ComprehensionItem 형식으로 변환
-          const allConvertedItems: ComprehensionItem[] = (jsonItems as P6JsonItem[]).map((item: P6JsonItem) => {
-            const correctOption = item.options.find((opt: P6JsonOption) => opt.isCorrect);
-            const correctWord = correctOption ? extractWordFromKorean(correctOption.description) : null;
-            
-            // 보기를 이미지로 변환
-            const allImageOptions: ComprehensionOption[] = item.options.map((opt: P6JsonOption) => {
-              const word = extractWordFromKorean(opt.description);
-              return {
-                type: 'image' as const,
-                content: word || opt.description.toLowerCase().replace(/\s+/g, '_'),
-                displayText: opt.description,
-                isCorrect: opt.isCorrect, // 정답 여부 임시 저장
-              } as ComprehensionOption & { isCorrect?: boolean };
-            });
-            
-            // 정답 보기 찾기
-            type OptionWithCorrect = ComprehensionOption & { isCorrect?: boolean };
-            const correctImageOption = allImageOptions.find((opt: OptionWithCorrect) => opt.isCorrect);
-            
-            // 오답 보기들
-            const wrongOptions = allImageOptions.filter((opt: OptionWithCorrect) => !opt.isCorrect);
-            
-            // 정답 + 오답 2개 선택 (총 3개)
-            const selectedWrongOptions = wrongOptions
-              .sort(() => Math.random() - 0.5)
-              .slice(0, 2);
-            
-            // 정답 포함하여 3개 구성 후 섞기
-            const removeIsCorrect = (opt: OptionWithCorrect): ComprehensionOption => {
-              return {
-                type: opt.type,
-                content: opt.content,
-                displayText: opt.displayText,
-              };
-            };
-            const finalOptions = correctImageOption 
-              ? [...selectedWrongOptions, correctImageOption]
-                  .sort(() => Math.random() - 0.5)
-                  .map(removeIsCorrect) // isCorrect 제거
-              : allImageOptions.slice(0, 3).map(removeIsCorrect); // 폴백: 처음 3개
-            
-            return {
-              dialogueOrStory: item.script.speaker2 ? 
-                `${item.script.speaker1}\n${item.script.speaker2}` : 
-                item.script.speaker1,
-              question: item.question.includes('묘사하는 내용') 
-                ? 'What is being described?' 
-                : item.question,
-              questionKr: item.question,
-              options: finalOptions,
-              correctAnswer: correctWord || (correctOption ? correctOption.description : ''),
-              isDialogue: !!item.script.speaker2,
-              evaluationTarget: item.evaluation?.target || '', // evaluation.target 저장
-              speaker1: item.script.speaker1, // 화자별 재생을 위해 저장
-              speaker2: item.script.speaker2 || undefined, // 화자별 재생을 위해 저장
-            };
-          }).filter(item => item.correctAnswer && availableWords.includes(item.correctAnswer));
-          
-          // evaluation.target 기준으로 분류하여 각 5개씩 선택
-          const colorSizeItems = allConvertedItems.filter(item => item.evaluationTarget === '색깔과 크기');
-          const appearanceItems = allConvertedItems.filter(item => item.evaluationTarget === '인물의 모습');
-          const colorOnlyItems = allConvertedItems.filter(item => item.evaluationTarget === '색깔');
-          
-          // 각 카테고리에서 5개씩 랜덤 선택
-          const selectedColorSize = colorSizeItems.sort(() => Math.random() - 0.5).slice(0, 5);
-          const selectedAppearance = appearanceItems.sort(() => Math.random() - 0.5).slice(0, 5);
-          const selectedColorOnly = colorOnlyItems.sort(() => Math.random() - 0.5).slice(0, 5);
-          
-          // 모습 = 인물의 모습과 동일하므로, 총 15개 (크기 5개 + 인물 5개 + 색깔 5개)
-          const convertedItems = [...selectedColorSize, ...selectedAppearance, ...selectedColorOnly];
-          
-          console.log('[p6_comprehension] 필터링된 문항:', {
-            크기: selectedColorSize.length,
-            인물: selectedAppearance.length,
-            색깔: selectedColorOnly.length,
-            총: convertedItems.length
-          });
-          
-          if (convertedItems.length > 0) {
-            setItems(convertedItems);
-          } else {
-            const fixedItems = await getFixedComprehensionItems(availableWords);
-            setItems(fixedItems);
-          }
-        } else {
-          // DB에서 승인된 문항 조회 시도
-          const gradeLevel = await getUserGradeLevel(user.id);
-          const dbItems = await fetchApprovedTestItems('p6_comprehension', gradeLevel || undefined);
-
-          if (dbItems && Array.isArray(dbItems.items)) {
-            console.log('[p6_comprehension] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-            setItems(dbItems.items as ComprehensionItem[]);
-          } else {
-            console.log('[p6_comprehension] 승인된 문항이 없어 기본 문항 사용');
-            const fixedItems = await getFixedComprehensionItems(availableWords);
-            setItems(fixedItems);
-          }
-        }
+        // 고정 문항 20개 사용
+        const fixedItems = await getFixedComprehensionItems();
+        setItems(fixedItems);
+        console.log('[p6_comprehension] 고정 문항 20개 로드 완료');
       } catch (error) {
-        console.error('[p6_comprehension] 문항 로딩 오류, 기본 문항 사용:', error);
-        const availableWords = await loadAvailableWords();
-        const fixedItems = await getFixedComprehensionItems(availableWords);
+        console.error('[p6_comprehension] 문항 로딩 오류:', error);
+        const fixedItems = await getFixedComprehensionItems();
         setItems(fixedItems);
       }
     };
@@ -356,24 +520,24 @@ export default function ComprehensionTestPage() {
   const textToFileName = useCallback((text: string): string => {
     return text
       .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, '')
-      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9\s]/g, '') // 특수문자 제거
+      .replace(/\s+/g, '_') // 공백을 언더스코어로
       .replace(/_+/g, '_')
       .replace(/^_|_$/g, '')
       .slice(0, 50);
   }, []);
 
   // 단일 음성 파일 재생 (사전 생성 파일 또는 TTS)
-  const playSingleAudio = useCallback(async (text: string, speakerFolder: 'p6_speaker1' | 'p6_speaker2' | null = null): Promise<void> => {
-    // 화자별 폴더가 지정된 경우 해당 폴더에서 파일 찾기
+  const playSingleAudio = useCallback(async (text: string, speaker: 'A' | 'B' | null = null): Promise<void> => {
+    // A 또는 B가 지정된 경우 p6_comprehension 폴더에서 파일 찾기
     let audioPath = '';
-    if (speakerFolder) {
-      const fileName = `${textToFileName(text)}.mp3`;
-      audioPath = `/audio/comprehension/${speakerFolder}/${fileName}`;
+    if (speaker) {
+      const fileName = `${speaker}_${textToFileName(text)}.mp3`;
+      audioPath = `/audio/p6_comprehension/${fileName}`;
     } else {
       // 기존 방식: 전체 스토리 파일
       const safeFileName = text.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 50);
-      audioPath = `/audio/comprehension/${safeFileName}.mp3`;
+      audioPath = `/audio/p6_comprehension/${safeFileName}.mp3`;
     }
 
     // 파일 존재 여부 확인
@@ -458,21 +622,21 @@ export default function ComprehensionTestPage() {
       const playDialogue = async (): Promise<void> => {
         // 대화 형식인 경우: 화자별로 순차 재생
         if (item.isDialogue && item.speaker1 && item.speaker2) {
-          // Speaker 1 재생
+          // Speaker A 재생
           try {
-            await playSingleAudio(item.speaker1, 'p6_speaker1');
+            await playSingleAudio(item.speaker1, 'A');
             // 화자 사이 간격
             await new Promise(resolve => setTimeout(resolve, 300));
           } catch (error) {
-            console.warn('[p6_comprehension] Speaker 1 재생 실패:', error);
+            console.warn('[p6_comprehension] Speaker A 재생 실패:', error);
             // 계속 진행
           }
 
-          // Speaker 2 재생
+          // Speaker B 재생
           try {
-            await playSingleAudio(item.speaker2, 'p6_speaker2');
+            await playSingleAudio(item.speaker2, 'B');
           } catch (error) {
-            console.warn('[p6_comprehension] Speaker 2 재생 실패:', error);
+            console.warn('[p6_comprehension] Speaker B 재생 실패:', error);
             throw error;
           }
         } else {
@@ -504,22 +668,22 @@ export default function ComprehensionTestPage() {
     try {
       item.options.forEach(option => {
         if (option.type === 'image') {
-          const word = option.content.toLowerCase();
-          const imagePath = `/images/vocabulary/chunjae-text-ham/${word}.png`;
+          const word = textToFileName(option.content);
+          const imagePath = `/images/p6_comprehension/${word}.png`;
           
-          if (imageUrls[word]) {
-            newImageUrls[word] = imageUrls[word];
+          if (imageUrls[option.content]) {
+            newImageUrls[option.content] = imageUrls[option.content];
           } else {
             // 이미지 로드 시도
             const img = new Image();
             img.onload = () => {
-              setImageUrls(prev => ({ ...prev, [word]: imagePath }));
+              setImageUrls(prev => ({ ...prev, [option.content]: imagePath }));
             };
             img.onerror = () => {
-              console.warn(`[p6_comprehension] 이미지 파일 없음: ${word} -> ${imagePath}`);
+              console.warn(`[p6_comprehension] 이미지 파일 없음: ${option.content} -> ${imagePath}`);
             };
             img.src = imagePath;
-            newImageUrls[word] = imagePath;
+            newImageUrls[option.content] = imagePath;
           }
         }
       });
@@ -530,7 +694,7 @@ export default function ComprehensionTestPage() {
     } finally {
       setIsLoadingImages(false);
     }
-  }, [imageUrls]);
+  }, [imageUrls, textToFileName]);
 
   const handleAnswerSelect = async (answer: string) => {
     if (isSubmitting || !currentItem || !user) return;
@@ -933,6 +1097,22 @@ export default function ComprehensionTestPage() {
                     )}
                   </button>
                 ))}
+                {/* 모르겠음 버튼 */}
+                <button
+                  onClick={() => handleAnswerSelect('모르겠음')}
+                  style={{
+                    ...(selectedAnswer === '모르겠음' ? selectedChoiceButtonStyle : choiceButtonStyle),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    fontSize: '1.5rem',
+                  }}
+                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
+                >
+                  모르겠음
+                </button>
               </div>
               
               <button

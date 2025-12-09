@@ -23,7 +23,7 @@ interface ImageWord {
 // 사용 가능한 이미지 단어 목록 로드
 const loadAvailableWords = async (): Promise<string[]> => {
   try {
-    const response = await fetch('/images/vocabulary/chunjae-text-ham/index.json');
+    const response = await fetch('/images/p5_vocabulary/index.json');
     if (!response.ok) {
       console.warn('[p5_vocabulary] index.json 로드 실패, 기본 단어 목록 사용');
       return [];
@@ -112,92 +112,84 @@ const getAbstractWordsToExclude = (): string[] => {
   ];
 };
 
-// 실제 존재하는 단어 음성 파일과 이미지 파일을 기반으로 문항 생성
-// 단어만 20개 구성
-const getFixedMeaningItems = async (availableWords: string[]): Promise<MeaningItem[]> => {
-  if (availableWords.length === 0) {
-    return [];
-  }
+// 텍스트를 파일명으로 변환
+const textToFileName = (text: string): string => {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '') // 특수문자 제거
+    .replace(/\s+/g, '_') // 공백을 언더스코어로
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '');
+};
 
-  // 단어 음성 파일 목록 로드
-  const availableAudioWords = await loadAvailableAudioWords();
+// 30개 고정 문항 정의
+const getFixedMeaningItems = async (): Promise<MeaningItem[]> => {
+  const fixedItems: MeaningItem[] = [
+    // 문항 1: 단어 - apple
+    { wordOrPhrase: 'apple', imageOptions: ['banana', 'apple', 'tomato'], correctAnswer: 'apple', phase: 'word' },
+    // 문항 2: 어구 - a red apple
+    { wordOrPhrase: 'a red apple', imageOptions: ['a green apple', 'a red apple', 'a red ball'], correctAnswer: 'a red apple', phase: 'phrase' },
+    // 문항 3: 문장 - It's a robot.
+    { wordOrPhrase: 'It\'s a robot.', imageOptions: ['its a bike', 'its a robot', 'its a ball'], correctAnswer: 'its a robot', phase: 'sentence' },
+    // 문항 4: 단어 - ball
+    { wordOrPhrase: 'ball', imageOptions: ['doll', 'robot', 'ball'], correctAnswer: 'ball', phase: 'word' },
+    // 문항 5: 어구 - two cows
+    { wordOrPhrase: 'two cows', imageOptions: ['three cows', 'two cows', 'two pigs'], correctAnswer: 'two cows', phase: 'phrase' },
+    // 문항 6: 문장 - Open the door, please.
+    { wordOrPhrase: 'Open the door, please.', imageOptions: ['close the door', 'open the door please', 'open the window'], correctAnswer: 'open the door please', phase: 'sentence' },
+    // 문항 7: 단어 - bike
+    { wordOrPhrase: 'bike', imageOptions: ['bike', 'car', 'bus'], correctAnswer: 'bike', phase: 'word' },
+    // 문항 8: 어구 - a big tree
+    { wordOrPhrase: 'a big tree', imageOptions: ['a small tree', 'a big tree', 'a big flower'], correctAnswer: 'a big tree', phase: 'phrase' },
+    // 문항 9: 문장 - I have a brush.
+    { wordOrPhrase: 'I have a brush.', imageOptions: ['i have a pencil', 'i have a brush', 'i have a ruler'], correctAnswer: 'i have a brush', phase: 'sentence' },
+    // 문항 10: 단어 - door
+    { wordOrPhrase: 'door', imageOptions: ['window', 'door', 'desk'], correctAnswer: 'door', phase: 'word' },
+    // 문항 11: 어구 - open the door
+    { wordOrPhrase: 'open the door', imageOptions: ['open the door', 'close the door', 'open the window'], correctAnswer: 'open the door', phase: 'phrase' },
+    // 문항 12: 문장 - It's pink.
+    { wordOrPhrase: 'It\'s pink.', imageOptions: ['its red', 'its pink', 'its green'], correctAnswer: 'its pink', phase: 'sentence' },
+    // 문항 13: 단어 - eraser
+    { wordOrPhrase: 'eraser', imageOptions: ['pencil', 'eraser', 'ruler'], correctAnswer: 'eraser', phase: 'word' },
+    // 문항 14: 어구 - a green book
+    { wordOrPhrase: 'a green book', imageOptions: ['red book', 'green bag', 'a green book'], correctAnswer: 'a green book', phase: 'phrase' },
+    // 문항 15: 문장 - I like chicken.
+    { wordOrPhrase: 'I like chicken.', imageOptions: ['i like pizza', 'i like chicken', 'i dont like chicken'], correctAnswer: 'i like chicken', phase: 'sentence' },
+    // 문항 16: 단어 - flower
+    { wordOrPhrase: 'flower', imageOptions: ['tree', 'flower', 'bird'], correctAnswer: 'flower', phase: 'word' },
+    // 문항 17: 어구 - three robots
+    { wordOrPhrase: 'three robots', imageOptions: ['four robots', 'three dolls', 'three robots'], correctAnswer: 'three robots', phase: 'phrase' },
+    // 문항 18: 문장 - I don't like carrots.
+    { wordOrPhrase: 'I don\'t like carrots.', imageOptions: ['i dont like carrots', 'i like carrots', 'i dont like apples'], correctAnswer: 'i dont like carrots', phase: 'sentence' },
+    // 문항 19: 단어 - chicken
+    { wordOrPhrase: 'chicken', imageOptions: ['pizza', 'salad', 'chicken'], correctAnswer: 'chicken', phase: 'word' },
+    // 문항 20: 어구 - a small bird
+    { wordOrPhrase: 'a small bird', imageOptions: ['a big bird', 'a small dog', 'a small bird'], correctAnswer: 'a small bird', phase: 'phrase' },
+    // 문항 21: 문장 - I can dance.
+    { wordOrPhrase: 'I can dance.', imageOptions: ['i can swim', 'i can dance', 'i can jump'], correctAnswer: 'i can dance', phase: 'sentence' },
+    // 문항 22: 단어 - elephant
+    { wordOrPhrase: 'elephant', imageOptions: ['lion', 'monkey', 'elephant'], correctAnswer: 'elephant', phase: 'word' },
+    // 문항 23: 어구 - yellow banana
+    { wordOrPhrase: 'yellow banana', imageOptions: ['green banana', 'yellow banana', 'yellow lemon'], correctAnswer: 'yellow banana', phase: 'phrase' },
+    // 문항 24: 문장 - Put on your coat.
+    { wordOrPhrase: 'Put on your coat.', imageOptions: ['put on your coat', 'put on your hat', 'take off your coat'], correctAnswer: 'put on your coat', phase: 'sentence' },
+    // 문항 25: 단어 - helmet
+    { wordOrPhrase: 'helmet', imageOptions: ['cap', 'helmet', 'hat'], correctAnswer: 'helmet', phase: 'word' },
+    // 문항 26: 어구 - swim and skate
+    { wordOrPhrase: 'swim and skate', imageOptions: ['swim and run', 'dance and skate', 'swim and skate'], correctAnswer: 'swim and skate', phase: 'phrase' },
+    // 문항 27: 문장 - It's snowing.
+    { wordOrPhrase: 'It\'s snowing.', imageOptions: ['its sunny', 'its raining', 'its snowing'], correctAnswer: 'its snowing', phase: 'sentence' },
+    // 문항 28: 단어 - coat
+    { wordOrPhrase: 'coat', imageOptions: ['shirt', 'coat', 'skirt'], correctAnswer: 'coat', phase: 'word' },
+    // 문항 29: 어구 - cloudy weather
+    { wordOrPhrase: 'cloudy weather', imageOptions: ['sunny weather', 'cloudy weather', 'raining weather'], correctAnswer: 'cloudy weather', phase: 'phrase' },
+    // 문항 30: 문장 - Sit down, please.
+    { wordOrPhrase: 'Sit down, please.', imageOptions: ['stand up please', 'sit down please', 'open the door'], correctAnswer: 'sit down please', phase: 'sentence' },
+  ];
+
+  console.log('[p5_vocabulary] 고정 문항 30개 로드 완료');
   
-  console.log('[p5_vocabulary] 사용 가능한 단어 음성 파일:', availableAudioWords.length, '개');
-  console.log('[p5_vocabulary] 사용 가능한 이미지 단어:', availableWords.length, '개');
-  
-  // 음성 파일과 이미지 파일이 모두 있는 단어만 필터링
-  const imageWordsLower = new Set(availableWords.map(w => w.toLowerCase()));
-  let validWords = availableAudioWords.filter(audioWord => {
-    return imageWordsLower.has(audioWord);
-  });
-  
-  console.log('[p5_vocabulary] 음성과 이미지가 모두 있는 단어:', validWords.length, '개');
-  
-  // 추상적 단어 제외 (이미지로 표현하기 어려운 단어들)
-  const abstractWordsToExclude = new Set(getAbstractWordsToExclude().map(w => w.toLowerCase()));
-  validWords = validWords.filter(word => !abstractWordsToExclude.has(word.toLowerCase()));
-  
-  console.log('[p5_vocabulary] 추상적 단어 제외 후 사용 가능한 단어:', validWords.length, '개');
-  
-  if (validWords.length < 20) {
-    console.warn(`[p5_vocabulary] 사용 가능한 단어가 부족합니다 (${validWords.length}개). 최대한 생성합니다.`);
-  }
-  
-  // 헷갈릴 수 있는 단어 그룹 정의
-  const confusingGroups = getConfusingWordGroups();
-  
-  // 20개 단어 선택 (랜덤)
-  const selectedWords = validWords
-    .sort(() => Math.random() - 0.5)
-    .slice(0, Math.min(20, validWords.length));
-  
-  // 각 단어에 대해 문항 생성
-  const wordItems: MeaningItem[] = [];
-  
-  for (const word of selectedWords) {
-    const wordLower = word.toLowerCase();
-    
-    // 현재 단어가 속한 헷갈릴 수 있는 그룹 찾기
-    const confusingGroup = getConfusingGroupForWord(wordLower, confusingGroups);
-    const confusingWordsSet = confusingGroup 
-      ? new Set(confusingGroup.filter(w => w !== wordLower))
-      : new Set<string>();
-    
-    // 오답 선택지 생성 (헷갈릴 수 있는 그룹의 단어는 제외)
-    const wrongWords = validWords
-      .filter(w => {
-        const wLower = w.toLowerCase();
-        // 정답 단어는 제외
-        if (wLower === wordLower) return false;
-        // 헷갈릴 수 있는 그룹의 다른 단어들도 제외
-        if (confusingWordsSet.has(wLower)) return false;
-        return true;
-      })
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 2)
-      .map(w => w.toLowerCase());
-    
-    if (wrongWords.length >= 2) {
-      wordItems.push({
-        wordOrPhrase: wordLower,
-        imageOptions: [wordLower, ...wrongWords].sort(() => Math.random() - 0.5),
-        correctAnswer: wordLower,
-        phase: 'word',
-      });
-      
-      if (confusingGroup) {
-        console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}" (헷갈릴 수 있는 그룹: ${confusingGroup.filter(w => w !== wordLower).join(', ')})`);
-      } else {
-        console.log(`[p5_vocabulary] 단어 문항 생성: "${wordLower}"`);
-      }
-    } else {
-      console.warn(`[p5_vocabulary] "${wordLower}"에 대한 충분한 오답 선택지를 찾을 수 없습니다.`);
-    }
-  }
-  
-  console.log('[p5_vocabulary] 최종 생성된 문항 수:', wordItems.length, '개 (모두 단어)');
-  
-  return wordItems;
+  return fixedItems;
 };
 
 export default function MeaningTestPage() {
@@ -229,41 +221,13 @@ export default function MeaningTestPage() {
       setUser(user);
 
       try {
-        // 사용 가능한 이미지 단어 목록 로드
-        const availableWords = await loadAvailableWords();
-        console.log('[p5_vocabulary] 사용 가능한 이미지 단어:', availableWords.length, '개');
-
-        const gradeLevel = await getUserGradeLevel(user.id);
-        const dbItems = await fetchApprovedTestItems('p5_vocabulary', gradeLevel || undefined);
-
-        if (dbItems && Array.isArray(dbItems.items)) {
-          console.log('[p5_vocabulary] DB에서 승인된 문항 사용:', dbItems.items.length, '개');
-          // DB 문항도 실제 존재하는 이미지만 사용하도록 필터링
-          const filteredItems = (dbItems.items as MeaningItem[]).filter(item => {
-            const correctWord = item.correctAnswer.toLowerCase();
-            const allOptionsValid = item.imageOptions.every(opt => {
-              const word = opt.toLowerCase();
-              return availableWords.includes(word);
-            });
-            return availableWords.includes(correctWord) && allOptionsValid;
-          });
-          
-          if (filteredItems.length > 0) {
-            setItems(filteredItems);
-          } else {
-            console.log('[p5_vocabulary] DB 문항이 모두 필터링되어 기본 문항 사용');
-            const fixedItems = await getFixedMeaningItems(availableWords);
-            setItems(fixedItems);
-          }
-        } else {
-          console.log('[p5_vocabulary] 승인된 문항이 없어 기본 문항 사용');
-          const fixedItems = await getFixedMeaningItems(availableWords);
-          setItems(fixedItems);
-        }
+        // 고정 문항 30개 사용
+        const fixedItems = await getFixedMeaningItems();
+        setItems(fixedItems);
+        console.log('[p5_vocabulary] 고정 문항 30개 로드 완료');
       } catch (error) {
-        console.error('[p5_vocabulary] 문항 로딩 오류, 기본 문항 사용:', error);
-        const availableWords = await loadAvailableWords();
-        const fixedItems = await getFixedMeaningItems(availableWords);
+        console.error('[p5_vocabulary] 문항 로딩 오류:', error);
+        const fixedItems = await getFixedMeaningItems();
         setItems(fixedItems);
       }
     };
@@ -273,8 +237,9 @@ export default function MeaningTestPage() {
   const playPhraseAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
-      // 단어 음성 파일 사용
-      const audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
+      // p5_vocabulary 폴더의 음성 파일 사용
+      const fileName = textToFileName(word);
+      const audioPath = `/audio/p5_vocabulary/${fileName}.mp3`;
       
       // 먼저 파일 존재 여부 확인
       let usePreGenerated = false;
@@ -447,8 +412,8 @@ export default function MeaningTestPage() {
         
         const imagePromises = uncachedOptions.map(async (option) => {
           try {
-            const word = option.toLowerCase();
-            const imagePath = `/images/vocabulary/chunjae-text-ham/${word}.png`;
+            const word = textToFileName(option);
+            const imagePath = `/images/p5_vocabulary/${word}.png`;
             
             const img = new Image();
             return new Promise<{ option: string; url: string | null; error?: string }>((resolve) => {
@@ -567,8 +532,8 @@ export default function MeaningTestPage() {
         if (nextItem) {
           nextItem.imageOptions.forEach(option => {
             if (!imageUrls[option]) {
-              const word = option.toLowerCase();
-              const imagePath = `/images/vocabulary/chunjae-text-ham/${word}.png`;
+              const word = textToFileName(option);
+              const imagePath = `/images/p5_vocabulary/${word}.png`;
               
               const img = new Image();
               img.onload = () => {
@@ -856,6 +821,23 @@ export default function MeaningTestPage() {
                     )}
                   </button>
                 ))}
+                {/* 모르겠음 버튼 */}
+                <button
+                  onClick={() => handleAnswerSelect('모르겠음')}
+                  style={{
+                    ...(selectedAnswer === '모르겠음' ? selectedChoiceButtonStyle : choiceButtonStyle),
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    minHeight: '200px',
+                    fontSize: '1.5rem',
+                  }}
+                  disabled={isSubmitting || isAudioLoading || isLoadingImages}
+                >
+                  모르겠음
+                </button>
               </div>
               
               <button

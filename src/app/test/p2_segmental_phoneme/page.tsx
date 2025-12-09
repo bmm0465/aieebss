@@ -504,21 +504,37 @@ export default function PsfTestPage() {
                     >
                       {currentItem.options[1]}
                     </button>
+                    <button
+                      onClick={() => handleAnswerSelect('모르겠음')}
+                      style={selectedAnswer === '모르겠음' ? selectedWordButtonStyle : wordButtonStyle}
+                      disabled={isSubmitting || isAudioLoading}
+                    >
+                      모르겠음
+                    </button>
                   </>
                 ) : (
                   // phonics_letter: 알파벳 버튼들
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', width: '100%' }}>
-                    {currentItem.options.map((option, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleAnswerSelect(option)}
-                        style={selectedAnswer === option ? selectedWordButtonStyle : wordButtonStyle}
-                        disabled={isSubmitting || isAudioLoading}
-                      >
-                        {option.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'center', width: '100%' }}>
+                      {currentItem.options.map((option, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleAnswerSelect(option)}
+                          style={selectedAnswer === option ? selectedWordButtonStyle : wordButtonStyle}
+                          disabled={isSubmitting || isAudioLoading}
+                        >
+                          {option.toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => handleAnswerSelect('모르겠음')}
+                      style={selectedAnswer === '모르겠음' ? selectedWordButtonStyle : wordButtonStyle}
+                      disabled={isSubmitting || isAudioLoading}
+                    >
+                      모르겠음
+                    </button>
+                  </>
                 )}
               </div>
               

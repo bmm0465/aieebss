@@ -1,0 +1,350 @@
+[
+  {
+    "word": "a big bird",
+    "file": "/images/p5_vocabulary/a_big_bird.png"
+  },
+  {
+    "word": "a big flower",
+    "file": "/images/p5_vocabulary/a_big_flower.png"
+  },
+  {
+    "word": "a big tree",
+    "file": "/images/p5_vocabulary/a_big_tree.png"
+  },
+  {
+    "word": "a green apple",
+    "file": "/images/p5_vocabulary/a_green_apple.png"
+  },
+  {
+    "word": "a green book",
+    "file": "/images/p5_vocabulary/a_green_book.png"
+  },
+  {
+    "word": "a red apple",
+    "file": "/images/p5_vocabulary/a_red_apple.png"
+  },
+  {
+    "word": "a red ball",
+    "file": "/images/p5_vocabulary/a_red_ball.png"
+  },
+  {
+    "word": "a small bird",
+    "file": "/images/p5_vocabulary/a_small_bird.png"
+  },
+  {
+    "word": "a small dog",
+    "file": "/images/p5_vocabulary/a_small_dog.png"
+  },
+  {
+    "word": "a small tree",
+    "file": "/images/p5_vocabulary/a_small_tree.png"
+  },
+  {
+    "word": "apple",
+    "file": "/images/p5_vocabulary/apple.png"
+  },
+  {
+    "word": "ball",
+    "file": "/images/p5_vocabulary/ball.png"
+  },
+  {
+    "word": "banana",
+    "file": "/images/p5_vocabulary/banana.png"
+  },
+  {
+    "word": "bike",
+    "file": "/images/p5_vocabulary/bike.png"
+  },
+  {
+    "word": "bird",
+    "file": "/images/p5_vocabulary/bird.png"
+  },
+  {
+    "word": "bus",
+    "file": "/images/p5_vocabulary/bus.png"
+  },
+  {
+    "word": "cap",
+    "file": "/images/p5_vocabulary/cap.png"
+  },
+  {
+    "word": "car",
+    "file": "/images/p5_vocabulary/car.png"
+  },
+  {
+    "word": "chicken",
+    "file": "/images/p5_vocabulary/chicken.png"
+  },
+  {
+    "word": "Close the door.",
+    "file": "/images/p5_vocabulary/close_the_door.png"
+  },
+  {
+    "word": "cloudy weather",
+    "file": "/images/p5_vocabulary/cloudy_weather.png"
+  },
+  {
+    "word": "coat",
+    "file": "/images/p5_vocabulary/coat.png"
+  },
+  {
+    "word": "dance and skate",
+    "file": "/images/p5_vocabulary/dance_and_skate.png"
+  },
+  {
+    "word": "desk",
+    "file": "/images/p5_vocabulary/desk.png"
+  },
+  {
+    "word": "doll",
+    "file": "/images/p5_vocabulary/doll.png"
+  },
+  {
+    "word": "door",
+    "file": "/images/p5_vocabulary/door.png"
+  },
+  {
+    "word": "elephant",
+    "file": "/images/p5_vocabulary/elephant.png"
+  },
+  {
+    "word": "eraser",
+    "file": "/images/p5_vocabulary/eraser.png"
+  },
+  {
+    "word": "flower",
+    "file": "/images/p5_vocabulary/flower.png"
+  },
+  {
+    "word": "four robots",
+    "file": "/images/p5_vocabulary/four_robots.png"
+  },
+  {
+    "word": "green bag",
+    "file": "/images/p5_vocabulary/green_bag.png"
+  },
+  {
+    "word": "green banana",
+    "file": "/images/p5_vocabulary/green_banana.png"
+  },
+  {
+    "word": "hat",
+    "file": "/images/p5_vocabulary/hat.png"
+  },
+  {
+    "word": "helmet",
+    "file": "/images/p5_vocabulary/helmet.png"
+  },
+  {
+    "word": "I can dance.",
+    "file": "/images/p5_vocabulary/i_can_dance.png"
+  },
+  {
+    "word": "I can jump.",
+    "file": "/images/p5_vocabulary/i_can_jump.png"
+  },
+  {
+    "word": "I can swim.",
+    "file": "/images/p5_vocabulary/i_can_swim.png"
+  },
+  {
+    "word": "I don't like apples.",
+    "file": "/images/p5_vocabulary/i_dont_like_apples.png"
+  },
+  {
+    "word": "I don't like carrots.",
+    "file": "/images/p5_vocabulary/i_dont_like_carrots.png"
+  },
+  {
+    "word": "I don't like chicken.",
+    "file": "/images/p5_vocabulary/i_dont_like_chicken.png"
+  },
+  {
+    "word": "I have a brush.",
+    "file": "/images/p5_vocabulary/i_have_a_brush.png"
+  },
+  {
+    "word": "I have a pencil.",
+    "file": "/images/p5_vocabulary/i_have_a_pencil.png"
+  },
+  {
+    "word": "I have a ruler.",
+    "file": "/images/p5_vocabulary/i_have_a_ruler.png"
+  },
+  {
+    "word": "I like carrots.",
+    "file": "/images/p5_vocabulary/i_like_carrots.png"
+  },
+  {
+    "word": "I like chicken.",
+    "file": "/images/p5_vocabulary/i_like_chicken.png"
+  },
+  {
+    "word": "I like pizza.",
+    "file": "/images/p5_vocabulary/i_like_pizza.png"
+  },
+  {
+    "word": "It's a ball.",
+    "file": "/images/p5_vocabulary/its_a_ball.png"
+  },
+  {
+    "word": "It's a bike.",
+    "file": "/images/p5_vocabulary/its_a_bike.png"
+  },
+  {
+    "word": "It's a robot.",
+    "file": "/images/p5_vocabulary/its_a_robot.png"
+  },
+  {
+    "word": "It's green.",
+    "file": "/images/p5_vocabulary/its_green.png"
+  },
+  {
+    "word": "It's pink.",
+    "file": "/images/p5_vocabulary/its_pink.png"
+  },
+  {
+    "word": "It's raining.",
+    "file": "/images/p5_vocabulary/its_raining.png"
+  },
+  {
+    "word": "It's red.",
+    "file": "/images/p5_vocabulary/its_red.png"
+  },
+  {
+    "word": "It's snowing.",
+    "file": "/images/p5_vocabulary/its_snowing.png"
+  },
+  {
+    "word": "It's sunny.",
+    "file": "/images/p5_vocabulary/its_sunny.png"
+  },
+  {
+    "word": "lion",
+    "file": "/images/p5_vocabulary/lion.png"
+  },
+  {
+    "word": "monkey",
+    "file": "/images/p5_vocabulary/monkey.png"
+  },
+  {
+    "word": "Open the door.",
+    "file": "/images/p5_vocabulary/open_the_door.png"
+  },
+  {
+    "word": "Open the door, please.",
+    "file": "/images/p5_vocabulary/open_the_door_please.png"
+  },
+  {
+    "word": "Open the window.",
+    "file": "/images/p5_vocabulary/open_the_window.png"
+  },
+  {
+    "word": "pencil",
+    "file": "/images/p5_vocabulary/pencil.png"
+  },
+  {
+    "word": "pizza",
+    "file": "/images/p5_vocabulary/pizza.png"
+  },
+  {
+    "word": "Put on your coat.",
+    "file": "/images/p5_vocabulary/put_on_your_coat.png"
+  },
+  {
+    "word": "Put on your hat.",
+    "file": "/images/p5_vocabulary/put_on_your_hat.png"
+  },
+  {
+    "word": "raining weather",
+    "file": "/images/p5_vocabulary/raining_weather.png"
+  },
+  {
+    "word": "red book",
+    "file": "/images/p5_vocabulary/red_book.png"
+  },
+  {
+    "word": "robot",
+    "file": "/images/p5_vocabulary/robot.png"
+  },
+  {
+    "word": "ruler",
+    "file": "/images/p5_vocabulary/ruler.png"
+  },
+  {
+    "word": "salad",
+    "file": "/images/p5_vocabulary/salad.png"
+  },
+  {
+    "word": "shirt",
+    "file": "/images/p5_vocabulary/shirt.png"
+  },
+  {
+    "word": "Sit down, please.",
+    "file": "/images/p5_vocabulary/sit_down_please.png"
+  },
+  {
+    "word": "skirt",
+    "file": "/images/p5_vocabulary/skirt.png"
+  },
+  {
+    "word": "Stand up, please.",
+    "file": "/images/p5_vocabulary/stand_up_please.png"
+  },
+  {
+    "word": "sunny weather",
+    "file": "/images/p5_vocabulary/sunny_weather.png"
+  },
+  {
+    "word": "swim and run",
+    "file": "/images/p5_vocabulary/swim_and_run.png"
+  },
+  {
+    "word": "swim and skate",
+    "file": "/images/p5_vocabulary/swim_and_skate.png"
+  },
+  {
+    "word": "Take off your coat.",
+    "file": "/images/p5_vocabulary/take_off_your_coat.png"
+  },
+  {
+    "word": "three cows",
+    "file": "/images/p5_vocabulary/three_cows.png"
+  },
+  {
+    "word": "three dolls",
+    "file": "/images/p5_vocabulary/three_dolls.png"
+  },
+  {
+    "word": "three robots",
+    "file": "/images/p5_vocabulary/three_robots.png"
+  },
+  {
+    "word": "tomato",
+    "file": "/images/p5_vocabulary/tomato.png"
+  },
+  {
+    "word": "tree",
+    "file": "/images/p5_vocabulary/tree.png"
+  },
+  {
+    "word": "two cows",
+    "file": "/images/p5_vocabulary/two_cows.png"
+  },
+  {
+    "word": "two pigs",
+    "file": "/images/p5_vocabulary/two_pigs.png"
+  },
+  {
+    "word": "window",
+    "file": "/images/p5_vocabulary/window.png"
+  },
+  {
+    "word": "yellow banana",
+    "file": "/images/p5_vocabulary/yellow_banana.png"
+  },
+  {
+    "word": "yellow lemon",
+    "file": "/images/p5_vocabulary/yellow_lemon.png"
+  }
+]

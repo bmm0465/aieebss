@@ -34,15 +34,70 @@ function getStressPosition(choice: string): number {
   return syllablesBefore + 1;
 }
 
-// [폴백] 3교시 고정 문항: 강세 패턴 선택
+// 강세 위치에 따라 선택지 생성 함수
+function generateStressChoices(word: string, correctSyllable: number, totalSyllables: number): string[] {
+  const choices: string[] = [];
+  
+  // 각 음절 위치에 강세를 둔 선택지 생성
+  for (let i = 1; i <= totalSyllables; i++) {
+    const parts = word.toLowerCase().split('');
+    let result = '';
+    let syllableCount = 0;
+    
+    // 간단한 음절 분리 로직 (실제로는 더 정교한 로직이 필요하지만 여기서는 단순화)
+    for (let j = 0; j < parts.length; j++) {
+      const char = parts[j];
+      const isVowel = /[aeiou]/i.test(char);
+      
+      if (isVowel && (j === 0 || !/[aeiou]/i.test(parts[j - 1]))) {
+        syllableCount++;
+      }
+      
+      if (syllableCount === i) {
+        // 해당 음절을 대문자로
+        result += char.toUpperCase();
+      } else {
+        result += char;
+      }
+    }
+    
+    choices.push(result);
+  }
+  
+  return choices;
+}
+
+// [폴백] 3교시 고정 문항: 강세 패턴 선택 (1그룹 + 2그룹)
 const getFixedStressItems = (): StressItem[] => {
-  return [
-    { word: 'apple', choices: ['APple', 'apPLE', 'APPLE'], correctAnswer: 'APple' },
-    { word: 'banana', choices: ['BANana', 'banANa', 'bananA'], correctAnswer: 'banANa' },
-    { word: 'brother', choices: ['BROther', 'broTHER', 'BROTHER'], correctAnswer: 'BROther' },
-    { word: 'carrot', choices: ['CARrot', 'carROT', 'CARROT'], correctAnswer: 'CARrot' },
-    { word: 'chicken', choices: ['CHIcken', 'chiCKEN', 'CHICKEN'], correctAnswer: 'CHIcken' },
+  // 1그룹
+  const group1: StressItem[] = [
+    { word: 'monkey', choices: ['MONkey', 'monKEY'], correctAnswer: 'MONkey' },
+    { word: 'robot', choices: ['RObot', 'roBOT'], correctAnswer: 'RObot' },
+    { word: 'zebra', choices: ['ZEbra', 'zeBRA'], correctAnswer: 'ZEbra' },
+    { word: 'carrot', choices: ['CARrot', 'carROT'], correctAnswer: 'CARrot' },
+    { word: 'brother', choices: ['BROther', 'broTHER'], correctAnswer: 'BROther' },
+    { word: 'okay', choices: ['OKay', 'okAY'], correctAnswer: 'okAY' },
+    { word: 'flower', choices: ['FLOWer', 'flowER'], correctAnswer: 'FLOWer' },
+    { word: 'banana', choices: ['BANana', 'banANa', 'banaNA'], correctAnswer: 'banANa' },
+    { word: 'tomato', choices: ['TOmato', 'toMAto', 'tomaTO'], correctAnswer: 'toMAto' },
+    { word: 'violin', choices: ['VIolin', 'viOLin', 'vioLIN'], correctAnswer: 'vioLIN' },
   ];
+  
+  // 2그룹
+  const group2: StressItem[] = [
+    { word: 'apple', choices: ['APple', 'apPLE'], correctAnswer: 'APple' },
+    { word: 'pizza', choices: ['PIZza', 'pizZA'], correctAnswer: 'PIZza' },
+    { word: 'yellow', choices: ['YELlow', 'yelLOW'], correctAnswer: 'YELlow' },
+    { word: 'chicken', choices: ['CHIcken', 'chicKEN'], correctAnswer: 'CHIcken' },
+    { word: 'pencil', choices: ['PENcil', 'penCIL'], correctAnswer: 'PENcil' },
+    { word: 'hello', choices: ['HELlo', 'helLO'], correctAnswer: 'helLO' },
+    { word: 'sister', choices: ['SISter', 'sisTER'], correctAnswer: 'SISter' },
+    { word: 'color', choices: ['COLor', 'colOR'], correctAnswer: 'COLor' },
+    { word: 'potato', choices: ['POtato', 'poTAto', 'potaTO'], correctAnswer: 'poTAto' },
+    { word: 'elephant', choices: ['ELephant', 'elEPHant', 'elePHANT'], correctAnswer: 'ELephant' },
+  ];
+  
+  return [...group1, ...group2];
 };
 
 export default function StressTestPage() {
@@ -129,42 +184,58 @@ export default function StressTestPage() {
   const playWordAudio = useCallback(async (word: string) => {
     setIsAudioLoading(true);
     try {
-      // p2_segmental_phoneme 폴더의 mp3 파일 사용
-      const audioPath = `/audio/p2_segmental_phoneme/chunjae-text-ham/${word.toLowerCase()}.mp3`;
-      const audio = new Audio(audioPath);
+      // p3_suprasegmental_phoneme 폴더의 mp3 파일 사용 (우선)
+      // 없으면 stress 폴더 시도
+      // 마지막으로 TTS API 사용 (폴백)
+      let audioPath = `/audio/p3_suprasegmental_phoneme/${word.toLowerCase()}.mp3`;
+      let usePreGenerated = false;
       
-      await new Promise<void>((resolve, reject) => {
-        audio.onended = () => {
-          resolve();
-        };
-        audio.onerror = () => {
-          // 파일이 없으면 TTS API 사용 (폴백)
-          fetch('/api/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: word }),
-          })
-            .then(response => {
-              if (!response.ok) throw new Error('음성 생성 실패');
-              return response.blob();
-            })
-            .then(audioBlob => {
-              const audioUrl = URL.createObjectURL(audioBlob);
-              const fallbackAudio = new Audio(audioUrl);
-              return new Promise<void>((resolveFallback, rejectFallback) => {
-                fallbackAudio.onended = () => {
-                  URL.revokeObjectURL(audioUrl);
-                  resolveFallback();
-                };
-                fallbackAudio.onerror = rejectFallback;
-                fallbackAudio.play();
-              });
-            })
-            .then(() => resolve())
-            .catch(reject);
-        };
-        audio.play();
-      });
+      // 파일 존재 여부 확인
+      try {
+        const response = await fetch(audioPath, { method: 'HEAD' });
+        usePreGenerated = response.ok;
+      } catch {
+        // p3_suprasegmental_phoneme 폴더에 없으면 stress 폴더 시도
+        audioPath = `/audio/stress/${word.toLowerCase()}.mp3`;
+        try {
+          const response = await fetch(audioPath, { method: 'HEAD' });
+          usePreGenerated = response.ok;
+        } catch {
+          usePreGenerated = false;
+        }
+      }
+      
+      if (usePreGenerated) {
+        // 사전 생성된 파일 재생
+        const audio = new Audio(audioPath);
+        await new Promise<void>((resolve, reject) => {
+          audio.onended = () => resolve();
+          audio.onerror = reject;
+          audio.play();
+        });
+      } else {
+        // 파일이 없으면 TTS API 사용 (폴백)
+        const response = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text: word }),
+        });
+        
+        if (!response.ok) throw new Error('음성 생성 실패');
+        
+        const audioBlob = await response.blob();
+        const audioUrl = URL.createObjectURL(audioBlob);
+        const fallbackAudio = new Audio(audioUrl);
+        
+        await new Promise<void>((resolve, reject) => {
+          fallbackAudio.onended = () => {
+            URL.revokeObjectURL(audioUrl);
+            resolve();
+          };
+          fallbackAudio.onerror = reject;
+          fallbackAudio.play();
+        });
+      }
     } catch (error) {
       console.error('오디오 재생 에러:', error);
       setFeedback('소리를 재생하는 데 문제가 생겼어요.');
@@ -523,9 +594,30 @@ export default function StressTestPage() {
                 {currentItem.word}
               </div>
               
+              {/* 모르겠음 버튼 */}
+              <button
+                onClick={() => {
+                  setSelectedAnswer('모르겠음');
+                  setSelectedStressPosition(-1); // -1을 모르겠음으로 사용
+                }}
+                style={{
+                  ...buttonStyle,
+                  maxWidth: '250px',
+                  marginTop: '1rem',
+                  backgroundColor: selectedAnswer === '모르겠음' 
+                    ? '#10b981' 
+                    : '#6366f1',
+                  fontSize: '1.2rem',
+                  minHeight: '60px',
+                }}
+                disabled={isSubmitting || isAudioLoading}
+              >
+                모르겠음
+              </button>
+              
               <div style={{ position: 'relative', width: '100%', marginTop: '2rem' }}>
-                {/* 제출 버튼 - selectedStressPosition이 설정되면 표시 */}
-                {selectedStressPosition !== null && (
+                {/* 제출 버튼 - selectedStressPosition이 설정되거나 모르겠음이 선택되면 표시 */}
+                {(selectedStressPosition !== null || selectedAnswer === '모르겠음') && (
                   <button
                     onClick={handleSubmit}
                     style={{

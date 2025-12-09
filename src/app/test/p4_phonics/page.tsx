@@ -6,37 +6,38 @@ import { createClient } from '@/lib/supabase/client';
 import type { User } from '@supabase/supabase-js';
 import { fetchApprovedTestItems, getUserGradeLevel } from '@/lib/utils/testItems';
 
-type ReadingPhase = 'nwf' | 'wrf' | 'orf';
+type ItemType = 'nwf' | 'wrf' | 'orf';
 type TestPhase = 'ready' | 'testing' | 'finished';
 
-// [폴백] NWF 고정 문항 (무의미 단어)
-const getFixedNonsenseWords = () => {
-  return [
-    'sep', 'het', 'tum', 'lut', 'dit', 'reg', 'fet', 'pom', 'teb', 'gid'
-  ];
-};
+interface PhonicsItem {
+  text: string;
+  type: ItemType;
+}
 
-// [폴백] WRF 고정 문항 (천재교과서 함 - 강세 명확한 단어, 2음절 이상)
-const getFixedSightWords = () => {
-  return [
-    'apple', 'banana', 'brother', 'carrot', 'chicken', 'color', 'elephant', 'eraser', 'flower', 'grandfather'
-  ];
-};
-
-// [폴백] ORF 고정 문장 (천재교과서 함 - 핵심 표현, 2개 단어 이상)
-const getFixedSentences = () => {
-  return [
-    "I'm Momo",
+// [폴백] 고정 문항: 무의미 단어-단어-문장 순서로 30개
+const getFixedPhonicsItems = (): PhonicsItem[] => {
+  const nonsenseWords = ['sep', 'het', 'tum', 'lut', 'dit', 'reg', 'fet', 'pom', 'teb', 'gid'];
+  const words = ['cat', 'egg', 'door', 'two', 'pen', 'blue', 'and', 'jump', 'dance', 'sister'];
+  const sentences = [
     'How are you?',
-    "What's this",
-    "It's a bike",
-    "It's a robot",
-    'Sit down, please',
-    'Open the door, please',
-    'Thank you',
-    "You're welcome",
-    'How many cows?',
+    "It's a bike.",
+    'Sit down, please.',
+    "That's right.",
+    'Do you have a pencil?',
+    'What color is it?',
+    'I like chicken.',
+    'Is it a bird?',
+    'Can you swim?',
+    "He's my dad.",
   ];
+
+  const items: PhonicsItem[] = [];
+  for (let i = 0; i < 10; i++) {
+    items.push({ text: nonsenseWords[i], type: 'nwf' });
+    items.push({ text: words[i], type: 'wrf' });
+    items.push({ text: sentences[i], type: 'orf' });
+  }
+  return items;
 };
 
 export default function ReadingTestPage() {
@@ -44,12 +45,9 @@ export default function ReadingTestPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [testPhase, setTestPhase] = useState<TestPhase>('ready');
-  const [readingPhase, setReadingPhase] = useState<ReadingPhase>('nwf');
-  const [nwfWords, setNwfWords] = useState<string[]>([]);
-  const [wrfWords, setWrfWords] = useState<string[]>([]);
-  const [orfSentences, setOrfSentences] = useState<string[]>([]);
+  const [items, setItems] = useState<PhonicsItem[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [currentItem, setCurrentItem] = useState<string>('');
+  const [currentItem, setCurrentItem] = useState<PhonicsItem | null>(null);
   const [isRecording, setIsRecording] = useState(false);
   const [feedback, setFeedback] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,54 +76,52 @@ export default function ReadingTestPage() {
         if (response.ok) {
           const jsonItems = await response.json();
           console.log('[p4_phonics] p4_items.json에서 문항 로드');
-          if (jsonItems.nwf && Array.isArray(jsonItems.nwf)) {
-            setNwfWords(jsonItems.nwf.slice(0, 5));
+          
+          // JSON에서 nwf, wrf, orf를 가져와서 순서대로 배치
+          const nwf = jsonItems.nwf && Array.isArray(jsonItems.nwf) ? jsonItems.nwf.slice(0, 10) : [];
+          const wrf = jsonItems.wrf && Array.isArray(jsonItems.wrf) ? jsonItems.wrf.slice(0, 10) : [];
+          const orf = jsonItems.orf && Array.isArray(jsonItems.orf) ? jsonItems.orf.slice(0, 10) : [];
+          
+          if (nwf.length === 10 && wrf.length === 10 && orf.length === 10) {
+            const combinedItems: PhonicsItem[] = [];
+            for (let i = 0; i < 10; i++) {
+              combinedItems.push({ text: nwf[i], type: 'nwf' });
+              combinedItems.push({ text: wrf[i], type: 'wrf' });
+              combinedItems.push({ text: orf[i], type: 'orf' });
+            }
+            setItems(combinedItems);
           } else {
-            setNwfWords(getFixedNonsenseWords().slice(0, 5));
-          }
-          if (jsonItems.wrf && Array.isArray(jsonItems.wrf)) {
-            setWrfWords(jsonItems.wrf.slice(0, 5));
-          } else {
-            setWrfWords(getFixedSightWords().slice(0, 5));
-          }
-          if (jsonItems.orf && Array.isArray(jsonItems.orf)) {
-            setOrfSentences(jsonItems.orf.slice(0, 5));
-          } else {
-            setOrfSentences(getFixedSentences().slice(0, 5));
+            setItems(getFixedPhonicsItems());
           }
         } else {
           // DB에서 승인된 문항 조회 시도
           const gradeLevel = await getUserGradeLevel(user.id);
           const phonicsItems = await fetchApprovedTestItems('p4_phonics', gradeLevel || undefined);
           if (phonicsItems && phonicsItems.items && typeof phonicsItems.items === 'object') {
-            const items = phonicsItems.items as { nwf?: string[]; wrf?: string[]; orf?: string[] };
-            if (items.nwf && Array.isArray(items.nwf)) {
-              setNwfWords(items.nwf.slice(0, 5));
+            const dbItems = phonicsItems.items as { nwf?: string[]; wrf?: string[]; orf?: string[] };
+            const nwf = dbItems.nwf && Array.isArray(dbItems.nwf) ? dbItems.nwf.slice(0, 10) : [];
+            const wrf = dbItems.wrf && Array.isArray(dbItems.wrf) ? dbItems.wrf.slice(0, 10) : [];
+            const orf = dbItems.orf && Array.isArray(dbItems.orf) ? dbItems.orf.slice(0, 10) : [];
+            
+            if (nwf.length === 10 && wrf.length === 10 && orf.length === 10) {
+              const combinedItems: PhonicsItem[] = [];
+              for (let i = 0; i < 10; i++) {
+                combinedItems.push({ text: nwf[i], type: 'nwf' });
+                combinedItems.push({ text: wrf[i], type: 'wrf' });
+                combinedItems.push({ text: orf[i], type: 'orf' });
+              }
+              setItems(combinedItems);
             } else {
-              setNwfWords(getFixedNonsenseWords().slice(0, 5));
-            }
-            if (items.wrf && Array.isArray(items.wrf)) {
-              setWrfWords(items.wrf.slice(0, 5));
-            } else {
-              setWrfWords(getFixedSightWords().slice(0, 5));
-            }
-            if (items.orf && Array.isArray(items.orf)) {
-              setOrfSentences(items.orf.slice(0, 5));
-            } else {
-              setOrfSentences(getFixedSentences().slice(0, 5));
+              setItems(getFixedPhonicsItems());
             }
           } else {
             // 폴백: 고정 문항 사용
-            setNwfWords(getFixedNonsenseWords().slice(0, 5));
-            setWrfWords(getFixedSightWords().slice(0, 5));
-            setOrfSentences(getFixedSentences().slice(0, 5));
+            setItems(getFixedPhonicsItems());
           }
         }
       } catch (error) {
         console.error('[Reading] 문항 로딩 오류, 기본 문항 사용:', error);
-        setNwfWords(getFixedNonsenseWords());
-        setWrfWords(getFixedSightWords());
-        setOrfSentences(getFixedSentences());
+        setItems(getFixedPhonicsItems());
       }
 
       prepareMediaRecorder();
@@ -158,35 +154,16 @@ export default function ReadingTestPage() {
   }, []);
 
   const goToNextItem = useCallback(() => {
-    let currentItems: string[] = [];
-    if (readingPhase === 'nwf') currentItems = nwfWords;
-    else if (readingPhase === 'wrf') currentItems = wrfWords;
-    else currentItems = orfSentences;
-
     const nextIndex = currentIndex + 1;
-    if (nextIndex >= currentItems.length) {
-      // 현재 단계 완료, 다음 단계로
-      setIsSubmitting(false); // phase 전환 시 상태 초기화
-      if (readingPhase === 'nwf') {
-        setReadingPhase('wrf');
-        setCurrentIndex(0);
-        setCurrentItem(wrfWords[0] || '');
-        setFeedback('이제 실제 단어를 읽어주세요.');
-      } else if (readingPhase === 'wrf') {
-        setReadingPhase('orf');
-        setCurrentIndex(0);
-        setCurrentItem(orfSentences[0] || '');
-        setFeedback('이제 문장을 읽어주세요.');
-      } else {
-        setTestPhase('finished');
-      }
+    if (nextIndex >= items.length) {
+      setTestPhase('finished');
     } else {
       setCurrentIndex(nextIndex);
-      setCurrentItem(currentItems[nextIndex]);
+      setCurrentItem(items[nextIndex]);
       setIsSubmitting(false);
       setFeedback('');
     }
-  }, [readingPhase, nwfWords, wrfWords, orfSentences, currentIndex]);
+  }, [items, currentIndex]);
 
   const handleSkip = useCallback(async () => {
     if (isSubmitting || !user || !currentItem || isRecording) return;
@@ -206,8 +183,8 @@ export default function ReadingTestPage() {
       const emptyBlob = new Blob([], { type: 'audio/webm' });
       const formData = new FormData();
       formData.append('audio', emptyBlob);
-      formData.append('question', currentItem);
-      formData.append('testType', readingPhase.toUpperCase());
+      formData.append('question', currentItem?.text || '');
+      formData.append('testType', currentItem?.type.toUpperCase() || 'NWF');
       formData.append('userId', user.id);
       formData.append('authToken', authUser.id);
       formData.append('skip', 'true'); // 넘어가기 플래그
@@ -230,7 +207,7 @@ export default function ReadingTestPage() {
       setFeedback('오류가 발생했습니다.');
       setIsSubmitting(false);
     }
-  }, [user, currentItem, readingPhase, isSubmitting, isRecording, supabase, goToNextItem]);
+  }, [user, currentItem, isSubmitting, isRecording, supabase, goToNextItem]);
 
   const submitRecording = useCallback(async (audioBlob: Blob) => {
     if (!user || !currentItem) {
@@ -247,8 +224,8 @@ export default function ReadingTestPage() {
 
     const formData = new FormData();
     formData.append('audio', audioBlob);
-    formData.append('question', currentItem);
-    formData.append('testType', readingPhase.toUpperCase());
+    formData.append('question', currentItem.text);
+    formData.append('testType', currentItem.type.toUpperCase());
     formData.append('userId', user.id);
     formData.append('authToken', authUser.id);
     
@@ -269,7 +246,7 @@ export default function ReadingTestPage() {
       setFeedback('요청 전송 중 오류가 발생했습니다.');
       setIsSubmitting(false);
     }
-  }, [user, currentItem, readingPhase, supabase, goToNextItem]);
+  }, [user, currentItem, supabase, goToNextItem]);
 
   const startRecording = useCallback(async () => {
     setFeedback('');
@@ -324,16 +301,10 @@ export default function ReadingTestPage() {
   }, [stopRecording, submitRecording]);
 
   useEffect(() => {
-    if (testPhase === 'testing') {
-      if (readingPhase === 'nwf' && nwfWords.length > 0) {
-        setCurrentItem(nwfWords[0]);
-      } else if (readingPhase === 'wrf' && wrfWords.length > 0) {
-        setCurrentItem(wrfWords[0]);
-      } else if (readingPhase === 'orf' && orfSentences.length > 0) {
-        setCurrentItem(orfSentences[0]);
-      }
+    if (testPhase === 'testing' && items.length > 0 && currentIndex < items.length) {
+      setCurrentItem(items[currentIndex]);
     }
-  }, [testPhase, readingPhase, nwfWords, wrfWords, orfSentences]);
+  }, [testPhase, items, currentIndex]);
 
   useEffect(() => {
     if (testPhase !== 'testing' || timeLeft <= 0 || isSubmitting) return;
@@ -364,11 +335,10 @@ export default function ReadingTestPage() {
 
   const handleStartTest = () => {
     setTestPhase('testing');
-    setReadingPhase('nwf');
     setCurrentIndex(0);
     setTimeLeft(60);
-    setCurrentItem(nwfWords[0] || '');
-    setFeedback('무의미 단어를 읽어주세요.');
+    setCurrentItem(items[0] || null);
+    setFeedback('');
   };
 
   const getPhaseTitle = () => {
@@ -376,8 +346,9 @@ export default function ReadingTestPage() {
   };
 
   const getPhaseDescription = () => {
-    if (readingPhase === 'nwf') return '무의미 단어를 파닉스 규칙에 따라 읽어주세요.';
-    if (readingPhase === 'wrf') return '실제 단어를 정확하게 읽어주세요.';
+    if (!currentItem) return '';
+    if (currentItem.type === 'nwf') return '무의미 단어를 파닉스 규칙에 따라 읽어주세요.';
+    if (currentItem.type === 'wrf') return '실제 단어를 정확하게 읽어주세요.';
     return '문장을 자연스럽게 읽어주세요.';
   };
 
@@ -438,7 +409,7 @@ export default function ReadingTestPage() {
     boxShadow: '0 10px 15px -3px rgba(99, 102, 241, 0.3)',
   };
   const wordBoxStyle: React.CSSProperties = {
-    fontSize: readingPhase === 'orf' ? '2.5rem' : '8rem',
+    fontSize: currentItem?.type === 'orf' ? '2.5rem' : '8rem',
     fontWeight: 'bold',
     margin: '2rem 0',
     background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
@@ -502,9 +473,9 @@ export default function ReadingTestPage() {
           </div>
         )}
 
-        {testPhase === 'testing' && (
+        {testPhase === 'testing' && currentItem && (
           <div>
-            <div style={wordBoxStyle}>{currentItem}</div>
+            <div style={wordBoxStyle}>{currentItem.text}</div>
             <p style={feedbackStyle}>{feedback || getPhaseDescription()}</p>
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>

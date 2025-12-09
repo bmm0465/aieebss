@@ -2,8 +2,8 @@
  * 6교시 시험용 TTS 오디오 파일 생성 스크립트
  * 
  * 생성 항목:
- * - p6_items.json의 각 문항의 speaker1과 speaker2 음성
- * - 화자별로 다른 음성 사용 (Speaker 1: 남성/중성, Speaker 2: 여성/다른 톤)
+ * - 20개 대화 상황의 A와 B 음성 파일
+ * - 각 대화별로 남학생/여학생 성별 구분하여 음성 생성
  * 
  * 사용법:
  * npx tsx scripts/generate-p6-audio.ts
@@ -32,39 +32,203 @@ const openai = new OpenAI({
   apiKey: apiKey,
 });
 
-// p6_items.json 형식
-interface P6JsonItem {
-  id: string;
+// 대화 항목 인터페이스
+interface DialogueItem {
+  questionNumber: number;
   question: string;
-  script: {
-    speaker1: string;
-    speaker2: string;
+  dialogue: {
+    A: string;
+    B: string;
   };
-  options: Array<{
-    number: number;
-    description: string;
-    isCorrect: boolean;
-  }>;
-  evaluation: {
-    target: string;
-    description: string;
+  gender: {
+    A: 'male' | 'female'; // A의 성별
+    B: 'male' | 'female'; // B의 성별
   };
 }
 
-/**
- * p6_items.json 파일 로드
- */
-function loadP6Items(): P6JsonItem[] {
-  try {
-    const filePath = path.join(process.cwd(), 'public', 'data', 'p6_items.json');
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const data = JSON.parse(content);
-    return data as P6JsonItem[];
-  } catch (error) {
-    console.error('p6_items.json 로드 오류:', error);
-    return [];
-  }
-}
+// 20개 대화 상황 정의
+const DIALOGUE_ITEMS: DialogueItem[] = [
+  {
+    questionNumber: 1,
+    question: '두 사람이 이야기하고 있는 음식은 무엇인가요?',
+    dialogue: {
+      A: 'Do you like pizza?',
+      B: 'Yes, I do. I like pizza.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 2,
+    question: '사자의 크기는 어떠한가요?',
+    dialogue: {
+      A: 'Look at the lion.',
+      B: 'Wow! It\'s big.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 3,
+    question: '여학생이 가지고 있는 크레용의 색깔은 무엇인가요?',
+    dialogue: {
+      A: 'Do you have a crayon?',
+      B: 'Yes. It\'s yellow.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 4,
+    question: '남학생이 소개하는 사람은 누구인가요?',
+    dialogue: {
+      A: 'Who is he?',
+      B: 'He\'s my dad.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 5,
+    question: '여학생이 설명하고 있는 물건은 무엇인가요?',
+    dialogue: {
+      A: 'What\'s this?',
+      B: 'It\'s a cup. It\'s nice.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 6,
+    question: '가방의 크기는 어떠한가요?',
+    dialogue: {
+      A: 'What\'s that?',
+      B: 'It\'s a bag. It\'s small.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 7,
+    question: '강아지의 색깔은 무엇인가요?',
+    dialogue: {
+      A: 'Look at the dog.',
+      B: 'It\'s black. It\'s cute.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 8,
+    question: '여학생이 가리키는 사람은 누구인가요?',
+    dialogue: {
+      A: 'Who is she?',
+      B: 'She\'s my grandmother.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 9,
+    question: '남학생은 무엇을 할 수 있나요?',
+    dialogue: {
+      A: 'Can you jump?',
+      B: 'Yes, I can. I can jump.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 10,
+    question: '곰의 모습으로 알맞은 것을 고르세요.',
+    dialogue: {
+      A: 'Is it a bear?',
+      B: 'Yes, it is. It\'s big.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 11,
+    question: '남학생이 가리키는 새의 색깔은 무엇인가요?',
+    dialogue: {
+      A: 'Look! It\'s a bird.',
+      B: 'Oh, it\'s blue.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 12,
+    question: '사진 속의 인물은 누구인가요?',
+    dialogue: {
+      A: 'Who is he?',
+      B: 'He\'s my brother. He\'s tall.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 13,
+    question: '여학생이 잘하는 운동은 무엇인가요?',
+    dialogue: {
+      A: 'I can skate. Look at me!',
+      B: 'Wow, great!',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 14,
+    question: '물고기의 크기는 어떠한가요?',
+    dialogue: {
+      A: 'Look at the fish.',
+      B: 'It\'s small. It\'s cute.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 15,
+    question: '고양이의 색깔은 무엇인가요?',
+    dialogue: {
+      A: 'Is it a cat?',
+      B: 'Yes. It\'s white.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 16,
+    question: '두 사람이 이야기하고 있는 대상은 누구인가요?',
+    dialogue: {
+      A: 'Who is she?',
+      B: 'She\'s my sister. She\'s pretty.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 17,
+    question: '창밖의 날씨는 어떠한가요?',
+    dialogue: {
+      A: 'How\'s the weather?',
+      B: 'It\'s raining. Take an umbrella.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 18,
+    question: '남학생이 설명하는 공의 크기는 어떠한가요?',
+    dialogue: {
+      A: 'Do you have a ball?',
+      B: 'Yes. It\'s big.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+  {
+    questionNumber: 19,
+    question: '가방의 색깔로 알맞은 것을 고르세요.',
+    dialogue: {
+      A: 'What color is it?',
+      B: 'It\'s green.',
+    },
+    gender: { A: 'male', B: 'female' }, // A(남학생) B(여학생)
+  },
+  {
+    questionNumber: 20,
+    question: '남학생이 소개하는 사람은 누구인가요?',
+    dialogue: {
+      A: 'Who is he?',
+      B: 'He\'s my grandfather.',
+    },
+    gender: { A: 'female', B: 'male' }, // A(여학생) B(남학생)
+  },
+];
 
 /**
  * 텍스트를 파일명에 사용할 수 있는 형태로 변환
@@ -80,36 +244,60 @@ function textToFileName(text: string): string {
 }
 
 /**
+ * 성별에 맞는 음성 모델 반환
+ */
+function getVoiceForGender(gender: 'male' | 'female'): 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer' {
+  // 남학생: echo (더 명확한 남성 음성) 또는 onyx (딥한 남성 음성)
+  // 여학생: nova (밝은 여성 음성) 또는 shimmer (부드러운 여성 음성)
+  if (gender === 'male') {
+    return 'echo'; // 남학생
+  } else {
+    return 'nova'; // 여학생
+  }
+}
+
+/**
  * TTS로 오디오 파일 생성
  * @param text - 생성할 텍스트
  * @param outputPath - 출력 경로
- * @param voice - 음성 종류 ('alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer')
+ * @param gender - 성별 ('male' | 'female')
  * @param description - 설명
+ * @param forceRegenerate - 강제 재생성 여부
  */
 async function generateAudioFile(
   text: string,
   outputPath: string,
-  voice: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer',
-  description: string
+  gender: 'male' | 'female',
+  description: string,
+  forceRegenerate: boolean = false
 ): Promise<boolean> {
   try {
-    // 이미 파일이 존재하면 스킵
-    if (fs.existsSync(outputPath)) {
+    // 강제 재생성 모드가 아니면 이미 파일이 존재하면 스킵
+    if (!forceRegenerate && fs.existsSync(outputPath)) {
       console.log(`⏭️  "${text}" 이미 존재, 스킵`);
       return true;
     }
-
-    console.log(`⏳ "${text}" (${description}, ${voice}) 생성 중...`);
     
-    // 초보자를 위해 느리고 명확하게 발음하도록 instructions 사용
-    const speedInstruction = "Speak slowly and clearly. This is for beginner English learners. Pronounce each word distinctly and at a slower pace than normal conversation. Use natural intonation for questions and statements.";
+    // 강제 재생성 모드면 기존 파일 삭제
+    if (forceRegenerate && fs.existsSync(outputPath)) {
+      fs.unlinkSync(outputPath);
+      console.log(`🔄 "${text}" 기존 파일 삭제 후 재생성...`);
+    }
+
+    const voice = getVoiceForGender(gender);
+    const genderLabel = gender === 'male' ? '남학생' : '여학생';
+    
+    console.log(`⏳ "${text}" (${description}, ${genderLabel}, ${voice}) 생성 중...`);
+    
+    // gpt-4o-mini-tts 모델 사용 (instructions 지원)
+    const instruction = "Speak naturally and clearly. This is for beginner English learners. Use natural intonation for questions and statements. Pronounce each word clearly but at a conversational pace suitable for young students.";
     
     const mp3 = await openai.audio.speech.create({
-      model: "tts-1",
+      model: "gpt-4o-mini-tts",
       voice: voice,
       input: text,
-      // instructions: speedInstruction, // tts-1 모델은 instructions 미지원
-      speed: 0.8, // 0.25 ~ 4.0, 기본값 1.0
+      instructions: instruction,
+      speed: 0.9, // 약간 느리게
     });
     
     const buffer = Buffer.from(await mp3.arrayBuffer());
@@ -121,77 +309,86 @@ async function generateAudioFile(
     }
     
     fs.writeFileSync(outputPath, buffer);
-    console.log(`✅ "${text}" 완료 → ${outputPath}`);
+    console.log(`✅ "${text}" 완료 → ${path.basename(outputPath)}`);
+    
+    // API 레이트 리밋 방지를 위해 딜레이
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     return true;
-  } catch (error) {
-    console.error(`❌ "${text}" 실패:`, error);
+  } catch (error: any) {
+    console.error(`❌ "${text}" 실패:`, error?.message || error);
     return false;
   }
 }
 
 /**
  * 6교시 대화 오디오 파일 생성
- * @param limit - 생성할 문항 개수 제한 (테스트용, undefined면 전체 생성)
  */
-async function generateP6Audio(limit?: number) {
+async function generateP6Audio() {
   console.log('\n🎤 6교시 대화 오디오 파일 생성 시작...');
+  console.log(`총 ${DIALOGUE_ITEMS.length}개 대화 상황 처리\n`);
   
-  const allItems = loadP6Items();
-  if (allItems.length === 0) {
-    console.error('❌ p6_items.json에서 문항을 로드할 수 없습니다.');
-    return;
-  }
-  
-  const items = limit ? allItems.slice(0, limit) : allItems;
-  
-  if (limit) {
-    console.log(`⚠️  테스트 모드: 처음 ${limit}개 문항만 생성합니다.`);
-  }
-  
-  console.log(`총 ${allItems.length}개 문항 중 ${items.length}개 처리`);
-  
-  // 화자별 음성 설정
-  // Speaker 1: 남성/중성 음성
-  const speaker1Voice: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer' = 'echo'; // 남성
-  // Speaker 2: 여성/다른 음성
-  const speaker2Voice: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer' = 'nova'; // 여성
-  
-  const baseDir = path.join(process.cwd(), 'public', 'audio', 'comprehension');
-  
-  // speaker1과 speaker2를 분리된 폴더에 저장
-  const speaker1Dir = path.join(baseDir, 'p6_speaker1');
-  const speaker2Dir = path.join(baseDir, 'p6_speaker2');
+  // p6_comprehension 폴더에 직접 저장
+  const baseDir = path.join(process.cwd(), 'public', 'audio', 'p6_comprehension');
   
   let successCount = 0;
   let failCount = 0;
   let skipCount = 0;
   
-  // 고유한 speaker1과 speaker2 텍스트 수집
-  const uniqueSpeaker1Texts = new Map<string, string>(); // text -> itemId
-  const uniqueSpeaker2Texts = new Map<string, string>(); // text -> itemId
+  // 고유한 대화 문장 수집 (텍스트와 성별 정보 함께 저장)
+  interface UniqueDialogue {
+    text: string;
+    gender: 'male' | 'female';
+    questionNumbers: number[];
+  }
   
-  for (const item of items) {
-    if (item.script.speaker1) {
-      uniqueSpeaker1Texts.set(item.script.speaker1, item.id);
+  const uniqueSpeakerATexts = new Map<string, UniqueDialogue>(); // text -> {gender, questionNumbers}
+  const uniqueSpeakerBTexts = new Map<string, UniqueDialogue>(); // text -> {gender, questionNumbers}
+  
+  for (const item of DIALOGUE_ITEMS) {
+    // Speaker A 텍스트 처리
+    const textA = item.dialogue.A;
+    if (!uniqueSpeakerATexts.has(textA)) {
+      uniqueSpeakerATexts.set(textA, {
+        text: textA,
+        gender: item.gender.A,
+        questionNumbers: [item.questionNumber],
+      });
+    } else {
+      uniqueSpeakerATexts.get(textA)!.questionNumbers.push(item.questionNumber);
     }
-    if (item.script.speaker2) {
-      uniqueSpeaker2Texts.set(item.script.speaker2, item.id);
+    
+    // Speaker B 텍스트 처리
+    const textB = item.dialogue.B;
+    if (!uniqueSpeakerBTexts.has(textB)) {
+      uniqueSpeakerBTexts.set(textB, {
+        text: textB,
+        gender: item.gender.B,
+        questionNumbers: [item.questionNumber],
+      });
+    } else {
+      uniqueSpeakerBTexts.get(textB)!.questionNumbers.push(item.questionNumber);
     }
   }
   
   console.log(`\n📊 고유한 대화 문장:`);
-  console.log(`  - Speaker 1: ${uniqueSpeaker1Texts.size}개`);
-  console.log(`  - Speaker 2: ${uniqueSpeaker2Texts.size}개`);
-  console.log(`  - 총 ${uniqueSpeaker1Texts.size + uniqueSpeaker2Texts.size}개 음성 파일 생성 예정\n`);
+  console.log(`  - Speaker A: ${uniqueSpeakerATexts.size}개`);
+  console.log(`  - Speaker B: ${uniqueSpeakerBTexts.size}개`);
+  console.log(`  - 총 ${uniqueSpeakerATexts.size + uniqueSpeakerBTexts.size}개 음성 파일 생성 예정\n`);
   
-  // Speaker 1 음성 생성
-  console.log(`\n🎙️  Speaker 1 음성 생성 (${speaker1Voice})...`);
-  for (const [text, itemId] of uniqueSpeaker1Texts.entries()) {
-    const fileName = `${textToFileName(text)}.mp3`;
-    const outputPath = path.join(speaker1Dir, fileName);
+  // Speaker A 음성 생성
+  console.log(`\n🎙️  Speaker A 음성 생성...`);
+  for (const dialogue of uniqueSpeakerATexts.values()) {
+    const fileName = `A_${textToFileName(dialogue.text)}.mp3`;
+    const outputPath = path.join(baseDir, fileName);
+    const description = `Speaker A (문항 ${dialogue.questionNumbers.join(', ')})`;
     
-    const result = await generateAudioFile(text, outputPath, speaker1Voice, `Speaker 1 (${itemId})`);
+    const result = await generateAudioFile(
+      dialogue.text,
+      outputPath,
+      dialogue.gender,
+      description
+    );
     
     if (result) {
       if (fs.existsSync(outputPath)) {
@@ -203,17 +400,22 @@ async function generateP6Audio(limit?: number) {
       failCount++;
     }
     
-    // API 레이트 리밋 방지를 위한 짧은 딜레이
-    await new Promise(resolve => setTimeout(resolve, 200));
+    console.log(''); // 빈 줄로 구분
   }
   
-  // Speaker 2 음성 생성
-  console.log(`\n🎙️  Speaker 2 음성 생성 (${speaker2Voice})...`);
-  for (const [text, itemId] of uniqueSpeaker2Texts.entries()) {
-    const fileName = `${textToFileName(text)}.mp3`;
-    const outputPath = path.join(speaker2Dir, fileName);
+  // Speaker B 음성 생성
+  console.log(`\n🎙️  Speaker B 음성 생성...`);
+  for (const dialogue of uniqueSpeakerBTexts.values()) {
+    const fileName = `B_${textToFileName(dialogue.text)}.mp3`;
+    const outputPath = path.join(baseDir, fileName);
+    const description = `Speaker B (문항 ${dialogue.questionNumbers.join(', ')})`;
     
-    const result = await generateAudioFile(text, outputPath, speaker2Voice, `Speaker 2 (${itemId})`);
+    const result = await generateAudioFile(
+      dialogue.text,
+      outputPath,
+      dialogue.gender,
+      description
+    );
     
     if (result) {
       if (fs.existsSync(outputPath)) {
@@ -225,23 +427,53 @@ async function generateP6Audio(limit?: number) {
       failCount++;
     }
     
-    // API 레이트 리밋 방지를 위한 짧은 딜레이
-    await new Promise(resolve => setTimeout(resolve, 200));
+    console.log(''); // 빈 줄로 구분
   }
+  
+  // 인덱스 파일 생성
+  const indexFile = path.join(baseDir, 'index.json');
+  const indexData = {
+    dialogues: DIALOGUE_ITEMS.map(item => ({
+      questionNumber: item.questionNumber,
+      question: item.question,
+      dialogue: {
+        A: {
+          text: item.dialogue.A,
+          gender: item.gender.A,
+          file: `/audio/p6_comprehension/A_${textToFileName(item.dialogue.A)}.mp3`,
+        },
+        B: {
+          text: item.dialogue.B,
+          gender: item.gender.B,
+          file: `/audio/p6_comprehension/B_${textToFileName(item.dialogue.B)}.mp3`,
+        },
+      },
+    })),
+  };
+  
+  if (!fs.existsSync(baseDir)) {
+    fs.mkdirSync(baseDir, { recursive: true });
+  }
+  fs.writeFileSync(indexFile, JSON.stringify(indexData, null, 2));
+  console.log(`📝 인덱스 파일 생성: ${indexFile}`);
   
   console.log(`\n✨ 완료!`);
   console.log(`  - 성공: ${successCount}개`);
   console.log(`  - 스킵: ${skipCount}개`);
   console.log(`  - 실패: ${failCount}개`);
   console.log(`\n📁 생성된 파일 위치:`);
-  console.log(`  - Speaker 1: ${speaker1Dir}`);
-  console.log(`  - Speaker 2: ${speaker2Dir}`);
+  console.log(`  - 모든 음성 파일: ${baseDir}`);
+  console.log(`  - 인덱스 파일: ${indexFile}`);
 }
 
 // 메인 실행
-// 전체 문항 생성 (limit 없음 = 전체)
-generateP6Audio().catch((error) => {
-  console.error('❌ 스크립트 실행 중 오류:', error);
-  process.exit(1);
-});
+generateP6Audio()
+  .then(() => {
+    console.log('\n🎉 모든 대화 오디오 파일 생성 완료!');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('\n💥 스크립트 실행 오류:', error);
+    process.exit(1);
+  });
 

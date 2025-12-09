@@ -1,7 +1,7 @@
 /**
- * 천재교과서(함) 단어 이미지 생성 스크립트
+ * 단어/어구/문장 이미지 생성 스크립트
  * 
- * Google Gemini API를 사용하여 단어 이미지 생성
+ * Google Gemini API를 사용하여 단어, 어구, 문장에 대한 이미지 생성
  * - 다른 단어와 헷갈리지 않도록 명확하게
  * - 전체적인 디자인/양식이 동일하게 유지
  * - 이미지에 텍스트/단어가 포함되지 않도록 함
@@ -38,111 +38,191 @@ if (!googleApiKey) {
 const genAI = new GoogleGenerativeAI(googleApiKey);
 
 /**
- * 기능어(function words) 목록
- * 전치사, 접속사, 관사, 대명사, 조동사 등은 이미지 생성에서 제외
+ * 생성할 단어/어구/문장 목록
  */
-const FUNCTION_WORDS = new Set([
-  // 관사
-  'a', 'an', 'the',
-  // 전치사
-  'at', 'in', 'on', 'for', 'with', 'by', 'from', 'to', 'of', 'about', 'up', 'down', 
-  'out', 'off', 'over', 'under', 'into', 'onto', 'upon', 'through', 'across', 
-  'between', 'among', 'during', 'before', 'after', 'since', 'until', 'within',
-  // 접속사
-  'and', 'or', 'but', 'so', 'because', 'if', 'when', 'while', 'though', 'although',
-  // 대명사
-  'i', 'you', 'he', 'she', 'it', 'we', 'they', 'this', 'that', 'these', 'those',
-  'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'her', 'its', 'our', 'their',
-  'mine', 'yours', 'hers', 'ours', 'theirs', 'myself', 'yourself', 'himself', 
-  'herself', 'itself', 'ourselves', 'yourselves', 'themselves',
-  // 조동사 및 be 동사
-  'be', 'am', 'is', 'are', 'was', 'were', 'been', 'being',
-  'can', 'could', 'will', 'would', 'should', 'shall', 'may', 'might', 'must',
-  'do', 'does', 'did', 'done', 'doing',
-  'have', 'has', 'had', 'having',
-  // 부사 (일부 기능어성 부사)
-  'very', 'too', 'also', 'not', 'no', 'yes', 'here', 'there', 'where', 'when', 
-  'why', 'how', 'now', 'then', 'well', 'just', 'only', 'even', 'still', 'yet',
-  // 기타 기능어
-  'oh', 'okay', 'ok', 'hi', 'hello', 'bye', 'goodbye', 'please', 'thank', 'thanks',
-  'what', 'who', 'which', 'whose', 'whom',
-]);
+const TARGET_ITEMS: string[] = [
+  'a big apple',
+  'a big bag',
+  'a big ball',
+  'a big bear',
+  'a big dog',
+  'a big fish',
+  'a big lion',
+  'a big mouse',
+  'a black cat',
+  'a black dog',
+  'a blue bird',
+  'a blue crayon',
+  'a boy jumping',
+  'a boy running',
+  'a boy swimming',
+  'a brown dog',
+  'a green bag',
+  'a green bird',
+  'a pink bag',
+  'a red bag',
+  'a red bird',
+  'a red crayon',
+  'a small bag',
+  'a small ball',
+  'a small bear',
+  'a small cap',
+  'a small fish',
+  'a small lion',
+  'a small whale',
+  'a white cat',
+  'a white dog',
+  'a yellow cat',
+  'a yellow crayon',
+  'bag',
+  'bed',
+  'brother',
+  'chicken',
+  'cup',
+  'dad',
+  'dancing',
+  'grandma',
+  'grandpa',
+  'mom',
+  'pizza',
+  'raining',
+  'sister',
+  'skating',
+  'skiing',
+  'snowing',
+  'steak',
+  'sunny',
+];
 
 /**
- * 단어가 기능어인지 확인
+ * 인물 단어인지 확인
  */
-function isFunctionWord(word: string): boolean {
-  return FUNCTION_WORDS.has(word.toLowerCase());
-}
-
-// vocabulary_level.json에서 천재교과서(함) 단어 추출
-// 2글자 이상만 포함 (1글자 단어 제외)
-// 기능어는 제외하고 내용어만 포함
-function loadChunjaeTextHamWords(): string[] {
-  try {
-    const filePath = path.join(process.cwd(), 'public', 'data', 'vocabulary_level.json');
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const data = JSON.parse(content);
-    
-    const words: string[] = [];
-    
-    for (const unit of data.units) {
-      for (const entry of unit.entries) {
-        const publisherValue = entry.chunjae_text_ham;
-        if (typeof publisherValue === 'string' && publisherValue.trim().length > 0) {
-          const tokens = publisherValue
-            .split(/[\/(),]/)
-            .map((t: string) => t.trim())
-            .filter((t: string) => t.length > 1) // 2글자 이상만
-            .filter((t: string) => !isFunctionWord(t)); // 기능어 제외
-          words.push(...tokens);
-        }
-      }
-    }
-    
-    return Array.from(new Set(words)).sort();
-  } catch (error) {
-    console.error('vocabulary_level.json 로드 오류:', error);
-    return [];
-  }
+function isPersonWord(item: string): boolean {
+  const personWords = ['brother', 'dad', 'grandma', 'grandpa', 'mom', 'sister'];
+  const itemLower = item.toLowerCase().trim();
+  return personWords.some(word => itemLower === word || itemLower.includes(word));
 }
 
 /**
- * 단어에 대한 일관된 스타일의 이미지 생성 프롬프트
+ * 단어/어구/문장에 대한 일관된 스타일의 이미지 생성 프롬프트
  * - 명확하고 구분하기 쉬운 이미지
  * - 일관된 디자인 스타일 유지
  * - 텍스트/단어가 이미지에 포함되지 않도록 강조
+ * - 관사 'a'가 있는 경우 정확히 하나만 표시
+ * - 인물 단어의 경우 빨간 화살표로 표시
  */
-function buildImagePrompt(word: string): string {
-  return `Create a simple, clear, and educational illustration of "${word}" for Korean elementary school English learners. 
-CRITICAL REQUIREMENTS:
-- Absolutely NO text, words, letters, or labels in the image
+function buildImagePrompt(item: string): string {
+  // 문장인지 확인 (대문자로 시작하고 마침표나 물음표로 끝나는 경우)
+  const isSentence = /^[A-Z].*[.!?]$/.test(item.trim());
+  
+  // 관사 'a'가 있는지 확인
+  const hasArticleA = /^a\s/i.test(item.trim());
+  
+  // 인물 단어인지 확인
+  const isPerson = isPersonWord(item);
+  
+  // 기본 요구사항
+  const baseRequirements = `- Absolutely NO text, words, letters, or labels in the image
 - NO writing, NO labels, NO captions, NO words of any kind
 - The image must be purely visual with zero text elements
 - Clean and uncluttered, with a white or light background
 - Simple cartoon or clipart style, suitable for children's educational materials
-- The main subject should be clearly visible and easily recognizable
 - Consistent art style: friendly, colorful, and educational
-- The object should be centered and well-lit
 - Avoid complex backgrounds or distracting elements
-- Make sure the image clearly represents only "${word}" and nothing else that could cause confusion with other words
 - Optimize for small file size while maintaining visual quality`;
+  
+  // 관사 'a' 관련 요구사항
+  const articleARequirement = hasArticleA 
+    ? `- IMPORTANT: The article "a" means exactly ONE (1) item. Show exactly one ${item.replace(/^a\s+/i, '').trim()}, not two or more
+- Make sure there is only ONE object/subject in the image to accurately represent "a"`
+    : '';
+  
+  // 인물 단어 관련 요구사항
+  let personRequirement = '';
+  if (isPerson) {
+    const itemLower = item.toLowerCase().trim();
+    if (itemLower === 'dad') {
+      personRequirement = `- IMPORTANT: This word means "dad" (아빠). Show a family scene with four people: dad (아빠), mom (엄마), son (아들), and daughter (딸)
+- Add a bright red arrow pointing down to the dad's head to clearly indicate which person represents "dad"
+- The red arrow should be clearly visible and point directly at the dad's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "dad"`;
+    } else if (itemLower === 'grandma') {
+      personRequirement = `- IMPORTANT: This word means "grandma" (할머니). Show a grandma character
+- Add a bright red arrow pointing down to the grandma's head to clearly indicate which person represents "grandma"
+- The red arrow should be clearly visible and point directly at the grandma's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "grandma"`;
+    } else if (itemLower === 'grandpa') {
+      personRequirement = `- IMPORTANT: This word means "grandpa" (할아버지). Show a grandpa character
+- Add a bright red arrow pointing down to the grandpa's head to clearly indicate which person represents "grandpa"
+- The red arrow should be clearly visible and point directly at the grandpa's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "grandpa"`;
+    } else if (itemLower === 'brother') {
+      personRequirement = `- IMPORTANT: This word means "brother" (형/오빠/남동생). Show a brother character
+- Add a bright red arrow pointing down to the brother's head to clearly indicate which person represents "brother"
+- The red arrow should be clearly visible and point directly at the brother's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "brother"`;
+    } else if (itemLower === 'mom') {
+      personRequirement = `- IMPORTANT: This word means "mom" (엄마). Show a mom character
+- Add a bright red arrow pointing down to the mom's head to clearly indicate which person represents "mom"
+- The red arrow should be clearly visible and point directly at the mom's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "mom"`;
+    } else if (itemLower === 'sister') {
+      personRequirement = `- IMPORTANT: This word means "sister" (누나/언니/여동생). Show a sister character
+- Add a bright red arrow pointing down to the sister's head to clearly indicate which person represents "sister"
+- The red arrow should be clearly visible and point directly at the sister's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "sister"`;
+    } else {
+      // 기본 인물 단어 처리
+      personRequirement = `- IMPORTANT: This is a person word. Add a bright red arrow pointing down to the person's head to clearly indicate which person the word refers to
+- The red arrow should be clearly visible and point directly at the person's head from above
+- Make sure the red arrow makes it crystal clear which person in the image represents "${item}"`;
+    }
+  }
+  
+  if (isSentence || item.includes('and') || item.includes(',')) {
+    // 문장이나 복합 표현인 경우
+    return `Create a simple, clear, and educational illustration showing the action or scene described by "${item}" for Korean elementary school English learners. 
+CRITICAL REQUIREMENTS:
+${baseRequirements}
+${articleARequirement}
+${personRequirement}
+- Show the complete action or scene clearly
+- The scene should be clearly visible and easily recognizable
+- The main elements should be centered and well-lit
+- Make sure the image clearly represents "${item}" and nothing else that could cause confusion`;
+  } else {
+    // 단어나 어구인 경우
+    return `Create a simple, clear, and educational illustration of "${item}" for Korean elementary school English learners. 
+CRITICAL REQUIREMENTS:
+${baseRequirements}
+${articleARequirement}
+${personRequirement}
+- The main subject should be clearly visible and easily recognizable
+- The object/subject should be centered and well-lit
+- Make sure the image clearly represents only "${item}" and nothing else that could cause confusion with other words`;
+  }
 }
 
 /**
  * Google Gemini API를 사용한 이미지 생성 함수
  */
 async function generateImage(
-  word: string,
+  item: string,
   outputPath: string,
   retryCount: number = 0
 ): Promise<boolean> {
   const maxRetries = 3;
   
   try {
-    console.log(`⏳ "${word}" 이미지 생성 중... (시도 ${retryCount + 1}/${maxRetries})`);
+    // 이미 파일이 존재하면 스킵
+    if (fs.existsSync(outputPath)) {
+      console.log(`⏭️  "${item}" 이미 존재, 스킵`);
+      return true;
+    }
     
-    const prompt = buildImagePrompt(word);
+    console.log(`⏳ "${item}" 이미지 생성 중... (시도 ${retryCount + 1}/${maxRetries})`);
+    
+    const prompt = buildImagePrompt(item);
     
     // Gemini API를 사용하여 이미지 생성
     const imageBytes = await generateImageWithGemini(prompt);
@@ -160,16 +240,16 @@ async function generateImage(
     
     const originalSize = (imageBytes.length / 1024).toFixed(2);
     const optimizedSize = (optimizedImageBytes.length / 1024).toFixed(2);
-    console.log(`✅ "${word}" 완료 (${originalSize}KB → ${optimizedSize}KB)`);
+    console.log(`✅ "${item}" 완료 (${originalSize}KB → ${optimizedSize}KB)`);
     
     return true;
   } catch (error) {
-    console.error(`❌ "${word}" 실패:`, error);
+    console.error(`❌ "${item}" 실패:`, error);
     
     if (retryCount < maxRetries - 1) {
-      console.log(`🔄 "${word}" 재시도 중...`);
+      console.log(`🔄 "${item}" 재시도 중...`);
       await new Promise(resolve => setTimeout(resolve, 2000)); // 2초 대기 후 재시도
-      return generateImage(word, outputPath, retryCount + 1);
+      return generateImage(item, outputPath, retryCount + 1);
     }
     
     return false;
@@ -259,23 +339,26 @@ async function optimizeImage(imageBuffer: Buffer): Promise<Buffer> {
 }
 
 /**
- * 특정 단어만 재생성하는 함수
+ * 특정 항목만 재생성하는 함수
  */
-async function regenerateSpecificWords(words: string[]) {
-  console.log(`\n🔄 특정 단어 이미지 재생성 시작: ${words.join(', ')}\n`);
+async function regenerateSpecificItems(items: string[]) {
+  console.log(`\n🔄 특정 항목 이미지 재생성 시작: ${items.join(', ')}\n`);
   
-  const outputDir = path.join(process.cwd(), 'public', 'images', 'vocabulary', 'chunjae-text-ham');
+  const outputDir = path.join(process.cwd(), 'public', 'images', 'p6_comprehension');
   
   let successCount = 0;
   let failCount = 0;
   
-  for (const word of words) {
-    // 파일명에 사용할 수 없는 문자 제거
-    const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  for (const item of items) {
+    // 파일명에 사용할 수 없는 문자 제거 및 안전한 파일명 생성
+    const safeFileName = item
+      .replace(/[^a-zA-Z0-9\s]/g, '') // 특수문자 제거
+      .replace(/\s+/g, '_') // 공백을 언더스코어로
+      .toLowerCase();
     const fileName = `${safeFileName}.png`;
     const filePath = path.join(outputDir, fileName);
     
-    const success = await generateImage(word, filePath);
+    const success = await generateImage(item, filePath);
     
     if (success) {
       successCount++;
@@ -293,40 +376,42 @@ async function regenerateSpecificWords(words: string[]) {
 }
 
 /**
- * 모든 단어 이미지 생성
+ * 모든 항목 이미지 생성
  */
-async function generateAllWordImages(limit?: number) {
-  console.log('🎨 천재교과서(함) 단어 이미지 생성 시작...\n');
+async function generateAllImages(limit?: number) {
+  console.log('🎨 단어/어구/문장 이미지 생성 시작...\n');
   
-  const words = loadChunjaeTextHamWords();
-  const wordsToGenerate = limit ? words.slice(0, limit) : words;
+  const itemsToGenerate = limit ? TARGET_ITEMS.slice(0, limit) : TARGET_ITEMS;
   
-  console.log(`📚 총 ${wordsToGenerate.length}개 단어 생성${limit ? ' (테스트 모드)' : ''}${limit && words.length > limit ? ` (전체 ${words.length}개 중)` : ''}\n`);
+  console.log(`📚 총 ${itemsToGenerate.length}개 항목 생성${limit ? ' (테스트 모드)' : ''}${limit && TARGET_ITEMS.length > limit ? ` (전체 ${TARGET_ITEMS.length}개 중)` : ''}\n`);
   
-  if (wordsToGenerate.length === 0) {
-    console.error('❌ 단어를 찾을 수 없습니다.');
+  if (itemsToGenerate.length === 0) {
+    console.error('❌ 항목을 찾을 수 없습니다.');
     return;
   }
   
-  const outputDir = path.join(process.cwd(), 'public', 'images', 'vocabulary', 'chunjae-text-ham');
+  const outputDir = path.join(process.cwd(), 'public', 'images', 'p6_comprehension');
   
   let successCount = 0;
   let failCount = 0;
   const fileList: Array<{ word: string; file: string }> = [];
   
-  for (const word of wordsToGenerate) {
-    // 파일명에 사용할 수 없는 문자 제거
-    const safeFileName = word.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase();
+  for (const item of itemsToGenerate) {
+    // 파일명에 사용할 수 없는 문자 제거 및 안전한 파일명 생성
+    const safeFileName = item
+      .replace(/[^a-zA-Z0-9\s]/g, '') // 특수문자 제거
+      .replace(/\s+/g, '_') // 공백을 언더스코어로
+      .toLowerCase();
     const fileName = `${safeFileName}.png`;
     const filePath = path.join(outputDir, fileName);
     
-    const success = await generateImage(word, filePath);
+    const success = await generateImage(item, filePath);
     
     if (success) {
       successCount++;
       fileList.push({
-        word,
-        file: `/images/vocabulary/chunjae-text-ham/${fileName}`
+        word: item,  // p6_comprehension 페이지에서 word 필드를 읽으므로
+        file: `/images/p6_comprehension/${fileName}`
       });
     } else {
       failCount++;
@@ -363,21 +448,29 @@ async function generateAllWordImages(limit?: number) {
   console.log(`✅ 성공: ${successCount}개`);
   console.log(`❌ 실패: ${failCount}개`);
   console.log(`💾 총 용량: ${totalSizeMB} MB`);
+  console.log(`📁 저장 위치: ${outputDir}`);
 }
 
 // 실행
-// 특정 단어만 재생성하려면 아래 배열에 단어를 추가하고 REGENERATE_MODE를 true로 설정
-const REGENERATE_MODE = false;
-const WORDS_TO_REGENERATE: string[] = [];
+// 특정 항목만 재생성하려면 아래 배열에 항목을 추가하고 REGENERATE_MODE를 true로 설정
+const REGENERATE_MODE = true;
+const ITEMS_TO_REGENERATE: string[] = [
+  'brother',
+  'dad',
+  'grandma',
+  'grandpa',
+  'mom',
+  'sister',
+];
 
 // 테스트 모드: 처음 5개만 생성
 const TEST_MODE = false;
 const TEST_LIMIT = 5;
 
 if (REGENERATE_MODE) {
-  regenerateSpecificWords(WORDS_TO_REGENERATE)
+  regenerateSpecificItems(ITEMS_TO_REGENERATE)
     .then(() => {
-      console.log('\n🎉 단어 이미지 재생성 완료!');
+      console.log('\n🎉 항목 이미지 재생성 완료!');
       process.exit(0);
     })
     .catch((error) => {
@@ -385,7 +478,7 @@ if (REGENERATE_MODE) {
       process.exit(1);
     });
 } else {
-  generateAllWordImages(TEST_MODE ? TEST_LIMIT : undefined)
+  generateAllImages(TEST_MODE ? TEST_LIMIT : undefined)
     .then(() => {
       console.log('\n🎉 모든 이미지 생성 완료!');
       if (TEST_MODE) {

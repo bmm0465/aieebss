@@ -1,7 +1,7 @@
 /**
  * 강세 테스트용 TTS 오디오 파일 생성 스크립트
  * 
- * 각 단어에 대해 정확한 강세와 틀린 강세 두 가지 버전을 생성합니다.
+ * 1그룹과 2그룹의 단어들에 대해 정확한 강세만 생성합니다.
  * 
  * 사용법:
  * npx tsx scripts/generate-stress-audio.ts
@@ -37,92 +37,48 @@ const openai = new OpenAI({
 // 단어와 정확한 강세 정보
 interface WordStress {
   word: string;
-  correctStress: string; // 예: "MON-key"
-  wrongStress: string;   // 예: "mon-KEY"
-  correctSyllable: number; // 강세가 있는 음절 (1부터 시작)
-  wrongSyllable: number;   // 틀린 강세가 있는 음절
+  stress: string; // 예: "MON-key"
+  syllable: number; // 강세가 있는 음절 (1부터 시작)
+  group: number; // 1그룹 또는 2그룹
 }
 
-const WORDS: WordStress[] = [
-  {
-    word: "monkey",
-    correctStress: "MON-key",
-    wrongStress: "mon-KEY",
-    correctSyllable: 1,
-    wrongSyllable: 2
-  },
-  {
-    word: "robot",
-    correctStress: "RO-bot",
-    wrongStress: "ro-BOT",
-    correctSyllable: 1,
-    wrongSyllable: 2
-  },
-  {
-    word: "zebra",
-    correctStress: "ZE-bra",
-    wrongStress: "ze-BRA",
-    correctSyllable: 1,
-    wrongSyllable: 2
-  },
-  {
-    word: "carrot",
-    correctStress: "CAR-rot",
-    wrongStress: "car-ROT",
-    correctSyllable: 1,
-    wrongSyllable: 2
-  },
-  {
-    word: "brother",
-    correctStress: "BROTH-er",
-    wrongStress: "broth-ER",
-    correctSyllable: 1,
-    wrongSyllable: 2
-  },
-  {
-    word: "okay",
-    correctStress: "o-KAY",
-    wrongStress: "O-kay",
-    correctSyllable: 2,
-    wrongSyllable: 1
-  },
-  {
-    word: "flower",
-    correctStress: "FLOW-er",
-    wrongStress: "flow-ER",
-    correctSyllable: 1,
-    wrongSyllable: 2
-  },
-  {
-    word: "banana",
-    correctStress: "ba-NA-na",
-    wrongStress: "BA-na-na",
-    correctSyllable: 2,
-    wrongSyllable: 1
-  },
-  {
-    word: "tomato",
-    correctStress: "to-MA-to",
-    wrongStress: "TO-ma-to",
-    correctSyllable: 2,
-    wrongSyllable: 1
-  },
-  {
-    word: "violin",
-    correctStress: "vi-o-LIN",
-    wrongStress: "VI-o-lin",
-    correctSyllable: 3,
-    wrongSyllable: 1
-  }
+// 1그룹 단어들
+const GROUP1_WORDS: WordStress[] = [
+  { word: "monkey", stress: "MON-key", syllable: 1, group: 1 },
+  { word: "robot", stress: "RO-bot", syllable: 1, group: 1 },
+  { word: "zebra", stress: "ZE-bra", syllable: 1, group: 1 },
+  { word: "carrot", stress: "CAR-rot", syllable: 1, group: 1 },
+  { word: "brother", stress: "BROTH-er", syllable: 1, group: 1 },
+  { word: "okay", stress: "o-KAY", syllable: 2, group: 1 },
+  { word: "flower", stress: "FLOW-er", syllable: 1, group: 1 },
+  { word: "banana", stress: "ba-NA-na", syllable: 2, group: 1 },
+  { word: "tomato", stress: "to-MA-to", syllable: 2, group: 1 },
+  { word: "violin", stress: "vi-o-LIN", syllable: 3, group: 1 }
 ];
+
+// 2그룹 단어들
+const GROUP2_WORDS: WordStress[] = [
+  { word: "apple", stress: "AP-ple", syllable: 1, group: 2 },
+  { word: "pizza", stress: "PIZ-za", syllable: 1, group: 2 },
+  { word: "yellow", stress: "YEL-low", syllable: 1, group: 2 },
+  { word: "chicken", stress: "CHICK-en", syllable: 1, group: 2 },
+  { word: "pencil", stress: "PEN-cil", syllable: 1, group: 2 },
+  { word: "hello", stress: "hel-LO", syllable: 2, group: 2 },
+  { word: "sister", stress: "SIS-ter", syllable: 1, group: 2 },
+  { word: "color", stress: "COL-or", syllable: 1, group: 2 },
+  { word: "potato", stress: "po-TA-to", syllable: 2, group: 2 },
+  { word: "elephant", stress: "EL-e-phant", syllable: 1, group: 2 }
+];
+
+// 전체 단어 목록 (1그룹 + 2그룹)
+const WORDS: WordStress[] = [...GROUP1_WORDS, ...GROUP2_WORDS];
 
 /**
  * 강세를 제어하는 instructions 생성
  */
 function createStressInstruction(
   word: string,
-  stressedSyllable: number,
-  isCorrect: boolean
+  stressedSyllable: number
 ): string {
   // 강세가 있는 음절을 명확히 표시
   const syllableDescription = stressedSyllable === 1 
@@ -196,7 +152,9 @@ async function generateAudioFile(
  */
 async function generateAllStressAudio() {
   console.log('🎤 강세 오디오 파일 생성 시작...\n');
-  console.log(`총 ${WORDS.length}개 단어, 각각 2개 버전 = ${WORDS.length * 2}개 파일\n`);
+  console.log(`1그룹: ${GROUP1_WORDS.length}개 단어`);
+  console.log(`2그룹: ${GROUP2_WORDS.length}개 단어`);
+  console.log(`총 ${WORDS.length}개 단어 (정확한 강세만 생성)\n`);
   
   const outputDir = path.join(process.cwd(), 'public', 'audio', 'stress');
   if (!fs.existsSync(outputDir)) {
@@ -206,52 +164,31 @@ async function generateAllStressAudio() {
   
   let successCount = 0;
   let failCount = 0;
-  const fileList: Array<{ word: string; type: string; file: string }> = [];
+  const fileList: Array<{ word: string; stress: string; syllable: number; group: number; file: string }> = [];
   
   for (const wordData of WORDS) {
-    const { word, correctStress, wrongStress, correctSyllable, wrongSyllable } = wordData;
+    const { word, stress, syllable, group } = wordData;
     
     // 정확한 강세 버전 생성
-    const correctInstruction = createStressInstruction(word, correctSyllable, true);
-    const correctFileName = `${word}_correct.mp3`;
-    const correctPath = path.join(outputDir, correctFileName);
+    const instruction = createStressInstruction(word, syllable);
+    const fileName = `${word}.mp3`;
+    const filePath = path.join(outputDir, fileName);
     
-    const correctSuccess = await generateAudioFile(
+    const success = await generateAudioFile(
       word,
-      correctPath,
-      correctInstruction,
-      `정확한 강세 (${correctStress})`
+      filePath,
+      instruction,
+      `${group}그룹 - 정확한 강세 (${stress})`
     );
     
-    if (correctSuccess) {
+    if (success) {
       successCount++;
       fileList.push({
         word,
-        type: 'correct',
-        file: `/audio/stress/${correctFileName}`
-      });
-    } else {
-      failCount++;
-    }
-    
-    // 틀린 강세 버전 생성
-    const wrongInstruction = createStressInstruction(word, wrongSyllable, false);
-    const wrongFileName = `${word}_wrong.mp3`;
-    const wrongPath = path.join(outputDir, wrongFileName);
-    
-    const wrongSuccess = await generateAudioFile(
-      word,
-      wrongPath,
-      wrongInstruction,
-      `틀린 강세 (${wrongStress})`
-    );
-    
-    if (wrongSuccess) {
-      successCount++;
-      fileList.push({
-        word,
-        type: 'wrong',
-        file: `/audio/stress/${wrongFileName}`
+        stress,
+        syllable,
+        group,
+        file: `/audio/stress/${fileName}`
       });
     } else {
       failCount++;

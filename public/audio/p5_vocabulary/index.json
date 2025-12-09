@@ -1,0 +1,182 @@
+[
+  {
+    "questionNumber": 1,
+    "text": "apple",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/apple.mp3"
+  },
+  {
+    "questionNumber": 2,
+    "text": "a red apple",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/a_red_apple.mp3"
+  },
+  {
+    "questionNumber": 3,
+    "text": "It's a robot.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/its_a_robot.mp3"
+  },
+  {
+    "questionNumber": 4,
+    "text": "ball",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/ball.mp3"
+  },
+  {
+    "questionNumber": 5,
+    "text": "two cows",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/two_cows.mp3"
+  },
+  {
+    "questionNumber": 6,
+    "text": "Open the door, please.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/open_the_door_please.mp3"
+  },
+  {
+    "questionNumber": 7,
+    "text": "bike",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/bike.mp3"
+  },
+  {
+    "questionNumber": 8,
+    "text": "a big tree",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/a_big_tree.mp3"
+  },
+  {
+    "questionNumber": 9,
+    "text": "I have a brush.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/i_have_a_brush.mp3"
+  },
+  {
+    "questionNumber": 10,
+    "text": "door",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/door.mp3"
+  },
+  {
+    "questionNumber": 11,
+    "text": "open the door",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/open_the_door.mp3"
+  },
+  {
+    "questionNumber": 12,
+    "text": "It's pink.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/its_pink.mp3"
+  },
+  {
+    "questionNumber": 13,
+    "text": "eraser",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/eraser.mp3"
+  },
+  {
+    "questionNumber": 14,
+    "text": "a green book",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/a_green_book.mp3"
+  },
+  {
+    "questionNumber": 15,
+    "text": "I like chicken.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/i_like_chicken.mp3"
+  },
+  {
+    "questionNumber": 16,
+    "text": "flower",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/flower.mp3"
+  },
+  {
+    "questionNumber": 17,
+    "text": "three robots",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/three_robots.mp3"
+  },
+  {
+    "questionNumber": 18,
+    "text": "I don't like carrots.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/i_dont_like_carrots.mp3"
+  },
+  {
+    "questionNumber": 19,
+    "text": "chicken",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/chicken.mp3"
+  },
+  {
+    "questionNumber": 20,
+    "text": "a small bird",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/a_small_bird.mp3"
+  },
+  {
+    "questionNumber": 21,
+    "text": "I can dance.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/i_can_dance.mp3"
+  },
+  {
+    "questionNumber": 22,
+    "text": "elephant",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/elephant.mp3"
+  },
+  {
+    "questionNumber": 23,
+    "text": "yellow banana",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/yellow_banana.mp3"
+  },
+  {
+    "questionNumber": 24,
+    "text": "Put on your coat.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/put_on_your_coat.mp3"
+  },
+  {
+    "questionNumber": 25,
+    "text": "helmet",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/helmet.mp3"
+  },
+  {
+    "questionNumber": 26,
+    "text": "swim and skate",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/swim_and_skate.mp3"
+  },
+  {
+    "questionNumber": 27,
+    "text": "It's snowing.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/its_snowing.mp3"
+  },
+  {
+    "questionNumber": 28,
+    "text": "coat",
+    "type": "word",
+    "file": "/audio/p5_vocabulary/coat.mp3"
+  },
+  {
+    "questionNumber": 29,
+    "text": "cloudy weather",
+    "type": "phrase",
+    "file": "/audio/p5_vocabulary/cloudy_weather.mp3"
+  },
+  {
+    "questionNumber": 30,
+    "text": "Sit down, please.",
+    "type": "sentence",
+    "file": "/audio/p5_vocabulary/sit_down_please.mp3"
+  }
+]

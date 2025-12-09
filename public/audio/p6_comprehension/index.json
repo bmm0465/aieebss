@@ -1,0 +1,324 @@
+{
+  "dialogues": [
+    {
+      "questionNumber": 1,
+      "question": "두 사람이 이야기하고 있는 음식은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Do you like pizza?",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_do_you_like_pizza.mp3"
+        },
+        "B": {
+          "text": "Yes, I do. I like pizza.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_yes_i_do_i_like_pizza.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 2,
+      "question": "사자의 크기는 어떠한가요?",
+      "dialogue": {
+        "A": {
+          "text": "Look at the lion.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_look_at_the_lion.mp3"
+        },
+        "B": {
+          "text": "Wow! It's big.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_wow_its_big.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 3,
+      "question": "여학생이 가지고 있는 크레용의 색깔은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Do you have a crayon?",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_do_you_have_a_crayon.mp3"
+        },
+        "B": {
+          "text": "Yes. It's yellow.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_yes_its_yellow.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 4,
+      "question": "남학생이 소개하는 사람은 누구인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Who is he?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_who_is_he.mp3"
+        },
+        "B": {
+          "text": "He's my dad.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_hes_my_dad.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 5,
+      "question": "여학생이 설명하고 있는 물건은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "What's this?",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_whats_this.mp3"
+        },
+        "B": {
+          "text": "It's a cup. It's nice.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_its_a_cup_its_nice.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 6,
+      "question": "가방의 크기는 어떠한가요?",
+      "dialogue": {
+        "A": {
+          "text": "What's that?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_whats_that.mp3"
+        },
+        "B": {
+          "text": "It's a bag. It's small.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_its_a_bag_its_small.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 7,
+      "question": "강아지의 색깔은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Look at the dog.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_look_at_the_dog.mp3"
+        },
+        "B": {
+          "text": "It's black. It's cute.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_its_black_its_cute.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 8,
+      "question": "여학생이 가리키는 사람은 누구인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Who is she?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_who_is_she.mp3"
+        },
+        "B": {
+          "text": "She's my grandmother.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_shes_my_grandmother.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 9,
+      "question": "남학생은 무엇을 할 수 있나요?",
+      "dialogue": {
+        "A": {
+          "text": "Can you jump?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_can_you_jump.mp3"
+        },
+        "B": {
+          "text": "Yes, I can. I can jump.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_yes_i_can_i_can_jump.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 10,
+      "question": "곰의 모습으로 알맞은 것을 고르세요.",
+      "dialogue": {
+        "A": {
+          "text": "Is it a bear?",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_is_it_a_bear.mp3"
+        },
+        "B": {
+          "text": "Yes, it is. It's big.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_yes_it_is_its_big.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 11,
+      "question": "남학생이 가리키는 새의 색깔은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Look! It's a bird.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_look_its_a_bird.mp3"
+        },
+        "B": {
+          "text": "Oh, it's blue.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_oh_its_blue.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 12,
+      "question": "사진 속의 인물은 누구인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Who is he?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_who_is_he.mp3"
+        },
+        "B": {
+          "text": "He's my brother. He's tall.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_hes_my_brother_hes_tall.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 13,
+      "question": "여학생이 잘하는 운동은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "I can skate. Look at me!",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_i_can_skate_look_at_me.mp3"
+        },
+        "B": {
+          "text": "Wow, great!",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_wow_great.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 14,
+      "question": "물고기의 크기는 어떠한가요?",
+      "dialogue": {
+        "A": {
+          "text": "Look at the fish.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_look_at_the_fish.mp3"
+        },
+        "B": {
+          "text": "It's small. It's cute.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_its_small_its_cute.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 15,
+      "question": "고양이의 색깔은 무엇인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Is it a cat?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_is_it_a_cat.mp3"
+        },
+        "B": {
+          "text": "Yes. It's white.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_yes_its_white.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 16,
+      "question": "두 사람이 이야기하고 있는 대상은 누구인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Who is she?",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_who_is_she.mp3"
+        },
+        "B": {
+          "text": "She's my sister. She's pretty.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_shes_my_sister_shes_pretty.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 17,
+      "question": "창밖의 날씨는 어떠한가요?",
+      "dialogue": {
+        "A": {
+          "text": "How's the weather?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_hows_the_weather.mp3"
+        },
+        "B": {
+          "text": "It's raining. Take an umbrella.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_its_raining_take_an_umbrella.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 18,
+      "question": "남학생이 설명하는 공의 크기는 어떠한가요?",
+      "dialogue": {
+        "A": {
+          "text": "Do you have a ball?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_do_you_have_a_ball.mp3"
+        },
+        "B": {
+          "text": "Yes. It's big.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_yes_its_big.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 19,
+      "question": "가방의 색깔로 알맞은 것을 고르세요.",
+      "dialogue": {
+        "A": {
+          "text": "What color is it?",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/A_what_color_is_it.mp3"
+        },
+        "B": {
+          "text": "It's green.",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/B_its_green.mp3"
+        }
+      }
+    },
+    {
+      "questionNumber": 20,
+      "question": "남학생이 소개하는 사람은 누구인가요?",
+      "dialogue": {
+        "A": {
+          "text": "Who is he?",
+          "gender": "female",
+          "file": "/audio/p6_comprehension/A_who_is_he.mp3"
+        },
+        "B": {
+          "text": "He's my grandfather.",
+          "gender": "male",
+          "file": "/audio/p6_comprehension/B_hes_my_grandfather.mp3"
+        }
+      }
+    }
+  ]
+}
