@@ -371,7 +371,6 @@ export default function ComprehensionTestPage() {
   const [imageUrls, setImageUrls] = useState<Record<string, string>>({});
   const [isLoadingImages, setIsLoadingImages] = useState(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
-  const [repeatCount, setRepeatCount] = useState(0); // 반복 재생 횟수
 
   useEffect(() => {
     const setup = async () => {
@@ -637,7 +636,6 @@ export default function ComprehensionTestPage() {
       setIsSubmitting(false);
       setFeedback('');
       setShowText(false);
-      setRepeatCount(0);
     }
   };
 
