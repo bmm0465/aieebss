@@ -323,9 +323,16 @@ function StudentDetailContent() {
       stat.accuracy = stat.total > 0 ? Math.round((stat.correct / stat.total) * 100) : 0;
       
       // 평균 시간 계산
-      const timeResults = sessionResults.filter(r => (r.test_type || 'unknown') === testType && r.time_taken !== null && r.time_taken > 0);
+      const timeResults = sessionResults.filter(r => {
+        const typeMatch = (r.test_type || 'unknown') === testType;
+        const hasTime = r.time_taken !== null && r.time_taken !== undefined && r.time_taken > 0;
+        return typeMatch && hasTime;
+      });
       if (timeResults.length > 0) {
-        const totalTime = timeResults.reduce((sum, r) => sum + (r.time_taken || 0), 0);
+        const totalTime = timeResults.reduce((sum, r) => {
+          const timeValue = r.time_taken ?? 0;
+          return sum + timeValue;
+        }, 0);
         stat.avgTime = Math.round(totalTime / timeResults.length);
       }
     });
