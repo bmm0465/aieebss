@@ -16,7 +16,7 @@ const tests = [
   },
   {
     period: 2,
-    title: '단어를 듣고 올바른 단어 고르기',
+    title: '단어를 듣고 올바른 단어 또는 알파벳 고르기',
     description: '',
     path: '/test/p2_segmental_phoneme'
   },

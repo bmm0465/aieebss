@@ -436,7 +436,7 @@ export default function PsfTestPage() {
   return (
     <div style={pageStyle}>
       <div style={containerStyle}>
-        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 단어를 듣고 올바른 단어 고르기</h1>}
+        {phase !== 'finished' && <h1 style={titleStyle}>2교시: 단어를 듣고 올바른 단어 또는 알파벳 고르기</h1>}
 
         {phase === 'testing' && (
           <div>
@@ -450,9 +450,14 @@ export default function PsfTestPage() {
         {phase === 'ready' && (
           <div>
             <p style={paragraphStyle}>
-              단어를 들려드립니다. 들려준 단어를 선택해주세요.
+              1. 단어를 들려드립니다. 들려준 단어를 선택해주세요.
               <br />
               (예: &quot;pin&quot;을 들려주면, &quot;pin&quot;을 선택합니다)
+              <br />
+              <br />
+              2. 단어를 들려드립니다. 들려준 단어의 첫소리 또는 끝소리에 해당하는 알파벳을 선택해주세요.
+              <br />
+              (예: &quot;green&quot;을 들려주면, 단어의 첫소리는 &quot;g&quot;, 끝소리는 &quot;n&quot;을 선택합니다)
             </p>
             <button onClick={handleStartTest} style={buttonStyle}>
               평가 시작하기
@@ -462,11 +467,6 @@ export default function PsfTestPage() {
 
         {phase === 'testing' && currentItem && (
           <div>
-            {currentItem.type === 'phonics_letter' && currentItem.target_word && (
-              <div style={{ marginBottom: '1rem', fontSize: '1.2rem', fontWeight: '600', color: '#4b5563' }}>
-                단어: {currentItem.target_word}
-              </div>
-            )}
             <button
               onClick={playCorrectAnswer}
               style={{
@@ -484,7 +484,15 @@ export default function PsfTestPage() {
             >
               {isAudioLoading ? '재생 중...' : '🔊 듣기'}
             </button>
-            <p style={feedbackStyle}>{feedback || (currentItem.type === 'minimal_pair' ? '단어를 듣고 선택해주세요.' : '알파벳을 선택해주세요.')}</p>
+            <p style={feedbackStyle}>
+              {feedback || (
+                currentItem.type === 'minimal_pair' 
+                  ? '단어를 듣고, 들리는 단어를 선택해주세요.' 
+                  : currentItem.position === 'initial'
+                    ? '단어를 듣고, 첫소리에 해당하는 알파벳을 선택해주세요.'
+                    : '단어를 듣고, 끝소리에 해당하는 알파벳을 선택해주세요.'
+              )}
+            </p>
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center', marginTop: '2rem' }}>
                 {currentItem.type === 'minimal_pair' ? (

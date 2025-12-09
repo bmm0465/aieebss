@@ -475,7 +475,19 @@ export default function ReadingTestPage() {
 
         {testPhase === 'testing' && currentItem && (
           <div>
-            <div style={wordBoxStyle}>{currentItem.text}</div>
+            <div style={wordBoxStyle}>
+              {currentItem.type === 'orf' 
+                ? (() => {
+                    const text = currentItem.text.trim();
+                    // 문장 끝에 마침표, 물음표, 느낌표가 없으면 마침표 추가
+                    if (!/[.!?]$/.test(text)) {
+                      return text + '.';
+                    }
+                    return text;
+                  })()
+                : currentItem.text
+              }
+            </div>
             <p style={feedbackStyle}>{feedback || getPhaseDescription()}</p>
             <div style={{ position: 'relative', width: '100%' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
