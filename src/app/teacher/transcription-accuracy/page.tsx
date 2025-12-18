@@ -181,6 +181,24 @@ export default function TranscriptionAccuracyPage() {
     return filtered;
   }, [testResults, selectedTestType, selectedStudent]);
 
+  // 통계 로드
+  const loadStatistics = useCallback(async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedTestType !== 'all') {
+        params.append('test_type', selectedTestType);
+      }
+
+      const response = await fetch(`/api/teacher/transcription-accuracy/statistics?${params.toString()}`);
+      if (!response.ok) throw new Error('통계를 불러올 수 없습니다.');
+
+      const data = await response.json();
+      setStatistics(data);
+    } catch (err: unknown) {
+      console.error('통계 로드 오류:', err);
+    }
+  }, [selectedTestType]);
+
   // 데이터 로드
   useEffect(() => {
     const loadData = async () => {
@@ -275,25 +293,7 @@ export default function TranscriptionAccuracyPage() {
     };
 
     loadData();
-  }, [router]);
-
-  // 통계 로드
-  const loadStatistics = useCallback(async () => {
-    try {
-      const params = new URLSearchParams();
-      if (selectedTestType !== 'all') {
-        params.append('test_type', selectedTestType);
-      }
-
-      const response = await fetch(`/api/teacher/transcription-accuracy/statistics?${params.toString()}`);
-      if (!response.ok) throw new Error('통계를 불러올 수 없습니다.');
-
-      const data = await response.json();
-      setStatistics(data);
-    } catch (err: unknown) {
-      console.error('통계 로드 오류:', err);
-    }
-  }, [selectedTestType]);
+  }, [router, loadStatistics]);
 
   // 필터 변경 시 통계 다시 로드
   useEffect(() => {
