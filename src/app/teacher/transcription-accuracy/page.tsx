@@ -473,17 +473,20 @@ export default function TranscriptionAccuracyPage() {
               </div>
             </div>
             <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-              {[1, 2, 3, 4].map(type => (
-                <div key={type} style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>유형 {type}</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
-                    {statistics.by_type[type as keyof typeof statistics.by_type]}개
+              {[1, 2, 3, 4].map(type => {
+                const typeKey = String(type) as '1' | '2' | '3' | '4';
+                return (
+                  <div key={type} style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>유형 {type}</div>
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+                      {statistics.by_type[typeKey]}개
+                    </div>
+                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                      ({statistics.percentages[typeKey]}%)
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                    ({statistics.percentages[type as keyof typeof statistics.percentages]}%)
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
