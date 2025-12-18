@@ -166,20 +166,8 @@ export default function TranscriptionAccuracyPage() {
   const [selectedStudent, setSelectedStudent] = useState<string>('all');
   const [savingReview, setSavingReview] = useState<Record<number, boolean>>({});
 
-  // 필터링된 결과
-  const filteredResults = useMemo(() => {
-    let filtered = testResults;
-
-    if (selectedTestType !== 'all') {
-      filtered = filtered.filter(r => r.test_type === selectedTestType);
-    }
-
-    if (selectedStudent !== 'all') {
-      filtered = filtered.filter(r => r.user_id === selectedStudent);
-    }
-
-    return filtered;
-  }, [testResults, selectedTestType, selectedStudent]);
+  // 필터링은 서버에서 이미 적용되므로 그대로 사용
+  const filteredResults = testResults;
 
   // 통계 로드
   const loadStatistics = useCallback(async () => {
@@ -199,9 +187,9 @@ export default function TranscriptionAccuracyPage() {
     }
   }, [selectedTestType]);
 
-  // 데이터 로드
+  // 초기 데이터 로드 (학생 목록만)
   useEffect(() => {
-    const loadData = async () => {
+    const loadInitialData = async () => {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
@@ -250,23 +238,86 @@ export default function TranscriptionAccuracyPage() {
         }
         setStudents(studentsMap);
 
-        // 테스트 결과 가져오기 (1교시, 4교시만)
-        const { data: results } = await supabase
-          .from('test_results')
-          .select('id, user_id, test_type, question, correct_answer, student_answer, is_correct, created_at, audio_url, transcription_results')
-          .in('user_id', studentIds)
-          .in('test_type', ['p1_alphabet', 'p4_phonics'])
-          .order('created_at', { ascending: false });
+        setLoading(false);
+      } catch (err: unknown) {
+        console.error('초기 데이터 로드 오류:', err);
+        const errorMessage = err instanceof Error ? err.message : '데이터를 불러오는 중 오류가 발생했습니다.';
+        setError(errorMessage);
+        setLoading(false);
+      }
+    };
 
-        if (results) {
-          setTestResults(results as TestResultRow[]);
-        }
+    loadInitialData();
+  }, [router]);
 
-        // 기존 리뷰 가져오기
+  // 필터에 따라 테스트 결과 로드
+  const loadTestResults = useCallback(async () => {
+    if (selectedTestType === 'all' && selectedStudent === 'all') {
+      // 필터가 모두 'all'이면 데이터를 로드하지 않음
+      setTestResults([]);
+      setReviews({});
+      setStatistics(null);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        router.push('/');
+        return;
+      }
+
+      // 담당 학생 목록 가져오기
+      const { data: assignments } = await supabase
+        .from('teacher_student_assignments')
+        .select('student_id')
+        .eq('teacher_id', user.id);
+
+      if (!assignments || assignments.length === 0) {
+        setTestResults([]);
+        setLoading(false);
+        return;
+      }
+
+      const allStudentIds = assignments.map(a => a.student_id);
+      
+      // 필터링할 학생 ID 목록
+      const studentIds = selectedStudent === 'all' 
+        ? allStudentIds 
+        : [selectedStudent];
+
+      // 테스트 결과 가져오기 (필터 적용)
+      let query = supabase
+        .from('test_results')
+        .select('id, user_id, test_type, question, correct_answer, student_answer, is_correct, created_at, audio_url, transcription_results')
+        .in('user_id', studentIds)
+        .in('test_type', ['p1_alphabet', 'p4_phonics'])
+        .order('created_at', { ascending: false });
+
+      // 교시 필터 적용
+      if (selectedTestType !== 'all') {
+        query = query.eq('test_type', selectedTestType);
+      }
+
+      const { data: results } = await query;
+
+      if (results) {
+        setTestResults(results as TestResultRow[]);
+      } else {
+        setTestResults([]);
+      }
+
+      // 기존 리뷰 가져오기 (로드한 결과에 대한 리뷰만)
+      if (results && results.length > 0) {
+        const resultIds = results.map(r => r.id);
         const { data: existingReviews } = await supabase
           .from('transcription_accuracy_reviews')
           .select('test_result_id, review_type, notes')
-          .eq('teacher_id', user.id);
+          .eq('teacher_id', user.id)
+          .in('test_result_id', resultIds);
 
         if (existingReviews) {
           const reviewsMap: Record<number, Review> = {};
@@ -278,29 +329,32 @@ export default function TranscriptionAccuracyPage() {
             };
           });
           setReviews(reviewsMap);
+        } else {
+          setReviews({});
         }
-
-        // 통계 로드
-        await loadStatistics();
-
-        setLoading(false);
-      } catch (err: unknown) {
-        console.error('데이터 로드 오류:', err);
-        const errorMessage = err instanceof Error ? err.message : '데이터를 불러오는 중 오류가 발생했습니다.';
-        setError(errorMessage);
-        setLoading(false);
+      } else {
+        setReviews({});
       }
-    };
 
-    loadData();
-  }, [router, loadStatistics]);
+      // 통계 로드
+      await loadStatistics();
 
-  // 필터 변경 시 통계 다시 로드
-  useEffect(() => {
-    if (!loading) {
-      loadStatistics();
+      setLoading(false);
+    } catch (err: unknown) {
+      console.error('테스트 결과 로드 오류:', err);
+      const errorMessage = err instanceof Error ? err.message : '데이터를 불러오는 중 오류가 발생했습니다.';
+      setError(errorMessage);
+      setLoading(false);
     }
-  }, [selectedTestType, loading, loadStatistics]);
+  }, [selectedTestType, selectedStudent, router, loadStatistics]);
+
+  // 필터 변경 시 테스트 결과 다시 로드
+  useEffect(() => {
+    if (!loading && Object.keys(students).length > 0) {
+      loadTestResults();
+    }
+  }, [selectedTestType, selectedStudent, loadTestResults]);
+
 
   // 리뷰 저장
   const saveReview = async (testResultId: number, reviewType: number, notes?: string) => {
@@ -553,9 +607,16 @@ export default function TranscriptionAccuracyPage() {
           overflowX: 'auto'
         }}>
           <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: '600' }}>테스트 결과 목록</h2>
-          {filteredResults.length === 0 ? (
+          {selectedTestType === 'all' && selectedStudent === 'all' ? (
             <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
-              점검할 결과가 없습니다.
+              <div style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>📋 필터를 선택해주세요</div>
+              <div style={{ fontSize: '0.875rem', opacity: 0.8 }}>
+                평가 교시와 학생을 선택하면 해당하는 테스트 결과가 표시됩니다.
+              </div>
+            </div>
+          ) : filteredResults.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+              선택한 조건에 해당하는 결과가 없습니다.
             </div>
           ) : (
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>

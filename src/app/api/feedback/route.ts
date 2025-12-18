@@ -18,8 +18,8 @@ if (!process.env.OPENAI_API_KEY) {
 export async function POST(request: Request) {
   try {
     console.log('피드백 API 호출 시작');
-    const { testType, sessionId } = await request.json();
-    console.log('요청 데이터:', { testType, sessionId });
+    const { testType, sessionId, loadOnly } = await request.json();
+    console.log('요청 데이터:', { testType, sessionId, loadOnly });
 
     // sessionId가 있으면 데이터베이스에서 조회, 없으면 직접 전달된 데이터 사용
     let feedbackData;
@@ -118,6 +118,12 @@ export async function POST(request: Request) {
     if (existingFeedback && !fetchError) {
       console.log('기존 피드백 반환:', sessionId, testType);
       return NextResponse.json(existingFeedback.feedback_data as HattieFeedbackResponse);
+    }
+
+    // loadOnly가 true면 저장된 피드백만 반환 (없으면 404)
+    if (loadOnly) {
+      console.log('저장된 피드백 없음 (loadOnly=true):', sessionId, testType);
+      return NextResponse.json({ error: '저장된 피드백이 없습니다.' }, { status: 404 });
     }
 
     // 피드백이 없으면 새로 생성

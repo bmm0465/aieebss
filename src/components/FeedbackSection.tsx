@@ -27,6 +27,38 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 저장된 피드백만 로드 (생성하지 않음)
+  const loadExistingFeedback = useCallback(async () => {
+    if (!hasResults || !sessionId || !testType) return;
+
+    try {
+      const response = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          testType,
+          sessionId,
+          loadOnly: true // 저장된 피드백만 조회
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('저장된 피드백 로드 성공:', data);
+        setFeedback(data);
+      } else if (response.status === 404) {
+        // 저장된 피드백이 없으면 아무것도 하지 않음 (버튼만 표시)
+        console.log('저장된 피드백 없음');
+      }
+    } catch (err) {
+      // 조용히 실패 (자동 로드이므로 에러 표시 안 함)
+      console.log('피드백 로드 실패:', err);
+    }
+  }, [hasResults, testType, sessionId]);
+
+  // 피드백 생성 (버튼 클릭 시)
   const generateFeedback = useCallback(async () => {
     if (!hasResults) {
       setError('해당 테스트의 결과가 없습니다.');
@@ -69,12 +101,12 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
     }
   }, [hasResults, testType, sessionId]);
 
-  // 컴포넌트 마운트 시 저장된 피드백 자동 로드
+  // 컴포넌트 마운트 시 저장된 피드백만 자동 로드 (생성하지 않음)
   useEffect(() => {
     if (hasResults && sessionId && testType) {
-      generateFeedback();
+      loadExistingFeedback();
     }
-  }, [hasResults, sessionId, testType, generateFeedback]);
+  }, [hasResults, sessionId, testType, loadExistingFeedback]);
 
   if (!hasResults) {
     return (
