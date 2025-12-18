@@ -18,8 +18,8 @@ if (!process.env.OPENAI_API_KEY) {
 export async function POST(request: Request) {
   try {
     console.log('피드백 API 호출 시작');
-    const { testType, sessionId, question, studentAnswer, isCorrect, errorType } = await request.json();
-    console.log('요청 데이터:', { testType, sessionId, hasQuestion: !!question, hasStudentAnswer: !!studentAnswer });
+    const { testType, sessionId } = await request.json();
+    console.log('요청 데이터:', { testType, sessionId });
 
     // sessionId가 있으면 데이터베이스에서 조회, 없으면 직접 전달된 데이터 사용
     let feedbackData;
@@ -206,7 +206,6 @@ export async function POST(request: Request) {
       
     } catch (openaiError: unknown) {
       console.error('OpenAI API 오류:', openaiError);
-      const errorMessage = openaiError instanceof Error ? openaiError.message : '알 수 없는 오류';
       
       // 기본 피드백 제공 (한국어)
       const fallbackFeedback: HattieFeedbackResponse = {
