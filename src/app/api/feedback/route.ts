@@ -1,6 +1,10 @@
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { createClient } from '@/lib/supabase/server';
+import { buildHattieSystemPrompt, buildHattieUserPrompt, getHattieFeedbackExamples } from '@/lib/feedback/hattiePrompts';
+import { summarizeSessionData, formatDataForLLM } from '@/lib/feedback/feedbackAnalyzer';
+import type { SessionDataForFeedback, HattieFeedbackResponse } from '@/lib/feedback/feedbackTypes';
+import type { TestType } from '@/lib/agents/types';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -58,172 +62,165 @@ export async function POST(request: Request) {
       }
 
       // 전체 세션 데이터를 종합 피드백용으로 구성
-      const sessionData = {
-        testType,
+      const sessionData: SessionDataForFeedback = {
+        testType: testType as TestType,
         totalQuestions: results.length,
         correctAnswers: results.filter(r => r.is_correct).length,
         accuracy: (results.filter(r => r.is_correct).length / results.length) * 100,
         questions: results.map(r => ({
           question: r.question || r.question_word || r.question_passage || '문항',
           studentAnswer: r.student_answer || '',
+          correctAnswer: r.correct_answer || '',
           isCorrect: r.is_correct || false,
           errorType: r.error_type || null,
           correctSegments: r.correct_segments || 0,
           targetSegments: r.target_segments || 0,
           wcpm: r.wcpm || 0,
-          accuracy: r.accuracy || 0
-        }))
+          accuracy: r.accuracy || 0,
+          timeTaken: r.time_taken || null,
+        })),
       };
 
       feedbackData = sessionData;
     } else {
-      // 직접 전달된 데이터 사용 (기존 방식)
-      if (!testType || !question || !studentAnswer) {
-        return NextResponse.json({ error: '필수 데이터가 누락되었습니다.' }, { status: 400 });
-      }
-      
-      feedbackData = {
-        testType,
-        question,
-        studentAnswer,
-        isCorrect: isCorrect || false,
-        errorType: errorType || null
-      };
+      // 개별 문항 피드백은 더 이상 지원하지 않음 (Hattie 프레임워크는 세션 전체 분석 필요)
+      return NextResponse.json({ 
+        error: '세션 데이터가 필요합니다. sessionId와 testType을 제공해주세요.' 
+      }, { status: 400 });
     }
 
-    // 종합 피드백 생성
-    console.log('OpenAI API 호출 시작, 피드백 데이터:', feedbackData);
+    // Hattie 프레임워크 기반 피드백 생성
+    console.log('Hattie 피드백 API 호출 시작');
     
-    // 타입 정의
-    interface SessionData {
-      testType: string;
-      totalQuestions: number;
-      correctAnswers: number;
-      accuracy: number;
-      questions: Array<{
-        question: string;
-        studentAnswer: string;
-        isCorrect: boolean;
-        errorType: string | null;
-        correctSegments: number;
-        targetSegments: number;
-        wcpm: number;
-        accuracy: number;
-      }>;
+    // 세션 데이터인지 확인
+    const isSessionData = feedbackData && 'totalQuestions' in feedbackData;
+    
+    if (!isSessionData) {
+      return NextResponse.json({ 
+        error: '세션 데이터가 필요합니다. sessionId와 testType을 제공해주세요.' 
+      }, { status: 400 });
     }
-
-    interface IndividualData {
-      testType: string;
-      question: string;
-      studentAnswer: string;
-      isCorrect: boolean;
-      errorType: string | null;
-    }
-
-    let aiFeedback: { 
-      feedback?: string; 
-      tip?: string;
-      strengths?: string[];
-      improvements?: string[];
-      nextSteps?: string[];
-    } = {};
+    
+    const sessionData = feedbackData as SessionDataForFeedback;
     
     try {
-      // 세션 데이터인지 개별 문항 데이터인지 확인
-      const isSessionData = feedbackData && 'totalQuestions' in feedbackData;
+      // 오류 패턴 분석
+      const summary = summarizeSessionData(sessionData.questions);
+      const dataSummary = formatDataForLLM(summary);
       
-      let systemPrompt = '';
+      // 학생 프로필에서 학년 정보 가져오기 (있는 경우)
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      let gradeLevel: string | undefined;
       
-      if (isSessionData) {
-        // 전체 세션 종합 피드백
-        const sessionData = feedbackData as SessionData;
-        systemPrompt = `You are an expert EFL teacher providing comprehensive feedback for DIBELS assessments. 
+      if (user) {
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('grade_level')
+          .eq('id', user.id)
+          .single();
         
-        STUDENT PERFORMANCE SUMMARY:
-        - Test Type: ${sessionData.testType}
-        - Total Questions: ${sessionData.totalQuestions}
-        - Correct Answers: ${sessionData.correctAnswers}
-        - Overall Accuracy: ${sessionData.accuracy.toFixed(1)}%
-        
-        DETAILED RESULTS:
-        ${sessionData.questions.map((q, i: number) => 
-          `${i + 1}. Question: "${q.question}" | Student Answer: "${q.studentAnswer}" | ${q.isCorrect ? 'CORRECT' : 'INCORRECT'}${q.errorType ? ` | Error: ${q.errorType}` : ''}${q.correctSegments ? ` | Segments: ${q.correctSegments}/${q.targetSegments}` : ''}${q.wcpm ? ` | WCPM: ${q.wcpm}` : ''}`
-        ).join('\n')}
-        
-        TASK: Provide comprehensive feedback that includes:
-        1. Overall performance assessment
-        2. Specific strengths identified
-        3. Areas needing improvement
-        4. Concrete next steps for learning
-        
-        GUIDELINES:
-        - Be encouraging but honest about performance
-        - Identify specific patterns in errors
-        - Provide actionable improvement strategies
-        - Use Korean for emotional support, English for technical terms
-        - Focus on learning progression, not just scores
-        
-        Respond with JSON: {
-          "feedback": "overall assessment message",
-          "tip": "main learning tip",
-          "strengths": ["strength1", "strength2"],
-          "improvements": ["improvement1", "improvement2"],
-          "nextSteps": ["step1", "step2"]
-        }`;
-      } else {
-        // 개별 문항 피드백 (기존 방식)
-        const individualData = feedbackData as IndividualData;
-        systemPrompt = `You are an encouraging EFL teacher providing real-time feedback for DIBELS assessments. 
-        
-        CONTEXT: ${individualData.testType} test
-        QUESTION: ${individualData.question}
-        STUDENT ANSWER: ${individualData.studentAnswer}
-        RESULT: ${individualData.isCorrect ? 'Correct' : 'Incorrect'}
-        ERROR TYPE: ${individualData.errorType || 'None'}
-        
-        GUIDELINES:
-        1. Be encouraging and supportive
-        2. Provide specific, actionable feedback
-        3. Use simple Korean when appropriate
-        4. Keep feedback brief (1-2 sentences)
-        5. Focus on what the student did well
-        6. If incorrect, gently guide toward the correct answer
-        
-        Respond with JSON: {"feedback": "encouraging message", "tip": "helpful tip"}`;
+        if (profile?.grade_level) {
+          gradeLevel = profile.grade_level;
+        }
       }
-
+      
+      // Hattie 프레임워크 기반 프롬프트 생성
+      const systemPrompt = buildHattieSystemPrompt(sessionData.testType, gradeLevel);
+      const userPrompt = buildHattieUserPrompt(sessionData);
+      const examples = getHattieFeedbackExamples();
+      
+      const fullUserPrompt = `${userPrompt}\n\n${dataSummary}\n\n${examples}`;
+      
+      console.log('OpenAI API 호출 시작 (Hattie 프레임워크)');
+      
       const feedbackResponse = await openai.chat.completions.create({
         model: 'gpt-4o',
         messages: [
           {
             role: 'system',
             content: systemPrompt
+          },
+          {
+            role: 'user',
+            content: fullUserPrompt
           }
         ],
         response_format: { type: 'json_object' },
+        temperature: 0.7,
       });
 
-      aiFeedback = JSON.parse(feedbackResponse.choices[0].message.content || '{}');
-      console.log('OpenAI 응답 파싱 완료:', aiFeedback);
-    } catch (openaiError) {
-      console.error('OpenAI API 오류:', openaiError);
-      // OpenAI API 오류 시 기본 피드백 제공
-      aiFeedback = {
-        feedback: "좋은 시도입니다!",
-        tip: "계속 노력해보세요!"
+      const rawFeedback = JSON.parse(feedbackResponse.choices[0].message.content || '{}');
+      console.log('OpenAI 응답 파싱 완료:', rawFeedback);
+      
+      // 응답 검증 및 정규화
+      const hattieFeedback: HattieFeedbackResponse = {
+        feedUp: rawFeedback.feedUp || '목표를 확인해보세요.',
+        feedBack: {
+          taskLevel: Array.isArray(rawFeedback.feedBack?.taskLevel) 
+            ? rawFeedback.feedBack.taskLevel 
+            : rawFeedback.feedBack?.taskLevel 
+              ? [rawFeedback.feedBack.taskLevel] 
+              : [],
+          processLevel: Array.isArray(rawFeedback.feedBack?.processLevel)
+            ? rawFeedback.feedBack.processLevel
+            : rawFeedback.feedBack?.processLevel
+              ? [rawFeedback.feedBack.processLevel]
+              : [],
+          selfRegulation: Array.isArray(rawFeedback.feedBack?.selfRegulation)
+            ? rawFeedback.feedBack.selfRegulation
+            : rawFeedback.feedBack?.selfRegulation
+              ? [rawFeedback.feedBack.selfRegulation]
+              : [],
+        },
+        feedForward: Array.isArray(rawFeedback.feedForward)
+          ? rawFeedback.feedForward
+          : rawFeedback.feedForward
+            ? [rawFeedback.feedForward]
+            : [],
+        errorPatterns: Array.isArray(rawFeedback.errorPatterns)
+          ? rawFeedback.errorPatterns
+          : rawFeedback.errorPatterns
+            ? [rawFeedback.errorPatterns]
+            : undefined,
+        strengths: Array.isArray(rawFeedback.strengths)
+          ? rawFeedback.strengths
+          : rawFeedback.strengths
+            ? [rawFeedback.strengths]
+            : undefined,
       };
+      
+      // 한국어 사용 검증 (간단한 휴리스틱)
+      const allText = JSON.stringify(hattieFeedback);
+      const koreanCharCount = (allText.match(/[가-힣]/g) || []).length;
+      const totalCharCount = allText.replace(/[\s{}[\]",:]/g, '').length;
+      const koreanRatio = totalCharCount > 0 ? koreanCharCount / totalCharCount : 0;
+      
+      if (koreanRatio < 0.5) {
+        console.warn('한국어 비율이 낮습니다:', koreanRatio);
+        // 재시도는 하지 않고 경고만 로깅 (너무 많은 재시도 방지)
+      }
+      
+      console.log('최종 Hattie 피드백 응답:', hattieFeedback);
+      return NextResponse.json(hattieFeedback);
+      
+    } catch (openaiError: unknown) {
+      console.error('OpenAI API 오류:', openaiError);
+      const errorMessage = openaiError instanceof Error ? openaiError.message : '알 수 없는 오류';
+      
+      // 기본 피드백 제공 (한국어)
+      const fallbackFeedback: HattieFeedbackResponse = {
+        feedUp: '이번 평가에서 목표를 달성하기 위해 노력한 점이 훌륭해요.',
+        feedBack: {
+          taskLevel: ['평가를 완료한 점이 좋아요.'],
+          processLevel: ['계속 연습하면 더 좋아질 거예요.'],
+          selfRegulation: ['평가를 끝까지 완료한 노력이 인상적이에요.'],
+        },
+        feedForward: ['다음에는 더 많은 연습을 해보면 좋을 것 같아요.'],
+      };
+      
+      return NextResponse.json(fallbackFeedback);
     }
-    
-    const response = {
-      feedback: aiFeedback.feedback || "좋은 시도입니다!",
-      tip: aiFeedback.tip || "계속 노력해보세요!",
-      strengths: aiFeedback.strengths || [],
-      improvements: aiFeedback.improvements || [],
-      nextSteps: aiFeedback.nextSteps || []
-    };
-    
-    console.log('최종 응답:', response);
-    return NextResponse.json(response);
 
   } catch (error) {
     console.error('피드백 생성 에러:', error);

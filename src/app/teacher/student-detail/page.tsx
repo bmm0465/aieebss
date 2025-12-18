@@ -4,6 +4,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { useEffect, useState, Suspense, useMemo } from 'react'
 import Link from 'next/link'
 import { TeacherAudioPlayer } from '@/components/TeacherAudioPlayer'
+import FeedbackSection from '@/components/FeedbackSection'
 
 interface TestResultRow {
   id: number;
@@ -820,6 +821,15 @@ function StudentDetailContent() {
                     })}
                   </tbody>
                 </table>
+              </div>
+              
+              {/* Hattie 프레임워크 기반 피드백 섹션 */}
+              <div style={{ marginTop: '2rem' }}>
+                <FeedbackSection
+                  testType={selectedTestType}
+                  sessionId={selectedSession}
+                  hasResults={selectedResults.length > 0}
+                />
               </div>
             </div>
           </div>

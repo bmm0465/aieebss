@@ -1,14 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-
-interface FeedbackData {
-  feedback: string;
-  tip: string;
-  strengths?: string[];
-  improvements?: string[];
-  nextSteps?: string[];
-}
+import type { HattieFeedbackResponse } from '@/lib/feedback/feedbackTypes';
 
 interface FeedbackSectionProps {
   testType: string;
@@ -30,7 +23,7 @@ const getTestTypeTitle = (testType: string): string => {
 };
 
 export default function FeedbackSection({ testType, sessionId, hasResults }: FeedbackSectionProps) {
-  const [feedback, setFeedback] = useState<FeedbackData | null>(null);
+  const [feedback, setFeedback] = useState<HattieFeedbackResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -148,32 +141,174 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
 
       {feedback && (
         <div>
-          {/* 종합 피드백 */}
+          {/* Feed Up: 목표는 무엇인가? */}
           <div style={{
-            backgroundColor: 'rgba(33, 150, 243, 0.1)',
-            border: '1px solid rgba(33, 150, 243, 0.3)',
-            borderRadius: '10px',
+            backgroundColor: 'rgba(33, 150, 243, 0.15)',
+            border: '2px solid rgba(33, 150, 243, 0.4)',
+            borderRadius: '12px',
             padding: '1.5rem',
             marginBottom: '2rem'
           }}>
-            <h3 style={{ color: '#2196F3', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-              🤖 종합 평가 피드백
+            <h3 style={{ 
+              color: '#2196F3', 
+              marginBottom: '1rem', 
+              display: 'flex', 
+              alignItems: 'center',
+              fontSize: '1.3rem',
+              fontWeight: '600'
+            }}>
+              🎯 목표는 무엇인가? (Feed Up)
             </h3>
-            <div style={{ marginBottom: '1rem' }}>
-              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>전체 평가</p>
-              <p style={{ margin: 0, color: '#fff', fontSize: '1.1rem', lineHeight: '1.5' }}>
-                {feedback.feedback}
-              </p>
-            </div>
-            <div>
-              <p style={{ margin: '0 0 0.5rem 0', color: '#ccc', fontSize: '0.9rem' }}>핵심 학습 팁</p>
-              <p style={{ margin: 0, color: '#4CAF50', fontSize: '1.1rem', lineHeight: '1.5' }}>
-                {feedback.tip}
-              </p>
-            </div>
+            <p style={{ margin: 0, color: '#fff', fontSize: '1.1rem', lineHeight: '1.6' }}>
+              {feedback.feedUp}
+            </p>
           </div>
 
-          {/* 강점 분석 */}
+          {/* Feed Back: 현재 어떤 상태인가? */}
+          <div style={{
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: '12px',
+            padding: '1.5rem',
+            marginBottom: '2rem'
+          }}>
+            <h3 style={{ 
+              color: '#FFD700', 
+              marginBottom: '1.5rem', 
+              display: 'flex', 
+              alignItems: 'center',
+              fontSize: '1.3rem',
+              fontWeight: '600'
+            }}>
+              📊 현재 어떤 상태인가? (Feed Back)
+            </h3>
+
+            {/* Task Level */}
+            {feedback.feedBack.taskLevel.length > 0 && (
+              <div style={{
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.3)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <h4 style={{ color: '#3b82f6', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                  ✓ 과제 수준 (Task Level)
+                </h4>
+                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                  {feedback.feedBack.taskLevel.map((item, index) => (
+                    <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.5' }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Process Level - 가장 중요 */}
+            {feedback.feedBack.processLevel.length > 0 && (
+              <div style={{
+                backgroundColor: 'rgba(16, 185, 129, 0.15)',
+                border: '2px solid rgba(16, 185, 129, 0.4)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <h4 style={{ 
+                  color: '#10b981', 
+                  marginBottom: '0.75rem', 
+                  fontSize: '1rem', 
+                  fontWeight: '600',
+                  display: 'flex',
+                  alignItems: 'center'
+                }}>
+                  🔍 과정 수준 (Process Level) - 가장 중요!
+                </h4>
+                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                  {feedback.feedBack.processLevel.map((item, index) => (
+                    <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.5', fontWeight: '500' }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Self-Regulation Level */}
+            {feedback.feedBack.selfRegulation.length > 0 && (
+              <div style={{
+                backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                border: '1px solid rgba(139, 92, 246, 0.3)',
+                borderRadius: '8px',
+                padding: '1rem',
+                marginBottom: '1rem'
+              }}>
+                <h4 style={{ color: '#8b5cf6', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                  💪 자기조절 수준 (Self-Regulation Level)
+                </h4>
+                <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                  {feedback.feedBack.selfRegulation.map((item, index) => (
+                    <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.5' }}>
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+
+          {/* Feed Forward: 다음 단계는 어디인가? */}
+          {feedback.feedForward.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(156, 39, 176, 0.15)',
+              border: '2px solid rgba(156, 39, 176, 0.4)',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ 
+                color: '#9C27B0', 
+                marginBottom: '1rem', 
+                display: 'flex', 
+                alignItems: 'center',
+                fontSize: '1.3rem',
+                fontWeight: '600'
+              }}>
+                🚀 다음 단계는 어디인가? (Feed Forward)
+              </h3>
+              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                {feedback.feedForward.map((step, index) => (
+                  <li key={index} style={{ marginBottom: '0.75rem', lineHeight: '1.6', fontSize: '1.05rem' }}>
+                    {step}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 오류 패턴 (있는 경우) */}
+          {feedback.errorPatterns && feedback.errorPatterns.length > 0 && (
+            <div style={{
+              backgroundColor: 'rgba(239, 68, 68, 0.1)',
+              border: '1px solid rgba(239, 68, 68, 0.3)',
+              borderRadius: '10px',
+              padding: '1.5rem',
+              marginBottom: '2rem'
+            }}>
+              <h3 style={{ color: '#ef4444', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
+                ⚠️ 발견된 오류 패턴
+              </h3>
+              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
+                {feedback.errorPatterns.map((pattern, index) => (
+                  <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
+                    {pattern}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* 강점 (있는 경우) */}
           {feedback.strengths && feedback.strengths.length > 0 && (
             <div style={{
               backgroundColor: 'rgba(40, 167, 69, 0.1)',
@@ -189,50 +324,6 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
                 {feedback.strengths.map((strength, index) => (
                   <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
                     {strength}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* 개선점 분석 */}
-          {feedback.improvements && feedback.improvements.length > 0 && (
-            <div style={{
-              backgroundColor: 'rgba(255, 193, 7, 0.1)',
-              border: '1px solid rgba(255, 193, 7, 0.3)',
-              borderRadius: '10px',
-              padding: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <h3 style={{ color: '#ffc107', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                🎯 개선할 점
-              </h3>
-              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
-                {feedback.improvements.map((improvement, index) => (
-                  <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
-                    {improvement}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* 다음 단계 */}
-          {feedback.nextSteps && feedback.nextSteps.length > 0 && (
-            <div style={{
-              backgroundColor: 'rgba(156, 39, 176, 0.1)',
-              border: '1px solid rgba(156, 39, 176, 0.3)',
-              borderRadius: '10px',
-              padding: '1.5rem',
-              marginBottom: '2rem'
-            }}>
-              <h3 style={{ color: '#9C27B0', marginBottom: '1rem', display: 'flex', alignItems: 'center' }}>
-                🚀 다음 학습 단계
-              </h3>
-              <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#fff' }}>
-                {feedback.nextSteps.map((step, index) => (
-                  <li key={index} style={{ marginBottom: '0.5rem', lineHeight: '1.4' }}>
-                    {step}
                   </li>
                 ))}
               </ul>
