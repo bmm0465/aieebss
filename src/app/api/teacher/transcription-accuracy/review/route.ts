@@ -134,10 +134,11 @@ export async function POST(request: NextRequest) {
       success: true,
       review: result,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[transcription-accuracy/review] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }

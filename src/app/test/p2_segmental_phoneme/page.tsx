@@ -126,7 +126,7 @@ export default function PsfTestPage() {
           clearTimeout(timeout);
           resolve();
         };
-        audio.onerror = (error) => {
+        audio.onerror = () => {
           clearTimeout(timeout);
           // 파일이 없으면 TTS API 사용 (폴백)
           fetch('/api/tts', {

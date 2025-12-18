@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -266,9 +266,10 @@ export default function TranscriptionAccuracyPage() {
         await loadStatistics();
 
         setLoading(false);
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('데이터 로드 오류:', err);
-        setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
+        const errorMessage = err instanceof Error ? err.message : '데이터를 불러오는 중 오류가 발생했습니다.';
+        setError(errorMessage);
         setLoading(false);
       }
     };
@@ -277,7 +278,7 @@ export default function TranscriptionAccuracyPage() {
   }, [router]);
 
   // 통계 로드
-  const loadStatistics = async () => {
+  const loadStatistics = useCallback(async () => {
     try {
       const params = new URLSearchParams();
       if (selectedTestType !== 'all') {
@@ -289,17 +290,17 @@ export default function TranscriptionAccuracyPage() {
 
       const data = await response.json();
       setStatistics(data);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('통계 로드 오류:', err);
     }
-  };
+  }, [selectedTestType]);
 
   // 필터 변경 시 통계 다시 로드
   useEffect(() => {
     if (!loading) {
       loadStatistics();
     }
-  }, [selectedTestType]);
+  }, [selectedTestType, loading, loadStatistics]);
 
   // 리뷰 저장
   const saveReview = async (testResultId: number, reviewType: number, notes?: string) => {
@@ -335,9 +336,10 @@ export default function TranscriptionAccuracyPage() {
 
       // 통계 다시 로드
       await loadStatistics();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('리뷰 저장 오류:', err);
-      alert(err.message || '리뷰를 저장하는 중 오류가 발생했습니다.');
+      const errorMessage = err instanceof Error ? err.message : '리뷰를 저장하는 중 오류가 발생했습니다.';
+      alert(errorMessage);
     } finally {
       setSavingReview(prev => {
         const next = { ...prev };

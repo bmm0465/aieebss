@@ -147,10 +147,11 @@ export async function GET(request: NextRequest) {
       transcription_accuracy: transcriptionAccuracy,
       scoring_accuracy: scoringAccuracy,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('[transcription-accuracy/statistics] Error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: error.message || 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     );
   }
