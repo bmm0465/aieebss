@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
@@ -353,7 +353,8 @@ export default function TranscriptionAccuracyPage() {
     if (!loading && Object.keys(students).length > 0) {
       loadTestResults();
     }
-  }, [selectedTestType, selectedStudent, loadTestResults]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTestType, selectedStudent]);
 
 
   // 리뷰 저장
