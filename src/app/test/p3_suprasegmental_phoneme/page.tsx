@@ -168,9 +168,28 @@ export default function StressTestPage() {
         // 사전 생성된 파일 재생
         const audio = new Audio(audioPath);
         await new Promise<void>((resolve, reject) => {
-          audio.onended = () => resolve();
-          audio.onerror = reject;
-          audio.play();
+          const timeout = setTimeout(() => {
+            reject(new Error('오디오 재생 타임아웃'));
+          }, 10000);
+          
+          audio.onended = () => {
+            clearTimeout(timeout);
+            resolve();
+          };
+          audio.onerror = (error) => {
+            clearTimeout(timeout);
+            console.warn(`[p3_suprasegmental_phoneme] 오디오 파일 재생 실패, TTS로 폴백: ${audioPath}`, error);
+            reject(new Error('오디오 재생 실패'));
+          };
+          audio.onloadeddata = () => {
+            // 파일이 완전히 로드된 후 재생
+            audio.play().catch((playError) => {
+              clearTimeout(timeout);
+              console.warn(`[p3_suprasegmental_phoneme] 재생 시작 실패, TTS로 폴백:`, playError);
+              reject(playError);
+            });
+          };
+          audio.load(); // 명시적으로 로드 시작
         });
       } else {
         // 파일이 없으면 TTS API 사용 (폴백)
@@ -187,12 +206,29 @@ export default function StressTestPage() {
         const fallbackAudio = new Audio(audioUrl);
         
         await new Promise<void>((resolve, reject) => {
+          const timeout = setTimeout(() => {
+            reject(new Error('TTS 오디오 재생 타임아웃'));
+          }, 10000);
+          
           fallbackAudio.onended = () => {
+            clearTimeout(timeout);
             URL.revokeObjectURL(audioUrl);
             resolve();
           };
-          fallbackAudio.onerror = reject;
-          fallbackAudio.play();
+          fallbackAudio.onerror = (error) => {
+            clearTimeout(timeout);
+            URL.revokeObjectURL(audioUrl);
+            console.warn(`[p3_suprasegmental_phoneme] TTS 오디오 재생 실패:`, error);
+            reject(error);
+          };
+          fallbackAudio.onloadeddata = () => {
+            fallbackAudio.play().catch((playError) => {
+              clearTimeout(timeout);
+              URL.revokeObjectURL(audioUrl);
+              reject(playError);
+            });
+          };
+          fallbackAudio.load(); // 명시적으로 로드 시작
         });
       }
     } catch (error) {

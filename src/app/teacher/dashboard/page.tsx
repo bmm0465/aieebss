@@ -336,6 +336,23 @@ export default async function TeacherDashboard() {
           >
             📚 교육과정 데이터
           </Link>
+          <Link
+            href="/teacher/transcription-accuracy"
+            style={{
+              background: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+              color: 'white',
+              padding: '1.25rem',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 6px -1px rgba(245, 158, 11, 0.3)'
+            }}
+            className="quick-link"
+          >
+            🎤 음성 인식 정확도 점검
+          </Link>
         </div>
 
 

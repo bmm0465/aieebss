@@ -1,0 +1,587 @@
+'use client';
+
+import { useEffect, useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/client';
+import { TeacherAudioPlayer } from '@/components/TeacherAudioPlayer';
+import LogoutButton from '@/components/LogoutButton';
+
+interface TestResultRow {
+  id: number;
+  user_id: string;
+  test_type: string;
+  question: string | null;
+  correct_answer: string | null;
+  student_answer: string | null;
+  is_correct: boolean | null;
+  created_at: string;
+  audio_url?: string | null;
+  transcription_results?: {
+    openai?: { text?: string; confidence?: string; timeline?: unknown[] };
+    gemini?: { text?: string; confidence?: string; timeline?: unknown[] };
+    aws?: { text?: string; confidence?: string; timeline?: unknown[] };
+    azure?: { text?: string; confidence?: string; timeline?: unknown[] };
+  } | null;
+}
+
+interface StudentInfo {
+  id: string;
+  full_name: string | null;
+  class_name: string | null;
+  student_number: string | null;
+}
+
+interface Review {
+  test_result_id: number;
+  review_type: number;
+  notes?: string | null;
+}
+
+interface Statistics {
+  total: number;
+  by_type: { '1': number; '2': number; '3': number; '4': number };
+  percentages: { '1': number; '2': number; '3': number; '4': number };
+  transcription_accuracy: number;
+  scoring_accuracy: number;
+}
+
+// 테이블 행 컴포넌트
+function ResultRow({
+  result,
+  student,
+  review,
+  onSave,
+  saving
+}: {
+  result: TestResultRow;
+  student?: StudentInfo;
+  review?: Review;
+  onSave: (testResultId: number, reviewType: number, notes?: string) => void;
+  saving: boolean;
+}) {
+  const [selectedType, setSelectedType] = useState<number>(review?.review_type || 0);
+
+  const transcriptionText = result.transcription_results?.openai?.text 
+    || result.transcription_results?.gemini?.text
+    || result.transcription_results?.aws?.text
+    || result.transcription_results?.azure?.text
+    || result.student_answer
+    || '-';
+
+  return (
+    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+      <td style={{ padding: '1rem' }}>
+        {student?.full_name || '이름 없음'}
+        {student?.class_name && ` (${student.class_name}반)`}
+      </td>
+      <td style={{ padding: '1rem' }}>
+        {result.test_type === 'p1_alphabet' ? '1교시' : '4교시'}
+      </td>
+      <td style={{ padding: '1rem', fontWeight: '600' }}>
+        {result.correct_answer || result.question || '-'}
+      </td>
+      <td style={{ padding: '1rem' }}>
+        {result.audio_url ? (
+          <TeacherAudioPlayer
+            audioPath={result.audio_url}
+            userId={result.user_id}
+            testType={result.test_type}
+            createdAt={result.created_at}
+          />
+        ) : (
+          <span style={{ color: '#9ca3af' }}>-</span>
+        )}
+      </td>
+      <td style={{ padding: '1rem', maxWidth: '200px', wordBreak: 'break-word' }}>
+        {transcriptionText}
+      </td>
+      <td style={{ padding: '1rem' }}>
+        <span style={{
+          padding: '0.25rem 0.75rem',
+          borderRadius: '4px',
+          backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+          color: result.is_correct ? '#10b981' : '#ef4444',
+          fontWeight: '600',
+          fontSize: '0.875rem'
+        }}>
+          {result.is_correct ? '정답' : '오답'}
+        </span>
+      </td>
+      <td style={{ padding: '1rem' }}>
+        <select
+          value={selectedType}
+          onChange={(e) => setSelectedType(Number(e.target.value))}
+          style={{
+            padding: '0.5rem',
+            borderRadius: '6px',
+            border: '1px solid #d1d5db',
+            fontSize: '0.875rem',
+            minWidth: '200px'
+          }}
+        >
+          <option value="0">선택 안 함</option>
+          <option value="1">유형 1: 정답 발화→정확한 전사→정답</option>
+          <option value="2">유형 2: 정답 발화→부정확한 전사→오답</option>
+          <option value="3">유형 3: 오답 발화→부정확한 전사→정답/오답</option>
+          <option value="4">유형 4: 오답 발화→정확한 전사→오답</option>
+        </select>
+      </td>
+      <td style={{ padding: '1rem' }}>
+        <button
+          onClick={() => {
+            if (selectedType > 0) {
+              onSave(result.id, selectedType);
+            }
+          }}
+          disabled={selectedType === 0 || saving}
+          style={{
+            padding: '0.5rem 1rem',
+            borderRadius: '6px',
+            border: 'none',
+            backgroundColor: selectedType > 0 ? '#6366f1' : '#9ca3af',
+            color: 'white',
+            fontWeight: '600',
+            cursor: selectedType > 0 && !saving ? 'pointer' : 'not-allowed',
+            opacity: saving ? 0.6 : 1,
+            fontSize: '0.875rem'
+          }}
+        >
+          {saving ? '저장 중...' : '저장'}
+        </button>
+      </td>
+    </tr>
+  );
+}
+
+export default function TranscriptionAccuracyPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [testResults, setTestResults] = useState<TestResultRow[]>([]);
+  const [students, setStudents] = useState<Record<string, StudentInfo>>({});
+  const [reviews, setReviews] = useState<Record<number, Review>>({});
+  const [statistics, setStatistics] = useState<Statistics | null>(null);
+  const [selectedTestType, setSelectedTestType] = useState<string>('all');
+  const [selectedStudent, setSelectedStudent] = useState<string>('all');
+  const [savingReview, setSavingReview] = useState<Record<number, boolean>>({});
+
+  // 필터링된 결과
+  const filteredResults = useMemo(() => {
+    let filtered = testResults;
+
+    if (selectedTestType !== 'all') {
+      filtered = filtered.filter(r => r.test_type === selectedTestType);
+    }
+
+    if (selectedStudent !== 'all') {
+      filtered = filtered.filter(r => r.user_id === selectedStudent);
+    }
+
+    return filtered;
+  }, [testResults, selectedTestType, selectedStudent]);
+
+  // 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+          router.push('/');
+          return;
+        }
+
+        // 교사 권한 확인
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single();
+
+        if (!profile || profile.role !== 'teacher') {
+          setError('교사 권한이 필요합니다.');
+          return;
+        }
+
+        // 담당 학생 목록 가져오기
+        const { data: assignments } = await supabase
+          .from('teacher_student_assignments')
+          .select('student_id')
+          .eq('teacher_id', user.id);
+
+        if (!assignments || assignments.length === 0) {
+          setLoading(false);
+          return;
+        }
+
+        const studentIds = assignments.map(a => a.student_id);
+
+        // 학생 정보 가져오기
+        const { data: studentProfiles } = await supabase
+          .from('user_profiles')
+          .select('id, full_name, class_name, student_number')
+          .in('id', studentIds);
+
+        const studentsMap: Record<string, StudentInfo> = {};
+        if (studentProfiles) {
+          studentProfiles.forEach(s => {
+            studentsMap[s.id] = s;
+          });
+        }
+        setStudents(studentsMap);
+
+        // 테스트 결과 가져오기 (1교시, 4교시만)
+        const { data: results } = await supabase
+          .from('test_results')
+          .select('id, user_id, test_type, question, correct_answer, student_answer, is_correct, created_at, audio_url, transcription_results')
+          .in('user_id', studentIds)
+          .in('test_type', ['p1_alphabet', 'p4_phonics'])
+          .order('created_at', { ascending: false });
+
+        if (results) {
+          setTestResults(results as TestResultRow[]);
+        }
+
+        // 기존 리뷰 가져오기
+        const { data: existingReviews } = await supabase
+          .from('transcription_accuracy_reviews')
+          .select('test_result_id, review_type, notes')
+          .eq('teacher_id', user.id);
+
+        if (existingReviews) {
+          const reviewsMap: Record<number, Review> = {};
+          existingReviews.forEach(r => {
+            reviewsMap[r.test_result_id] = {
+              test_result_id: r.test_result_id,
+              review_type: r.review_type,
+              notes: r.notes,
+            };
+          });
+          setReviews(reviewsMap);
+        }
+
+        // 통계 로드
+        await loadStatistics();
+
+        setLoading(false);
+      } catch (err: any) {
+        console.error('데이터 로드 오류:', err);
+        setError(err.message || '데이터를 불러오는 중 오류가 발생했습니다.');
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [router]);
+
+  // 통계 로드
+  const loadStatistics = async () => {
+    try {
+      const params = new URLSearchParams();
+      if (selectedTestType !== 'all') {
+        params.append('test_type', selectedTestType);
+      }
+
+      const response = await fetch(`/api/teacher/transcription-accuracy/statistics?${params.toString()}`);
+      if (!response.ok) throw new Error('통계를 불러올 수 없습니다.');
+
+      const data = await response.json();
+      setStatistics(data);
+    } catch (err: any) {
+      console.error('통계 로드 오류:', err);
+    }
+  };
+
+  // 필터 변경 시 통계 다시 로드
+  useEffect(() => {
+    if (!loading) {
+      loadStatistics();
+    }
+  }, [selectedTestType]);
+
+  // 리뷰 저장
+  const saveReview = async (testResultId: number, reviewType: number, notes?: string) => {
+    setSavingReview(prev => ({ ...prev, [testResultId]: true }));
+
+    try {
+      const response = await fetch('/api/teacher/transcription-accuracy/review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          test_result_id: testResultId,
+          review_type: reviewType,
+          notes: notes || null,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || '리뷰 저장 실패');
+      }
+
+      const { review } = await response.json();
+
+      // 리뷰 상태 업데이트
+      setReviews(prev => ({
+        ...prev,
+        [testResultId]: {
+          test_result_id: testResultId,
+          review_type: review.review_type,
+          notes: review.notes,
+        },
+      }));
+
+      // 통계 다시 로드
+      await loadStatistics();
+    } catch (err: any) {
+      console.error('리뷰 저장 오류:', err);
+      alert(err.message || '리뷰를 저장하는 중 오류가 발생했습니다.');
+    } finally {
+      setSavingReview(prev => {
+        const next = { ...prev };
+        delete next[testResultId];
+        return next;
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ 
+        backgroundColor: '#f3f4f6', 
+        minHeight: '100vh',
+        padding: '2rem',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>로딩 중...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ 
+        backgroundColor: '#f3f4f6', 
+        minHeight: '100vh',
+        padding: '2rem',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '1.5rem', color: '#dc3545', marginBottom: '1rem' }}>오류</div>
+          <div style={{ marginBottom: '1rem' }}>{error}</div>
+          <Link href="/teacher/dashboard" style={{
+            padding: '0.75rem 1.5rem',
+            backgroundColor: '#6366f1',
+            color: 'white',
+            borderRadius: '8px',
+            textDecoration: 'none'
+          }}>
+            대시보드로 돌아가기
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const studentList = Object.values(students);
+
+  return (
+    <div style={{ 
+      backgroundColor: '#f3f4f6', 
+      minHeight: '100vh',
+      padding: '2rem',
+      color: '#171717'
+    }}>
+      <div style={{ maxWidth: '1600px', margin: '0 auto' }}>
+        {/* 헤더 */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '15px',
+          marginBottom: '2rem',
+          border: '1px solid rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div>
+              <h1 style={{ 
+                fontSize: '2.5rem', 
+                margin: 0,
+                background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontWeight: 'bold'
+              }}>
+                🎤 음성 인식 정확도 점검
+              </h1>
+              <p style={{ margin: '0.5rem 0 0 0', opacity: 0.8 }}>
+                학생 발화와 음성 인식 결과의 일치 여부를 점검하고 통계를 분석합니다.
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '0.8rem' }}>
+              <Link
+                href="/teacher/dashboard"
+                style={{
+                  padding: '0.6rem 1.2rem',
+                  backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                  color: '#6366f1',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  fontWeight: '600',
+                  border: '1px solid rgba(99, 102, 241, 0.3)'
+                }}
+              >
+                ← 대시보드
+              </Link>
+              <LogoutButton />
+            </div>
+          </div>
+        </div>
+
+        {/* 통계 패널 */}
+        {statistics && (
+          <div style={{
+            backgroundColor: '#ffffff',
+            padding: '2rem',
+            borderRadius: '15px',
+            marginBottom: '2rem',
+            border: '1px solid rgba(0, 0, 0, 0.1)'
+          }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: '600' }}>통계 분석</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+              <div style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>전체 리뷰 수</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#1f2937' }}>{statistics.total}</div>
+              </div>
+              <div style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>음성 인식 정확도</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#10b981' }}>{statistics.transcription_accuracy}%</div>
+              </div>
+              <div style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>채점 정확도</div>
+                <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>{statistics.scoring_accuracy}%</div>
+              </div>
+            </div>
+            <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
+              {[1, 2, 3, 4].map(type => (
+                <div key={type} style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>유형 {type}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+                    {statistics.by_type[type as keyof typeof statistics.by_type]}개
+                  </div>
+                  <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                    ({statistics.percentages[type as keyof typeof statistics.percentages]}%)
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 필터 */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '1.5rem',
+          borderRadius: '15px',
+          marginBottom: '2rem',
+          border: '1px solid rgba(0, 0, 0, 0.1)'
+        }}>
+          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '600' }}>
+                평가 교시
+              </label>
+              <select
+                value={selectedTestType}
+                onChange={(e) => setSelectedTestType(e.target.value)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <option value="all">전체</option>
+                <option value="p1_alphabet">1교시 (알파벳)</option>
+                <option value="p4_phonics">4교시 (파닉스)</option>
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.875rem', fontWeight: '600' }}>
+                학생
+              </label>
+              <select
+                value={selectedStudent}
+                onChange={(e) => setSelectedStudent(e.target.value)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.875rem'
+                }}
+              >
+                <option value="all">전체</option>
+                {studentList.map(student => (
+                  <option key={student.id} value={student.id}>
+                    {student.full_name || '이름 없음'} ({student.class_name || '-'}반)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* 테이블 */}
+        <div style={{
+          backgroundColor: '#ffffff',
+          padding: '2rem',
+          borderRadius: '15px',
+          border: '1px solid rgba(0, 0, 0, 0.1)',
+          overflowX: 'auto'
+        }}>
+          <h2 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', fontWeight: '600' }}>테스트 결과 목록</h2>
+          {filteredResults.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '3rem', color: '#6b7280' }}>
+              점검할 결과가 없습니다.
+            </div>
+          ) : (
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid #e5e7eb' }}>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>학생</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>교시</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>목표 정답</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>음성 파일</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>전사 결과</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>채점 결과</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>유형</th>
+                  <th style={{ padding: '1rem', textAlign: 'left', fontWeight: '600', color: '#374151' }}>작업</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredResults.map((result) => (
+                  <ResultRow
+                    key={result.id}
+                    result={result}
+                    student={students[result.user_id]}
+                    review={reviews[result.id]}
+                    onSave={saveReview}
+                    saving={savingReview[result.id] || false}
+                  />
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

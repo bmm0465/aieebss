@@ -118,10 +118,16 @@ export default function PsfTestPage() {
       const audio = new Audio(audioPath);
       
       await new Promise<void>((resolve, reject) => {
+        const timeout = setTimeout(() => {
+          reject(new Error('오디오 재생 타임아웃'));
+        }, 10000);
+        
         audio.onended = () => {
+          clearTimeout(timeout);
           resolve();
         };
-        audio.onerror = () => {
+        audio.onerror = (error) => {
+          clearTimeout(timeout);
           // 파일이 없으면 TTS API 사용 (폴백)
           fetch('/api/tts', {
             method: 'POST',
@@ -136,18 +142,45 @@ export default function PsfTestPage() {
               const audioUrl = URL.createObjectURL(audioBlob);
               const fallbackAudio = new Audio(audioUrl);
               return new Promise<void>((resolveFallback, rejectFallback) => {
+                const fallbackTimeout = setTimeout(() => {
+                  URL.revokeObjectURL(audioUrl);
+                  rejectFallback(new Error('TTS 오디오 재생 타임아웃'));
+                }, 10000);
+                
                 fallbackAudio.onended = () => {
+                  clearTimeout(fallbackTimeout);
                   URL.revokeObjectURL(audioUrl);
                   resolveFallback();
                 };
-                fallbackAudio.onerror = rejectFallback;
-                fallbackAudio.play();
+                fallbackAudio.onerror = (fallbackError) => {
+                  clearTimeout(fallbackTimeout);
+                  URL.revokeObjectURL(audioUrl);
+                  console.warn(`[p2_segmental_phoneme] TTS 오디오 재생 실패:`, fallbackError);
+                  rejectFallback(fallbackError);
+                };
+                fallbackAudio.onloadeddata = () => {
+                  fallbackAudio.play().catch((playError) => {
+                    clearTimeout(fallbackTimeout);
+                    URL.revokeObjectURL(audioUrl);
+                    rejectFallback(playError);
+                  });
+                };
+                fallbackAudio.load(); // 명시적으로 로드 시작
               });
             })
             .then(() => resolve())
             .catch(reject);
         };
-        audio.play();
+        audio.onloadeddata = () => {
+          // 파일이 완전히 로드된 후 재생
+          audio.play().catch((playError) => {
+            clearTimeout(timeout);
+            console.warn(`[p2_segmental_phoneme] 재생 시작 실패, TTS로 폴백:`, playError);
+            // TTS로 폴백 시도
+            audio.onerror?.(playError);
+          });
+        };
+        audio.load(); // 명시적으로 로드 시작
       });
     } catch (error) {
       console.error('오디오 재생 에러:', error);
