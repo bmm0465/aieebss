@@ -136,10 +136,34 @@ export default async function TeacherDashboard() {
     }
     
     // 테스트 결과 가져오기 (time_taken 포함)
-    const { data: testResults } = await supabase
-      .from('test_results')
-      .select('user_id, test_type, is_correct, accuracy, created_at, time_taken')
-      .in('user_id', studentIds);
+    // RLS 정책이 제대로 작동하도록 각 학생별로 개별 쿼리 실행
+    // .in() 쿼리는 RLS 정책이 일부 학생에 대해 제대로 작동하지 않을 수 있음
+    let allTestResults: TestResult[] = [];
+    
+    // 배치로 처리 (성능 최적화: 한 번에 10명씩)
+    const batchSize = 10;
+    for (let i = 0; i < studentIds.length; i += batchSize) {
+      const batch = studentIds.slice(i, i + batchSize);
+      
+      // 배치 내에서 각 학생별로 쿼리 실행
+      const batchPromises = batch.map(async (studentId) => {
+        const { data: studentResults, error: resultError } = await supabase
+          .from('test_results')
+          .select('user_id, test_type, is_correct, accuracy, created_at, time_taken')
+          .eq('user_id', studentId);
+        
+        if (resultError) {
+          console.error(`[TeacherDashboard] 학생 ${studentId}의 결과 조회 오류:`, resultError);
+          return [];
+        }
+        return studentResults || [];
+      });
+      
+      const batchResults = await Promise.all(batchPromises);
+      allTestResults = [...allTestResults, ...batchResults.flat()];
+    }
+    
+    const testResults = allTestResults;
 
     // 학생별 통계 계산
     studentsWithStats = studentIds.map(studentId => {

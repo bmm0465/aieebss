@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { HattieFeedbackResponse } from '@/lib/feedback/feedbackTypes';
 
 interface FeedbackSectionProps {
@@ -27,7 +27,7 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateFeedback = async () => {
+  const generateFeedback = useCallback(async () => {
     if (!hasResults) {
       setError('해당 테스트의 결과가 없습니다.');
       return;
@@ -67,7 +67,14 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
     } finally {
       setLoading(false);
     }
-  };
+  }, [hasResults, testType, sessionId]);
+
+  // 컴포넌트 마운트 시 저장된 피드백 자동 로드
+  useEffect(() => {
+    if (hasResults && sessionId && testType) {
+      generateFeedback();
+    }
+  }, [hasResults, sessionId, testType, generateFeedback]);
 
   if (!hasResults) {
     return (
@@ -330,8 +337,11 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
             </div>
           )}
 
-          {/* 다시 피드백 받기 버튼 */}
+          {/* 다시 피드백 받기 버튼 (새로 생성하여 덮어쓰기) */}
           <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+            <p style={{ color: '#9ca3af', fontSize: '0.875rem', marginBottom: '1rem' }}>
+              💾 이 피드백은 저장되어 있어요. 새로 생성하면 덮어쓰기 됩니다.
+            </p>
             <button
               onClick={generateFeedback}
               disabled={loading}
@@ -347,7 +357,7 @@ export default function FeedbackSection({ testType, sessionId, hasResults }: Fee
                 opacity: loading ? 0.7 : 1
               }}
             >
-              {loading ? '🔄 재생성 중...' : '🔄 피드백 다시 받기'}
+              {loading ? '🔄 재생성 중...' : '🔄 피드백 새로 생성하기'}
             </button>
           </div>
         </div>

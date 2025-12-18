@@ -89,9 +89,6 @@ export async function POST(request: Request) {
       }, { status: 400 });
     }
 
-    // Hattie 프레임워크 기반 피드백 생성
-    console.log('Hattie 피드백 API 호출 시작');
-    
     // 세션 데이터인지 확인
     const isSessionData = feedbackData && 'totalQuestions' in feedbackData;
     
@@ -102,6 +99,29 @@ export async function POST(request: Request) {
     }
     
     const sessionData = feedbackData as SessionDataForFeedback;
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      return NextResponse.json({ error: '인증이 필요합니다.' }, { status: 401 });
+    }
+
+    // 먼저 기존 피드백 조회
+    const { data: existingFeedback, error: fetchError } = await supabase
+      .from('feedbacks')
+      .select('feedback_data')
+      .eq('user_id', user.id)
+      .eq('session_id', sessionId)
+      .eq('test_type', testType)
+      .single();
+
+    if (existingFeedback && !fetchError) {
+      console.log('기존 피드백 반환:', sessionId, testType);
+      return NextResponse.json(existingFeedback.feedback_data as HattieFeedbackResponse);
+    }
+
+    // 피드백이 없으면 새로 생성
+    console.log('새 피드백 생성 시작:', sessionId, testType);
     
     try {
       // 오류 패턴 분석
@@ -109,8 +129,6 @@ export async function POST(request: Request) {
       const dataSummary = formatDataForLLM(summary);
       
       // 학생 프로필에서 학년 정보 가져오기 (있는 경우)
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
       let gradeLevel: string | undefined;
       
       if (user) {
@@ -202,6 +220,26 @@ export async function POST(request: Request) {
       }
       
       console.log('최종 Hattie 피드백 응답:', hattieFeedback);
+      
+      // 데이터베이스에 피드백 저장 (UPSERT)
+      const { error: saveError } = await supabase
+        .from('feedbacks')
+        .upsert({
+          user_id: user.id,
+          session_id: sessionId,
+          test_type: testType,
+          feedback_data: hattieFeedback,
+        }, {
+          onConflict: 'user_id,session_id,test_type'
+        });
+
+      if (saveError) {
+        console.error('피드백 저장 오류:', saveError);
+        // 저장 실패해도 피드백은 반환
+      } else {
+        console.log('피드백 저장 완료:', sessionId, testType);
+      }
+      
       return NextResponse.json(hattieFeedback);
       
     } catch (openaiError: unknown) {
