@@ -38,13 +38,22 @@ export async function POST(request: NextRequest) {
     const { test_result_id, review_type, notes } = body;
 
     // 유효성 검사
-    if (!test_result_id || !review_type) {
+    if (!test_result_id) {
       return NextResponse.json(
-        { error: 'Missing required fields: test_result_id and review_type are required' },
+        { error: 'Missing required field: test_result_id is required' },
         { status: 400 }
       );
     }
 
+    // review_type이 제공되지 않았거나, null이 아니면서 유효한 범위가 아닌 경우
+    if (review_type === undefined) {
+      return NextResponse.json(
+        { error: 'Missing required field: review_type is required' },
+        { status: 400 }
+      );
+    }
+
+    // review_type이 null이 아니면서 1-14 범위를 벗어난 경우
     if (review_type !== null && (review_type < 1 || review_type > 14)) {
       return NextResponse.json(
         { error: 'Invalid review_type: must be between 1 and 14, or null' },
@@ -111,7 +120,14 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[transcription-accuracy/review] Update error:', error);
+        // 데이터베이스 제약조건 오류인 경우 더 명확한 메시지 제공
+        if (error.code === '23514' || error.message?.includes('check constraint')) {
+          throw new Error('데이터베이스 마이그레이션이 필요합니다. review_type은 1-14 사이의 값이어야 합니다.');
+        }
+        throw error;
+      }
       result = data;
     } else {
       // 새 리뷰 생성
@@ -126,7 +142,14 @@ export async function POST(request: NextRequest) {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('[transcription-accuracy/review] Insert error:', error);
+        // 데이터베이스 제약조건 오류인 경우 더 명확한 메시지 제공
+        if (error.code === '23514' || error.message?.includes('check constraint')) {
+          throw new Error('데이터베이스 마이그레이션이 필요합니다. review_type은 1-14 사이의 값이어야 합니다.');
+        }
+        throw error;
+      }
       result = data;
     }
 

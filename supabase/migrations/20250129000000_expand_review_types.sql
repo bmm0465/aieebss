@@ -5,7 +5,11 @@
 ALTER TABLE transcription_accuracy_reviews 
 DROP CONSTRAINT IF EXISTS transcription_accuracy_reviews_review_type_check;
 
--- 2. 기존 데이터 마이그레이션
+-- 2. review_type을 NULL 허용으로 변경 (유형 3 데이터를 NULL로 변경하기 전에 먼저 실행)
+ALTER TABLE transcription_accuracy_reviews 
+ALTER COLUMN review_type DROP NOT NULL;
+
+-- 3. 기존 데이터 마이그레이션
 -- 유형 1 → 유형 1 (변경 없음)
 -- 유형 2 → 유형 4 (정답 발화→부정확한 전사→오답)
 UPDATE transcription_accuracy_reviews 
@@ -26,10 +30,6 @@ WHERE review_type = 3;
 UPDATE transcription_accuracy_reviews 
 SET review_type = 6 
 WHERE review_type = 4;
-
--- 3. review_type을 NULL 허용으로 변경 (기존 유형 3 데이터 때문)
-ALTER TABLE transcription_accuracy_reviews 
-ALTER COLUMN review_type DROP NOT NULL;
 
 -- 4. 새로운 CHECK 제약조건 추가 (1-14 또는 NULL 허용)
 ALTER TABLE transcription_accuracy_reviews 

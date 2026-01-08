@@ -38,7 +38,7 @@ graph TB
         F --> I[(test_results 테이블)]
         F --> J[(user_profiles 테이블)]
         G --> K[음성 파일 저장소]
-        H --> L[Whisper 음성 인식]
+        H --> L[GPT-4o-transcribe 음성 인식]
         H --> M[GPT-4o 자동 채점]
     end
     
