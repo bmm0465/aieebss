@@ -46,10 +46,16 @@ export async function GET(request: NextRequest) {
       .eq('teacher_id', user.id);
 
     if (!assignments || assignments.length === 0) {
+      const emptyByType: Record<string, number> = {};
+      const emptyPercentages: Record<string, number> = {};
+      for (let i = 1; i <= 14; i++) {
+        emptyByType[String(i)] = 0;
+        emptyPercentages[String(i)] = 0;
+      }
       return NextResponse.json({
         total: 0,
-        by_type: { '1': 0, '2': 0, '3': 0, '4': 0 },
-        percentages: { '1': 0, '2': 0, '3': 0, '4': 0 },
+        by_type: emptyByType,
+        percentages: emptyPercentages,
         transcription_accuracy: 0,
         scoring_accuracy: 0,
       });
@@ -84,10 +90,16 @@ export async function GET(request: NextRequest) {
     }
 
     if (!testResults || testResults.length === 0) {
+      const emptyByType: Record<string, number> = {};
+      const emptyPercentages: Record<string, number> = {};
+      for (let i = 1; i <= 14; i++) {
+        emptyByType[String(i)] = 0;
+        emptyPercentages[String(i)] = 0;
+      }
       return NextResponse.json({
         total: 0,
-        by_type: { '1': 0, '2': 0, '3': 0, '4': 0 },
-        percentages: { '1': 0, '2': 0, '3': 0, '4': 0 },
+        by_type: emptyByType,
+        percentages: emptyPercentages,
         transcription_accuracy: 0,
         scoring_accuracy: 0,
       });
@@ -108,36 +120,56 @@ export async function GET(request: NextRequest) {
     }
 
     // 통계 계산
-    const total = reviews?.length || 0;
-    const byType: Record<string, number> = { '1': 0, '2': 0, '3': 0, '4': 0 };
+    // NULL이 아닌 리뷰만 카운트
+    const validReviews = reviews?.filter(r => r.review_type !== null) || [];
+    const total = validReviews.length;
+    
+    // 1-14 유형별 초기화
+    const byType: Record<string, number> = {};
+    for (let i = 1; i <= 14; i++) {
+      byType[String(i)] = 0;
+    }
 
-    if (reviews) {
-      for (const review of reviews) {
-        const type = String(review.review_type);
-        if (byType[type] !== undefined) {
-          byType[type]++;
+    if (validReviews) {
+      for (const review of validReviews) {
+        if (review.review_type !== null) {
+          const type = String(review.review_type);
+          if (byType[type] !== undefined) {
+            byType[type]++;
+          }
         }
       }
     }
 
     // 비율 계산
-    const percentages: Record<string, number> = {
-      '1': total > 0 ? Math.round((byType['1'] / total) * 100 * 100) / 100 : 0,
-      '2': total > 0 ? Math.round((byType['2'] / total) * 100 * 100) / 100 : 0,
-      '3': total > 0 ? Math.round((byType['3'] / total) * 100 * 100) / 100 : 0,
-      '4': total > 0 ? Math.round((byType['4'] / total) * 100 * 100) / 100 : 0,
-    };
+    const percentages: Record<string, number> = {};
+    for (let i = 1; i <= 14; i++) {
+      const typeKey = String(i);
+      percentages[typeKey] = total > 0 
+        ? Math.round((byType[typeKey] / total) * 100 * 100) / 100 
+        : 0;
+    }
 
-    // 음성 인식 정확도: (유형 1 + 유형 4) / 전체 × 100
-    // 정확한 전사를 한 경우의 비율
+    // 음성 인식 정확도: 정확한 전사를 한 경우의 비율
+    // 유형 1, 2, 5, 6, 11, 12 = 정확한 전사
+    const accurateTranscriptionTypes = ['1', '2', '5', '6', '11', '12'];
+    const accurateTranscriptionCount = accurateTranscriptionTypes.reduce(
+      (sum, type) => sum + (byType[type] || 0),
+      0
+    );
     const transcriptionAccuracy = total > 0
-      ? Math.round(((byType['1'] + byType['4']) / total) * 100 * 100) / 100
+      ? Math.round((accurateTranscriptionCount / total) * 100 * 100) / 100
       : 0;
 
-    // 채점 정확도: (유형 1 + 유형 3) / 전체 × 100
-    // 최종 채점이 올바른 경우의 비율
+    // 채점 정확도: 최종 채점이 올바른 경우의 비율
+    // 유형 1, 3, 5, 7, 9, 11, 13 = 최종 채점이 올바름
+    const correctScoringTypes = ['1', '3', '5', '7', '9', '11', '13'];
+    const correctScoringCount = correctScoringTypes.reduce(
+      (sum, type) => sum + (byType[type] || 0),
+      0
+    );
     const scoringAccuracy = total > 0
-      ? Math.round(((byType['1'] + byType['3']) / total) * 100 * 100) / 100
+      ? Math.round((correctScoringCount / total) * 100 * 100) / 100
       : 0;
 
     return NextResponse.json({

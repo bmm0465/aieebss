@@ -34,14 +34,14 @@ interface StudentInfo {
 
 interface Review {
   test_result_id: number;
-  review_type: number;
+  review_type: number | null;
   notes?: string | null;
 }
 
 interface Statistics {
   total: number;
-  by_type: { '1': number; '2': number; '3': number; '4': number };
-  percentages: { '1': number; '2': number; '3': number; '4': number };
+  by_type: Record<string, number>;
+  percentages: Record<string, number>;
   transcription_accuracy: number;
   scoring_accuracy: number;
 }
@@ -61,6 +61,8 @@ function ResultRow({
   saving: boolean;
 }) {
   const [selectedType, setSelectedType] = useState<number>(review?.review_type || 0);
+  const [notes, setNotes] = useState<string>(review?.notes || '');
+  const [showNotes, setShowNotes] = useState<boolean>(!!review?.notes);
 
   const transcriptionText = result.transcription_results?.openai?.text 
     || result.transcription_results?.gemini?.text
@@ -69,88 +71,202 @@ function ResultRow({
     || result.student_answer
     || '-';
 
+  const reviewTypeOptions = [
+    { value: 1, label: '유형 1: 정답 발화→정확한 전사→정답' },
+    { value: 2, label: '유형 2: 정답 발화→정확한 전사→오답' },
+    { value: 3, label: '유형 3: 정답 발화→부정확한 전사→정답' },
+    { value: 4, label: '유형 4: 정답 발화→부정확한 전사→오답' },
+    { value: 5, label: '유형 5: 오답 발화→정확한 전사→정답' },
+    { value: 6, label: '유형 6: 오답 발화→정확한 전사→오답' },
+    { value: 7, label: '유형 7: 오답 발화→부정확한 전사→정답' },
+    { value: 8, label: '유형 8: 오답 발화→부정확한 전사→오답' },
+    { value: 9, label: '유형 9: 발화 없음→부정확한 전사→정답' },
+    { value: 10, label: '유형 10: 발화 없음→부정확한 전사→오답' },
+    { value: 11, label: '유형 11: 발화 수정→정확한 전사→정답' },
+    { value: 12, label: '유형 12: 발화 수정→정확한 전사→오답' },
+    { value: 13, label: '유형 13: 발화 수정→부정확한 전사→정답' },
+    { value: 14, label: '유형 14: 발화 수정→부정확한 전사→오답' },
+  ];
+
+  // 리뷰가 업데이트되면 로컬 상태도 업데이트
+  useEffect(() => {
+    if (review) {
+      setSelectedType(review.review_type || 0);
+      setNotes(review.notes || '');
+      setShowNotes(!!review.notes);
+    }
+  }, [review]);
+
   return (
-    <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
-      <td style={{ padding: '1rem' }}>
-        {student?.full_name || '이름 없음'}
-        {student?.class_name && ` (${student.class_name}반)`}
-      </td>
-      <td style={{ padding: '1rem' }}>
-        {result.test_type === 'p1_alphabet' ? '1교시' : '4교시'}
-      </td>
-      <td style={{ padding: '1rem', fontWeight: '600' }}>
-        {result.correct_answer || result.question || '-'}
-      </td>
-      <td style={{ padding: '1rem' }}>
-        {result.audio_url ? (
-          <TeacherAudioPlayer
-            audioPath={result.audio_url}
-            userId={result.user_id}
-            testType={result.test_type}
-            createdAt={result.created_at}
-          />
-        ) : (
-          <span style={{ color: '#9ca3af' }}>-</span>
-        )}
-      </td>
-      <td style={{ padding: '1rem', maxWidth: '200px', wordBreak: 'break-word' }}>
-        {transcriptionText}
-      </td>
-      <td style={{ padding: '1rem' }}>
-        <span style={{
-          padding: '0.25rem 0.75rem',
-          borderRadius: '4px',
-          backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
-          color: result.is_correct ? '#10b981' : '#ef4444',
-          fontWeight: '600',
-          fontSize: '0.875rem'
-        }}>
-          {result.is_correct ? '정답' : '오답'}
-        </span>
-      </td>
-      <td style={{ padding: '1rem' }}>
-        <select
-          value={selectedType}
-          onChange={(e) => setSelectedType(Number(e.target.value))}
-          style={{
-            padding: '0.5rem',
-            borderRadius: '6px',
-            border: '1px solid #d1d5db',
-            fontSize: '0.875rem',
-            minWidth: '200px'
-          }}
-        >
-          <option value="0">선택 안 함</option>
-          <option value="1">유형 1: 정답 발화→정확한 전사→정답</option>
-          <option value="2">유형 2: 정답 발화→부정확한 전사→오답</option>
-          <option value="3">유형 3: 오답 발화→부정확한 전사→정답/오답</option>
-          <option value="4">유형 4: 오답 발화→정확한 전사→오답</option>
-        </select>
-      </td>
-      <td style={{ padding: '1rem' }}>
-        <button
-          onClick={() => {
-            if (selectedType > 0) {
-              onSave(result.id, selectedType);
-            }
-          }}
-          disabled={selectedType === 0 || saving}
-          style={{
-            padding: '0.5rem 1rem',
-            borderRadius: '6px',
-            border: 'none',
-            backgroundColor: selectedType > 0 ? '#6366f1' : '#9ca3af',
-            color: 'white',
+    <>
+      <tr style={{ borderBottom: '1px solid #e5e7eb' }}>
+        <td style={{ padding: '1rem' }}>
+          {student?.full_name || '이름 없음'}
+          {student?.class_name && ` (${student.class_name}반)`}
+        </td>
+        <td style={{ padding: '1rem' }}>
+          {result.test_type === 'p1_alphabet' ? '1교시' : '4교시'}
+        </td>
+        <td style={{ padding: '1rem', fontWeight: '600' }}>
+          {result.correct_answer || result.question || '-'}
+        </td>
+        <td style={{ padding: '1rem' }}>
+          {result.audio_url ? (
+            <TeacherAudioPlayer
+              audioPath={result.audio_url}
+              userId={result.user_id}
+              testType={result.test_type}
+              createdAt={result.created_at}
+            />
+          ) : (
+            <span style={{ color: '#9ca3af' }}>-</span>
+          )}
+        </td>
+        <td style={{ padding: '1rem', maxWidth: '200px', wordBreak: 'break-word' }}>
+          {transcriptionText}
+        </td>
+        <td style={{ padding: '1rem' }}>
+          <span style={{
+            padding: '0.25rem 0.75rem',
+            borderRadius: '4px',
+            backgroundColor: result.is_correct ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+            color: result.is_correct ? '#10b981' : '#ef4444',
             fontWeight: '600',
-            cursor: selectedType > 0 && !saving ? 'pointer' : 'not-allowed',
-            opacity: saving ? 0.6 : 1,
             fontSize: '0.875rem'
-          }}
-        >
-          {saving ? '저장 중...' : '저장'}
-        </button>
-      </td>
-    </tr>
+          }}>
+            {result.is_correct ? '정답' : '오답'}
+          </span>
+        </td>
+        <td style={{ padding: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(Number(e.target.value))}
+              style={{
+                padding: '0.5rem',
+                borderRadius: '6px',
+                border: '1px solid #d1d5db',
+                fontSize: '0.875rem',
+                minWidth: '250px'
+              }}
+            >
+              <option value="0">선택 안 함</option>
+              {reviewTypeOptions.map(option => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            {review?.review_type === null && (
+              <span style={{
+                fontSize: '0.75rem',
+                color: '#ef4444',
+                fontWeight: '600'
+              }}>
+                ⚠️ 재검토 필요
+              </span>
+            )}
+            {(review?.notes || notes) && (
+              <button
+                onClick={() => setShowNotes(!showNotes)}
+                style={{
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  backgroundColor: '#f9fafb',
+                  cursor: 'pointer',
+                  color: '#6b7280'
+                }}
+              >
+                📝 메모 {showNotes ? '숨기기' : '보기'}
+              </button>
+            )}
+          </div>
+        </td>
+        <td style={{ padding: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <button
+              onClick={() => {
+                if (selectedType > 0) {
+                  onSave(result.id, selectedType, notes.trim() || undefined);
+                }
+              }}
+              disabled={selectedType === 0 || saving}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '6px',
+                border: 'none',
+                backgroundColor: selectedType > 0 ? '#6366f1' : '#9ca3af',
+                color: 'white',
+                fontWeight: '600',
+                cursor: selectedType > 0 && !saving ? 'pointer' : 'not-allowed',
+                opacity: saving ? 0.6 : 1,
+                fontSize: '0.875rem'
+              }}
+            >
+              {saving ? '저장 중...' : '저장'}
+            </button>
+            {selectedType > 0 && (
+              <button
+                onClick={() => setShowNotes(!showNotes)}
+                style={{
+                  padding: '0.25rem 0.5rem',
+                  fontSize: '0.75rem',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '4px',
+                  backgroundColor: showNotes ? '#e5e7eb' : '#f9fafb',
+                  cursor: 'pointer',
+                  color: '#6b7280'
+                }}
+              >
+                {showNotes ? '메모 숨기기' : '메모 작성'}
+              </button>
+            )}
+          </div>
+        </td>
+      </tr>
+      {showNotes && (
+        <tr style={{ backgroundColor: '#f9fafb' }}>
+          <td colSpan={8} style={{ padding: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.875rem', fontWeight: '600', color: '#374151' }}>
+                특이사항 / 메모
+              </label>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="이 유형을 선택한 이유를 작성해주세요. 예: 학생이 'cat'을 발화했지만 전사 결과가 'kat'로 나왔고, 채점 시스템이 이를 오답으로 처리함"
+                style={{
+                  padding: '0.75rem',
+                  borderRadius: '6px',
+                  border: '1px solid #d1d5db',
+                  fontSize: '0.875rem',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  minHeight: '80px',
+                  maxHeight: '200px'
+                }}
+                rows={3}
+              />
+              {review?.notes && (
+                <div style={{
+                  padding: '0.75rem',
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: '6px',
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  whiteSpace: 'pre-wrap'
+                }}>
+                  <strong>기존 메모:</strong><br />
+                  {review.notes}
+                </div>
+              )}
+            </div>
+          </td>
+        </tr>
+      )}
+    </>
   );
 }
 
@@ -527,21 +643,51 @@ export default function TranscriptionAccuracyPage() {
                 <div style={{ fontSize: '2rem', fontWeight: 'bold', color: '#3b82f6' }}>{statistics.scoring_accuracy}%</div>
               </div>
             </div>
-            <div style={{ marginTop: '1.5rem', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1rem' }}>
-              {[1, 2, 3, 4].map(type => {
-                const typeKey = String(type) as '1' | '2' | '3' | '4';
-                return (
-                  <div key={type} style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem' }}>유형 {type}</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
-                      {statistics.by_type[typeKey]}개
+            <div style={{ marginTop: '1.5rem' }}>
+              <h3 style={{ fontSize: '1.125rem', fontWeight: '600', marginBottom: '1rem', color: '#374151' }}>
+                유형별 분포
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14].map(type => {
+                  const typeKey = String(type);
+                  const count = statistics.by_type[typeKey] || 0;
+                  const percentage = statistics.percentages[typeKey] || 0;
+                  
+                  const typeLabels: Record<number, string> = {
+                    1: '정답 발화→정확한 전사→정답',
+                    2: '정답 발화→정확한 전사→오답',
+                    3: '정답 발화→부정확한 전사→정답',
+                    4: '정답 발화→부정확한 전사→오답',
+                    5: '오답 발화→정확한 전사→정답',
+                    6: '오답 발화→정확한 전사→오답',
+                    7: '오답 발화→부정확한 전사→정답',
+                    8: '오답 발화→부정확한 전사→오답',
+                    9: '발화 없음→부정확한 전사→정답',
+                    10: '발화 없음→부정확한 전사→오답',
+                    11: '발화 수정→정확한 전사→정답',
+                    12: '발화 수정→정확한 전사→오답',
+                    13: '발화 수정→부정확한 전사→정답',
+                    14: '발화 수정→부정확한 전사→오답',
+                  };
+                  
+                  return (
+                    <div key={type} style={{ padding: '1rem', backgroundColor: '#f9fafb', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280', marginBottom: '0.5rem', fontWeight: '600' }}>
+                        유형 {type}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: '#9ca3af', marginBottom: '0.25rem' }}>
+                        {typeLabels[type]}
+                      </div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1f2937' }}>
+                        {count}개
+                      </div>
+                      <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
+                        ({percentage}%)
+                      </div>
                     </div>
-                    <div style={{ fontSize: '0.875rem', color: '#6b7280' }}>
-                      ({statistics.percentages[typeKey]}%)
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}

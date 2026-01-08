@@ -45,9 +45,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (![1, 2, 3, 4].includes(review_type)) {
+    if (review_type !== null && (review_type < 1 || review_type > 14)) {
       return NextResponse.json(
-        { error: 'Invalid review_type: must be 1, 2, 3, or 4' },
+        { error: 'Invalid review_type: must be between 1 and 14, or null' },
         { status: 400 }
       );
     }
