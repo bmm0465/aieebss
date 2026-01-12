@@ -57,7 +57,7 @@ function ResultRow({
   result: TestResultRow;
   student?: StudentInfo;
   review?: Review;
-  onSave: (testResultId: number, reviewType: number, notes?: string) => void;
+  onSave: (testResultId: number, reviewType: number | null, notes?: string) => void;
   saving: boolean;
 }) {
   const [selectedType, setSelectedType] = useState<number>(review?.review_type || 0);
@@ -188,24 +188,23 @@ function ResultRow({
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <button
               onClick={() => {
-                if (selectedType > 0) {
-                  onSave(result.id, selectedType, notes.trim() || undefined);
-                }
+                // "선택 안 함" (0)일 때도 저장 가능 (리뷰 삭제)
+                onSave(result.id, selectedType, notes.trim() || undefined);
               }}
-              disabled={selectedType === 0 || saving}
+              disabled={saving}
               style={{
                 padding: '0.5rem 1rem',
                 borderRadius: '6px',
                 border: 'none',
-                backgroundColor: selectedType > 0 ? '#6366f1' : '#9ca3af',
+                backgroundColor: saving ? '#9ca3af' : selectedType > 0 ? '#6366f1' : '#ef4444',
                 color: 'white',
                 fontWeight: '600',
-                cursor: selectedType > 0 && !saving ? 'pointer' : 'not-allowed',
+                cursor: saving ? 'not-allowed' : 'pointer',
                 opacity: saving ? 0.6 : 1,
                 fontSize: '0.875rem'
               }}
             >
-              {saving ? '저장 중...' : '저장'}
+              {saving ? '저장 중...' : selectedType === 0 ? '리뷰 삭제' : '저장'}
             </button>
             {selectedType > 0 && (
               <button
@@ -474,7 +473,7 @@ export default function TranscriptionAccuracyPage() {
 
 
   // 리뷰 저장
-  const saveReview = async (testResultId: number, reviewType: number, notes?: string) => {
+  const saveReview = async (testResultId: number, reviewType: number | null, notes?: string) => {
     setSavingReview(prev => ({ ...prev, [testResultId]: true }));
 
     try {
@@ -483,7 +482,7 @@ export default function TranscriptionAccuracyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           test_result_id: testResultId,
-          review_type: reviewType,
+          review_type: reviewType === 0 ? null : reviewType,
           notes: notes || null,
         }),
       });
@@ -495,15 +494,25 @@ export default function TranscriptionAccuracyPage() {
 
       const { review } = await response.json();
 
-      // 리뷰 상태 업데이트
-      setReviews(prev => ({
-        ...prev,
-        [testResultId]: {
-          test_result_id: testResultId,
-          review_type: review.review_type,
-          notes: review.notes,
-        },
-      }));
+      // 리뷰가 삭제된 경우 (null 반환)
+      if (!review) {
+        // 리뷰 상태에서 제거
+        setReviews(prev => {
+          const next = { ...prev };
+          delete next[testResultId];
+          return next;
+        });
+      } else {
+        // 리뷰 상태 업데이트
+        setReviews(prev => ({
+          ...prev,
+          [testResultId]: {
+            test_result_id: testResultId,
+            review_type: review.review_type,
+            notes: review.notes,
+          },
+        }));
+      }
 
       // 통계 다시 로드
       await loadStatistics();

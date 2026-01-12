@@ -106,6 +106,32 @@ export async function POST(request: NextRequest) {
       .eq('teacher_id', user.id)
       .single();
 
+    // review_type이 null이면 리뷰 삭제
+    if (review_type === null) {
+      if (existingReview) {
+        const { error } = await service
+          .from('transcription_accuracy_reviews')
+          .delete()
+          .eq('id', existingReview.id);
+
+        if (error) {
+          console.error('[transcription-accuracy/review] Delete error:', error);
+          throw error;
+        }
+
+        return NextResponse.json({
+          success: true,
+          review: null, // 삭제됨
+        });
+      } else {
+        // 리뷰가 없으면 이미 삭제된 상태
+        return NextResponse.json({
+          success: true,
+          review: null,
+        });
+      }
+    }
+
     let result;
     if (existingReview) {
       // 기존 리뷰 업데이트
