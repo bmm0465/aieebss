@@ -124,7 +124,7 @@ export async function GET(request: NextRequest) {
     // 테스트 결과 가져오기
     let testResultsQuery = service
       .from('test_results')
-      .select('user_id, test_type, is_correct, session_id, time_taken')
+      .select('user_id, test_type, is_correct, time_taken, created_at')
       .in('user_id', studentIds);
     
     if (testType) {
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
     });
     
     // 테스트 결과 집계
-    // 세션별로 그룹화하여 시간 계산
+    // created_at을 기반으로 세션 그룹화 (같은 날짜/시간대의 결과를 하나의 세션으로 간주)
     const sessionTimeMap = new Map<string, number>(); // sessionKey -> max time_taken
     
     testResults?.forEach(result => {
@@ -178,10 +178,13 @@ export async function GET(request: NextRequest) {
         studentData.correctQuestions += 1;
       }
       
-      // 세션별 최대 시간 저장 (각 세션의 총 평가 시간)
-      if (result.session_id && result.time_taken) {
-        const sessionKey = `${result.user_id}|${result.session_id}`;
+      // created_at을 기반으로 세션 키 생성 (날짜 + 시간대별로 그룹화)
+      if (result.time_taken && result.created_at) {
+        const createdAt = new Date(result.created_at);
+        // 같은 날짜의 같은 시간대(1시간 단위)를 하나의 세션으로 간주
+        const sessionKey = `${result.user_id}|${createdAt.toISOString().split('T')[0]}|${Math.floor(createdAt.getHours())}`;
         const currentMax = sessionTimeMap.get(sessionKey) || 0;
+        // 각 세션의 최대 time_taken을 사용 (세션 전체 시간으로 간주)
         if (result.time_taken > currentMax) {
           sessionTimeMap.set(sessionKey, result.time_taken);
         }
