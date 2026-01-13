@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import LogoutButton from '@/components/LogoutButton';
+import ExcelExportButton from '@/components/ExcelExportButton';
 
 // 타입 정의
 type StudentWithStats = {
@@ -263,7 +264,8 @@ export default async function TeacherDashboard() {
                 </p>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: '0.8rem' }}>
+            <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <ExcelExportButton />
               <Link
                 href="/teacher/curriculum-data"
                 style={{
