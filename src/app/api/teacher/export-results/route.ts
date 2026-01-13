@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
     }
     
     // 학생 이메일 가져오기 (auth.users)
-    let userEmails: Map<string, string> = new Map();
+    const userEmails: Map<string, string> = new Map();
     try {
       const { data: { users } } = await service.auth.admin.listUsers();
       users?.forEach(u => {
