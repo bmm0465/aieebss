@@ -179,14 +179,24 @@ graph LR
 
 #### 1.5.3 AI 기술
 
-**OpenAI Whisper + GPT-4o**
+**OpenAI GPT-4o-transcribe + GPT-4o**
 - **선택 근거**:
-  - Whisper API는 95% 이상의 정확한 음성 인식 성능
+  - GPT-4o-transcribe는 기존 Whisper 모델을 뛰어넘는 정확도와 성능을 제공하며, 특히 GPT-4o의 언어 이해 능력을 바탕으로 문맥을 파악하여 더 정교한 전사를 수행
   - GPT-4o는 맥락을 이해한 지능형 채점 가능
   - 다국어 지원으로 한국 발음 혼합 응답 처리 가능
   - 안정적인 API 서비스 제공
+  - 프롬프트 매개변수를 활용하여 추가적인 맥락 제공 가능
 
-#### 1.5.4 배포 및 인프라
+#### 1.5.4 프론트엔드 음성 녹음 기술
+
+**MediaRecorder API + WebM 형식**
+- **선택 근거**:
+  - 브라우저 네이티브 API로 추가 라이브러리 불필요
+  - WebM 형식(audio/webm;codecs=opus)은 고품질 오디오 압축 제공
+  - 실시간 음성 캡처 및 Blob 생성 가능
+  - React Hooks(useState, useEffect, useRef, useCallback)를 활용한 효율적인 상태 관리
+
+#### 1.5.5 배포 및 인프라
 
 **Vercel**
 - **선택 근거**:
@@ -305,7 +315,17 @@ sequenceDiagram
 
 **그림 4. 평가 프로세스 데이터 흐름**
 
-학생이 평가를 완료하면 음성 파일이 Supabase Storage에 업로드되고, OpenAI Whisper API를 통해 음성이 텍스트로 전사됩니다. 전사된 텍스트는 GPT-4o를 통해 채점되고, 결과는 데이터베이스에 저장되어 즉시 학생에게 반환됩니다.
+학생이 평가를 완료하면 평가 유형에 따라 다음과 같이 처리됩니다:
+
+- **음성 평가 (1교시, 4교시)**: 
+  - 음성 파일이 Supabase Storage에 업로드
+  - OpenAI GPT-4o-transcribe API를 통해 음성이 텍스트로 전사 (타임라인 정보 포함)
+  - 전사 결과와 타임라인을 GPT-4o에 전달하여 채점
+  - 결과는 데이터베이스에 저장되어 즉시 학생에게 반환
+
+- **선택형 평가 (2교시, 3교시, 5교시, 6교시)**:
+  - 선택한 답안과 정답을 즉시 비교하여 채점
+  - 결과는 데이터베이스에 저장되어 즉시 학생에게 반환
 
 ### 2.3 구성 요소 상세
 
@@ -327,12 +347,14 @@ sequenceDiagram
 ##### 2교시: 음소 분리 (Segmental Phoneme)
 
 - **평가 목적**: 비슷한 소리를 듣고 구분하는 능력 평가
-- **평가 방식**: 듣기 + 선택 (두 단어 중 들려준 단어 선택)
+- **평가 방식**: 듣기 + 선택 (두 단어 또는 알파벳 중 들려준 것 선택)
 - **제한 시간**: 1분 (60초)
-- **문항 구성**: 총 20개 최소대립쌍 (예: fine/five, big/pig)
+- **문항 구성**: 총 20개 최소대립쌍 (예: fine/five, big/pig) 또는 알파벳 쌍
 - **평가 내용**:
   - 최소대립쌍(minimal pair)을 통한 음소 구분 능력
   - 한국인이 헷갈려하는 음가(b/v, b/p, p/f, r/l 등) 구분
+- **채점 방식**: 즉시 채점 (정답과 선택 답안 비교)
+- **시간 측정**: 평가 시작부터 답안 선택까지 소요 시간 기록 (초 단위)
 
 ##### 3교시: 강세 및 리듬 패턴 (Suprasegmental Phoneme)
 
@@ -343,6 +365,8 @@ sequenceDiagram
 - **평가 내용**:
   - 단어의 강세 위치 인식 (예: APple, banANa)
   - 영어의 리듬 패턴 이해
+- **채점 방식**: 즉시 채점 (정답과 선택 답안 비교)
+- **시간 측정**: 평가 시작부터 답안 선택까지 소요 시간 기록 (초 단위)
 
 ##### 4교시: 파닉스 읽기 (Phonics)
 
@@ -369,6 +393,9 @@ sequenceDiagram
   - 어구 의미 이해
   - 문장 의미 이해
 - **데이터 출처**: 천재교과서(함) - vocabulary_level.json, core_expressions.json
+- **채점 방식**: 즉시 채점 (정답과 선택 답안 비교)
+- **시간 측정**: 평가 시작부터 답안 선택까지 소요 시간 기록 (초 단위)
+- **이미지 생성**: OpenAI DALL-E API를 활용한 문항별 맞춤 이미지 생성
 
 ##### 6교시: 주요 정보 파악 (Comprehension)
 
@@ -380,19 +407,28 @@ sequenceDiagram
   - 색깔과 크기 묘사 이해
   - 인물의 모습 묘사 이해
   - 주요 정보 파악 능력
+- **채점 방식**: 즉시 채점 (정답과 선택 답안 비교)
+- **시간 측정**: 평가 시작부터 답안 선택까지 소요 시간 기록 (초 단위)
 
 #### 2.3.2 AI 평가 시스템
 
 ##### 음성 인식 모듈
 
-- **기술**: OpenAI Whisper API (gpt-4o-transcribe 모델)
+- **기술**: OpenAI GPT-4o-transcribe API
 - **정확도**: 95% 이상
 - **지원 언어**: 영어 (한국어 발음 혼합 지원)
 - **처리 시간**: 평균 10~15초
 - **주요 기능**:
-  - 실시간 음성 녹음 (WebRTC 기반)
-  - 음성 파일 전사
+  - 음성 파일 전사 (WebM 형식 지원)
+  - 프롬프트 매개변수를 통한 맥락 제공
+  - 타임라인 정보 제공 (segments 배열)
+  - 신뢰도(confidence) 정보 제공
   - 다국어 지원
+- **음성 녹음 기술**:
+  - MediaRecorder API를 활용한 브라우저 네이티브 녹음
+  - WebM 형식 (audio/webm;codecs=opus)으로 고품질 압축
+  - 최대 5초 자동 녹음 또는 사용자 수동 중지
+  - 실시간 오디오 청크 수집 및 Blob 생성
 
 ##### 자동 채점 모듈
 
@@ -402,11 +438,18 @@ sequenceDiagram
   - 정확도 계산 (0~100%)
   - 상세 피드백 생성
   - 종합 평가 코멘트 작성
-- **처리 시간**: 평균 20~30초
+- **처리 시간**: 평균 20~30초 (음성 평가), 즉시 (선택형 평가)
 - **특징**:
   - 평가 유형별 맞춤 채점 로직
   - EFL 환경 최적화 (한국 발음 특성 반영)
   - 맥락 이해를 통한 지능형 채점
+- **채점 방식**:
+  - **1교시, 4교시 (음성 평가)**: GPT-4o-transcribe로 전사 후 GPT-4o로 채점
+  - **2교시, 3교시, 5교시, 6교시 (선택형 평가)**: 즉시 채점 (정답과 선택 답안 비교)
+- **전사 결과 저장**:
+  - `transcription_results` JSONB 필드에 저장
+  - 구조: `{ openai: { text, confidence, timeline } }`
+  - 타임라인 정보를 활용한 망설임 감지 및 오류 분석
 
 #### 2.3.3 교사 관리 시스템
 
@@ -518,22 +561,335 @@ AI 음성 인식 및 채점 시스템의 정확도를 검증하고 개선하기 
 
 **1. test_results 테이블**
 - 테스트 결과 저장
-- 주요 컬럼: user_id, test_type, session_id, question, correct_answer, user_answer, is_correct, accuracy, audio_url, transcription_results
+- 주요 컬럼:
+  - `id`: 기본 키 (bigint, 자동 증가)
+  - `user_id`: 사용자 ID (UUID, FK → auth.users.id)
+  - `test_type`: 테스트 유형 (text, 예: 'p1_alphabet', 'p2_segmental_phoneme' 등)
+  - `question`: 문제 내용 (text)
+  - `student_answer`: 학생 답안 (text)
+  - `correct_answer`: 정답 (text)
+  - `is_correct`: 정답 여부 (boolean)
+  - `accuracy`: 정확도 (double precision, 0-100)
+  - `error_type`: 오류 유형 (text, 예: 'Letter sounds', 'Hesitation', 'Skipped' 등)
+  - `time_taken`: 소요 시간 (integer, 초 단위)
+  - `audio_url`: 음성 파일 URL (text, Supabase Storage 경로)
+  - `transcription_results`: 전사 결과 (JSONB)
+    - 구조: `{ openai: { text: string, confidence: string, timeline: Array<{start: number, end: number, text: string}> } }`
+  - `created_at`: 생성 시간 (timestamptz)
 
 **2. user_profiles 테이블**
 - 사용자 프로필 및 역할 관리
-- 주요 컬럼: id, full_name, role (student/teacher), class_name, student_number, grade_level
+- 주요 컬럼:
+  - `id`: 사용자 ID (UUID, PK, FK → auth.users.id)
+  - `full_name`: 전체 이름 (text)
+  - `role`: 역할 (text, 'student' 또는 'teacher')
+  - `class_name`: 반 이름 (text)
+  - `student_number`: 학생 번호 (text)
+  - `grade_level`: 학년 (text, 예: '초등 3학년', '초등 4학년')
+  - `created_at`, `updated_at`: 생성/수정 시간
 
 **3. teacher_student_assignments 테이블**
 - 교사-학생 관계 매핑
-- 주요 컬럼: teacher_id, student_id, class_name
+- 주요 컬럼:
+  - `id`: 기본 키 (UUID)
+  - `teacher_id`: 교사 ID (UUID, FK → auth.users.id)
+  - `student_id`: 학생 ID (UUID, FK → auth.users.id)
+  - `class_name`: 반 이름 (text)
+  - `assigned_at`: 배정 시간 (timestamptz)
+  - UNIQUE 제약조건: (teacher_id, student_id)
+
+**4. generated_test_items 테이블**
+- AI 생성 문항 저장 및 승인 워크플로우
+- 주요 컬럼:
+  - `id`: 기본 키 (UUID)
+  - `test_type`: 테스트 유형 (text)
+  - `grade_level`: 학년 수준 (text)
+  - `items`: 문항 데이터 (JSONB)
+  - `pdf_references`: 참조한 PDF 청크 ID 목록 (JSONB)
+  - `curriculum_alignment`: 교육과정 연계 정보 (JSONB)
+  - `quality_score`: 품질 점수 (numeric, 0-100)
+  - `status`: 상태 (text, 'pending', 'reviewed', 'approved', 'rejected')
+  - `generated_by`: 생성자 ID (UUID, FK → auth.users.id)
+  - `reviewed_by`: 검토자 ID (UUID, FK → auth.users.id)
+  - `review_notes`: 검토 의견 (text)
+  - `approved_at`: 승인 시간 (timestamptz)
+  - `created_at`, `updated_at`: 생성/수정 시간
+
+**5. curriculum_pdfs 테이블**
+- 교육과정 PDF 파일 관리
+- 주요 컬럼:
+  - `id`: 기본 키 (UUID)
+  - `file_name`: 파일명 (text)
+  - `file_url`: 파일 URL (text)
+  - `uploaded_by`: 업로드자 ID (UUID, FK → auth.users.id)
+  - `created_at`: 생성 시간 (timestamptz)
+
+**6. curriculum_pdf_chunks 테이블**
+- PDF 청크 저장 (벡터 검색용)
+- 주요 컬럼:
+  - `id`: 기본 키 (UUID)
+  - `pdf_id`: PDF ID (UUID, FK → curriculum_pdfs.id)
+  - `page_number`: 페이지 번호 (integer)
+  - `content`: 텍스트 내용 (text)
+  - `metadata`: 추가 메타데이터 (JSONB)
+  - `created_at`: 생성 시간 (timestamptz)
+
+**7. item_approval_workflow 테이블**
+- 문항 승인 워크플로우 이력
+- 주요 컬럼:
+  - `id`: 기본 키 (UUID)
+  - `item_id`: 문항 ID (UUID, FK → generated_test_items.id)
+  - `action`: 작업 유형 (text, 'review', 'approve', 'reject', 'request_revision')
+  - `performed_by`: 수행자 ID (UUID, FK → auth.users.id)
+  - `notes`: 의견/메모 (text)
+  - `quality_score`: 품질 점수 (numeric)
+  - `created_at`: 생성 시간 (timestamptz)
 
 ##### 보안 기능
 
 - **Row Level Security (RLS)**: 모든 테이블에 RLS 활성화
-  - 학생: 자신의 데이터만 조회 가능
-  - 교사: 담당 학생의 데이터만 조회 가능
+  - **학생 권한**:
+    - 자신의 `test_results`만 조회 및 삽입 가능
+    - 자신의 `user_profiles`만 조회 및 수정 가능
+  - **교사 권한**:
+    - 담당 학생의 `test_results` 조회 가능
+    - 담당 학생의 `user_profiles` 조회 가능
+    - 자신의 `teacher_student_assignments` 조회 및 삽입 가능
 - **역할 기반 접근 제어**: 역할(role)에 따른 접근 권한 관리
+- **인덱스 최적화**:
+  - `test_results`: user_id, created_at, test_type, transcription_results (GIN 인덱스)
+  - `user_profiles`: role
+  - `teacher_student_assignments`: teacher_id, student_id
+  - `generated_test_items`: status, grade_level, test_type, created_at
+
+#### 2.3.7 Supabase Storage 구조 및 기능
+
+본 플랫폼은 Supabase Storage를 활용하여 학생들의 음성 평가 파일을 저장하고 관리합니다.
+
+##### Storage 버킷 구성
+
+**버킷 이름**: `student-recordings`
+- **용도**: 학생 음성 평가 파일 저장
+- **파일 형식**: WebM (audio/webm;codecs=opus)
+- **접근 권한**: Public (읽기), Authenticated (업로드)
+- **파일 크기 제한**: 50MB
+- **허용 MIME 타입**: `audio/webm`
+
+##### 파일 경로 구조
+
+현재 플랫폼은 다음과 같은 계층적 경로 구조를 사용합니다:
+
+```
+student-recordings/
+├── {studentName}_{userId_8자리}/
+│   ├── {YYYY-MM-DD}/          # 평가 세션 날짜
+│   │   ├── p1_alphabet/       # 1교시: 알파벳
+│   │   │   └── {timestamp}.webm
+│   │   ├── p4_phonics/        # 4교시: 파닉스
+│   │   │   ├── nwf/           # 무의미 단어
+│   │   │   │   └── {timestamp}.webm
+│   │   │   ├── wrf/           # 실제 단어
+│   │   │   │   └── {timestamp}.webm
+│   │   │   └── orf/           # 문장
+│   │   │       └── {timestamp}.webm
+│   │   └── ...
+│   └── {YYYY-MM-DD}/          # 다른 날짜의 평가
+│       └── ...
+└── ...
+```
+
+**경로 생성 규칙**:
+- `studentName`: `user_profiles` 테이블의 `full_name` 필드 사용
+  - 한글 이름의 경우 로마자로 변환 (예: "김민수" → "GimMinsu")
+  - 이름이 없으면 이메일의 @ 앞부분 사용
+  - 둘 다 없으면 `student_{userId_8자리}` 형식 사용
+- `sessionDate`: 평가 날짜 (YYYY-MM-DD 형식)
+- `testType`: 테스트 유형 (p1_alphabet, p4_phonics 등)
+- `timestamp`: 파일 생성 시점의 타임스탬프 (밀리초)
+
+**예시 경로**:
+- `GimMinsu_a1b2c3d4/2025-01-15/p1_alphabet/1705123456789.webm`
+- `student_a1b2c3d4/2025-01-15/p4_phonics/nwf/1705123457890.webm`
+
+##### 경로 생성 함수
+
+**구현 위치**: `src/lib/storage-path.ts`
+
+주요 함수:
+- `generateStoragePath(userId, testType, timestamp?)`: 새로운 스토리지 경로 생성
+- `getStudentName(userId)`: 학생 이름 조회 (user_profiles → auth.users 순서로 시도)
+- `getSessionDate()`: 현재 세션 날짜 반환 (YYYY-MM-DD)
+- `parseStoragePath(path)`: 기존 경로 파싱 (마이그레이션용)
+
+##### 파일 업로드 프로세스
+
+1. **음성 파일 생성**: 브라우저에서 MediaRecorder API로 WebM 형식 파일 생성
+2. **경로 생성**: `generateStoragePath()` 함수로 저장 경로 생성
+3. **업로드**: Supabase Storage API를 통해 파일 업로드
+   ```typescript
+   await supabase.storage
+     .from('student-recordings')
+     .upload(storagePath, arrayBuffer, {
+       contentType: 'audio/webm',
+       upsert: false
+     })
+   ```
+4. **URL 저장**: 업로드된 파일의 경로를 `test_results` 테이블의 `audio_url` 필드에 저장
+
+##### 파일 접근 방식
+
+플랫폼은 두 가지 방식으로 음성 파일에 접근합니다:
+
+1. **Signed URL 방식** (우선 시도):
+   ```typescript
+   const { data } = await supabase.storage
+     .from('student-recordings')
+     .createSignedUrl(audioPath, 3600); // 1시간 유효
+   ```
+   - 임시 서명된 URL 생성 (1시간 유효)
+   - 보안이 필요한 경우 사용
+
+2. **Public URL 방식** (폴백):
+   ```typescript
+   const publicUrl = `${supabaseUrl}/storage/v1/object/public/student-recordings/${audioPath}`;
+   ```
+   - Public 버킷이므로 직접 접근 가능
+   - Signed URL이 실패할 경우 사용
+
+**구현 위치**:
+- `src/components/TeacherAudioPlayer.tsx`: 교사용 오디오 플레이어
+- `src/components/AudioResultTable.tsx`: 학생 결과 테이블의 오디오 플레이어
+
+##### RLS (Row Level Security) 정책
+
+Storage 버킷에 대한 접근 제어는 다음과 같이 설정됩니다:
+
+```sql
+-- 1. 모든 사용자가 읽기 가능 (Public)
+CREATE POLICY "Allow public read access" ON storage.objects
+FOR SELECT USING (bucket_id = 'student-recordings');
+
+-- 2. 인증된 사용자가 업로드 가능
+CREATE POLICY "Allow authenticated users to upload" ON storage.objects
+FOR INSERT WITH CHECK (
+  bucket_id = 'student-recordings' 
+  AND auth.role() = 'authenticated'
+);
+
+-- 3. 인증된 사용자가 업데이트 가능
+CREATE POLICY "Allow authenticated users to update" ON storage.objects
+FOR UPDATE USING (
+  bucket_id = 'student-recordings' 
+  AND auth.role() = 'authenticated'
+);
+```
+
+**정책 요약**:
+- **읽기**: 모든 사용자 (Public 버킷)
+- **업로드**: 인증된 사용자만
+- **업데이트**: 인증된 사용자만
+- **삭제**: 기본적으로 비활성화 (필요시 별도 정책 추가)
+
+##### Storage 마이그레이션
+
+프로젝트 초기에는 다른 경로 구조를 사용했으나, 현재는 학생 이름 기반 구조로 변경되었습니다. 기존 파일을 새 구조로 마이그레이션하는 스크립트가 제공됩니다:
+
+**마이그레이션 스크립트**: `scripts/migrate-storage.ts`
+
+**기존 구조**:
+```
+student-recordings/
+├── p1_alphabet/{userId}/{timestamp}.webm
+└── p4_phonics/{userId}/{timestamp}.webm
+```
+
+**새 구조**:
+```
+student-recordings/
+├── {studentName}_{userId_8자리}/{YYYY-MM-DD}/{testType}/{timestamp}.webm
+```
+
+**마이그레이션 실행**:
+```bash
+# Dry-run (미리보기)
+npm run migrate-storage
+
+# 실제 실행
+npm run migrate-storage -- --execute
+```
+
+##### Storage 최적화
+
+1. **경로 기반 검색**: 학생 이름과 날짜로 빠른 파일 검색
+2. **자동 정리**: 오래된 파일은 수동 또는 스케줄러로 정리 가능
+3. **CDN 활용**: Supabase Storage는 글로벌 CDN을 통해 빠른 파일 전송 제공
+4. **비용 관리**: Public 버킷은 대역폭 비용이 발생하므로 모니터링 필요
+
+##### 파일 접근 오류 처리
+
+음성 파일 접근 시 다음과 같은 폴백 메커니즘을 사용합니다:
+
+1. **Signed URL 시도**: 우선적으로 임시 서명된 URL 생성 시도
+2. **Public URL 시도**: Signed URL 실패 시 Public URL 사용
+3. **경로 변환 시도**: 기존 경로 형식과 새 경로 형식 모두 시도
+4. **에러 표시**: 모든 시도 실패 시 사용자에게 에러 메시지 표시
+
+**구현 예시** (`src/components/AudioResultTable.tsx`):
+- 여러 경로 형식을 순차적으로 시도
+- 각 경로에 대해 Signed URL과 Public URL 모두 시도
+- 성공한 첫 번째 URL 사용
+
+#### 2.3.8 AI 문항 생성 및 관리 시스템
+
+본 플랫폼은 GPT-4o를 활용하여 교육과정 PDF를 기반으로 평가 문항을 자동 생성하고, 품질 검증 및 승인 워크플로우를 통해 관리하는 시스템을 제공합니다.
+
+##### 문항 생성 프로세스
+
+1. **교육과정 PDF 업로드**
+   - 교사가 교육과정 PDF 파일을 업로드
+   - PDF는 페이지별로 청크(chunk)로 분할되어 `curriculum_pdf_chunks` 테이블에 저장
+   - 각 청크는 벡터 임베딩으로 변환되어 의미 기반 검색 가능
+
+2. **문항 생성 요청**
+   - 교사가 문항 생성 페이지에서 다음 정보 입력:
+     - 테스트 유형 (p1_alphabet ~ p6_comprehension)
+     - 학년 수준 (초등 1학년 ~ 초등 4학년)
+     - 생성할 문항 수
+   - GPT-4o가 교육과정 PDF 청크를 참조하여 문항 생성
+
+3. **품질 검증**
+   - 생성된 문항은 자동으로 품질 검증 수행:
+     - DIBELS 준수도
+     - 학년 수준 적절성
+     - 교육과정 연계도
+     - 난이도 적절성
+     - 문법 정확도
+   - 각 항목별 점수 및 전체 품질 점수(0-100) 계산
+
+4. **승인 워크플로우**
+   - **pending**: 생성 완료, 검토 대기
+   - **reviewed**: 교사가 검토 완료
+   - **approved**: 승인 완료, 학생 평가에 사용 가능
+   - **rejected**: 거부됨, 사용 불가
+   - 각 단계별 이력은 `item_approval_workflow` 테이블에 기록
+
+5. **문항 사용**
+   - 승인된 문항만 학생 평가에 사용
+   - 학생이 평가를 시작하면 최신 승인 문항을 자동으로 로드
+   - 승인된 문항이 없으면 기본 문항(fallback) 사용
+
+##### 구현 위치
+
+- **문항 생성 Agent**: `src/lib/agents/ItemGeneratorAgent.ts`
+- **품질 검증 Agent**: `src/lib/agents/QualityValidatorAgent.ts`
+- **승인 워크플로우 Agent**: `src/lib/agents/ApprovalWorkflowAgent.ts`
+- **오케스트레이터**: `src/lib/agents/OrchestratorAgent.ts`
+- **API 엔드포인트**: 
+  - `/api/agents/generate-items`: 문항 생성
+  - `/api/generated-items`: 생성된 문항 조회
+  - `/api/generated-items/[id]/approve`: 문항 승인
+  - `/api/generated-items/[id]/reject`: 문항 거부
+  - `/api/test-items`: 승인된 문항 조회 (학생 평가용)
 
 ---
 
@@ -593,7 +949,89 @@ flowchart TD
 
 학생은 로그인 후 원하는 평가 유형을 선택하고, 평가 설명을 확인한 뒤 평가를 시작합니다. 평가 유형에 따라 음성 녹음, 듣기+선택, 읽기+선택 방식으로 진행되며, 제출 후 AI가 자동으로 채점하여 결과를 제공합니다.
 
-#### 3.1.2 AI 채점 프로세스
+#### 3.1.2 음성 녹음 및 처리 과정
+
+음성 평가(1교시, 4교시)에서 음성을 녹음하고 처리하는 상세 과정은 다음과 같습니다:
+
+```mermaid
+sequenceDiagram
+    participant S as 학생
+    participant B as 브라우저
+    participant MR as MediaRecorder
+    participant API as API 서버
+    participant ST as Supabase Storage
+    participant OAI as OpenAI API
+    participant DB as 데이터베이스
+    
+    S->>B: 평가 시작 버튼 클릭
+    B->>B: 마이크 권한 요청
+    S->>B: 마이크 권한 허용
+    B->>MR: MediaRecorder 초기화<br/>(audio/webm;codecs=opus)
+    
+    loop 각 문항마다
+        B->>MR: 녹음 시작
+        S->>MR: 음성 입력 (최대 5초)
+        MR->>MR: 오디오 청크 수집
+        MR->>B: 녹음 중지 (5초 타임아웃 또는 수동)
+        B->>B: Blob 생성 (WebM 형식)
+        B->>API: 음성 파일 제출 (FormData)
+    end
+    
+    API->>API: 인증 확인
+    API->>ST: 음성 파일 업로드<br/>(student-recordings 버킷)
+    ST-->>API: 업로드 완료 (URL)
+    
+    API->>OAI: GPT-4o-transcribe 호출<br/>(음성 파일 + 프롬프트)
+    OAI-->>API: 전사 결과<br/>(text, confidence, timeline)
+    
+    API->>OAI: GPT-4o 채점 요청<br/>(전사 결과 + 평가 기준)
+    OAI-->>API: 채점 결과<br/>(정답/오답, 오류 유형, 정확도)
+    
+    API->>DB: 결과 저장<br/>(전사 결과 포함)
+    DB-->>API: 저장 완료
+    API-->>B: 평가 결과 반환
+    B-->>S: 결과 표시
+```
+
+**그림 6. 음성 녹음 및 처리 프로세스 시퀀스 다이어그램**
+
+**주요 기술 세부사항**:
+
+1. **마이크 권한 요청**: 
+   - `navigator.mediaDevices.getUserMedia({ audio: true })` 호출
+   - 사용자가 권한을 허용해야 녹음 가능
+
+2. **MediaRecorder 초기화**:
+   - `new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' })`
+   - WebM 형식으로 고품질 오디오 압축
+
+3. **실시간 오디오 캡처**:
+   - `mediaRecorder.ondataavailable` 이벤트로 오디오 청크 수집
+   - `audioChunksRef.current.push(event.data)`로 메모리에 저장
+
+4. **Blob 생성 및 제출**:
+   - `new Blob(audioChunks, { type: 'audio/webm' })`로 최종 파일 생성
+   - FormData를 통해 API 서버로 전송
+
+5. **Supabase Storage 업로드**:
+   - 경로 형식: `p1_alphabet/{userId}/{timestamp}.webm` 또는 `p4_phonics/{userId}/{testType}/{timestamp}.webm`
+   - 업로드된 파일 URL을 `audio_url` 필드에 저장
+
+6. **음성 전사**:
+   - OpenAI GPT-4o-transcribe API 호출
+   - 프롬프트 매개변수로 평가 유형별 맥락 제공
+   - 반환값: `{ text, confidence, timeline }`
+   - timeline은 `[{start, end, text}]` 형식의 세그먼트 배열
+
+7. **채점 처리**:
+   - 1교시: 복잡한 채점 로직 (문자 이름 vs 문자 소리 구분, 한국어 발음 인정, 망설임 감지 등)
+   - 4교시: 간단한 채점 로직 (전사 결과가 정답을 포함하는지 확인)
+
+8. **결과 저장**:
+   - `transcription_results` JSONB 필드에 전사 결과 저장
+   - 구조: `{ openai: { text, confidence, timeline } }`
+
+#### 3.1.3 AI 채점 프로세스
 
 AI가 평가를 채점하는 상세 프로세스는 다음과 같습니다:
 
@@ -631,11 +1069,103 @@ sequenceDiagram
     API-->>S: 평가 결과 반환
 ```
 
-**그림 6. AI 채점 프로세스 시퀀스 다이어그램**
+**그림 7. AI 채점 프로세스 시퀀스 다이어그램**
 
-학생이 평가를 제출하면, 음성 파일이 OpenAI Whisper API로 전송되어 텍스트로 전사됩니다. 전사된 텍스트는 GPT-4o API로 전송되어 평가 유형별 채점 로직에 따라 정답/오답 판정, 정확도 계산, 피드백 생성이 수행됩니다. 최종 결과는 데이터베이스에 저장되고 학생에게 반환됩니다.
+학생이 평가를 제출하면 평가 유형에 따라 다음과 같이 처리됩니다:
 
-#### 3.1.3 성취기준 판정 프로세스
+**음성 평가 (1교시, 4교시)**:
+1. 음성 파일이 Supabase Storage에 업로드
+2. OpenAI GPT-4o-transcribe API로 전송되어 텍스트로 전사 (타임라인 정보 포함)
+3. 전사 결과와 타임라인을 GPT-4o API로 전송
+4. 평가 유형별 채점 로직에 따라 정답/오답 판정, 정확도 계산, 오류 유형 분류 수행
+5. 최종 결과(전사 결과 포함)는 데이터베이스에 저장되고 학생에게 반환
+
+**선택형 평가 (2교시, 3교시, 5교시, 6교시)**:
+1. 선택한 답안과 정답을 즉시 비교
+2. 정답/오답 판정 및 정확도 계산 (정답: 100%, 오답: 0%)
+3. 결과는 데이터베이스에 저장되고 학생에게 즉시 반환
+
+#### 3.1.4 문항 생성 및 관리 프로세스
+
+교사가 AI를 활용하여 평가 문항을 생성하고 관리하는 프로세스는 다음과 같습니다:
+
+```mermaid
+flowchart TD
+    A[교사 로그인] --> B[문항 생성 페이지 접근]
+    B --> C[문항 생성 요청]
+    C --> C1[테스트 유형 선택]
+    C --> C2[학년 수준 선택]
+    C --> C3[생성할 문항 수 입력]
+    
+    C1 --> D[GPT-4o 문항 생성]
+    C2 --> D
+    C3 --> D
+    
+    D --> E[교육과정 PDF 참조]
+    E --> F[문항 생성 완료]
+    
+    F --> G[자동 품질 검증]
+    G --> G1[DIBELS 준수도 검증]
+    G --> G2[학년 수준 적절성 검증]
+    G --> G3[교육과정 연계도 검증]
+    G --> G4[난이도 적절성 검증]
+    G --> G5[문법 정확도 검증]
+    
+    G1 --> H[품질 점수 계산]
+    G2 --> H
+    G3 --> H
+    G4 --> H
+    G5 --> H
+    
+    H --> I[데이터베이스 저장<br/>status: pending]
+    
+    I --> J{교사 검토}
+    J -->|승인| K[status: approved]
+    J -->|거부| L[status: rejected]
+    J -->|수정 요청| M[status: reviewed]
+    
+    K --> N[학생 평가에 사용 가능]
+    L --> O[사용 불가]
+    M --> P[재검토 대기]
+    
+    style A fill:#fff4e1
+    style D fill:#f3e5f5
+    style G fill:#e8f5e9
+    style K fill:#c8e6c9
+    style L fill:#ffcdd2
+```
+
+**그림 8. 문항 생성 및 관리 프로세스 플로우차트**
+
+**주요 단계**:
+
+1. **문항 생성 요청**
+   - 교사가 문항 생성 페이지(`/teacher/generate-items`)에서 요청
+   - 테스트 유형, 학년 수준, 생성할 문항 수 입력
+   - GPT-4o가 교육과정 PDF 청크를 참조하여 문항 생성
+
+2. **품질 검증**
+   - 생성된 문항은 자동으로 5가지 항목 검증:
+     - DIBELS 준수도: DIBELS 평가 기준 준수 여부
+     - 학년 수준 적절성: 해당 학년 수준에 적합한지
+     - 교육과정 연계도: 교육과정과의 연계성
+     - 난이도 적절성: 적절한 난이도인지
+     - 문법 정확도: 문법적으로 정확한지
+   - 각 항목별 점수 및 전체 품질 점수(0-100) 계산
+
+3. **승인 워크플로우**
+   - 생성된 문항은 `pending` 상태로 저장
+   - 교사가 문항 검토 페이지(`/teacher/test-items`)에서 검토
+   - 승인 시 `approved` 상태로 변경, 학생 평가에 사용 가능
+   - 거부 시 `rejected` 상태로 변경, 사용 불가
+   - 각 단계별 이력은 `item_approval_workflow` 테이블에 기록
+
+4. **문항 사용**
+   - 학생이 평가를 시작하면 `/api/test-items` API 호출
+   - 최신 승인된 문항(`status='approved'`)을 조회
+   - 승인된 문항이 없으면 기본 문항(fallback) 사용
+
+#### 3.1.5 성취기준 판정 프로세스
 
 학생의 성취기준 도달 여부를 판정하는 프로세스는 다음과 같습니다:
 
@@ -656,8 +1186,55 @@ sequenceDiagram
 
 6. **결과 생성**: 6가지 영역별 도달 여부와 전체 도달 영역 수를 계산하여 결과를 생성합니다.
 
-**그림 8. 성취기준 판정 프로세스 플로우차트**
-(한글 파일에 그림으로 삽입: 학생 정확도 수집 → 반 통계 계산 → 절대 기준 판정 → 통계적 기준 판정 → 종합 판정 → 결과 생성)
+```mermaid
+flowchart TD
+    A[학생 평가 결과 수집] --> B[학생 정확도 추출]
+    B --> C[반 통계 계산]
+    C --> C1[반 평균 계산]
+    C --> C2[반 표준편차 계산]
+    C --> C3[학생 수 확인]
+    
+    B --> D[절대 기준 판정]
+    D --> D1{정확도 >= 70%?}
+    D1 -->|예| D2[절대 기준 달성]
+    D1 -->|아니오| D3[절대 기준 미달]
+    
+    C1 --> E[통계적 기준 판정]
+    C2 --> E
+    C3 --> E
+    E --> E1{반 학생 수 > 1<br/>AND<br/>표준편차 > 0?}
+    E1 -->|예| E2[Z-score 계산]
+    E1 -->|아니오| E3[통계적 기준 미적용]
+    
+    E2 --> E4{Z-score >= -1.0?}
+    E4 -->|예| E5[통계적 기준 달성]
+    E4 -->|아니오| E6[통계적 기준 미달]
+    
+    D2 --> F[종합 판정]
+    D3 --> F
+    E5 --> F
+    E6 --> F
+    E3 --> F
+    
+    F --> F1{절대 기준 달성<br/>AND<br/>통계적 기준 달성?}
+    F1 -->|예| G[성취기준 도달]
+    F1 -->|아니오| H[성취기준 미도달]
+    
+    G --> I[결과 생성]
+    H --> I
+    I --> I1[6개 영역별 도달 여부]
+    I --> I2[도달한 영역 수 계산]
+    I --> I3[전체 도달 여부 판정]
+    
+    style D2 fill:#c8e6c9
+    style D3 fill:#ffcdd2
+    style E5 fill:#c8e6c9
+    style E6 fill:#ffcdd2
+    style G fill:#c8e6c9
+    style H fill:#ffcdd2
+```
+
+**그림 9. 성취기준 판정 프로세스 플로우차트**
 
 #### 3.1.4 전사 정확도 검토 프로세스
 
@@ -686,8 +1263,50 @@ sequenceDiagram
 
 7. **시스템 개선**: 수집된 데이터를 분석하여 AI 시스템 개선에 활용합니다.
 
-**그림 9. 전사 정확도 검토 워크플로우**
-(한글 파일에 그림으로 삽입: 테스트 결과 조회 → 오디오 재생 및 전사 확인 → 리뷰 유형 선택 → 메모 작성 → 리뷰 저장 → 통계 자동 계산 → 시스템 개선)
+```mermaid
+flowchart TD
+    A[교사 로그인] --> B[전사 정확도 검토 페이지 접근]
+    B --> C[테스트 유형 선택<br/>1교시 또는 4교시]
+    C --> D[날짜 범위 설정]
+    D --> E[테스트 결과 목록 조회]
+    
+    E --> F[각 테스트 결과 검토]
+    F --> F1[오디오 재생]
+    F --> F2[전사 결과 확인]
+    F --> F3[채점 결과 확인]
+    
+    F1 --> G[리뷰 유형 선택]
+    F2 --> G
+    F3 --> G
+    
+    G --> G1{14가지 리뷰 유형 중<br/>선택}
+    G1 --> G2[발화 정확도<br/>정답/오답/없음/수정]
+    G1 --> G3[전사 정확도<br/>정확/부정확]
+    G1 --> G4[채점 정확도<br/>정답/오답]
+    
+    G2 --> H[메모 작성<br/>선택사항]
+    G3 --> H
+    G4 --> H
+    
+    H --> I[리뷰 저장]
+    I --> J[데이터베이스 저장]
+    
+    J --> K[통계 자동 계산]
+    K --> K1[음성 인식 정확도]
+    K --> K2[채점 정확도]
+    K --> K3[리뷰 유형별 분포]
+    
+    K1 --> L[시스템 개선]
+    K2 --> L
+    K3 --> L
+    
+    style A fill:#fff4e1
+    style G fill:#e1f5ff
+    style I fill:#c8e6c9
+    style L fill:#e8f5e9
+```
+
+**그림 10. 전사 정확도 검토 워크플로우**
 
 #### 3.1.5 교사 대시보드 활용
 
@@ -726,7 +1345,7 @@ flowchart TD
     style H fill:#e1f5ff
 ```
 
-**그림 7. 교사 대시보드 활용 프로세스**
+**그림 11. 교사 대시보드 활용 프로세스**
 
 교사는 대시보드에서 전체 통계를 확인하고, 반별로 그룹화된 학생 목록을 확인할 수 있습니다. 특정 학생을 선택하면 해당 학생의 상세 결과 페이지에서 테스트별 통계, 시각화 차트, AI 평가 코멘트, 세션별 상세 기록을 확인할 수 있습니다.
 
@@ -758,9 +1377,11 @@ flowchart TD
 **음성 녹음 평가 (1교시, 4교시)**:
 1. 평가 설명 화면을 확인합니다.
 2. "시작하기" 버튼을 클릭합니다.
-3. 화면에 표시된 내용을 읽으면서 마이크로 음성을 녹음합니다.
-4. 1분 동안 최대한 많은 문제를 해결합니다.
-5. "제출" 버튼을 클릭합니다.
+3. 브라우저에서 마이크 권한 요청이 나타나면 "허용"을 선택합니다.
+4. 화면에 표시된 내용(알파벳 또는 단어/문장)을 읽으면서 마이크로 음성을 녹음합니다.
+5. 각 문항마다 최대 5초 동안 녹음되며, 자동으로 다음 문항으로 이동합니다.
+6. 1분 동안 최대한 많은 문제를 해결합니다.
+7. "제출" 버튼을 클릭하거나 시간이 종료되면 자동으로 제출됩니다.
 
 **듣기 + 선택 평가 (2교시, 3교시)**:
 1. 평가 설명 화면을 확인합니다.
@@ -852,6 +1473,7 @@ flowchart TD
 4. 각 테스트 결과에 대해 다음을 수행합니다:
    - 오디오 재생 버튼을 클릭하여 학생의 실제 발화를 확인
    - AI가 전사한 텍스트 결과 확인
+   - 타임라인 정보 확인 (음성 세그먼트별 시작/종료 시간)
    - 최종 채점 결과 확인
    - 14가지 리뷰 유형 중 해당하는 유형 선택
    - 필요시 메모 작성
@@ -859,8 +1481,31 @@ flowchart TD
 5. 통계 대시보드에서 다음을 확인합니다:
    - 전체 리뷰 수
    - 리뷰 유형별 분포
-   - 음성 인식 정확도
-   - 채점 정확도
+   - 음성 인식 정확도 (정확한 전사 비율)
+   - 채점 정확도 (올바른 채점 비율)
+   - 리뷰 유형별 통계 (1-14번 유형별 개수 및 비율)
+
+##### 6단계: 문항 생성 및 관리
+
+1. 교사 대시보드에서 "문항 생성" 메뉴를 클릭합니다.
+2. 문항 생성 요청:
+   - 테스트 유형 선택 (1교시 ~ 6교시)
+   - 학년 수준 선택 (초등 1학년 ~ 초등 4학년)
+   - 생성할 문항 수 입력
+   - "문항 생성" 버튼 클릭
+3. 생성 완료 후 품질 점수 확인:
+   - DIBELS 준수도 점수
+   - 학년 수준 적절성 점수
+   - 교육과정 연계도 점수
+   - 난이도 적절성 점수
+   - 문법 정확도 점수
+   - 전체 품질 점수 (0-100)
+4. 문항 검토 및 승인:
+   - "문항 관리" 페이지에서 생성된 문항 목록 확인
+   - 각 문항의 상세 내용 및 품질 점수 확인
+   - 승인/거부/수정 요청 선택
+   - 필요시 검토 의견 작성
+5. 승인된 문항은 자동으로 학생 평가에 사용됩니다.
 
 ##### 6단계: 데이터 활용
 
